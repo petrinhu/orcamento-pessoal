@@ -29,6 +29,9 @@
 #include <QClipboard>
 #include <algorithm>
 
+#include "core/settings/AppSettings.h"
+#include "services/CurrencyService.h"
+
 ParcelasWidget::ParcelasWidget(QWidget *parent)
     : QWidget(parent)
 {
@@ -272,8 +275,18 @@ void ParcelasWidget::populateTable()
 
     for (int k = 0; k < totalMonths; ++k) {
         if (monthTotals[k] == 0) continue;
+        const QString tgtCur = AppSettings::instance().defaultCurrency();
+        qint64 displayVal = monthTotals[k];
+        if (tgtCur != QStringLiteral("BRL")) {
+            try {
+                displayVal = CurrencyService::instance().converter(
+                    displayVal, QStringLiteral("BRL"), tgtCur);
+            } catch (...) {
+                displayVal = monthTotals[k]; // fallback: show BRL on error
+            }
+        }
         auto *cell = new QTableWidgetItem(
-            ParcelaService::formatarValor(monthTotals[k], QStringLiteral("BRL")));
+            ParcelaService::formatarValor(displayVal, tgtCur));
         cell->setFlags(cell->flags() & ~Qt::ItemIsEditable);
         cell->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
         QFont bf = cell->font();

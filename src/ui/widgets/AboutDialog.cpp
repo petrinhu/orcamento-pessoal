@@ -45,7 +45,7 @@ AboutDialog::AboutDialog(QWidget *parent)
     auto *lblDesc = new QLabel(
         QStringLiteral(
             "Desenvolvido por <b>Petrus Silva Costa</b> — © 2026<br><br>"
-            "Controle de parcelas do cartão de crédito em C++20/Qt6.<br>"
+            "Aplicativo de orçamento pessoal em C++20/Qt6.<br>"
             "Banco de dados criptografado com AES-256-CBC."
         ), this);
     lblDesc->setWordWrap(true);

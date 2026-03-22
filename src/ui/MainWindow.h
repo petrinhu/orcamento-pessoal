@@ -4,7 +4,7 @@
 #include <QMainWindow>
 
 class ParcelasWidget;
-class ConfigWidget;
+class PrefsWidget;
 class QTabWidget;
 class QLabel;
 class QToolButton;
@@ -34,16 +34,13 @@ private:
     void onColar();
     void onSelecionarTudo();
 
-    // Configurações
-    void onCartoes();
-
     // Ajuda
     void onAjuda();
     void onSobre();
 
     QTabWidget     *m_tabs       = nullptr;
     ParcelasWidget *m_parcelas   = nullptr;
-    ConfigWidget   *m_config     = nullptr;
+    PrefsWidget    *m_prefs      = nullptr;
     QLabel         *m_statusUser = nullptr;
 
     // Theme cycle button (Auto → Light → Dark → Auto)

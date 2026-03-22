@@ -1,6 +1,6 @@
 #include "MainWindow.h"
 #include "widgets/ParcelasWidget.h"
-#include "widgets/ConfigWidget.h"
+#include "widgets/PrefsWidget.h"
 #include "widgets/AboutDialog.h"
 #include "widgets/HelpDialog.h"
 #include "core/session/UserSession.h"
@@ -23,9 +23,6 @@
 #include <QMessageBox>
 #include <QApplication>
 #include <QClipboard>
-#include <QDialog>
-#include <QVBoxLayout>
-#include <QDialogButtonBox>
 #include <QSqlQuery>
 
 MainWindow::MainWindow(QWidget *parent)
@@ -44,8 +41,8 @@ void MainWindow::buildUi()
     m_parcelas = new ParcelasWidget(this);
     m_tabs->addTab(m_parcelas, QStringLiteral("Parcelas"));
 
-    m_config = new ConfigWidget(this);
-    m_tabs->addTab(m_config, QStringLiteral("Configurações"));
+    m_prefs = new PrefsWidget(this);
+    m_tabs->addTab(m_prefs, QStringLiteral("Configurações"));
 
     buildMenuBar();
     buildThemeBar();
@@ -57,7 +54,9 @@ void MainWindow::buildUi()
     statusBar()->addWidget(m_statusUser);
 
     // ── Connections ────────────────────────────────────────────────────────
-    connect(m_config, &ConfigWidget::cartoesAlterados,
+    connect(m_prefs, &PrefsWidget::cartoesAlterados,
+            m_parcelas, &ParcelasWidget::recarregar);
+    connect(m_prefs, &PrefsWidget::moedaAlterada,
             m_parcelas, &ParcelasWidget::recarregar);
     connect(m_parcelas, &ParcelasWidget::dadosAlterados,
             m_parcelas, &ParcelasWidget::recarregar);
@@ -151,15 +150,7 @@ void MainWindow::buildMenuBar()
     connect(aSelAll, &QAction::triggered, this, &MainWindow::onSelecionarTudo);
 
     // ── Configurações ──────────────────────────────────────────────────────
-    QMenu *mConfig = mb->addMenu(QStringLiteral("&Configurações"));
-
-    auto *aCartoes = mConfig->addAction(QStringLiteral("&Cartões…"));
-    connect(aCartoes, &QAction::triggered, this, &MainWindow::onCartoes);
-
-    mConfig->addSeparator();
-
-    auto *aPrefs = mConfig->addAction(QStringLiteral("&Preferências…"));
-    aPrefs->setEnabled(false); // stub
+    // (Cartões, idioma e moeda agora estão na aba Configurações — sem menu separado)
 
     // ── Ajuda ──────────────────────────────────────────────────────────────
     QMenu *mAjuda = mb->addMenu(QStringLiteral("A&juda"));
@@ -410,27 +401,6 @@ void MainWindow::onCopiar()        { m_parcelas->copiar(); }
 void MainWindow::onColar()         { /* sem suporte — paste requer contexto da célula */ }
 void MainWindow::onSelecionarTudo(){ m_parcelas->selecionarTudo(); }
 
-// ── Configurações slots ───────────────────────────────────────────────────────
-
-void MainWindow::onCartoes()
-{
-    QDialog dlg(this);
-    dlg.setWindowTitle(QStringLiteral("Cartões"));
-    dlg.resize(400, 320);
-    auto *layout = new QVBoxLayout(&dlg);
-    layout->setContentsMargins(0, 0, 0, 12);
-
-    auto *widget = new ConfigWidget(&dlg);
-    layout->addWidget(widget);
-
-    auto *btns = new QDialogButtonBox(QDialogButtonBox::Close, &dlg);
-    layout->addWidget(btns);
-    layout->setContentsMargins(12, 0, 12, 12);
-    connect(btns, &QDialogButtonBox::rejected, &dlg, &QDialog::accept);
-    connect(widget, &ConfigWidget::cartoesAlterados, m_parcelas, &ParcelasWidget::recarregar);
-
-    dlg.exec();
-}
 
 // ── Ajuda slots ───────────────────────────────────────────────────────────────
 

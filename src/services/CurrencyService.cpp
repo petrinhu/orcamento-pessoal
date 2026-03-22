@@ -1,7 +1,14 @@
 #include "CurrencyService.h"
+#include "core/currency/FrankfurterProvider.h"
 
 #include <cmath>
 #include <stdexcept>
+
+CurrencyService &CurrencyService::instance()
+{
+    static CurrencyService cs(std::make_unique<FrankfurterProvider>());
+    return cs;
+}
 
 CurrencyService::CurrencyService(std::unique_ptr<ICurrencyProvider> provider)
     : m_provider(std::move(provider))

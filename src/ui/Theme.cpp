@@ -2,6 +2,8 @@
 
 #include <QApplication>
 #include <QFontDatabase>
+#include <QPainter>
+#include <QProxyStyle>
 #include <QStyleFactory>
 #include <QStyleHints>
 #include <QPalette>
@@ -79,14 +81,10 @@ static QString gerarQss()
     const QString neg  = dark ? Color::NegativeDark : Color::NegativeLight;
     // Alternating row — very subtle
     const QString alt  = dark ? QStringLiteral("#1B2118") : QStringLiteral("#F0F4F0");
-    // Tab gradient stops (inactive tabs get subtle 3-D gradient)
-    const QString tabTop = dark ? QStringLiteral("#252C22") : QStringLiteral("#ECEEEB");
-    const QString tabBot = dark ? QStringLiteral("#1D2419") : QStringLiteral("#DFE3DC");
-    // Button gradient (slight depth without being garish)
-    const QString btnBot = dark ? QStringLiteral("#1C2319") : QStringLiteral("#E8EDE7");
+    // Hover background — slightly lighter than bg, used for subtle hover states
+    const QString hov  = dark ? QStringLiteral("#252C22") : QStringLiteral("#ECEEE9");
 
-    // %1=txt  %2=bg   %3=surf  %4=acc  %5=sub  %6=neg
-    // %7=brd  %8=alt  %9=tabTop  (chained .arg below handles %10..%12)
+    // %1=txt  %2=bg  %3=surf  %4=acc  %5=sub  %6=neg  %7=brd  %8=alt  %9=hov
     QString qss = QStringLiteral(R"(
         /* ── Base ── */
         QWidget {
@@ -142,18 +140,17 @@ static QString gerarQss()
             padding: 6px 18px;
             font-weight: 500;
         }
-        QPushButton#primary:hover   { background-color: %4; opacity: 0.9; }
+        QPushButton#primary:hover   { background-color: %4; }
         QPushButton#primary:pressed { background-color: %4; }
         QPushButton {
-            background: qlineargradient(x1:0,y1:0,x2:0,y2:1,
-                stop:0 %3, stop:1 %10);
+            background-color: %3;
             border: 1px solid %7;
             border-radius: 6px;
             padding: 5px 14px;
             color: %1;
         }
-        QPushButton:hover  { border-color: %4; color: %4; }
-        QPushButton:pressed { background: %9; }
+        QPushButton:hover   { border-color: %4; color: %4; }
+        QPushButton:pressed { background-color: %9; }
         QPushButton:disabled { color: %5; border-color: %7; }
         /* ── Theme cycle button ── */
         QToolButton#themeBtn {
@@ -164,7 +161,7 @@ static QString gerarQss()
             font-size: 14px;
             background: transparent;
         }
-        QToolButton#themeBtn:hover { background-color: %9; color: %1; }
+        QToolButton#themeBtn:hover   { background-color: %9; color: %1; }
         QToolButton#themeBtn:pressed { background-color: %7; }
         /* ── Inputs ── */
         QLineEdit, QSpinBox, QDoubleSpinBox, QComboBox, QDateEdit {
@@ -230,15 +227,18 @@ static QString gerarQss()
         QLabel#subtitle { font-size: 12px; color: %5; }
         /* ── Status bar ── */
         QStatusBar { background-color: %2; color: %5; border-top: 1px solid %7; }
-        /* ── Tabs ── */
+        /* ── Tabs ─────────────────────────────────────────────────────────────
+           Inactive tabs use bg (recessed); selected tab uses surf (elevated).
+           A 2px accent line on top of the selected tab gives clear affordance.
+           No gradients — pure colour-contrast depth (BreezeStyleSheets pattern).
+        ── */
         QTabWidget::pane {
             background-color: %3;
             border: 1px solid %7;
             border-top: none;
         }
         QTabBar::tab {
-            background: qlineargradient(x1:0,y1:0,x2:0,y2:1,
-                stop:0 %9, stop:1 %10);
+            background-color: %2;
             color: %5;
             padding: 7px 20px;
             border: 1px solid %7;
@@ -253,7 +253,7 @@ static QString gerarQss()
             border-top: 2px solid %4;
             margin-top: -1px;
         }
-        QTabBar::tab:hover:!selected { color: %1; }
+        QTabBar::tab:hover:!selected { background-color: %9; color: %1; }
         /* ── Scroll bars ── */
         QScrollBar:vertical {
             background: %2; width: 8px; margin: 0;
@@ -266,7 +266,7 @@ static QString gerarQss()
         }
         QScrollBar::handle:hover { background: %5; }
         QScrollBar::add-line, QScrollBar::sub-line { height: 0; width: 0; }
-        /* ── GroupBox (config widget) ── */
+        /* ── GroupBox ── */
         QGroupBox {
             border: 1px solid %7;
             border-radius: 6px;
@@ -284,11 +284,27 @@ static QString gerarQss()
         /* ── Dialog button boxes ── */
         QDialogButtonBox QPushButton { min-width: 80px; }
     )")
-    .arg(txt, bg, surf, acc, sub, neg, brd, alt, tabTop)
-    .arg(tabBot, btnBot);
+    .arg(txt, bg, surf, acc, sub, neg, brd, alt, hov);
 
     return qss;
 }
+
+// ── NoFocusStyle ──────────────────────────────────────────────────────────────
+// Fusion draws PE_FrameFocusRect as a coloured dashed rectangle around the
+// focused widget. QSS `outline: none` only suppresses it on a few widget types;
+// the reliable fix is to intercept it at the style level.
+class NoFocusStyle : public QProxyStyle {
+public:
+    using QProxyStyle::QProxyStyle;
+    void drawPrimitive(QStyle::PrimitiveElement pe,
+                       const QStyleOption *opt,
+                       QPainter *p,
+                       const QWidget *w = nullptr) const override
+    {
+        if (pe == QStyle::PE_FrameFocusRect) return;
+        QProxyStyle::drawPrimitive(pe, opt, p, w);
+    }
+};
 
 // ── Public API ────────────────────────────────────────────────────────────────
 
@@ -300,10 +316,10 @@ void setMode(ThemeMode mode)
 
 void aplicar()
 {
-    // Fusion as base: eliminates platform-native rendering artefacts
-    // (focus rings, coloured borders, hover decorations) that conflict
-    // with our custom QSS on KDE/Breeze, GNOME/Adwaita, etc.
-    QApplication::setStyle(QStyleFactory::create(QStringLiteral("Fusion")));
+    // NoFocusStyle wraps Fusion: gives us consistent cross-platform rendering
+    // AND suppresses the PE_FrameFocusRect coloured border on all widgets.
+    QApplication::setStyle(
+        new NoFocusStyle(QStyleFactory::create(QStringLiteral("Fusion"))));
 
     carregarFontes();
 

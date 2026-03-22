@@ -10,6 +10,9 @@
 // Caches rates; refreshes at most once per calendar day.
 class CurrencyService {
 public:
+    // Singleton initialized with FrankfurterProvider (lazy, safe to call after QApplication).
+    static CurrencyService &instance();
+
     explicit CurrencyService(std::unique_ptr<ICurrencyProvider> provider);
 
     // Convert centavos from one currency to another.

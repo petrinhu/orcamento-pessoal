@@ -51,6 +51,9 @@ set(SOURCES
     # Core — session
     src/core/session/UserSession.cpp
 
+    # Core — settings
+    src/core/settings/AppSettings.cpp
+
     # Core — currency
     src/core/currency/FrankfurterProvider.cpp
 
@@ -72,6 +75,7 @@ set(SOURCES
     src/ui/widgets/ParcelasWidget.cpp
     src/ui/widgets/AddCompraDialog.cpp
     src/ui/widgets/ConfigWidget.cpp
+    src/ui/widgets/PrefsWidget.cpp
     src/ui/widgets/AboutDialog.cpp
     src/ui/widgets/HelpDialog.cpp
 )
