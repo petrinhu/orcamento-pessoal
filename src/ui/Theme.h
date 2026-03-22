@@ -1,19 +1,39 @@
 #pragma once
 
 #include <QString>
+#include <QFont>
+#include <QPalette>
 
+// Forest Neutral palette + Inter font + QSS.
+// Light/dark automatic via QStyleHints (Qt6).
 namespace Theme {
 
-// Detecta se o sistema está em modo escuro
-bool isDark();
-
-// Carrega as fontes Inter no app (chamar uma vez em main())
-void carregarFontes();
-
-// Retorna o stylesheet completo para o tema atual
-QString stylesheet(bool dark);
-
-// Aplica o tema ao QApplication de acordo com o sistema
 void aplicar();
+
+// Raw tokens
+namespace Color {
+    extern const QString BackgroundLight;
+    extern const QString BackgroundDark;
+    extern const QString SurfaceLight;
+    extern const QString SurfaceDark;
+    extern const QString Accent;
+    extern const QString AccentDark;
+    extern const QString Positive;
+    extern const QString PositiveDark;
+    extern const QString Negative;
+    extern const QString NegativeDark;
+    extern const QString TextLight;
+    extern const QString TextDark;
+    extern const QString SubtextLight;
+    extern const QString SubtextDark;
+}
+
+// Returns accent color for current scheme
+QString acento();
+QString negativo();
+QString positivo();
+QString background();
+QString surface();
+QString texto();
 
 } // namespace Theme

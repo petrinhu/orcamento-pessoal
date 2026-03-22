@@ -2,105 +2,150 @@
 
 ## Visão geral do projeto
 
-App de controle de orçamento pessoal em C++20/Qt6/SQLite, para Linux (Fedora/KDE Plasma).
+App de finanças pessoais em C++20/Qt6, construído em módulos incrementais.
+**Módulo 1 (atual):** controle de parcelas do cartão de crédito.
 
-**Repositório GitHub:** petrinhu/orcamento_pessoal
+**Repositório Codeberg:** ssh://git@codeberg.org/petrinhu/orcamento_pessoal.git
+
+## Papel e contexto
+
+Engenheiro sênior C++20/Qt6, foco em Linux (Fedora/KDE Plasma primário,
+Debian e Arch como alvos secundários de distribuição).
 
 ## Stack
 
 - **Linguagem:** C++20
 - **UI:** Qt6 (Widgets, Charts)
-- **Banco de dados:** SQLite via QSQLITE (built-in no Qt6 — sem driver externo)
+- **Banco de dados:** SQLite via QSQLITE (built-in no Qt6)
 - **Criptografia:** OpenSSL — AES-256-CBC, PBKDF2-SHA256 (600.000 iterações)
+- **Segredos do sistema:** libsecret (Secret Service API → KWallet/GNOME Keyring)
 - **Build:** CMake 3.16+
-- **Plataforma:** Fedora 43 / KDE Plasma
+- **Plataforma:** Fedora 43 / KDE Plasma (primário)
 - **Fonte:** Inter (Regular, Medium, SemiBold) — embutida via .qrc
-- **Tema:** light/dark automático via QStyleHints (Qt6)
+- **Tema:** Forest Neutral, light/dark automático via QStyleHints (Qt6)
 
-## Dependências (dnf)
+## Dependências
 
 ```bash
+# Fedora (dnf)
 sudo dnf install \
-  qt6-qtbase-devel \
-  qt6-qtcharts-devel \
-  openssl-devel \
+  qt6-qtbase-devel qt6-qtcharts-devel \
+  openssl-devel libsecret-devel \
   gcc-c++ cmake make -y
-# qt6-qtbase-mysql e mysql-devel NÃO são necessários
+
+# Debian/Ubuntu (apt)
+sudo apt install \
+  qt6-base-dev libqt6charts6-dev \
+  libssl-dev libsecret-1-dev \
+  g++ cmake make -y
+
+# Arch (pacman)
+sudo pacman -S qt6-base qt6-charts \
+  openssl libsecret \
+  gcc cmake make
 ```
 
-## Estrutura modular (implementada)
+## Estrutura modular
 
 ```
 src/
-  main.cpp                       # Ponto de entrada
+  main.cpp
   core/
-    CryptoHelper.h/cpp           # AES-256-CBC, PBKDF2, gerarSalt() (namespace)
-    DatabaseManager.h/cpp        # SQLite+AES — conectar(nome,senha), CRUD
-    DataManager.h/cpp            # DESCARTADO (JSON legado — arquivos vazios)
+    interfaces/
+      ICryptoService.h       # SRP: só criptografia
+      ISecretStore.h         # SRP: só armazenamento de segredos
+      IRepository.h          # Repositório genérico (template)
+    crypto/
+      AesCryptoService.h/cpp # AES-256-CBC (debug: sem crypto)
+      KeyDerivation.h/cpp    # PBKDF2-SHA256, 600k iter
+    secret/
+      SecretStoreService.h/cpp # libsecret → KWallet/GNOME Keyring
+    database/
+      DatabaseManager.h/cpp  # SQLite lifecycle, pragma setup
+    session/
+      UserSession.h/cpp      # Nome logado, último nome (QSettings)
+    currency/
+      ICurrencyProvider.h    # Interface para cotação
+      FrankfurterProvider.h/cpp # frankfurter.app (ECB, sem API key)
   models/
-    Categoria.h/cpp              # struct POD
-    Entrada.h/cpp                # struct POD
-    GastoFixo.h/cpp              # struct POD
-    GastoVariavel.h/cpp          # struct POD
+    Compra.h                 # struct POD
+    Parcela.h                # struct POD
+  repositories/
+    CompraRepository.h/cpp
+    ParcelaRepository.h/cpp
+  services/
+    ParcelaService.h/cpp     # CET, juros, Newton-Raphson, datas retroativas
+    CurrencyService.h/cpp    # Conversão + cache de cotação
   ui/
-    Theme.h/cpp                  # Paleta Forest Neutral, QSS, Inter, light/dark
+    Theme.h/cpp
+    LoginDialog.h/cpp
     MainWindow.h/cpp
-    PasswordDialog.h/cpp         # Splash: nome + senha + checklist ✓/✗
-    DashboardWidget.h/cpp        # Cards + gráfico donut
-    EntradasWidget.h/cpp
-    GastosFixosWidget.h/cpp      # + Repetir mês anterior
-    GastosVariaveisWidget.h/cpp
-    ConfigWidget.h/cpp
-  utils/
-    CurrencyUtils.h/cpp          # textoParaCentavos / centavosParaTexto
+    widgets/
+      ParcelasWidget.h/cpp   # Tabela editável
+      AddCompraDialog.h/cpp  # Diálogo de entrada (modos 2.1–2.5)
+      ConfigWidget.h/cpp     # CRUD cartões
 resources/
-  fonts/Inter-Regular.ttf
-  fonts/Inter-Medium.ttf
-  fonts/Inter-SemiBold.ttf
+  fonts/Inter-*.ttf
   resources.qrc
-data/                            # criado em runtime — NÃO versionar
-  <nome>.enc                     # banco SQLite criptografado (AES-256-CBC)
-  .<nome>.db                     # arquivo temporário (deletado ao fechar)
-docs/
-  architecture.md
-  database.md
-tests/
+data/                        # runtime — NÃO versionar
+  <slug>.enc                 # banco criptografado
+  .<slug>.db                 # temporário (debug: sem crypto)
 ```
 
-## Fluxo principal
+## Princípios de código (SOLID)
 
-`main()` → `Theme::aplicar()` → `PasswordDialog(nome+senha)` → `DatabaseManager::conectar(nome,senha)` → `MainWindow` → abas
-
-## Arquitetura de dados
-
-- Nome do usuário → slug → `data/<slug>.enc` (banco criptografado)
-- Login: PBKDF2 deriva chave da senha → AES decripta → SQLite abre o `.db` temporário
-- Encerramento: SQLite fecha → AES encripta → escrita atômica → `.db` deletado
-- `PRAGMA journal_mode = MEMORY` — sem journal files em disco
-- `PRAGMA foreign_keys = ON` + `ON DELETE CASCADE` nas FKs
-
-## Paleta de cores (Forest Neutral)
-
-| Token | Light | Dark |
-|---|---|---|
-| Background | #F5F4F0 | #18181A |
-| Surface | #FFFFFF | #222225 |
-| Acento | #166F4A | #22A367 |
-| Positivo | #166F4A | #22A367 |
-| Negativo | #C94040 | #E85555 |
+- **SRP:** cada classe tem responsabilidade única — nada monolítico
+- **OCP:** extensível para novos módulos sem modificar os existentes
+- **LSP:** implementações substituem interfaces sem quebrar comportamento
+- **ISP:** interfaces pequenas e específicas (ICryptoService, ISecretStore, IRepository)
+- **DIP:** depender de abstrações, não de implementações concretas
 
 ## Convenções
 
 - Valores monetários sempre em **centavos (qint64)** — nunca float/double
-- Datas: `QDate` nos modelos; `dd/MM/yyyy` na UI
-- Formatação: `centavosParaTexto()` → "R$ 0,00"
+- Juros armazenados como inteiro: `% × 10000` (ex: 1,5% = 15000)
+- Datas: `QDate` internamente; `dd/MM/yyyy` na UI
+- Formatação: `centavosParaTexto()` → "R$ 0,00" (símbolo varia por moeda)
 - IDs: 0 = não persistido, -1 = linha TOTAL nas tabelas
-- **Não criar código C++ sem perguntar ao usuário antes**
+- Queries SQL: sempre com `bindValue` (sem concatenação de strings)
+- `PRAGMA foreign_keys = ON` + `ON DELETE CASCADE/SET NULL` nas FKs
+- `PRAGMA journal_mode = MEMORY` — sem journal files em disco
 - Commits sempre em português
-- Sinais: `dadosAlterados()` e `categoriasAlteradas()` — direção única (widgets → MainWindow)
-- Queries SQL: sempre com `bindValue` (sem concatenação)
+- **Não criar código C++ sem perguntar ao usuário antes**
 
-## Estado atual
+## Login / sessão
 
-- Implementação completa e build 100% limpo
-- Commit: `51d2b11` — Migração MySQL → SQLite+AES; redesign login
+- `#ifdef QT_DEBUG`: só nome, sem senha, último nome salvo via QSettings
+- Release: nome + senha + checklist (≥8 chars, maiúscula, número)
+- Chave AES armazenada via libsecret (KWallet/GNOME Keyring)
+
+## Paleta de cores (Forest Neutral)
+
+| Token      | Light   | Dark    |
+|------------|---------|---------|
+| Background | #F5F4F0 | #18181A |
+| Surface    | #FFFFFF | #222225 |
+| Acento     | #166F4A | #22A367 |
+| Positivo   | #166F4A | #22A367 |
+| Negativo   | #C94040 | #E85555 |
+
+## Ferramentas permitidas
+
+- **APENAS** ferramentas gratuitas, open-source, disponíveis via dnf/apt/pacman
+- NÃO sugerir: PVS-Studio, Coverity, SonarCloud pago, Squish, ou qualquer tool com login/chave paga
+- Ao recomendar tools, sempre fornecer equivalentes para as 3 distros (dnf/apt/pacman)
+
+## Metodologia pré-distribuição
+
+Antes de qualquer release, checklist cobrindo:
+1. Análise estática: `clang-tidy`, `cppcheck`
+2. Sanitizers: ASan, UBSan + `valgrind`
+3. Segurança/CVE/hardening: `checksec`, `grype` ou `trivy`
+4. QA funcional: `ctest`
+5. UX/UI: GammaRay, revisão manual
+
+Para cada item: comando exato + justificativa de por que é crítico.
+
+## Prioridade
+
+**Precisão financeira > Robustez > Segurança > UX**

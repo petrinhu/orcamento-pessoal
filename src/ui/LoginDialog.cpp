@@ -1,0 +1,179 @@
+#include "LoginDialog.h"
+#include "Theme.h"
+#include "core/crypto/AesCryptoService.h"
+#include "core/crypto/KeyDerivation.h"
+#include "core/secret/SecretStoreService.h"
+#include "core/session/UserSession.h"
+
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QLineEdit>
+#include <QLabel>
+#include <QPushButton>
+#include <QRegularExpression>
+#include <QMessageBox>
+
+static const QString APP_NAME = QStringLiteral("orcamento-pessoal");
+static const QString SALT_SUFFIX = QStringLiteral("/salt");
+
+LoginDialog::LoginDialog(QWidget *parent)
+    : QDialog(parent)
+{
+    setWindowTitle(QStringLiteral("Orçamento Pessoal"));
+    setWindowFlags(Qt::Dialog | Qt::FramelessWindowHint);
+    setModal(true);
+    buildUi();
+
+    // Pre-fill last used name
+    const QString last = UserSession::instance().loadLastName();
+    if (!last.isEmpty())
+        m_nome->setText(last);
+}
+
+QString    LoginDialog::nome()  const { return m_nome->text().trimmed(); }
+QByteArray LoginDialog::chave() const { return m_chave; }
+
+void LoginDialog::buildUi()
+{
+    auto *root = new QVBoxLayout(this);
+    root->setContentsMargins(40, 40, 40, 40);
+    root->setSpacing(16);
+
+    // Title
+    auto *title = new QLabel(QStringLiteral("Orçamento Pessoal"), this);
+    title->setObjectName(QStringLiteral("title"));
+    title->setAlignment(Qt::AlignCenter);
+    root->addWidget(title);
+
+    root->addSpacing(8);
+
+    // Nome
+    auto *lblNome = new QLabel(QStringLiteral("Nome"), this);
+    root->addWidget(lblNome);
+    m_nome = new QLineEdit(this);
+    m_nome->setPlaceholderText(QStringLiteral("Seu nome"));
+    root->addWidget(m_nome);
+    connect(m_nome, &QLineEdit::textChanged, this, &LoginDialog::onNomeChanged);
+
+#ifndef QT_DEBUG
+    // Senha
+    auto *lblSenha = new QLabel(QStringLiteral("Senha"), this);
+    root->addWidget(lblSenha);
+    m_senha = new QLineEdit(this);
+    m_senha->setEchoMode(QLineEdit::Password);
+    m_senha->setPlaceholderText(QStringLiteral("Mínimo 8 caracteres"));
+    root->addWidget(m_senha);
+    connect(m_senha, &QLineEdit::textChanged, this, &LoginDialog::onSenhaChanged);
+
+    // Checklist
+    auto *checkFrame = new QFrame(this);
+    auto *checkLayout = new QVBoxLayout(checkFrame);
+    checkLayout->setContentsMargins(8, 8, 8, 8);
+    checkLayout->setSpacing(4);
+
+    m_chkLen   = new QLabel(QStringLiteral("✗  Mínimo 8 caracteres"), this);
+    m_chkUpper = new QLabel(QStringLiteral("✗  Uma letra maiúscula"), this);
+    m_chkDigit = new QLabel(QStringLiteral("✗  Um número"), this);
+    for (auto *lbl : {m_chkLen, m_chkUpper, m_chkDigit}) {
+        lbl->setObjectName(QStringLiteral("subtitle"));
+        checkLayout->addWidget(lbl);
+    }
+    root->addWidget(checkFrame);
+#endif
+
+    root->addSpacing(8);
+
+    // Botão Entrar
+    m_btnEntrar = new QPushButton(QStringLiteral("Entrar"), this);
+    m_btnEntrar->setObjectName(QStringLiteral("primary"));
+    m_btnEntrar->setEnabled(false);
+    root->addWidget(m_btnEntrar);
+    connect(m_btnEntrar, &QPushButton::clicked, this, &LoginDialog::onEntrar);
+
+    setMinimumWidth(360);
+}
+
+void LoginDialog::onNomeChanged(const QString &)
+{
+#ifdef QT_DEBUG
+    m_btnEntrar->setEnabled(!nome().isEmpty());
+#else
+    m_btnEntrar->setEnabled(!nome().isEmpty() && senhaValida());
+#endif
+}
+
+void LoginDialog::onSenhaChanged(const QString &)
+{
+#ifndef QT_DEBUG
+    updateChecklist();
+    m_btnEntrar->setEnabled(!nome().isEmpty() && senhaValida());
+#endif
+}
+
+void LoginDialog::updateChecklist()
+{
+#ifndef QT_DEBUG
+    if (!m_senha) return;
+    const QString s = m_senha->text();
+    const bool okLen   = s.length() >= 8;
+    const bool okUpper = s.contains(QRegularExpression(QStringLiteral("[A-Z]")));
+    const bool okDigit = s.contains(QRegularExpression(QStringLiteral("[0-9]")));
+    const QString ok  = QStringLiteral("✓  ");
+    const QString bad = QStringLiteral("✗  ");
+    m_chkLen->setText  ((okLen   ? ok : bad) + QStringLiteral("Mínimo 8 caracteres"));
+    m_chkUpper->setText((okUpper ? ok : bad) + QStringLiteral("Uma letra maiúscula"));
+    m_chkDigit->setText((okDigit ? ok : bad) + QStringLiteral("Um número"));
+    const QString green = Theme::positivo();
+    const QString red   = Theme::negativo();
+    m_chkLen->setStyleSheet  (QStringLiteral("color: %1").arg(okLen   ? green : red));
+    m_chkUpper->setStyleSheet(QStringLiteral("color: %1").arg(okUpper ? green : red));
+    m_chkDigit->setStyleSheet(QStringLiteral("color: %1").arg(okDigit ? green : red));
+#endif
+}
+
+bool LoginDialog::senhaValida() const
+{
+#ifdef QT_DEBUG
+    return true;
+#else
+    if (!m_senha) return false;
+    const QString s = m_senha->text();
+    return s.length() >= 8
+        && s.contains(QRegularExpression(QStringLiteral("[A-Z]")))
+        && s.contains(QRegularExpression(QStringLiteral("[0-9]")));
+#endif
+}
+
+void LoginDialog::onEntrar()
+{
+    const QString n = nome();
+    if (n.isEmpty()) return;
+
+#ifdef QT_DEBUG
+    m_chave = QByteArray(); // no encryption in debug
+    UserSession::instance().login(n, m_chave);
+    accept();
+    return;
+#else
+    // Retrieve or create salt from system keychain
+    SecretStoreService store(APP_NAME);
+    const QString saltKey = n.toLower() + SALT_SUFFIX;
+    QByteArray salt = store.retrieve(saltKey);
+
+    AesCryptoService crypto;
+    if (salt.isEmpty()) {
+        // First time: generate and store salt
+        salt = crypto.generateSalt();
+        if (!store.store(saltKey, salt)) {
+            QMessageBox::warning(this, QStringLiteral("Erro"),
+                QStringLiteral("Não foi possível acessar o cofre de senhas do sistema.\n"
+                               "Verifique se o KWallet ou GNOME Keyring está disponível."));
+            return;
+        }
+    }
+
+    m_chave = crypto.deriveKey(m_senha->text(), salt);
+    UserSession::instance().login(n, m_chave);
+    accept();
+#endif
+}

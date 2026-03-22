@@ -1,0 +1,480 @@
+#include "ParcelasWidget.h"
+#include "AddCompraDialog.h"
+#include "repositories/CompraRepository.h"
+#include "repositories/ParcelaRepository.h"
+#include "services/ParcelaService.h"
+#include "core/database/DatabaseManager.h"
+#include "ui/Theme.h"
+
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QTableWidget>
+#include <QTableWidgetItem>
+#include <QHeaderView>
+#include <QPushButton>
+#include <QLabel>
+#include <QDate>
+#include <QDialog>
+#include <QDialogButtonBox>
+#include <QRadioButton>
+#include <QButtonGroup>
+#include <QGroupBox>
+#include <QComboBox>
+#include <QFormLayout>
+#include <QMessageBox>
+#include <QMenu>
+#include <QSqlQuery>
+#include <QDebug>
+#include <algorithm>
+
+ParcelasWidget::ParcelasWidget(QWidget *parent)
+    : QWidget(parent)
+{
+    m_currentMonth = QDate(QDate::currentDate().year(), QDate::currentDate().month(), 1);
+    buildUi();
+    recarregar();
+}
+
+void ParcelasWidget::buildUi()
+{
+    auto *root = new QVBoxLayout(this);
+    root->setContentsMargins(16, 16, 16, 16);
+    root->setSpacing(12);
+
+    // ── Toolbar ────────────────────────────────────────────────────────────
+    auto *toolbar = new QHBoxLayout;
+    m_btnNova = new QPushButton(QStringLiteral("+ Nova compra"), this);
+    m_btnNova->setObjectName(QStringLiteral("primary"));
+    m_btnExcluir = new QPushButton(QStringLiteral("Excluir"), this);
+    m_btnExcluir->setEnabled(false);
+
+    auto *btnOrganizar = new QPushButton(QStringLiteral("Organizar por ▾"), this);
+
+    m_lblStatus = new QLabel(this);
+    m_lblStatus->setObjectName(QStringLiteral("subtitle"));
+
+    toolbar->addWidget(m_btnNova);
+    toolbar->addWidget(m_btnExcluir);
+    toolbar->addWidget(btnOrganizar);
+    toolbar->addStretch();
+    toolbar->addWidget(m_lblStatus);
+    root->addLayout(toolbar);
+
+    // ── Table ───────────────────────────────────────────────────────────────
+    m_table = new QTableWidget(this);
+    m_table->setAlternatingRowColors(true);
+    m_table->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    m_table->horizontalHeader()->setStretchLastSection(false);
+    m_table->verticalHeader()->setVisible(false);
+    m_table->setSelectionBehavior(QAbstractItemView::SelectRows);
+    m_table->setSelectionMode(QAbstractItemView::SingleSelection);
+    m_table->setEditTriggers(QAbstractItemView::DoubleClicked);
+    root->addWidget(m_table);
+
+    connect(m_btnNova,    &QPushButton::clicked, this, &ParcelasWidget::onNovaCompra);
+    connect(m_btnExcluir, &QPushButton::clicked, this, &ParcelasWidget::onExcluir);
+    connect(btnOrganizar, &QPushButton::clicked, this, &ParcelasWidget::onOrganizarPor);
+
+    connect(m_table->horizontalHeader(), &QHeaderView::sectionClicked,
+            this, &ParcelasWidget::onHeaderClicked);
+    connect(m_table->selectionModel(), &QItemSelectionModel::selectionChanged,
+            this, [this]() {
+                m_btnExcluir->setEnabled(!m_table->selectedItems().isEmpty()
+                    && m_table->currentRow() < m_table->rowCount() - 1); // not Total row
+            });
+    connect(m_table, &QTableWidget::cellChanged, this, &ParcelasWidget::onCellChanged);
+}
+
+void ParcelasWidget::recarregar()
+{
+    m_loading = true;
+
+    CompraRepository  cr;
+    ParcelaRepository pr;
+
+    // Load cartoes for display
+    m_cartoes.clear();
+    QSqlQuery qc(QStringLiteral(
+        "SELECT id, apelido FROM cartoes ORDER BY apelido"),
+        DatabaseManager::instance().db());
+    while (qc.next()) {
+        Cartao c;
+        c.id      = qc.value(0).toInt();
+        c.apelido = qc.value(1).toString();
+        m_cartoes.append(c);
+    }
+
+    m_compras           = cr.findAll();
+    m_parcelasPorCompra.clear();
+    for (const auto &c : m_compras)
+        m_parcelasPorCompra.append(pr.findByCompra(c.id));
+
+    // Compute month range
+    m_firstMonth  = m_currentMonth;
+    m_lastMonth   = m_currentMonth.addMonths(3);
+
+    for (int i = 0; i < m_compras.size(); ++i) {
+        const auto &parcelas = m_parcelasPorCompra[i];
+        if (parcelas.isEmpty()) continue;
+        const auto &first = parcelas.first();
+        const auto &last  = parcelas.last();
+        QDate df = ParcelaService::dataParaParcela(m_compras[i], first.numero);
+        QDate dl = ParcelaService::dataParaParcela(m_compras[i], last.numero);
+        if (df < m_firstMonth) m_firstMonth = df;
+        if (dl > m_lastMonth)  m_lastMonth  = dl;
+    }
+
+    populateTable();
+    aplicarOrdenacao();
+    m_loading = false;
+}
+
+QDate ParcelasWidget::dateForColumn(int col) const
+{
+    // col 0..2 = Nome, Cartão, Total
+    // col COL_FIRST_MONTH + k = m_firstMonth.addMonths(k)
+    if (col < COL_FIRST_MONTH) return QDate();
+    return m_firstMonth.addMonths(col - COL_FIRST_MONTH);
+}
+
+int ParcelasWidget::columnForDate(const QDate &date) const
+{
+    int months = m_firstMonth.daysTo(date) > 0
+        ? (date.year() - m_firstMonth.year()) * 12 + (date.month() - m_firstMonth.month())
+        : -1;
+    if (months < 0) return -1;
+    return COL_FIRST_MONTH + months;
+}
+
+void ParcelasWidget::populateTable()
+{
+    m_table->blockSignals(true);
+    m_table->clearContents();
+
+    // Calculate total months to show
+    int totalMonths = (m_lastMonth.year()  - m_firstMonth.year()) * 12
+                    + (m_lastMonth.month() - m_firstMonth.month()) + 1;
+    totalMonths = qMax(totalMonths, 6);
+
+    const int cols = COL_FIRST_MONTH + totalMonths;
+    m_table->setColumnCount(cols);
+    m_table->setRowCount(m_compras.size() + 1); // +1 for Total row
+
+    // Headers
+    QStringList headers;
+    headers << QStringLiteral("Descrição")
+            << QStringLiteral("Cartão")
+            << QStringLiteral("Total pago");
+    for (int k = 0; k < totalMonths; ++k) {
+        const QDate d = m_firstMonth.addMonths(k);
+        headers << d.toString(QStringLiteral("MMM/yy"));
+    }
+    m_table->setHorizontalHeaderLabels(headers);
+
+    // Highlight current month header
+    const int curCol = columnForDate(m_currentMonth);
+    if (curCol >= 0) {
+        auto *hdr = new QTableWidgetItem(
+            m_currentMonth.toString(QStringLiteral("MMM/yy")) + QStringLiteral(" ●"));
+        m_table->setHorizontalHeaderItem(curCol, hdr);
+    }
+
+    // Fill rows
+    QList<qint64> monthTotals(totalMonths, 0LL);
+
+    for (int r = 0; r < m_compras.size(); ++r) {
+        const auto &c       = m_compras[r];
+        const auto &parcelas = m_parcelasPorCompra[r];
+
+        // Col 0: nome — store compra id in UserRole
+        auto *itNome = new QTableWidgetItem(c.nome);
+        itNome->setData(Qt::UserRole, c.id);
+        m_table->setItem(r, COL_NOME, itNome);
+
+        // Col 1: cartao
+        QString cartaoNome;
+        for (const auto &ct : m_cartoes)
+            if (ct.id == c.cartaoId) { cartaoNome = ct.apelido; break; }
+        m_table->setItem(r, COL_CARTAO, new QTableWidgetItem(cartaoNome));
+
+        // Col 2: total (sum of all parcelas)
+        qint64 total = 0;
+        for (const auto &p : parcelas) total += p.valor;
+        auto *itTotal = new QTableWidgetItem(
+            ParcelaService::formatarValor(total, c.moeda));
+        itTotal->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        itTotal->setFlags(itTotal->flags() & ~Qt::ItemIsEditable);
+        m_table->setItem(r, COL_TOTAL, itTotal);
+
+        // Month columns
+        for (const auto &p : parcelas) {
+            const QDate d   = ParcelaService::dataParaParcela(c, p.numero);
+            const int   col = columnForDate(d);
+            if (col < 0 || col >= cols) continue;
+
+            const int k = col - COL_FIRST_MONTH;
+            monthTotals[k] += p.valor;
+
+            auto *cell = new QTableWidgetItem(
+                ParcelaService::formatarValor(p.valor, c.moeda));
+            cell->setData(Qt::UserRole, p.id);
+            cell->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+            if (p.modificada) {
+                cell->setForeground(QColor(Theme::acento()));
+            }
+            m_table->setItem(r, col, cell);
+        }
+    }
+
+    // Total row
+    const int totalRow = m_compras.size();
+    auto *lblTotal = new QTableWidgetItem(QStringLiteral("TOTAL"));
+    lblTotal->setFlags(lblTotal->flags() & ~Qt::ItemIsEditable);
+    QFont f = lblTotal->font();
+    f.setBold(true);
+    lblTotal->setFont(f);
+    m_table->setItem(totalRow, COL_NOME, lblTotal);
+
+    for (int k = 0; k < totalMonths; ++k) {
+        if (monthTotals[k] == 0) continue;
+        auto *cell = new QTableWidgetItem(
+            ParcelaService::formatarValor(monthTotals[k], QStringLiteral("BRL")));
+        cell->setFlags(cell->flags() & ~Qt::ItemIsEditable);
+        cell->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        QFont bf = cell->font();
+        bf.setBold(true);
+        cell->setFont(bf);
+        m_table->setItem(totalRow, COL_FIRST_MONTH + k, cell);
+    }
+
+    // Scroll to current month
+    if (curCol >= 0)
+        m_table->scrollTo(m_table->model()->index(0, curCol),
+                          QAbstractItemView::PositionAtTop);
+
+    m_table->blockSignals(false);
+
+    m_lblStatus->setText(QStringLiteral("%1 compra(s)").arg(m_compras.size()));
+}
+
+void ParcelasWidget::aplicarOrdenacao()
+{
+    if (m_sortLevels.isEmpty() && m_lastClickedCol < 0) return;
+
+    const int totalRow = m_compras.size(); // last row = Total, don't sort it
+    if (totalRow <= 1) return;
+
+    // Build sort order using QtAlgorithm on row indices
+    QList<int> rows;
+    for (int i = 0; i < totalRow; ++i) rows.append(i);
+
+    std::stable_sort(rows.begin(), rows.end(), [&](int a, int b) {
+        // Apply sort levels in order
+        const auto levels = m_sortLevels.isEmpty()
+            ? QList<SortLevel>{{m_lastClickedCol, m_sortAsc}}
+            : m_sortLevels;
+
+        for (const auto &lvl : levels) {
+            if (lvl.coluna < 0) continue;
+            auto *ia = m_table->item(a, lvl.coluna);
+            auto *ib = m_table->item(b, lvl.coluna);
+            const QString va = ia ? ia->text() : QString();
+            const QString vb = ib ? ib->text() : QString();
+            if (va != vb)
+                return lvl.crescente ? va < vb : va > vb;
+        }
+        return false;
+    });
+
+    // Re-order rows in table (swap QTableWidgetItems)
+    m_table->blockSignals(true);
+    // Save all items
+    const int cols = m_table->columnCount();
+    QList<QList<QTableWidgetItem*>> saved(totalRow, QList<QTableWidgetItem*>(cols, nullptr));
+    for (int r = 0; r < totalRow; ++r)
+        for (int c = 0; c < cols; ++c)
+            saved[r][c] = m_table->takeItem(r, c);
+
+    for (int newRow = 0; newRow < totalRow; ++newRow)
+        for (int c = 0; c < cols; ++c)
+            m_table->setItem(newRow, c, saved[rows[newRow]][c]);
+
+    m_table->blockSignals(false);
+}
+
+void ParcelasWidget::onNovaCompra()
+{
+    AddCompraDialog dlg(m_cartoes, this);
+    if (dlg.exec() != QDialog::Accepted) return;
+
+    Compra compra = dlg.compra();
+    QList<Parcela> parcelas = dlg.parcelas();
+
+    CompraRepository  cr;
+    ParcelaRepository pr;
+
+    if (!cr.insert(compra)) {
+        QMessageBox::warning(this, QStringLiteral("Erro"),
+                             QStringLiteral("Não foi possível salvar a compra."));
+        return;
+    }
+    for (auto &p : parcelas) {
+        p.compraId = compra.id;
+        pr.insert(p);
+    }
+
+    recarregar();
+    emit dadosAlterados();
+}
+
+void ParcelasWidget::onExcluir()
+{
+    const int row = m_table->currentRow();
+    if (row < 0 || row >= m_compras.size()) return;
+
+    const int id   = m_compras[row].id;
+    const QString nome = m_compras[row].nome;
+
+    if (QMessageBox::question(this,
+            QStringLiteral("Confirmar exclusão"),
+            QStringLiteral("Excluir \"%1\" e todas as suas parcelas?").arg(nome))
+        != QMessageBox::Yes) return;
+
+    CompraRepository cr;
+    cr.remove(id); // CASCADE removes parcelas
+
+    recarregar();
+    emit dadosAlterados();
+}
+
+void ParcelasWidget::onHeaderClicked(int col)
+{
+    if (col < COL_NOME) return;
+    if (m_lastClickedCol == col) {
+        m_sortAsc = !m_sortAsc;
+    } else {
+        m_lastClickedCol = col;
+        m_sortAsc = false; // first click = descending
+    }
+    m_sortLevels.clear(); // header click overrides multi-sort
+    aplicarOrdenacao();
+}
+
+void ParcelasWidget::onOrganizarPor()
+{
+    // Dialog with 3 combo boxes for sort levels
+    QDialog dlg(this);
+    dlg.setWindowTitle(QStringLiteral("Organizar por"));
+    auto *form = new QFormLayout(&dlg);
+    form->setContentsMargins(20, 20, 20, 20);
+    form->setSpacing(12);
+
+    QStringList colNames;
+    colNames << QStringLiteral("—") << QStringLiteral("Descrição")
+             << QStringLiteral("Cartão") << QStringLiteral("Total");
+    for (int k = 0; k < m_table->columnCount() - COL_FIRST_MONTH; ++k)
+        colNames << m_firstMonth.addMonths(k).toString(QStringLiteral("MMM/yy"));
+
+    auto makeCombo = [&]() {
+        auto *cb = new QComboBox(&dlg);
+        cb->addItems(colNames);
+        return cb;
+    };
+
+    auto *cb1 = makeCombo(); form->addRow(QStringLiteral("Primeiro por"), cb1);
+    auto *cb2 = makeCombo(); form->addRow(QStringLiteral("Segundo por"),  cb2);
+    auto *cb3 = makeCombo(); form->addRow(QStringLiteral("Terceiro por"), cb3);
+
+    auto *btns = new QDialogButtonBox(
+        QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dlg);
+    form->addRow(btns);
+    connect(btns, &QDialogButtonBox::accepted, &dlg, &QDialog::accept);
+    connect(btns, &QDialogButtonBox::rejected, &dlg, &QDialog::reject);
+
+    if (dlg.exec() != QDialog::Accepted) return;
+
+    auto idxToCol = [&](int comboIdx) -> int {
+        // 0=—, 1=Descrição(0), 2=Cartão(1), 3=Total(2), 4+=months
+        if (comboIdx == 0) return -1;
+        return comboIdx - 1;
+    };
+
+    m_sortLevels.clear();
+    for (auto *cb : {cb1, cb2, cb3}) {
+        const int col = idxToCol(cb->currentIndex());
+        if (col >= 0)
+            m_sortLevels.append({col, true});
+    }
+    m_lastClickedCol = -1;
+    aplicarOrdenacao();
+}
+
+void ParcelasWidget::onCellChanged(int row, int col)
+{
+    if (m_loading) return;
+    if (col < COL_FIRST_MONTH) return;
+    if (row >= m_compras.size()) return; // Total row
+
+    auto *cell = m_table->item(row, col);
+    if (!cell) return;
+
+    const qint64 novoValor = ParcelaService::parsearValor(cell->text());
+
+    // Find which parcela this cell represents
+    const auto &compra   = m_compras[row];
+    auto        parcelas = m_parcelasPorCompra[row];
+    const QDate cellDate = dateForColumn(col);
+
+    int parcelaIndex = -1;
+    for (int k = 0; k < parcelas.size(); ++k) {
+        if (ParcelaService::dataParaParcela(compra, parcelas[k].numero) == cellDate) {
+            parcelaIndex = k;
+            break;
+        }
+    }
+    if (parcelaIndex < 0) return;
+
+    // Ask how to recalculate
+    QDialog dlg(this);
+    dlg.setWindowTitle(QStringLiteral("Atualizar parcelas"));
+    auto *layout = new QVBoxLayout(&dlg);
+    layout->setContentsMargins(20, 20, 20, 20);
+    layout->setSpacing(12);
+    layout->addWidget(new QLabel(
+        QStringLiteral("Como deseja atualizar as demais parcelas?"), &dlg));
+
+    auto *grp = new QGroupBox(&dlg);
+    auto *vl  = new QVBoxLayout(grp);
+    auto *rSo     = new QRadioButton(QStringLiteral("Alterar só esta parcela"), &dlg);
+    auto *rRedist = new QRadioButton(QStringLiteral("Redistribuir diferença nas demais"), &dlg);
+    auto *rJuros  = new QRadioButton(QStringLiteral("Recalcular juros a partir daqui"), &dlg);
+    rSo->setChecked(true);
+    vl->addWidget(rSo);
+    vl->addWidget(rRedist);
+    vl->addWidget(rJuros);
+    layout->addWidget(grp);
+
+    auto *btns = new QDialogButtonBox(
+        QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dlg);
+    layout->addWidget(btns);
+    connect(btns, &QDialogButtonBox::accepted, &dlg, &QDialog::accept);
+    connect(btns, &QDialogButtonBox::rejected, &dlg, &QDialog::reject);
+
+    if (dlg.exec() != QDialog::Accepted) {
+        recarregar(); // revert
+        return;
+    }
+
+    auto modo = ParcelaService::RecalcMode::SoEsta;
+    if (rRedist->isChecked()) modo = ParcelaService::RecalcMode::RedistribuirDiff;
+    if (rJuros->isChecked())  modo = ParcelaService::RecalcMode::RecalcJuros;
+
+    const QList<Parcela> novas = ParcelaService::recalcularAposEdicao(
+        parcelas, parcelaIndex, novoValor, modo, compra.valorTotal);
+
+    ParcelaRepository pr;
+    pr.replaceAll(compra.id, novas);
+
+    recarregar();
+    emit dadosAlterados();
+}

@@ -1,58 +1,40 @@
-#include "ui/MainWindow.h"
+#include "MainWindow.h"
+#include "widgets/ParcelasWidget.h"
+#include "widgets/ConfigWidget.h"
+#include "core/session/UserSession.h"
 
-#include "ui/ConfigWidget.h"
-#include "ui/DashboardWidget.h"
-#include "ui/EntradasWidget.h"
-#include "ui/GastosFixosWidget.h"
-#include "ui/GastosVariaveisWidget.h"
-
+#include <QTabWidget>
+#include <QLabel>
 #include <QStatusBar>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
-    setWindowTitle("Orçamento Pessoal");
-    resize(1200, 800);
+    setWindowTitle(QStringLiteral("Orçamento Pessoal"));
     setMinimumSize(900, 600);
-
-    m_tabs            = new QTabWidget(this);
-    m_dashboard       = new DashboardWidget(this);
-    m_entradas        = new EntradasWidget(this);
-    m_gastosFixos     = new GastosFixosWidget(this);
-    m_gastosVariaveis = new GastosVariaveisWidget(this);
-    m_config          = new ConfigWidget(this);
-
-    m_tabs->addTab(m_dashboard,       "Dashboard");
-    m_tabs->addTab(m_entradas,        "Entradas");
-    m_tabs->addTab(m_gastosFixos,     "Gastos Fixos");
-    m_tabs->addTab(m_gastosVariaveis, "Gastos Variáveis");
-    m_tabs->addTab(m_config,          "Configurações");
-
-    setCentralWidget(m_tabs);
-    statusBar()->hide();
-
-    conectarSinais();
+    buildUi();
 }
 
-void MainWindow::conectarSinais()
+void MainWindow::buildUi()
 {
-    // Qualquer alteração de dados recalcula o dashboard
-    auto refresh = [this]() { m_dashboard->atualizar(); };
+    m_tabs = new QTabWidget(this);
+    setCentralWidget(m_tabs);
 
-    connect(m_entradas,        &EntradasWidget::dadosAlterados,        this, refresh);
-    connect(m_gastosFixos,     &GastosFixosWidget::dadosAlterados,     this, refresh);
-    connect(m_gastosVariaveis, &GastosVariaveisWidget::dadosAlterados, this, refresh);
-    connect(m_config, &ConfigWidget::categoriasAlteradas, this, refresh);
+    m_parcelas = new ParcelasWidget(this);
+    m_tabs->addTab(m_parcelas, QStringLiteral("Parcelas"));
 
-    // Quando categorias mudam, recarrega os combos dos widgets de gastos
-    connect(m_config, &ConfigWidget::categoriasAlteradas,
-            m_gastosFixos,     &GastosFixosWidget::recarregarCategorias);
-    connect(m_config, &ConfigWidget::categoriasAlteradas,
-            m_gastosVariaveis, &GastosVariaveisWidget::recarregarCategorias);
+    m_config = new ConfigWidget(this);
+    m_tabs->addTab(m_config, QStringLiteral("Configurações"));
 
-    // Ao trocar para a aba Dashboard, sempre recalcula
-    connect(m_tabs, &QTabWidget::currentChanged, this, [this](int idx) {
-        if (m_tabs->widget(idx) == m_dashboard)
-            m_dashboard->atualizar();
-    });
+    // Status bar
+    m_statusUser = new QLabel(this);
+    const QString name = UserSession::instance().name();
+    m_statusUser->setText(QStringLiteral("  Usuário: %1").arg(name));
+    statusBar()->addWidget(m_statusUser);
+
+    // Connections
+    connect(m_config, &ConfigWidget::cartoesAlterados,
+            m_parcelas, &ParcelasWidget::recarregar);
+    connect(m_parcelas, &ParcelasWidget::dadosAlterados,
+            m_parcelas, &ParcelasWidget::recarregar);
 }

@@ -1,28 +1,22 @@
 #pragma once
 
 #include <QMainWindow>
-#include <QTabWidget>
 
-class DashboardWidget;
-class EntradasWidget;
-class GastosFixosWidget;
-class GastosVariaveisWidget;
+class ParcelasWidget;
 class ConfigWidget;
+class QTabWidget;
+class QLabel;
 
-class MainWindow : public QMainWindow
-{
+class MainWindow final : public QMainWindow {
     Q_OBJECT
-
 public:
     explicit MainWindow(QWidget *parent = nullptr);
 
 private:
-    void conectarSinais();
+    void buildUi();
 
-    QTabWidget            *m_tabs;
-    DashboardWidget       *m_dashboard;
-    EntradasWidget        *m_entradas;
-    GastosFixosWidget     *m_gastosFixos;
-    GastosVariaveisWidget *m_gastosVariaveis;
-    ConfigWidget          *m_config;
+    QTabWidget     *m_tabs     = nullptr;
+    ParcelasWidget *m_parcelas = nullptr;
+    ConfigWidget   *m_config   = nullptr;
+    QLabel         *m_statusUser = nullptr;
 };
