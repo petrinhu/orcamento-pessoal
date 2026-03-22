@@ -30,6 +30,10 @@ public:
 
     void recarregar();
 
+public slots:
+    void copiar();
+    void selecionarTudo();
+
 signals:
     void dadosAlterados();
 

@@ -25,6 +25,8 @@
 #include <QMenu>
 #include <QSqlQuery>
 #include <QDebug>
+#include <QApplication>
+#include <QClipboard>
 #include <algorithm>
 
 ParcelasWidget::ParcelasWidget(QWidget *parent)
@@ -83,6 +85,39 @@ void ParcelasWidget::buildUi()
                     && m_table->currentRow() < m_table->rowCount() - 1); // not Total row
             });
     connect(m_table, &QTableWidget::cellChanged, this, &ParcelasWidget::onCellChanged);
+}
+
+void ParcelasWidget::selecionarTudo()
+{
+    m_table->selectAll();
+    m_table->setFocus();
+}
+
+void ParcelasWidget::copiar()
+{
+    const auto items = m_table->selectedItems();
+    if (items.isEmpty()) return;
+
+    int minRow = items.first()->row(), maxRow = items.first()->row();
+    int minCol = items.first()->column(), maxCol = items.first()->column();
+    for (const auto *it : items) {
+        minRow = qMin(minRow, it->row());
+        maxRow = qMax(maxRow, it->row());
+        minCol = qMin(minCol, it->column());
+        maxCol = qMax(maxCol, it->column());
+    }
+
+    QString tsv;
+    for (int r = minRow; r <= maxRow; ++r) {
+        QStringList row;
+        for (int c = minCol; c <= maxCol; ++c) {
+            const auto *it = m_table->item(r, c);
+            row << (it ? it->text() : QString());
+        }
+        tsv += row.join(QLatin1Char('\t'));
+        tsv += QLatin1Char('\n');
+    }
+    QApplication::clipboard()->setText(tsv);
 }
 
 void ParcelasWidget::recarregar()

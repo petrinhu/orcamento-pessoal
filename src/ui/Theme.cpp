@@ -2,33 +2,33 @@
 
 #include <QApplication>
 #include <QFontDatabase>
+#include <QStyleFactory>
 #include <QStyleHints>
 #include <QPalette>
 
 namespace Theme {
 
-// ── Palette: GitHub-inspired, optimised for long-duration use ────────────────
-// Light = GitHub Light Default; Dark = GitHub Dark Default
+// ── Palette: Forest Neutral — soft, friendly, low-fatigue ─────────────────────
 namespace Color {
     // Light
-    const QString BgLight       = QStringLiteral("#F6F8FA");
+    const QString BgLight       = QStringLiteral("#F5F4F0");
     const QString SurfaceLight  = QStringLiteral("#FFFFFF");
-    const QString BorderLight   = QStringLiteral("#D0D7DE");
-    const QString TextLight     = QStringLiteral("#1F2328");
-    const QString SubtextLight  = QStringLiteral("#656D76");
-    const QString AccentLight   = QStringLiteral("#1A7F37");  // muted forest green
-    const QString PositiveLight = QStringLiteral("#1A7F37");
-    const QString NegativeLight = QStringLiteral("#CF222E");
+    const QString BorderLight   = QStringLiteral("#D8E0D9");
+    const QString TextLight     = QStringLiteral("#1A2E22");
+    const QString SubtextLight  = QStringLiteral("#667A6E");
+    const QString AccentLight   = QStringLiteral("#166F4A");
+    const QString PositiveLight = QStringLiteral("#166F4A");
+    const QString NegativeLight = QStringLiteral("#C0392B");
 
     // Dark
-    const QString BgDark        = QStringLiteral("#0D1117");
-    const QString SurfaceDark   = QStringLiteral("#161B22");
-    const QString BorderDark    = QStringLiteral("#30363D");
-    const QString TextDark      = QStringLiteral("#C9D1D9");  // not pure white — less tiring
-    const QString SubtextDark   = QStringLiteral("#8B949E");
-    const QString AccentDark    = QStringLiteral("#3FB950");  // soft green for dark bg
-    const QString PositiveDark  = QStringLiteral("#3FB950");
-    const QString NegativeDark  = QStringLiteral("#F85149");
+    const QString BgDark        = QStringLiteral("#181A17");
+    const QString SurfaceDark   = QStringLiteral("#1E2420");
+    const QString BorderDark    = QStringLiteral("#2B3830");
+    const QString TextDark      = QStringLiteral("#D8E0D8");
+    const QString SubtextDark   = QStringLiteral("#7A9485");
+    const QString AccentDark    = QStringLiteral("#22A367");
+    const QString PositiveDark  = QStringLiteral("#22A367");
+    const QString NegativeDark  = QStringLiteral("#E05555");
 }
 
 // ── ThemeMode state ───────────────────────────────────────────────────────────
@@ -77,11 +77,18 @@ static QString gerarQss()
     const QString txt  = dark ? Color::TextDark     : Color::TextLight;
     const QString sub  = dark ? Color::SubtextDark  : Color::SubtextLight;
     const QString neg  = dark ? Color::NegativeDark : Color::NegativeLight;
-    // Alternating row: very subtle — half-way between bg and surface
-    const QString alt  = dark ? QStringLiteral("#0D1117") : QStringLiteral("#F0F3F6");
+    // Alternating row — very subtle
+    const QString alt  = dark ? QStringLiteral("#1B2118") : QStringLiteral("#F0F4F0");
+    // Tab gradient stops (inactive tabs get subtle 3-D gradient)
+    const QString tabTop = dark ? QStringLiteral("#252C22") : QStringLiteral("#ECEEEB");
+    const QString tabBot = dark ? QStringLiteral("#1D2419") : QStringLiteral("#DFE3DC");
+    // Button gradient (slight depth without being garish)
+    const QString btnBot = dark ? QStringLiteral("#1C2319") : QStringLiteral("#E8EDE7");
 
-    // %1=txt %2=bg %3=surf %4=acc %5=sub %6=neg %7=brd %8=alt
-    return QStringLiteral(R"(
+    // %1=txt  %2=bg   %3=surf  %4=acc  %5=sub  %6=neg
+    // %7=brd  %8=alt  %9=tabTop  (chained .arg below handles %10..%12)
+    QString qss = QStringLiteral(R"(
+        /* ── Base ── */
         QWidget {
             font-family: "Inter";
             font-size: 13px;
@@ -91,7 +98,37 @@ static QString gerarQss()
         QMainWindow, QDialog {
             background-color: %2;
         }
-        QFrame#surface, QGroupBox {
+        /* ── Menu bar ── */
+        QMenuBar {
+            background-color: %2;
+            border-bottom: 1px solid %7;
+            padding: 1px 0;
+        }
+        QMenuBar::item {
+            padding: 4px 10px;
+            background: transparent;
+            border-radius: 4px;
+        }
+        QMenuBar::item:selected { background-color: %9; }
+        QMenuBar::item:pressed  { background-color: %7; }
+        /* ── Menus ── */
+        QMenu {
+            background-color: %3;
+            border: 1px solid %7;
+            border-radius: 6px;
+            padding: 4px 0;
+        }
+        QMenu::item {
+            padding: 5px 28px 5px 16px;
+            border-radius: 4px;
+            margin: 1px 4px;
+        }
+        QMenu::item:selected { background-color: %4; color: white; }
+        QMenu::item:disabled { color: %5; }
+        QMenu::separator { height: 1px; background: %7; margin: 3px 8px; }
+        QMenu::indicator { width: 14px; height: 14px; }
+        /* ── Frames / surfaces ── */
+        QFrame#surface {
             background-color: %3;
             border-radius: 8px;
             border: 1px solid %7;
@@ -105,29 +142,30 @@ static QString gerarQss()
             padding: 6px 18px;
             font-weight: 500;
         }
-        QPushButton#primary:hover  { background-color: %4; }
+        QPushButton#primary:hover   { background-color: %4; opacity: 0.9; }
         QPushButton#primary:pressed { background-color: %4; }
         QPushButton {
-            background-color: transparent;
+            background: qlineargradient(x1:0,y1:0,x2:0,y2:1,
+                stop:0 %3, stop:1 %10);
             border: 1px solid %7;
             border-radius: 6px;
             padding: 5px 14px;
             color: %1;
         }
         QPushButton:hover  { border-color: %4; color: %4; }
-        QPushButton:pressed { background-color: %3; }
-        QPushButton#themeBtn {
+        QPushButton:pressed { background: %9; }
+        QPushButton:disabled { color: %5; border-color: %7; }
+        /* ── Theme cycle button ── */
+        QToolButton#themeBtn {
             border: none;
-            padding: 4px 10px;
-            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 4px;
             color: %5;
+            font-size: 14px;
+            background: transparent;
         }
-        QPushButton#themeBtn:checked {
-            color: %4;
-            font-weight: 600;
-            border-bottom: 2px solid %4;
-        }
-        QPushButton#themeBtn:hover { color: %1; }
+        QToolButton#themeBtn:hover { background-color: %9; color: %1; }
+        QToolButton#themeBtn:pressed { background-color: %7; }
         /* ── Inputs ── */
         QLineEdit, QSpinBox, QDoubleSpinBox, QComboBox, QDateEdit {
             background-color: %3;
@@ -135,11 +173,25 @@ static QString gerarQss()
             border-radius: 6px;
             padding: 5px 8px;
             color: %1;
+            selection-background-color: %4;
         }
         QLineEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus,
         QComboBox:focus, QDateEdit:focus {
             border-color: %4;
-            outline: none;
+        }
+        QComboBox::drop-down {
+            border: none;
+            width: 20px;
+        }
+        QComboBox::down-arrow {
+            width: 10px;
+            height: 10px;
+        }
+        QComboBox QAbstractItemView {
+            background: %3;
+            border: 1px solid %7;
+            selection-background-color: %4;
+            selection-color: white;
         }
         /* ── Table ── */
         QTableWidget {
@@ -147,7 +199,7 @@ static QString gerarQss()
             alternate-background-color: %8;
             gridline-color: %7;
             border: 1px solid %7;
-            border-radius: 6px;
+            border-radius: 0px;
         }
         QTableWidget::item {
             padding: 4px 8px;
@@ -157,6 +209,9 @@ static QString gerarQss()
         QTableWidget::item:selected {
             background-color: %4;
             color: white;
+        }
+        QHeaderView {
+            background-color: %2;
         }
         QHeaderView::section {
             background-color: %2;
@@ -177,25 +232,28 @@ static QString gerarQss()
         QStatusBar { background-color: %2; color: %5; border-top: 1px solid %7; }
         /* ── Tabs ── */
         QTabWidget::pane {
+            background-color: %3;
             border: 1px solid %7;
             border-top: none;
         }
         QTabBar::tab {
-            background: %2;
+            background: qlineargradient(x1:0,y1:0,x2:0,y2:1,
+                stop:0 %9, stop:1 %10);
             color: %5;
-            padding: 8px 20px;
+            padding: 7px 20px;
             border: 1px solid %7;
             border-bottom: none;
-            border-top-left-radius: 6px;
-            border-top-right-radius: 6px;
+            border-top-left-radius: 5px;
+            border-top-right-radius: 5px;
             margin-right: 2px;
         }
         QTabBar::tab:selected {
+            background-color: %3;
             color: %1;
-            background: %3;
-            border-bottom: 2px solid %4;
+            border-top: 2px solid %4;
+            margin-top: -1px;
         }
-        QTabBar::tab:hover { color: %1; }
+        QTabBar::tab:hover:!selected { color: %1; }
         /* ── Scroll bars ── */
         QScrollBar:vertical {
             background: %2; width: 8px; margin: 0;
@@ -208,8 +266,28 @@ static QString gerarQss()
         }
         QScrollBar::handle:hover { background: %5; }
         QScrollBar::add-line, QScrollBar::sub-line { height: 0; width: 0; }
+        /* ── GroupBox (config widget) ── */
+        QGroupBox {
+            border: 1px solid %7;
+            border-radius: 6px;
+            margin-top: 1.2em;
+            padding-top: 8px;
+        }
+        QGroupBox::title {
+            subcontrol-origin: margin;
+            subcontrol-position: top left;
+            padding: 0 6px;
+            color: %5;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        /* ── Dialog button boxes ── */
+        QDialogButtonBox QPushButton { min-width: 80px; }
     )")
-    .arg(txt, bg, surf, acc, sub, neg, brd, alt);
+    .arg(txt, bg, surf, acc, sub, neg, brd, alt, tabTop)
+    .arg(tabBot, btnBot);
+
+    return qss;
 }
 
 // ── Public API ────────────────────────────────────────────────────────────────
@@ -222,6 +300,11 @@ void setMode(ThemeMode mode)
 
 void aplicar()
 {
+    // Fusion as base: eliminates platform-native rendering artefacts
+    // (focus rings, coloured borders, hover decorations) that conflict
+    // with our custom QSS on KDE/Breeze, GNOME/Adwaita, etc.
+    QApplication::setStyle(QStyleFactory::create(QStringLiteral("Fusion")));
+
     carregarFontes();
 
     QFont font(QStringLiteral("Inter"), 13);

@@ -20,6 +20,7 @@ private:
     void buildMenuBar();
     void buildThemeBar();
     void applyThemeMode(Theme::ThemeMode mode);
+    void updateThemeButton();
 
     // Arquivo
     void onAbrir();
@@ -45,8 +46,6 @@ private:
     ConfigWidget   *m_config     = nullptr;
     QLabel         *m_statusUser = nullptr;
 
-    // Theme toggle buttons
-    QToolButton *m_btnLight = nullptr;
-    QToolButton *m_btnAuto  = nullptr;
-    QToolButton *m_btnDark  = nullptr;
+    // Theme cycle button (Auto → Light → Dark → Auto)
+    QToolButton *m_btnTheme = nullptr;
 };

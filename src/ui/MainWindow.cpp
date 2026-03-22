@@ -23,7 +23,6 @@
 #include <QMessageBox>
 #include <QApplication>
 #include <QClipboard>
-#include <QKeyEvent>
 #include <QDialog>
 #include <QVBoxLayout>
 #include <QDialogButtonBox>
@@ -182,56 +181,53 @@ void MainWindow::buildThemeBar()
     auto *corner  = new QWidget(this);
     auto *hLayout = new QHBoxLayout(corner);
     hLayout->setContentsMargins(0, 4, 8, 0);
-    hLayout->setSpacing(2);
+    hLayout->setSpacing(0);
 
-    struct BtnDef { QString label; QString tip; Theme::ThemeMode mode; QString themeIcon; };
-    const QList<BtnDef> defs = {
-        { QStringLiteral("☀"),  QStringLiteral("Modo claro"),  Theme::ThemeMode::Light, QStringLiteral("weather-clear")         },
-        { QStringLiteral("◑"),  QStringLiteral("Modo auto"),   Theme::ThemeMode::Auto,  QStringLiteral("weather-partly-cloudy")  },
-        { QStringLiteral("☾"),  QStringLiteral("Modo escuro"), Theme::ThemeMode::Dark,  QStringLiteral("weather-clear-night")    },
-    };
+    m_btnTheme = new QToolButton(corner);
+    m_btnTheme->setObjectName(QStringLiteral("themeBtn"));
+    m_btnTheme->setAutoRaise(true);
+    hLayout->addWidget(m_btnTheme);
 
-    QToolButton **ptrs[3] = { &m_btnLight, &m_btnAuto, &m_btnDark };
-
-    for (int i = 0; i < 3; ++i) {
-        auto *btn = new QToolButton(corner);
-        const auto &def = defs[i];
-
-        // Prefer theme icon; fall back to Unicode label
-        const QIcon icon = QIcon::fromTheme(def.themeIcon);
-        if (icon.isNull()) {
-            btn->setText(def.label);
-            btn->setToolButtonStyle(Qt::ToolButtonTextOnly);
-        } else {
-            btn->setIcon(icon);
-            btn->setIconSize({20, 20});
-            btn->setToolButtonStyle(Qt::ToolButtonIconOnly);
+    connect(m_btnTheme, &QToolButton::clicked, this, [this]() {
+        Theme::ThemeMode next;
+        switch (Theme::currentMode()) {
+            case Theme::ThemeMode::Auto:  next = Theme::ThemeMode::Light; break;
+            case Theme::ThemeMode::Light: next = Theme::ThemeMode::Dark;  break;
+            case Theme::ThemeMode::Dark:  next = Theme::ThemeMode::Auto;  break;
         }
+        applyThemeMode(next);
+    });
 
-        btn->setToolTip(def.tip);
-        btn->setCheckable(true);
-        btn->setAutoRaise(true);
-        btn->setObjectName(QStringLiteral("themeBtn"));
-        hLayout->addWidget(btn);
-
-        *ptrs[i] = btn;
-
-        const Theme::ThemeMode mode = def.mode;
-        connect(btn, &QToolButton::clicked, this, [this, mode]() {
-            applyThemeMode(mode);
-        });
-    }
-
-    m_btnAuto->setChecked(true);
+    updateThemeButton();
     m_tabs->setCornerWidget(corner, Qt::TopRightCorner);
 }
 
 void MainWindow::applyThemeMode(Theme::ThemeMode mode)
 {
     Theme::setMode(mode);
-    m_btnLight->setChecked(mode == Theme::ThemeMode::Light);
-    m_btnAuto ->setChecked(mode == Theme::ThemeMode::Auto);
-    m_btnDark ->setChecked(mode == Theme::ThemeMode::Dark);
+    updateThemeButton();
+}
+
+void MainWindow::updateThemeButton()
+{
+    struct Def { const char *themeIcon; QString fallback; QString tip; };
+    static const Def defs[] = {
+        { "weather-partly-cloudy", QStringLiteral("◑"), QStringLiteral("Modo: automático  (clique → claro)") },
+        { "weather-clear",         QStringLiteral("☀"), QStringLiteral("Modo: claro  (clique → escuro)")      },
+        { "weather-clear-night",   QStringLiteral("☾"), QStringLiteral("Modo: escuro  (clique → automático)") },
+    };
+    // enum ThemeMode { Auto=0, Light=1, Dark=2 }
+    const auto &d = defs[static_cast<int>(Theme::currentMode())];
+    const QIcon icon = QIcon::fromTheme(QLatin1String(d.themeIcon));
+    if (icon.isNull()) {
+        m_btnTheme->setText(d.fallback);
+        m_btnTheme->setToolButtonStyle(Qt::ToolButtonTextOnly);
+    } else {
+        m_btnTheme->setIcon(icon);
+        m_btnTheme->setIconSize({20, 20});
+        m_btnTheme->setToolButtonStyle(Qt::ToolButtonIconOnly);
+    }
+    m_btnTheme->setToolTip(d.tip);
 }
 
 // ── Arquivo slots ─────────────────────────────────────────────────────────────
@@ -410,27 +406,9 @@ void MainWindow::onExportar(const QString &format)
 
 // ── Editar slots ──────────────────────────────────────────────────────────────
 
-void MainWindow::onCopiar()
-{
-    // Copy selected row(s) as tab-separated text
-    const auto *table = m_parcelas->findChild<QWidget*>(QString(), Qt::FindChildrenRecursively);
-    Q_UNUSED(table)
-    // Trigger native copy on the currently focused widget
-    QKeyEvent ev(QEvent::KeyPress, Qt::Key_C, Qt::ControlModifier);
-    QApplication::sendEvent(QApplication::focusWidget() ? QApplication::focusWidget() : this, &ev);
-}
-
-void MainWindow::onColar()
-{
-    QKeyEvent ev(QEvent::KeyPress, Qt::Key_V, Qt::ControlModifier);
-    QApplication::sendEvent(QApplication::focusWidget() ? QApplication::focusWidget() : this, &ev);
-}
-
-void MainWindow::onSelecionarTudo()
-{
-    QKeyEvent ev(QEvent::KeyPress, Qt::Key_A, Qt::ControlModifier);
-    QApplication::sendEvent(QApplication::focusWidget() ? QApplication::focusWidget() : this, &ev);
-}
+void MainWindow::onCopiar()        { m_parcelas->copiar(); }
+void MainWindow::onColar()         { /* sem suporte — paste requer contexto da célula */ }
+void MainWindow::onSelecionarTudo(){ m_parcelas->selecionarTudo(); }
 
 // ── Configurações slots ───────────────────────────────────────────────────────
 
