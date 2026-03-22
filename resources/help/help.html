@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { font-family: Inter, sans-serif; font-size: 13px; margin: 0; padding: 16px 24px; }
+  h1   { font-size: 18px; font-weight: 700; margin-bottom: 4px; color: #1A7F37; }
+  h2   { font-size: 14px; font-weight: 600; margin-top: 20px; margin-bottom: 6px; border-bottom: 1px solid #D0D7DE; padding-bottom: 3px; }
+  h3   { font-size: 13px; font-weight: 600; margin-top: 12px; margin-bottom: 4px; }
+  p    { margin: 4px 0 8px 0; line-height: 1.55; }
+  ul   { margin: 4px 0 8px 16px; line-height: 1.6; }
+  code { background: #F0F3F6; padding: 1px 5px; border-radius: 3px; font-size: 12px; }
+  table { border-collapse: collapse; margin: 8px 0; }
+  th, td { border: 1px solid #D0D7DE; padding: 5px 10px; font-size: 12px; }
+  th { background: #F0F3F6; font-weight: 600; }
+  .tip  { background: #EAFBEE; border-left: 3px solid #1A7F37; padding: 6px 10px; margin: 8px 0; border-radius: 0 4px 4px 0; }
+  .warn { background: #FFF5E6; border-left: 3px solid #E5A000; padding: 6px 10px; margin: 8px 0; border-radius: 0 4px 4px 0; }
+</style>
+</head>
+<body>
+
+<h1>PeuBud — Ajuda</h1>
+<p style="color:#656D76">Controle de parcelas do cartão de crédito</p>
+
+<h2>Começando</h2>
+<p>PeuBud exibe suas compras parceladas em uma tabela matricial:<br>
+<b>linhas</b> = compras · <b>colunas</b> = meses · <b>células</b> = valor da parcela naquele mês.</p>
+<p>O mês atual é a primeira coluna visível. Role para a esquerda para ver meses passados,
+e para a direita para ver meses futuros.</p>
+
+<h2>Adicionar uma compra</h2>
+<p>Clique em <b>+ Nova compra</b>. O diálogo tem três abas:</p>
+<ul>
+  <li><b>Valor por parcela</b> — informe o valor de cada parcela e a quantidade.</li>
+  <li><b>Valor total</b> — informe o total e a quantidade; o PeuBud calcula cada parcela.
+      Use "já é a Xª parcela" se a compra já está em andamento.</li>
+  <li><b>Com juros</b> — informe o total, a quantidade e a taxa mensal (ou o valor da parcela
+      para calcular a taxa automaticamente via Newton-Raphson). O PeuBud calcula o CET e os
+      juros totais.</li>
+</ul>
+<div class="tip">A prévia ao lado direito atualiza em tempo real conforme você preenche.</div>
+
+<h2>Editar uma parcela</h2>
+<p>Clique duas vezes em qualquer célula de valor para editar. Um diálogo pergunta como
+recalcular as demais parcelas:</p>
+<table>
+  <tr><th>Modo</th><th>O que faz</th></tr>
+  <tr><td>Só esta</td><td>Altera apenas a parcela clicada</td></tr>
+  <tr><td>Redistribuir diferença</td><td>Distribui a diferença entre as demais parcelas não editadas</td></tr>
+  <tr><td>Igualar todas</td><td>Aplica o novo valor a todas as parcelas e recalcula o total</td></tr>
+  <tr><td>Recalcular juros</td><td>Infere a nova taxa de juros e redistribui as parcelas restantes</td></tr>
+</table>
+
+<h2>Excluir uma compra</h2>
+<p>Selecione a linha desejada e clique em <b>Excluir</b>. Todas as parcelas são removidas
+automaticamente (ON DELETE CASCADE).</p>
+
+<h2>Organizar as compras</h2>
+<ul>
+  <li><b>Clique no cabeçalho de coluna</b> — ordena por aquela coluna (1º clique: desc, 2º: asc).</li>
+  <li><b>Botão "Organizar por ▾"</b> — define até 3 níveis de ordenação.</li>
+</ul>
+
+<h2>Cartões de crédito</h2>
+<p>Vá em <b>Configurações → Cartões</b> para cadastrar seus cartões (apelido).
+Ao adicionar uma compra, você pode associá-la a um cartão no campo "Cartão".</p>
+
+<h2>Tema (claro / escuro / auto)</h2>
+<p>Use os botões na barra superior direita: <b>☀ Claro</b>, <b>◑ Auto</b>, <b>☾ Escuro</b>.
+O modo <i>Auto</i> segue as configurações do sistema operacional.</p>
+
+<h2>Importar dados</h2>
+<p>Use <b>Arquivo → Importar de</b> para carregar transações de outros apps ou do seu banco:</p>
+<table>
+  <tr><th>Formato</th><th>Bancos que exportam</th></tr>
+  <tr><td>CSV</td><td>Todos (Nubank, Itaú, Bradesco, BB, CEF, C6...)</td></tr>
+  <tr><td>OFX / QFX</td><td>Todos os bancos brasileiros</td></tr>
+  <tr><td>XLSX / XLS</td><td>Bradesco, Itaú, BB, Santander</td></tr>
+  <tr><td>JSON</td><td>Nubank, MercadoPago, PicPay</td></tr>
+  <tr><td>TXT / CNAB</td><td>CEF, BB, Bradesco (banking corporativo)</td></tr>
+</table>
+<div class="warn">Cada linha/transação importada vira uma compra com 1 parcela. Edite manualmente para
+converter em parcelamentos.</div>
+
+<h2>Exportar dados</h2>
+<p>Use <b>Arquivo → Exportar</b> para salvar sua planilha nos formatos:</p>
+<ul>
+  <li><b>PDF</b> — relatório pronto para impressão</li>
+  <li><b>XLSX / XLS</b> — abre no LibreOffice Calc e Microsoft Excel</li>
+  <li><b>CSV</b> — separador <code>;</code>, decimal <code>,</code> (padrão brasileiro)</li>
+  <li><b>OFX</b> — importável em outros apps financeiros</li>
+  <li><b>JSON</b> — formato estruturado para desenvolvedores</li>
+  <li><b>Markdown</b> — tabela GFM para usar em documentos ou GitHub</li>
+  <li><b>HTML</b> — página web com a tabela</li>
+  <li><b>TXT</b> — texto simples com bordas ASCII</li>
+</ul>
+
+<h2>Salvar e abrir arquivos</h2>
+<ul>
+  <li><b>Salvar</b> (<code>Ctrl+S</code>) — salva a sessão atual.</li>
+  <li><b>Salvar como…</b> — salva uma cópia no formato <code>.pbd</code> (criptografado AES-256-CBC).</li>
+  <li><b>Abrir…</b> (<code>Ctrl+O</code>) — abre um arquivo <code>.pbd</code> existente.</li>
+</ul>
+
+<h2>Atalhos de teclado</h2>
+<table>
+  <tr><th>Atalho</th><th>Ação</th></tr>
+  <tr><td><code>Ctrl+O</code></td><td>Abrir arquivo .pbd</td></tr>
+  <tr><td><code>Ctrl+S</code></td><td>Salvar</td></tr>
+  <tr><td><code>Ctrl+Shift+S</code></td><td>Salvar como…</td></tr>
+  <tr><td><code>Ctrl+C</code></td><td>Copiar linha selecionada</td></tr>
+  <tr><td><code>Ctrl+V</code></td><td>Colar valor na célula focada</td></tr>
+  <tr><td><code>Ctrl+A</code></td><td>Selecionar todas as linhas</td></tr>
+  <tr><td><code>F1</code></td><td>Abrir esta ajuda</td></tr>
+  <tr><td><code>Ctrl+Q</code></td><td>Sair</td></tr>
+</table>
+
+</body>
+</html>

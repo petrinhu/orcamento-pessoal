@@ -7,10 +7,33 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Charts Network Sql)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui GuiPrivate Widgets Charts Network Sql)
 find_package(OpenSSL REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBSECRET REQUIRED libsecret-1)
+
+# ── QXlsx (MIT, pure Qt — XLSX read/write) ────────────────────────────────────
+include(FetchContent)
+FetchContent_Declare(
+    QXlsx
+    GIT_REPOSITORY https://github.com/QtExcel/QXlsx.git
+    GIT_TAG        v1.4.9
+    SOURCE_SUBDIR  QXlsx
+)
+FetchContent_MakeAvailable(QXlsx)
+
+# Qt6::GuiPrivate propagates strict Qt defines (QT_NO_CAST_FROM_ASCII, etc.)
+# that break QXlsx's own source code (which uses QString("literal") etc.)
+# Undefine them for the QXlsx target only.
+target_compile_options(QXlsx PRIVATE
+    -UQT_NO_CAST_FROM_ASCII
+    -UQT_NO_CAST_FROM_BYTEARRAY
+    -UQT_NO_CAST_TO_ASCII
+    -UQT_STRICT_ITERATORS
+    -UQT_NO_URL_CAST_FROM_STRING
+    -UQT_NO_KEYWORDS
+    -UQT_NO_SIGNALS_SLOTS_KEYWORDS
+)
 
 set(SOURCES
     src/main.cpp
@@ -38,14 +61,19 @@ set(SOURCES
     # Services
     src/services/ParcelaService.cpp
     src/services/CurrencyService.cpp
+    src/services/ImportService.cpp
+    src/services/ExportService.cpp
 
     # UI
     src/ui/Theme.cpp
     src/ui/LoginDialog.cpp
     src/ui/MainWindow.cpp
+    src/ui/IconGenerator.cpp
     src/ui/widgets/ParcelasWidget.cpp
     src/ui/widgets/AddCompraDialog.cpp
     src/ui/widgets/ConfigWidget.cpp
+    src/ui/widgets/AboutDialog.cpp
+    src/ui/widgets/HelpDialog.cpp
 )
 
 set(RESOURCES
@@ -53,6 +81,9 @@ set(RESOURCES
 )
 
 add_executable(orcamento-pessoal ${SOURCES} ${RESOURCES})
+
+# QXlsx exposes QXLSX_LIBRARY definition for conditional compilation
+target_compile_definitions(orcamento-pessoal PRIVATE QXLSX_LIBRARY)
 
 target_include_directories(orcamento-pessoal PRIVATE
     src
@@ -69,6 +100,7 @@ target_link_libraries(orcamento-pessoal PRIVATE
     OpenSSL::SSL
     OpenSSL::Crypto
     ${LIBSECRET_LIBRARIES}
+    QXlsx::QXlsx
 )
 
 # Hardening flags (release only)

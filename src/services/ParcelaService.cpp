@@ -187,6 +187,16 @@ QList<Parcela> ParcelaService::recalcularAposEdicao(
         break;
     }
 
+    case RecalcMode::IgualarTodas: {
+        // Set ALL other parcelas to the same value, mark them modified,
+        // and derive the new valorTotal as N × novoValor.
+        for (int k = 0; k < result.size(); ++k) {
+            result[k].valor     = novoValor;
+            result[k].modificada = true;
+        }
+        break;
+    }
+
     case RecalcMode::RecalcJuros: {
         if (valorTotal <= 0) break;
         // Infer new rate from modified parcela and redistribute

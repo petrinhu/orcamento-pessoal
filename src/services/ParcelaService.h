@@ -41,7 +41,8 @@ public:
     enum class RecalcMode {
         SoEsta,          // change only this parcela
         RedistribuirDiff,// spread difference across remaining parcelas
-        RecalcJuros      // recompute interest from new values
+        RecalcJuros,     // recompute interest from new values
+        IgualarTodas     // set ALL parcelas to this value, recalculate valorTotal
     };
 
     static QList<Parcela> recalcularAposEdicao(

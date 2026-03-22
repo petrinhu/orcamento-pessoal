@@ -1,6 +1,7 @@
 #include "ui/Theme.h"
 #include "ui/LoginDialog.h"
 #include "ui/MainWindow.h"
+#include "ui/IconGenerator.h"
 #include "core/database/DatabaseManager.h"
 #include "core/session/UserSession.h"
 
@@ -11,8 +12,11 @@
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-    app.setApplicationName(QStringLiteral("OrcamentoPessoal"));
+    app.setApplicationName(QStringLiteral("PeuBud"));
+    app.setApplicationDisplayName(QStringLiteral("PeuBud — Orçamento Pessoal"));
+    app.setApplicationVersion(QStringLiteral("0.1.0"));
     app.setOrganizationName(QStringLiteral("petrinhu"));
+    app.setWindowIcon(IconGenerator::generate());
 
     Theme::aplicar();
 

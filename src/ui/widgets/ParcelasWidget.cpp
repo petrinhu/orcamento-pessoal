@@ -445,12 +445,15 @@ void ParcelasWidget::onCellChanged(int row, int col)
 
     auto *grp = new QGroupBox(&dlg);
     auto *vl  = new QVBoxLayout(grp);
-    auto *rSo     = new QRadioButton(QStringLiteral("Alterar só esta parcela"), &dlg);
-    auto *rRedist = new QRadioButton(QStringLiteral("Redistribuir diferença nas demais"), &dlg);
-    auto *rJuros  = new QRadioButton(QStringLiteral("Recalcular juros a partir daqui"), &dlg);
+    auto *rSo      = new QRadioButton(QStringLiteral("Alterar só esta parcela"), &dlg);
+    auto *rRedist  = new QRadioButton(QStringLiteral("Redistribuir diferença nas demais"), &dlg);
+    auto *rIgualar = new QRadioButton(
+        QStringLiteral("Igualar todas as parcelas a este valor (recalcula total)"), &dlg);
+    auto *rJuros   = new QRadioButton(QStringLiteral("Recalcular juros a partir daqui"), &dlg);
     rSo->setChecked(true);
     vl->addWidget(rSo);
     vl->addWidget(rRedist);
+    vl->addWidget(rIgualar);
     vl->addWidget(rJuros);
     layout->addWidget(grp);
 
@@ -466,14 +469,23 @@ void ParcelasWidget::onCellChanged(int row, int col)
     }
 
     auto modo = ParcelaService::RecalcMode::SoEsta;
-    if (rRedist->isChecked()) modo = ParcelaService::RecalcMode::RedistribuirDiff;
-    if (rJuros->isChecked())  modo = ParcelaService::RecalcMode::RecalcJuros;
+    if (rRedist->isChecked())  modo = ParcelaService::RecalcMode::RedistribuirDiff;
+    if (rIgualar->isChecked()) modo = ParcelaService::RecalcMode::IgualarTodas;
+    if (rJuros->isChecked())   modo = ParcelaService::RecalcMode::RecalcJuros;
 
     const QList<Parcela> novas = ParcelaService::recalcularAposEdicao(
         parcelas, parcelaIndex, novoValor, modo, compra.valorTotal);
 
     ParcelaRepository pr;
     pr.replaceAll(compra.id, novas);
+
+    if (modo == ParcelaService::RecalcMode::IgualarTodas) {
+        // Persist new valorTotal = N × novoValor
+        Compra updCompra   = compra;
+        updCompra.valorTotal = novoValor * static_cast<qint64>(novas.size());
+        CompraRepository cr;
+        cr.update(updCompra);
+    }
 
     recarregar();
     emit dadosAlterados();
