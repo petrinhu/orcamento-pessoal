@@ -173,7 +173,7 @@ void AddCompraDialog::buildTabJuros(QWidget *tab)
     form->setSpacing(10);
 
     // Helper: wraps a field widget with a ✏️/🚫 toggle button.
-    // locked=true → field is an input (✏️ editable); locked=false → field is calculated (🚫).
+    // locked=true → ✏️ editable input; locked=false → 🚫 auto-calculated output.
     auto makeLockRow = [this, tab](QWidget *field, QPushButton *&lockBtn, bool locked) -> QWidget* {
         auto *w = new QWidget(tab);
         auto *h = new QHBoxLayout(w);
@@ -184,8 +184,9 @@ void AddCompraDialog::buildTabJuros(QWidget *tab)
         lockBtn->setCheckable(true);
         lockBtn->setChecked(locked);
         lockBtn->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
-        lockBtn->setToolTip(tr("✏️ campo editável (entrada)   🚫 campo calculado automaticamente\n"
-                               "Clique para alternar"));
+        lockBtn->setToolTip(locked
+            ? tr("Campo editável. Clique para travá-lo e calculá-lo automaticamente.")
+            : tr("Campo calculado automaticamente. Clique para editá-lo manualmente."));
         h->addWidget(lockBtn);
         return w;
     };
@@ -209,21 +210,41 @@ void AddCompraDialog::buildTabJuros(QWidget *tab)
     form->addRow(tr("Valor de cada parcela (R$)"),
                  makeLockRow(m_valorParcela_j, m_lockParcela, /*locked=*/false));
 
+    // ── Taxa: juros mensais e CET na mesma linha, indicando que são equivalentes ──
     m_jurosMensais = new QDoubleSpinBox(tab);
     m_jurosMensais->setRange(0.0, 100.0);
     m_jurosMensais->setSingleStep(0.1);
     m_jurosMensais->setDecimals(4);
     m_jurosMensais->setSuffix(QStringLiteral("% a.m."));
-    form->addRow(tr("Juros mensais"),
-                 makeLockRow(m_jurosMensais, m_lockTaxa, /*locked=*/true));
+    m_jurosMensais->setMinimumWidth(120);
 
     m_cet_j = new QDoubleSpinBox(tab);
     m_cet_j->setRange(0.0, 100000.0);
     m_cet_j->setSingleStep(0.5);
     m_cet_j->setDecimals(2);
     m_cet_j->setSuffix(QStringLiteral("% a.a."));
-    m_cet_j->setToolTip(tr("Equivalente aos juros mensais em base anual. Compartilha o cadeado com Juros mensais."));
-    form->addRow(tr("CET / Juros anuais"), m_cet_j); // shares lock with m_jurosMensais
+    m_cet_j->setMinimumWidth(120);
+
+    // Taxa row: [jurosMensais] [=] [cet] [lockBtn]
+    {
+        auto *taxaWidget = new QWidget(tab);
+        auto *taxaH      = new QHBoxLayout(taxaWidget);
+        taxaH->setContentsMargins(0, 0, 0, 0);
+        taxaH->setSpacing(4);
+        taxaH->addWidget(m_jurosMensais, 1);
+        auto *eqLbl = new QLabel(QStringLiteral("="), taxaWidget);
+        eqLbl->setAlignment(Qt::AlignCenter);
+        eqLbl->setToolTip(tr("Juros mensais e CET são equivalentes — alterar um atualiza o outro."));
+        taxaH->addWidget(eqLbl);
+        taxaH->addWidget(m_cet_j, 1);
+        m_lockTaxa = new QPushButton(QStringLiteral("✏️"), taxaWidget);
+        m_lockTaxa->setCheckable(true);
+        m_lockTaxa->setChecked(true);
+        m_lockTaxa->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
+        m_lockTaxa->setToolTip(tr("Campo editável. Clique para travá-lo e calculá-lo automaticamente."));
+        taxaH->addWidget(m_lockTaxa);
+        form->addRow(tr("Juros mensais / CET a.a."), taxaWidget);
+    }
 
     m_lblJurosTotais = new QLabel(tr("Juros totais: —"), tab);
     m_lblJurosTotais->setObjectName(QStringLiteral("subtitle"));
@@ -292,17 +313,24 @@ void AddCompraDialog::atualizarEstadoCamposJ()
     m_cet_j->setReadOnly(taxaOut);
     m_valorParcela_j->setReadOnly(parcelaOut);
 
+    const QString ttEditable  = tr("Campo editável. Clique para travá-lo e calculá-lo automaticamente.");
+    const QString ttCalculado = tr("Campo calculado automaticamente. Clique para editá-lo manualmente.");
+
     m_lockTotal->setChecked(!totalOut);
     m_lockTotal->setText(totalOut ? QStringLiteral("🚫") : QStringLiteral("✏️"));
+    m_lockTotal->setToolTip(totalOut ? ttCalculado : ttEditable);
 
     m_lockN->setChecked(!nOut);
     m_lockN->setText(nOut ? QStringLiteral("🚫") : QStringLiteral("✏️"));
+    m_lockN->setToolTip(nOut ? ttCalculado : ttEditable);
 
     m_lockTaxa->setChecked(!taxaOut);
     m_lockTaxa->setText(taxaOut ? QStringLiteral("🚫") : QStringLiteral("✏️"));
+    m_lockTaxa->setToolTip(taxaOut ? ttCalculado : ttEditable);
 
     m_lockParcela->setChecked(!parcelaOut);
     m_lockParcela->setText(parcelaOut ? QStringLiteral("🚫") : QStringLiteral("✏️"));
+    m_lockParcela->setToolTip(parcelaOut ? ttCalculado : ttEditable);
 }
 
 void AddCompraDialog::buildPreview()
