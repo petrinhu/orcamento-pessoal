@@ -9,9 +9,9 @@ class QCheckBox;
 class QSpinBox;
 class QLineEdit;
 class ConfigWidget;
+class ConfigFontesWidget;
 
-// Settings panel: Language, Default Currency, Save/Autosave, Cards.
-// Embeds ConfigWidget for card management.
+// Settings panel: Language, Default Currency, Save/Autosave, Cards, Income Sources.
 class PrefsWidget final : public QWidget {
     Q_OBJECT
 public:
@@ -20,6 +20,7 @@ public:
 signals:
     void cartoesAlterados();   // forwarded from ConfigWidget
     void moedaAlterada();      // triggers ParcelasWidget::recarregar
+    void fontesAlteradas();    // forwarded from ConfigFontesWidget
 
 private slots:
     void onLanguageToggled();
@@ -42,6 +43,7 @@ private:
     QSpinBox     *m_spnInterval        = nullptr;
     QLineEdit    *m_edtSavesFolder     = nullptr;
     QLineEdit    *m_edtAutosavesFolder = nullptr;
-    ConfigWidget *m_cards              = nullptr;
-    bool          m_loading            = false;
+    ConfigWidget       *m_cards   = nullptr;
+    ConfigFontesWidget *m_fontes  = nullptr;
+    bool                m_loading = false;
 };

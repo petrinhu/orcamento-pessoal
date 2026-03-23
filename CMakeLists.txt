@@ -60,6 +60,8 @@ set(SOURCES
     # Repositories
     src/repositories/CompraRepository.cpp
     src/repositories/ParcelaRepository.cpp
+    src/repositories/FonteRendaRepository.cpp
+    src/repositories/LancamentoEntradaRepository.cpp
 
     # Services
     src/services/ParcelaService.cpp
@@ -78,6 +80,9 @@ set(SOURCES
     src/ui/widgets/PrefsWidget.cpp
     src/ui/widgets/AboutDialog.cpp
     src/ui/widgets/HelpDialog.cpp
+    src/ui/widgets/EntradasWidget.cpp
+    src/ui/widgets/LancamentoEntradaDialog.cpp
+    src/ui/widgets/ConfigFontesWidget.cpp
 )
 
 set(RESOURCES

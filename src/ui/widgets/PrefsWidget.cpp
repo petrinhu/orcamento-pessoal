@@ -1,5 +1,6 @@
 #include "PrefsWidget.h"
 #include "ConfigWidget.h"
+#include "ConfigFontesWidget.h"
 #include "core/settings/AppSettings.h"
 
 #include <QVBoxLayout>
@@ -208,6 +209,19 @@ void PrefsWidget::buildUi()
             this,    &PrefsWidget::cartoesAlterados);
 
     layout->addWidget(grpCartoes);
+
+    // ── Fontes de Renda ────────────────────────────────────────────────────
+    auto *grpFontes = new QGroupBox(tr("Fontes de Renda"), content);
+    auto *layFontes = new QVBoxLayout(grpFontes);
+    layFontes->setContentsMargins(8, 8, 8, 8);
+
+    m_fontes = new ConfigFontesWidget(grpFontes);
+    layFontes->addWidget(m_fontes);
+
+    connect(m_fontes, &ConfigFontesWidget::fontesAlteradas,
+            this,     &PrefsWidget::fontesAlteradas);
+
+    layout->addWidget(grpFontes);
     layout->addStretch();
 }
 

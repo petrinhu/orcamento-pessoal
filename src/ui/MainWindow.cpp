@@ -1,5 +1,6 @@
 #include "MainWindow.h"
 #include "widgets/ParcelasWidget.h"
+#include "widgets/EntradasWidget.h"
 #include "widgets/PrefsWidget.h"
 #include "widgets/AboutDialog.h"
 #include "widgets/HelpDialog.h"
@@ -12,6 +13,7 @@
 #include "repositories/ParcelaRepository.h"
 
 #include <QLabel>
+#include <QTabWidget>
 #include <QVBoxLayout>
 #include <QDialogButtonBox>
 #include <QStatusBar>
@@ -43,7 +45,11 @@ MainWindow::MainWindow(QWidget *parent)
 void MainWindow::buildUi()
 {
     m_parcelas = new ParcelasWidget(this);
-    setCentralWidget(m_parcelas);
+    m_entradas = new EntradasWidget(this);
+    m_tabs     = new QTabWidget(this);
+    m_tabs->addTab(m_parcelas, tr("Parcelas"));
+    m_tabs->addTab(m_entradas, tr("Entradas"));
+    setCentralWidget(m_tabs);
 
     buildMenuBar();
     buildThemeBar();
@@ -58,6 +64,10 @@ void MainWindow::buildUi()
     connect(m_parcelas, &ParcelasWidget::dadosAlterados,
             m_parcelas, &ParcelasWidget::recarregar);
     connect(m_parcelas, &ParcelasWidget::dadosAlterados,
+            this, [this]() { m_dirty = true; });
+    connect(m_entradas, &EntradasWidget::dadosAlterados,
+            m_entradas, &EntradasWidget::recarregar);
+    connect(m_entradas, &EntradasWidget::dadosAlterados,
             this, [this]() { m_dirty = true; });
 
     // ── Auto-save timer ────────────────────────────────────────────────────
@@ -299,6 +309,7 @@ void MainWindow::onAbrir()
     }
     m_dirty = false;
     m_parcelas->recarregar();
+    m_entradas->recarregar();
 }
 
 void MainWindow::onSalvar()
@@ -477,14 +488,24 @@ void MainWindow::onConfiguracoes()
     connect(btns,  &QDialogButtonBox::rejected,    &dlg,       &QDialog::accept);
     connect(prefs, &PrefsWidget::cartoesAlterados, m_parcelas, &ParcelasWidget::recarregar);
     connect(prefs, &PrefsWidget::moedaAlterada,    m_parcelas, &ParcelasWidget::recarregar);
+    connect(prefs, &PrefsWidget::moedaAlterada,    m_entradas, &EntradasWidget::recarregar);
+    connect(prefs, &PrefsWidget::fontesAlteradas,  m_entradas, &EntradasWidget::recarregar);
     dlg.exec();
 }
 
 // ── Editar slots ──────────────────────────────────────────────────────────────
 
-void MainWindow::onCopiar()        { m_parcelas->copiar(); }
+void MainWindow::onCopiar()
+{
+    if (m_tabs->currentWidget() == m_entradas) m_entradas->copiar();
+    else m_parcelas->copiar();
+}
 void MainWindow::onColar()         { /* sem suporte — paste requer contexto da célula */ }
-void MainWindow::onSelecionarTudo(){ m_parcelas->selecionarTudo(); }
+void MainWindow::onSelecionarTudo()
+{
+    if (m_tabs->currentWidget() == m_entradas) m_entradas->selecionarTudo();
+    else m_parcelas->selecionarTudo();
+}
 
 
 // ── Ajuda slots ───────────────────────────────────────────────────────────────

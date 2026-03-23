@@ -3,7 +3,8 @@
 ## Visão geral do projeto
 
 App de finanças pessoais em C++20/Qt6, construído em módulos incrementais.
-**Módulo 1 (atual):** controle de parcelas do cartão de crédito.
+**Módulo 1:** controle de parcelas do cartão de crédito.
+**Módulo 2 (atual):** aba de Entradas — lançamentos de receitas por fonte de renda.
 
 **Repositório Codeberg:** ssh://git@codeberg.org/petrinhu/orcamento_pessoal.git
 
@@ -70,20 +71,33 @@ src/
   models/
     Compra.h                 # struct POD
     Parcela.h                # struct POD
+    FonteRenda.h             # struct POD — fonte de renda (id, nome)
+    LancamentoEntrada.h      # struct POD — recebimento mensal
   repositories/
     CompraRepository.h/cpp
     ParcelaRepository.h/cpp
+    FonteRendaRepository.h/cpp          # CRUD + findOrCreate
+    LancamentoEntradaRepository.h/cpp   # CRUD + findAll + findByMesAno
   services/
     ParcelaService.h/cpp     # CET, juros, Newton-Raphson, datas retroativas
     CurrencyService.h/cpp    # Conversão + cache de cotação
+    ImportService.h/cpp      # Importação CSV/OFX/QIF/XLSX/JSON/…
+    ExportService.h/cpp      # Exportação CSV/OFX/QIF/XLSX/JSON/…
   ui/
     Theme.h/cpp
     LoginDialog.h/cpp
-    MainWindow.h/cpp
+    MainWindow.h/cpp         # QTabWidget: abas Parcelas + Entradas
+    IconGenerator.h/cpp
     widgets/
-      ParcelasWidget.h/cpp   # Tabela editável
-      AddCompraDialog.h/cpp  # Diálogo de entrada (modos 2.1–2.5)
-      ConfigWidget.h/cpp     # CRUD cartões
+      ParcelasWidget.h/cpp            # Tabela editável de parcelas
+      AddCompraDialog.h/cpp           # Diálogo de entrada (modos 2.1–2.5)
+      ConfigWidget.h/cpp              # CRUD cartões
+      EntradasWidget.h/cpp            # Tabela de entradas (4 sub-cols/mês)
+      LancamentoEntradaDialog.h/cpp   # Dialog: fonte, valor, impostos, recorrência
+      ConfigFontesWidget.h/cpp        # CRUD fontes de renda (nas Preferências)
+      PrefsWidget.h/cpp               # Painel de preferências completo
+      AboutDialog.h/cpp
+      HelpDialog.h/cpp
 resources/
   fonts/Inter-*.ttf
   resources.qrc

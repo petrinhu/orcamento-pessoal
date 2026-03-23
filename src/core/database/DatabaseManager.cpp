@@ -176,6 +176,29 @@ void DatabaseManager::createSchema()
             modificada  INTEGER NOT NULL DEFAULT 0
         )
     )"));
+
+    q.exec(QStringLiteral(R"(
+        CREATE TABLE IF NOT EXISTS fontes_renda (
+            id   INTEGER PRIMARY KEY AUTOINCREMENT,
+            nome TEXT    NOT NULL UNIQUE
+        )
+    )"));
+
+    q.exec(QStringLiteral(R"(
+        CREATE TABLE IF NOT EXISTS lancamentos_entradas (
+            id          INTEGER PRIMARY KEY AUTOINCREMENT,
+            mes         INTEGER NOT NULL,
+            ano         INTEGER NOT NULL,
+            dia         INTEGER NOT NULL DEFAULT 1,
+            fonte       TEXT    NOT NULL,
+            fonte_id    INTEGER REFERENCES fontes_renda(id) ON DELETE SET NULL,
+            valor_bruto INTEGER NOT NULL DEFAULT 0,
+            irpf        INTEGER NOT NULL DEFAULT 0,
+            inss        INTEGER NOT NULL DEFAULT 0,
+            obs         TEXT    NOT NULL DEFAULT '',
+            criado_em   TEXT    NOT NULL
+        )
+    )"));
 }
 
 bool DatabaseManager::encryptAndSave(const QString &srcDbPath,

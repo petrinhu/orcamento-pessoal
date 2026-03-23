@@ -4,6 +4,7 @@
 #include <QMainWindow>
 
 class ParcelasWidget;
+class EntradasWidget;
 class PrefsWidget;
 class QTabWidget;
 class QLabel;
@@ -47,6 +48,8 @@ private:
     void onSobre();
 
     ParcelasWidget *m_parcelas   = nullptr;
+    EntradasWidget *m_entradas   = nullptr;
+    QTabWidget     *m_tabs       = nullptr;
     QLabel         *m_statusUser = nullptr;
 
     // Theme cycle button (Auto → Light → Dark → Auto)
