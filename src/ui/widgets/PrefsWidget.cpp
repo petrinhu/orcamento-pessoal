@@ -16,6 +16,7 @@
 #include <QLineEdit>
 #include <QPushButton>
 #include <QFileDialog>
+#include <QTabWidget>
 
 // ── Currency list ─────────────────────────────────────────────────────────────
 
@@ -66,22 +67,25 @@ PrefsWidget::PrefsWidget(QWidget *parent)
 void PrefsWidget::buildUi()
 {
     auto *outer = new QVBoxLayout(this);
-    outer->setContentsMargins(16, 16, 16, 16);
-    outer->setSpacing(16);
+    outer->setContentsMargins(0, 0, 0, 0);
+    outer->setSpacing(0);
 
-    auto *scroll = new QScrollArea(this);
-    scroll->setWidgetResizable(true);
-    scroll->setFrameShape(QFrame::NoFrame);
-    auto *content = new QWidget(scroll);
-    scroll->setWidget(content);
-    outer->addWidget(scroll);
+    auto *tabs = new QTabWidget(this);
+    outer->addWidget(tabs);
 
-    auto *layout = new QVBoxLayout(content);
-    layout->setContentsMargins(0, 0, 8, 0);
-    layout->setSpacing(16);
+    // ── Aba: Geral ─────────────────────────────────────────────────────────
+    auto *pageGeral   = new QWidget(tabs);
+    auto *scrollGeral = new QScrollArea(tabs);
+    scrollGeral->setWidgetResizable(true);
+    scrollGeral->setFrameShape(QFrame::NoFrame);
+    scrollGeral->setWidget(pageGeral);
 
-    // ── Idioma ─────────────────────────────────────────────────────────────
-    auto *grpIdioma = new QGroupBox(tr("Idioma"), content);
+    auto *layGeral = new QVBoxLayout(pageGeral);
+    layGeral->setContentsMargins(16, 16, 16, 16);
+    layGeral->setSpacing(16);
+
+    // Idioma
+    auto *grpIdioma = new QGroupBox(tr("Idioma"), pageGeral);
     auto *layIdioma = new QVBoxLayout(grpIdioma);
     layIdioma->setSpacing(6);
 
@@ -103,10 +107,10 @@ void PrefsWidget::buildUi()
     connect(m_rPtBr,   &QRadioButton::toggled, this, &PrefsWidget::onLanguageToggled);
     connect(m_rEnIntl, &QRadioButton::toggled, this, &PrefsWidget::onLanguageToggled);
 
-    layout->addWidget(grpIdioma);
+    layGeral->addWidget(grpIdioma);
 
-    // ── Moeda padrão ───────────────────────────────────────────────────────
-    auto *grpMoeda = new QGroupBox(tr("Moeda Padrão"), content);
+    // Moeda padrão
+    auto *grpMoeda = new QGroupBox(tr("Moeda Padrão"), pageGeral);
     auto *layMoeda = new QVBoxLayout(grpMoeda);
 
     auto *lblHint = new QLabel(
@@ -128,7 +132,7 @@ void PrefsWidget::buildUi()
 
     syncComboToCurrency(AppSettings::instance().defaultCurrency());
     layMoeda->addWidget(m_comboCurrency);
-    layout->addWidget(grpMoeda);
+    layGeral->addWidget(grpMoeda);
 
     connect(&AppSettings::instance(), &AppSettings::currencyChanged,
             this, [this](const QString &code) {
@@ -136,16 +140,14 @@ void PrefsWidget::buildUi()
         syncComboToCurrency(code);
         m_loading = false;
     });
-
     connect(m_comboCurrency, QOverload<int>::of(&QComboBox::currentIndexChanged),
             this, &PrefsWidget::onCurrencyChanged);
 
-    // ── Salvamento ─────────────────────────────────────────────────────────
-    auto *grpSave = new QGroupBox(tr("Salvamento"), content);
+    // Salvamento
+    auto *grpSave = new QGroupBox(tr("Salvamento"), pageGeral);
     auto *laySave = new QVBoxLayout(grpSave);
     laySave->setSpacing(8);
 
-    // Auto-save toggle + interval
     auto *rowAutosave = new QHBoxLayout;
     m_chkAutosave = new QCheckBox(tr("Salvar automaticamente a cada"), grpSave);
     m_chkAutosave->setChecked(AppSettings::instance().autosaveEnabled());
@@ -164,7 +166,6 @@ void PrefsWidget::buildUi()
     connect(m_spnInterval, QOverload<int>::of(&QSpinBox::valueChanged),
             this, &PrefsWidget::onIntervalChanged);
 
-    // Saves folder
     auto *lblSavesFolder = new QLabel(tr("Pasta de salvamentos:"), grpSave);
     laySave->addWidget(lblSavesFolder);
     auto *rowSaves = new QHBoxLayout;
@@ -179,7 +180,6 @@ void PrefsWidget::buildUi()
         AppSettings::instance().setSavesFolder(m_edtSavesFolder->text().trimmed());
     });
 
-    // Autosaves folder
     auto *lblAutosavesFolder = new QLabel(tr("Pasta de auto-salvamentos:"), grpSave);
     laySave->addWidget(lblAutosavesFolder);
     auto *rowAutosaves = new QHBoxLayout;
@@ -195,34 +195,22 @@ void PrefsWidget::buildUi()
         AppSettings::instance().setAutosavesFolder(m_edtAutosavesFolder->text().trimmed());
     });
 
-    layout->addWidget(grpSave);
+    layGeral->addWidget(grpSave);
+    layGeral->addStretch();
 
-    // ── Cartões ────────────────────────────────────────────────────────────
-    auto *grpCartoes = new QGroupBox(tr("Cartões"), content);
-    auto *layCartoes = new QVBoxLayout(grpCartoes);
-    layCartoes->setContentsMargins(0, 0, 0, 0);
+    tabs->addTab(scrollGeral, tr("Geral"));
 
-    m_cards = new ConfigWidget(grpCartoes);
-    layCartoes->addWidget(m_cards);
-
+    // ── Aba: Cartões ───────────────────────────────────────────────────────
+    m_cards = new ConfigWidget(tabs);
     connect(m_cards, &ConfigWidget::cartoesAlterados,
             this,    &PrefsWidget::cartoesAlterados);
+    tabs->addTab(m_cards, tr("Cartões"));
 
-    layout->addWidget(grpCartoes);
-
-    // ── Fontes de Renda ────────────────────────────────────────────────────
-    auto *grpFontes = new QGroupBox(tr("Fontes de Renda"), content);
-    auto *layFontes = new QVBoxLayout(grpFontes);
-    layFontes->setContentsMargins(8, 8, 8, 8);
-
-    m_fontes = new ConfigFontesWidget(grpFontes);
-    layFontes->addWidget(m_fontes);
-
+    // ── Aba: Fontes de Renda ───────────────────────────────────────────────
+    m_fontes = new ConfigFontesWidget(tabs);
     connect(m_fontes, &ConfigFontesWidget::fontesAlteradas,
             this,     &PrefsWidget::fontesAlteradas);
-
-    layout->addWidget(grpFontes);
-    layout->addStretch();
+    tabs->addTab(m_fontes, tr("Fontes de Renda"));
 }
 
 void PrefsWidget::syncComboToCurrency(const QString &code)

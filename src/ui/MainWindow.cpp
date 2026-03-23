@@ -499,7 +499,7 @@ void MainWindow::onConfiguracoes()
 {
     QDialog dlg(this);
     dlg.setWindowTitle(tr("Configurações"));
-    dlg.setMinimumWidth(500);
+    dlg.setMinimumSize(520, 480);
     auto *lay   = new QVBoxLayout(&dlg);
     auto *prefs = new PrefsWidget(&dlg);
     lay->addWidget(prefs);
