@@ -1,0 +1,12 @@
+<!DOCTYPE kpartgui SYSTEM "kpartgui.dtd">
+<kpartgui name="skg_debug" version="3">
+<MenuBar>
+  <Menu name="tool"><text>Tools</text>
+	  <Separator/>
+	  <Action name="debug_restart_profiling" />
+	  <Action name="debug_open_profiling" />
+  </Menu>    
+</MenuBar>
+<ToolBar name="mainToolBar"><text>Main Toolbar</text>
+</ToolBar>
+</kpartgui>

@@ -1,0 +1,12 @@
+<!DOCTYPE kpartgui SYSTEM "kpartgui.dtd">
+<kpartgui name="skg_highlight" version="3">
+<MenuBar>
+  <Menu name="edit"><text>Edit</text>
+	  <Action name="edit_switch_highlight" group="edit_group_1"/>
+	  <Action name="edit_switch_close" group="edit_group_1"/>	  
+  </Menu>
+</MenuBar>
+<ToolBar name="mainToolBar"><text>Main Toolbar</text>
+</ToolBar>
+</kpartgui>
+

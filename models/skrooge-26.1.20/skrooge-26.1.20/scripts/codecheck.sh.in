@@ -1,0 +1,31 @@
+#!@SKG_BASH@
+#
+# Skrooge coding style is defined in http://techbase.kde.org/Policies/Kdelibs_Coding_Style 
+#
+P="@CMAKE_SOURCE_DIR@"
+
+mkdir @CMAKE_BINARY_DIR@/log > /dev/null 2>&1
+echo "Checks with CPPCHECK running"
+cppcheck -j 4 --inline-suppr -DKDE_EXPORT= --force --enable=all --inconclusive --std=posix -DKDE_IMPORT -i $P/mxe $P/ 1> /dev/null 2> @CMAKE_BINARY_DIR@/log/codecheck.log.tmp
+rc=$?
+if [[ "$rc" = "0" ]]; then
+    cat @CMAKE_BINARY_DIR@/log/codecheck.log.tmp | grep -v 'moc_' | grep -v '.moc' | grep -v '/build/' | grep -v '/backup/' | grep -v 'is not handled. You can use -I or --include to add' | sed -e 's/^/cppcheck:/g' > @CMAKE_BINARY_DIR@/log/codecheck.log
+    rm @CMAKE_BINARY_DIR@/log/codecheck.log.tmp > /dev/null 2>&1
+        
+    echo "Checks with CPPLINT running"
+    cpplint.py --filter=-runtime/references,-whitespace/comma,-whitespace/braces,-whitespace/line_length,-readability/braces,-whitespace/labels,-build/header_guard,-build/include,+build/include_order,-readability/function $P/*/sk*.cpp $P/*/sk*.h $P/*/*/sk*.cpp $P/*/*/sk*.h $P/*/*/*/sk*.cpp $P/*/*/*/sk*.h $P/*/*/*/*/sk*.cpp $P/*/*/*/*/sk*.h  1> /dev/null 2> @CMAKE_BINARY_DIR@/log/codecheck.log.tmp
+    rc=$?
+    rc=0
+    if [[ "$rc" = "0" ]]; then
+        cat @CMAKE_BINARY_DIR@/log/codecheck.log.tmp | grep -v 'Done processing' | grep -v "should be indented +1 space inside class" | grep -v "Found C system header after other header" | grep -v '/build/' | grep -v 'Total errors found' | sed -e 's/^/cpplint:/g' >> @CMAKE_BINARY_DIR@/log/codecheck.log
+        rm @CMAKE_BINARY_DIR@/log/codecheck.log.tmp > /dev/null 2>&1
+
+        echo "Report generated in @CMAKE_BINARY_DIR@/log/codecheck.log"
+    else
+        echo "FAILED"
+    fi
+else
+    echo "FAILED"
+fi
+
+exit $?

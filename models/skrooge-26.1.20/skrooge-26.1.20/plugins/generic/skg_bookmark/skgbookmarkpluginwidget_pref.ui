@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <author>
+SPDX-FileCopyrightText: 2024 S. MANKOWSKI stephane@mankowski.fr
+SPDX-FileCopyrightText: 2024 G. DE BURE support@mankowski.fr
+SPDX-License-Identifier: GPL-3.0-or-later
+ </author>      
+ <class>skgbookmarkplugin_pref</class>
+ <widget class="QWidget" name="skgbookmarkplugin_pref">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>412</width>
+    <height>306</height>
+   </rect>
+  </property>
+  <layout class="QGridLayout" name="gridLayout_2">
+   <item row="1" column="0">
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>16</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="0" column="0">
+    <widget class="QCheckBox" name="kcfg_pinhomebookmarks">
+     <property name="text">
+      <string>Pin home bookmarks</string>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

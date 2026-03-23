@@ -1,0 +1,14 @@
+<!DOCTYPE kpartgui SYSTEM "kpartgui.dtd">
+<kpartgui name="skrooge_unit" version="3">
+<MenuBar>
+  <Menu name="edit"><text>Edit</text>
+	  <Separator group="edit_group_2"/>
+	  <Action name="edit_split_stock" group="edit_group_2"/>
+  </Menu>
+  <Menu name="tool"><text>Tools</text>
+	  <Action name="clean_delete_unused_units" group="tool_group_2"/>
+  </Menu>    
+</MenuBar>
+<ToolBar name="mainToolBar"><text>Main Toolbar</text>
+</ToolBar>
+</kpartgui>

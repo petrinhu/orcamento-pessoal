@@ -47,7 +47,7 @@ void MainWindow::buildUi()
     m_parcelas = new ParcelasWidget(this);
     m_entradas = new EntradasWidget(this);
     m_tabs     = new QTabWidget(this);
-    m_tabs->addTab(m_parcelas, tr("Parcelas"));
+    m_tabs->addTab(m_parcelas, tr("Cartões"));
     m_tabs->addTab(m_entradas, tr("Entradas"));
     setCentralWidget(m_tabs);
 
@@ -60,6 +60,10 @@ void MainWindow::buildUi()
     m_statusUser->setText(tr("  Usuário: %1").arg(name));
     statusBar()->addWidget(m_statusUser);
 
+    m_statusTotal = new QLabel(this);
+    m_statusTotal->setObjectName(QStringLiteral("subtitle"));
+    statusBar()->addPermanentWidget(m_statusTotal);
+
     // ── Dirty flag ─────────────────────────────────────────────────────────
     connect(m_parcelas, &ParcelasWidget::dadosAlterados,
             m_parcelas, &ParcelasWidget::recarregar);
@@ -69,6 +73,22 @@ void MainWindow::buildUi()
             m_entradas, &EntradasWidget::recarregar);
     connect(m_entradas, &EntradasWidget::dadosAlterados,
             this, [this]() { m_dirty = true; });
+
+    // Status bar totals
+    connect(m_parcelas, &ParcelasWidget::statusAtualizado,
+            this, [this](const QString &msg) {
+                if (m_tabs->currentWidget() == m_parcelas)
+                    m_statusTotal->setText(msg + QStringLiteral("  "));
+            });
+    connect(m_entradas, &EntradasWidget::statusAtualizado,
+            this, [this](const QString &msg) {
+                if (m_tabs->currentWidget() == m_entradas)
+                    m_statusTotal->setText(msg + QStringLiteral("  "));
+            });
+    connect(m_tabs, &QTabWidget::currentChanged, this, [this]() {
+        if (m_tabs->currentWidget() == m_parcelas) m_parcelas->recarregar();
+        else                                        m_entradas->recarregar();
+    });
 
     // ── Auto-save timer ────────────────────────────────────────────────────
     m_autosaveTimer = new QTimer(this);

@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<homebank v="0.29999999999999999">
+<properties title="STEPHANE" car_category="0" auto_nbdays="2"/>
+<account key="6" flags="3" pos="6" name="BUDGETCLOS" number="" bankname="" initial="0" minimum="0" cheque1="0" cheque2="0"/>
+<account key="5" flags="1" pos="5" name="BUDGET" number="" bankname="" initial="0" minimum="0" cheque1="0" cheque2="0"/>
+<account key="2" flags="2" pos="2" name="CLOS" number="2222" bankname="" initial="20" minimum="0" cheque1="0" cheque2="0"/>
+<account key="4" flags="0" pos="4" name="NOBANK" number="44444" bankname="" initial="0" minimum="0" cheque1="0" cheque2="0"/>
+<account key="3" flags="0" pos="3" name="EPARGNE" number="" bankname="BANQUE1" initial="0" minimum="0" cheque1="0" cheque2="0"/>
+<account key="1" flags="0" pos="1" name="COURANT" number="11111" bankname="BANQUE1" initial="10" minimum="100" cheque1="55555" cheque2="66666"/>
+<pay key="2" name="T2"/>
+<pay key="3" name="T3"/>
+<pay key="1" name="T1"/>
+<cat key="5" parent="4" flags="1" name="D2"/>
+<cat key="4" parent="0" flags="0" name="D1"/>
+<cat key="3" parent="1" flags="1" name="C3"/>
+<cat key="1" parent="0" flags="0" name="C1"/>
+<cat key="2" parent="1" flags="1" name="C2"/>
+<tag key="1" name="E1;E2"/>
+<ope date="733773" amount="-10" account="1" dst_account="0" paymode="1" flags="0" payee="2" category="4" wording="CARTE1" info="" tags=""/>
+<ope date="733859" amount="-20" account="2" dst_account="1" paymode="5" flags="1" payee="1" category="1" wording="LIB1" info="INF1" tags="E1;E2"/>
+<ope date="733859" amount="15" account="1" dst_account="0" paymode="2" flags="2" payee="3" category="3" wording="CHEQUE1" info="INF3" tags=""/>
+<ope date="733859" amount="20" account="1" dst_account="0" paymode="3" flags="3" payee="3" category="0" wording="ESPECE1" info="INF4" tags=""/>
+<ope date="733859" amount="20" account="1" dst_account="2" paymode="5" flags="3" payee="1" category="1" wording="LIB1" info="INF1" tags="E1;E2"/>
+<ope date="733859" amount="-20" account="1" dst_account="0" paymode="4" flags="0" payee="1" category="2" wording="TRANS1" info="" tags=""/>
+</homebank>

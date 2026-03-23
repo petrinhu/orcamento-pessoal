@@ -1,0 +1,100 @@
+ENCODING:UTF-8
+OFXHEADER:100
+DATA:OFXSGML
+VERSION:211
+SECURITY:NONE
+CHARSET:UTF-8
+COMPRESSION:NONE
+OLDFILEUID:NONE
+NEWFILEUID:NONE
+<OFX>
+  <BANKMSGSRSV1>
+    <STMTTRNRS>
+      <TRNUID>0</TRNUID>
+      <STMTRS>
+        <CURDEF>EUR</CURDEF>
+        <BANKACCTFROM>
+          <BANKID>org.gnucash.android</BANKID>
+          <ACCTID>c9110cd1782784add3d8eb74dfa10011</ACCTID>
+          <ACCTTYPE>SAVINGS</ACCTTYPE>
+        </BANKACCTFROM>
+        <BANKTRANLIST>
+          <DTSTART>20150818133327[+1:GMT+01:00]</DTSTART>
+          <DTEND>20150818133327[+1:GMT+01:00]</DTEND>
+          <STMTTRN>
+            <TRNTYPE>DEBIT</TRNTYPE>
+            <DTPOSTED>20150818120226[+1:GMT+01:00]</DTPOSTED>
+            <DTUSER>20150818120226[+1:GMT+01:00]</DTUSER>
+            <TRNAMT>-20.00</TRNAMT>
+            <FITID>e926cc27b96549d08522acf85b2e613d</FITID>
+            <NAME>Test skrooge 2</NAME>
+            <BANKACCTTO>
+              <BANKID>org.gnucash.android</BANKID>
+              <ACCTID>5c8f968288c44806a23e4f377f000d67</ACCTID>
+              <ACCTTYPE>CREDITLINE</ACCTTYPE>
+            </BANKACCTTO>
+          </STMTTRN>
+          <STMTTRN>
+            <TRNTYPE>DEBIT</TRNTYPE>
+            <DTPOSTED>20150818120154[+1:GMT+01:00]</DTPOSTED>
+            <DTUSER>20150818120154[+1:GMT+01:00]</DTUSER>
+            <TRNAMT>-20.00</TRNAMT>
+            <FITID>74bef8c61bef4485afad5d33510ca14c</FITID>
+            <NAME>Test skrooge 1</NAME>
+            <BANKACCTTO>
+              <BANKID>org.gnucash.android</BANKID>
+              <ACCTID>5c8f968288c44806a23e4f377f000d67</ACCTID>
+              <ACCTTYPE>CREDITLINE</ACCTTYPE>
+            </BANKACCTTO>
+          </STMTTRN>
+        </BANKTRANLIST>
+        <LEDGERBAL>
+          <BALAMT>0.00</BALAMT>
+          <DTASOF>20150818133327[+1:GMT+01:00]</DTASOF>
+        </LEDGERBAL>
+      </STMTRS>
+      <STMTRS>
+        <CURDEF>EUR</CURDEF>
+        <BANKACCTFROM>
+          <BANKID>org.gnucash.android</BANKID>
+          <ACCTID>5c8f968288c44806a23e4f377f000d67</ACCTID>
+          <ACCTTYPE>CREDITLINE</ACCTTYPE>
+        </BANKACCTFROM>
+        <BANKTRANLIST>
+          <DTSTART>20150818133327[+1:GMT+01:00]</DTSTART>
+          <DTEND>20150818133327[+1:GMT+01:00]</DTEND>
+          <STMTTRN>
+            <TRNTYPE>DEBIT</TRNTYPE>
+            <DTPOSTED>20150818120226[+1:GMT+01:00]</DTPOSTED>
+            <DTUSER>20150818120226[+1:GMT+01:00]</DTUSER>
+            <TRNAMT>-20.00</TRNAMT>
+            <FITID>e926cc27b96549d08522acf85b2e613d</FITID>
+            <NAME>Test skrooge 2</NAME>
+            <BANKACCTTO>
+              <BANKID>org.gnucash.android</BANKID>
+              <ACCTID>c9110cd1782784add3d8eb74dfa10011</ACCTID>
+              <ACCTTYPE>SAVINGS</ACCTTYPE>
+            </BANKACCTTO>
+          </STMTTRN>
+          <STMTTRN>
+            <TRNTYPE>DEBIT</TRNTYPE>
+            <DTPOSTED>20150818120154[+1:GMT+01:00]</DTPOSTED>
+            <DTUSER>20150818120154[+1:GMT+01:00]</DTUSER>
+            <TRNAMT>-20.00</TRNAMT>
+            <FITID>74bef8c61bef4485afad5d33510ca14c</FITID>
+            <NAME>Test skrooge 1</NAME>
+            <BANKACCTTO>
+              <BANKID>org.gnucash.android</BANKID>
+              <ACCTID>c9110cd1782784add3d8eb74dfa10011</ACCTID>
+              <ACCTTYPE>SAVINGS</ACCTTYPE>
+            </BANKACCTTO>
+          </STMTTRN>
+        </BANKTRANLIST>
+        <LEDGERBAL>
+          <BALAMT>0.00</BALAMT>
+          <DTASOF>20150818133327[+1:GMT+01:00]</DTASOF>
+        </LEDGERBAL>
+      </STMTRS>
+    </STMTTRNRS>
+  </BANKMSGSRSV1>
+</OFX>

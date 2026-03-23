@@ -1,0 +1,59 @@
+2020/01/01 * Soldes d'Ouvertures
+    COMPTES:CMB:Compte Cheques                        € 2000
+    COMPTES:CMB:LIVRET A de Mr	                      € 5000
+    COMPTES:CMB:LIVRET A de Mme                       € 5000
+    CAPITAUX:Soldes d'Ouvertures
+
+; Opération non pointée
+2020/01/02  ENTREPRISE de Mr
+    COMPTES:CMB:Compte Cheques                        € 1500
+    REVENUS:Salaire de Mr:Salaire 1
+
+; Opération pointée
+2020/01/02 ! ENTREPRISE de Mme
+    COMPTES:CMB:Compte Cheques 	                      € 1500
+    REVENUS:Salaire de Mme:Salaire 2
+
+; Opération rapprochée
+2020/02/11 * COMMERCE
+    COMPTES:CMB:Compte Cheques                       
+    DEPENSES:Charges:Alimentation                       € 50
+
+; Ventilation x2
+2020/02/11 * COMMERCE
+    COMPTES:CMB:Compte Cheques                        € -100
+    DEPENSES:Charges:Alimentation                       € 75.50
+    DEPENSES:Charges:Entretien                          € 24.50
+
+; Ventilation x3
+2020/01/07 * ASSURANCES
+    COMPTES:CMB:Compte Cheques
+    DEPENSES:Charges:Voiture:Assurance Auto            € 32.47
+    DEPENSES:Charges:Logement:Assurance Multirisques Habitation  € 9.00
+    DEPENSES:Charges:Sante:Assurance Dommages Corporels  € 6.00
+
+; Ventilation x3 (avec commentaires)
+2020/01/25 * eCOMMERCE
+    COMPTES:CMB:Compte Cheques                       € -143.12
+    DEPENSES:Envies:Dessin                              € 6.99
+    ;comment=Nouveau cahier
+    DEPENSES:Charges:Vetements		              € 127.13
+    ;comment=Chaussures + jean
+    DEPENSES:Envies:Lecture                             € 9.00
+
+; Opération (avec commentaire)
+2020-11-04 * STATION CARBURANT
+  COMPTES:CMB:Compte Cheques  
+  DEPENSES:Charges:Voiture:Carburant  		€46.22	 ;1.149€/L
+
+; Transfert (chaque montant renseigné)
+2020/07/15 * EPARGNE
+    COMPTES:CMB:Compte Cheques                       € -1000.00
+    COMPTES:CMB:LIVRET A de Mr	                      € 500
+    COMPTES:CMB:LIVRET A de Mme                       € 500
+
+; Transfert (1 montant non renseigné)
+2020/01/13 * EPARGNE
+    COMPTES:CMB:Compte Cheques
+    COMPTES:CMB:LIVRET A de Mr	                      € 150
+    COMPTES:CMB:LIVRET A de Mme                       € 150

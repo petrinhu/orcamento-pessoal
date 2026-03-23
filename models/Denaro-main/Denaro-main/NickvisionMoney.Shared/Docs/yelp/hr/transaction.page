@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<page xmlns="http://projectmallard.org/1.0/" xmlns:its="http://www.w3.org/2005/11/its" type="topic" id="transaction" its:version="2.0" xml:lang="hr">
+<info>
+	<link type="guide" xref="index"/>
+	<title type="link">Transakcija 🧾</title>
+	<credit type="author copyright">
+		<name>Fyodor Sobolev</name>
+		<years its:translate="no">2023</years>
+	</credit>
+	<credit type="publisher copyright">
+		<name>Nicholas Logozzo</name>
+		<years its:translate="no">2023</years>
+	</credit>
+	<license href="http://creativecommons.org/licenses/by/4.0/" its:translate="no"><p>Creative Commons Attribution 4.0 International License</p></license>
+
+    <mal:credit xmlns:mal="http://projectmallard.org/1.0/" type="translator copyright">
+      <mal:name>Milo Ivir</mal:name>
+      <mal:email>mail@milotype.de</mal:email>
+      <mal:years>2023</mal:years>
+    </mal:credit>
+  </info>
+
+<title>Transakcija</title>
+<p>Ova stranica objašnjava sva svojstva transakcija u aplikaciji <app>Denaro</app>.</p>
+
+<terms>
+	<item>
+		<title>ID</title>
+		<p>Svaka transakcija ima ID koji je jedinstven za određeni račun. ID-ovi počinju s 1 i povećavaju se sa svakom dodanom transakcijom. ID-ovi se ne mogu mijenjati. ID-ovi uklonjenih transakcija se ne koriste ponovo.</p>
+	</item>
+	<item>
+		<title>Opis</title>
+		<p>Dužina opisa nije ograničena. Ne smije sadržati znak točke sa zarezom (;).</p>
+	</item>
+	<item>
+		<title>Iznos</title>
+		<p>Broj u ispravnom formatu za tvoje jezično područje. Za detalje pogledaj <em>Valuta sustava</em> u <link xref="account">Stranica računa</link>.</p>
+	</item>
+	<item>
+		<title>Vrsta</title>
+		<p><em>Prihod</em> ili <em>Rashod</em>. Odabrana opcija u <link xref="account">postavkama računa</link> će se standardno odabrati kada otvoriš dijalog za dodavanje nove transakcije.</p>
+	</item>
+	<item>
+		<title>Datum</title>
+		<p>Možeš odabrati bilo koji datum. Također možeš stvoriti transakcije za buduće datume.</p>
+	</item>
+	<item>
+		<title>Interval ponavljanja</title>
+		<p>Koristi ovu opciju za stvaranje ponavljajuće transakcije. Nakon što dodaš transakciju s intervalom ponavljanja, ova će transakcija postati <em>izvorna</em> transakcija. <app>Denaro</app> će automatski generirati <em>ponovljajuće</em> transakcije za datume do danas ili za navedeni krajnji datum ako je postavljen u prošlosti. <em>Ponovljajuće</em> transakcije se ne mogu uređivati ili izbrisati, samo se <em>izvor</em> može promijeniti. Kada promijeniš <em>izvornu</em> transakciju, <app>Denaro</app> će te pitati želiš li promijeniti ili poništiti vezu <em>ponovljajućih</em> transakcija. Ako odlučiš poništiti vezu, <em>ponovljajuće</em> transakcije postaju normalne transakcije i mogu se zasebno uređivati ili brisati.</p>
+	</item>
+	<item>
+		<title>Krajnji datum ponavljanja</title>
+		<p>Krajnji datum za ponavljajuću transakciju. Ne može biti prije ili na isti dan kao početni datum.</p>
+	</item>
+	<item>
+		<title>Grupa</title>
+		<p>Svaka transakcija može pripadati samo jednoj grupi ili nijednoj („Negrupirana” grupa).</p>
+	</item>
+	<item>
+		<title>Boja</title>
+		<p>Boja za transakciju. Može se postaviti da koristi boju grupe ili jedinstvene boje. Prilikom biranja jedinstvene boje, boja će se standardno postaviti na odabranu boju u <link xref="configuration">konfiguraciji</link>, ali se može promijeniti u bilo koju boju.</p>
+	</item>
+    <item>
+        <title>Oznake</title>
+        <p>Popis oznaka za transakciju. Transakcija može imati neograničen broj oznaka (ili ne imati oznake). Oznake mogu sadržati bilo koje znakove osim zareza (<code>,</code>) i imati bilo koju dužinu, ali se očekuje da budu kratke ključne riječi. Oznake su namijenjene za dodatno filtriranje kada korištenje grupa nije dovoljno. Oznake se spremaju samo u samim transakcijama, a kao rezultat toga nekorištene oznake automatski nestaju pri zatvaranju računa.</p>
+    </item>
+	<item>
+		<title>Priznanica</title>
+		<p>Slika priznanice za transakciju. Možeš učitati JPEG ili PNG sliku ili PDF dokument, ali bez obzira na format slika će se pretvorit i spremiti kao JPEG slika. U slučaju PDF-a će se spremiti samo prva stranica. U bilo kojem trenutku možeš izbrisati ili prenijeti jednu drugu datoteku.</p>
+	</item>
+	<item>
+		<title>Bilješke</title>
+		<p>Tekstna bilješka za prilaganje transakciji.</p>
+	</item>
+</terms>
+</page>

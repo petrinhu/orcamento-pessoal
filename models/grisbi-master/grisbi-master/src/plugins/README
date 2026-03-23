@@ -1,0 +1,13 @@
+Grisbi provides several plugins that allow feature enhancement without
+adding compile-time dependencies.
+
+List of plugins:
+
+ - Gnucash : import Gnucash files into Grisbi.
+
+ - OFX : import OFX files into Grisbi.
+
+ - OpenSSL : encryption support for Grisbi files.
+
+To make them work, they need to be installed in <prefix>/lib/grisbi
+(which is done by running "make install").

@@ -1,0 +1,93 @@
+!Type:Bank
+D17/10/08
+T-6.55
+N9147576
+^
+D20/10/08
+T-220.00
+N9147574
+^
+D20/10/08
+T-50.00
+N9147572
+^
+D20/10/08
+T-50.00
+N9147571
+^
+D20/10/08
+T-55.88
+NCarte
+P CB  INTER 24H/24     19/10/08  
+L
+^
+D20/10/08
+T-969.11
+NCarte
+P CB  LDLC COM         18/10/08  
+L
+^
+D20/10/08
+T-33.90
+NCarte
+P CB  DECATHLON 188    18/10/08  
+L
+^
+D20/10/08
+T-24.92
+NCarte
+P CB  LEADER PRICE     18/10/08  
+L
+^
+D20/10/08
+T-66.80
+NCarte
+P CB  INTER BALMA      18/10/08  
+L
+^
+D21/10/08
+T950.00
+NVirement
+MVIR MR XXXXX             
+^
+D21/10/08
+T700.00
+NVirement
+MVIREMENT YYYYY                          
+^
+D27/10/08
+T-738.00
+N9147575
+^
+D27/10/08
+T-40.10
+NCarte
+P CB  LEROY MERLIN     25/10/08  
+L
+^
+D27/10/08
+T-42.54
+NCarte
+P CB  LEADER PRICE     25/10/08  
+L
+^
+D29/10/08
+T324.00
+^
+D03/11/08
+T-30.00
+NCarte
+P CB  RETRAIT DU  02/11          
+L
+^
+D03/11/08
+T-34.83
+NCarte
+P CB  BEAUZELLE VIANDE 02/11/08  
+L
+^
+D03/11/08
+T-820.00
+NVirement
+PVIR.PERMANENT BP                
+^

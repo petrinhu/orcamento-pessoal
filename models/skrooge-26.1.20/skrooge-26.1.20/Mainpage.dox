@@ -1,0 +1,13 @@
+/** @mainpage Skrooge API Reference
+ *
+ * Skrooge is the personal finance management tool, with the aim of being highly intuitive, while providing powerful functions such as reporting (including graphics), persistent Undo/Redo, encryption, and much more…
+ *
+ * \section intro_sec Introduction
+ *
+ * This is the Skrooge documentation.
+ *
+ * \image html images/skrooge_datamodel.png
+ *
+ * <BR><BR>
+ *
+ */

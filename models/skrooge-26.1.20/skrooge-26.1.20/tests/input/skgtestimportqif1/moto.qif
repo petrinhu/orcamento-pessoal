@@ -1,0 +1,61 @@
+!Type:Oth A
+D26/06'2002
+T0.00
+CX
+POpening Balance
+L[ACTIF Moto]
+^
+D26/06'2002
+MVente Moto Honda CB500
+T-3,000.00
+PFe Dupont
+L[BNP CC]
+^
+D29/06'2002
+CX
+MDévalorisation Moto Honda CB500
+T-811.23
+P ajustement du compte
+LMoto:Achat
+^
+D28/06'2004
+CX
+T582.24
+P ajustement du compte
+LMoto:Achat
+^
+D25/06/1998
+MAchat Moto Honda CB 500
+T25,000.00
+PV Durand
+L[BNP CC]
+^
+D02/05'2002
+MAcompte Yamaha BT 1100 Bulldog
+T4,287.76
+PYAM 31
+L[BNP CC]
+^
+D02/05'2002
+M2ème acompte Yamaha BT 1100 Bulldog
+T1,300.00
+PYAM 31
+L[BNP CC]
+^
+D08/12'2004
+T90.00
+Pajustement du compte
+LMoto:Achat
+^
+D15/01'2006
+CX
+T-650.00
+P ajustement du compte
+LMoto:Achat
+^
+D16/07'2006
+MRééval à 5010€ - www.lacentrale.fr - Bulldog 16000km 05/2002
+T-600.00
+Pajustement du compte
+LMoto:Achat
+^

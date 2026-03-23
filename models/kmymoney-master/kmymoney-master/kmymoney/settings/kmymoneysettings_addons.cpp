@@ -1,0 +1,164 @@
+/*
+    SPDX-FileCopyrightText: 2018 Thomas Baumgart <tbaumgart@kde.org>
+    SPDX-License-Identifier: GPL-2.0-or-later
+*/
+
+// ----------------------------------------------------------------------------
+// QT Includes
+
+#include <QFontDatabase>
+#include <QRegularExpression>
+
+// ----------------------------------------------------------------------------
+// KDE Includes
+
+#include <KColorScheme>
+
+// ----------------------------------------------------------------------------
+// Project Includes
+
+QFont KMyMoneySettings::listCellFontEx()
+{
+    if (useSystemFont()) {
+        return QFontDatabase::systemFont(QFontDatabase::GeneralFont);
+    } else {
+        return listCellFont();
+    }
+}
+
+QFont KMyMoneySettings::listHeaderFontEx()
+{
+    if (useSystemFont()) {
+        QFont font = QFontDatabase::systemFont(QFontDatabase::GeneralFont);
+        font.setBold(true);
+        return font;
+    } else {
+        return listHeaderFont();
+    }
+}
+
+QColor KMyMoneySettings::schemeColor(const SchemeColor color)
+{
+    switch(color) {
+    case SchemeColor::ListBackground1:
+        return KColorScheme (QPalette::Active, KColorScheme::View).background(KColorScheme::NormalBackground).color();
+    case SchemeColor::ListBackground2:
+        return KColorScheme (QPalette::Active, KColorScheme::View).background(KColorScheme::AlternateBackground).color();
+    case SchemeColor::ListGrid:
+        return KColorScheme (QPalette::Active, KColorScheme::View).foreground(KColorScheme::InactiveText).color();
+    case SchemeColor::ListHighlightText:
+        return KColorScheme (QPalette::Active, KColorScheme::Selection).foreground(KColorScheme::NormalText).color();
+    case SchemeColor::ListHighlight:
+        return KColorScheme (QPalette::Active, KColorScheme::Selection).background(KColorScheme::NormalBackground).color();
+    case SchemeColor::WindowText:
+        return KColorScheme (QPalette::Active, KColorScheme::Window).foreground(KColorScheme::NormalText).color();
+    case SchemeColor::WindowBackground:
+        return KColorScheme (QPalette::Active, KColorScheme::Window).background(KColorScheme::NormalBackground).color();
+    case SchemeColor::Positive:
+        return KColorScheme (QPalette::Active, KColorScheme::View).foreground(KColorScheme::PositiveText).color();
+    case SchemeColor::Negative:
+        return KColorScheme (QPalette::Active, KColorScheme::View).foreground(KColorScheme::NegativeText).color();
+
+    case SchemeColor::TransactionImported:
+        if (useCustomColors())
+            return transactionImportedColor();
+        else
+            return KColorScheme (QPalette::Active, KColorScheme::View).background(KColorScheme::LinkBackground).color();
+
+    case SchemeColor::TransactionImportedText:
+        if (useCustomColors())
+            return transactionImportedText();
+        else
+            return KColorScheme(QPalette::Active, KColorScheme::Selection).foreground(KColorScheme::NormalText).color();
+
+    case SchemeColor::TransactionMatched:
+        if (useCustomColors())
+            return transactionMatchedColor();
+        else
+            return KColorScheme (QPalette::Active, KColorScheme::View).background(KColorScheme::LinkBackground).color();
+
+    case SchemeColor::TransactionMatchedText:
+        if (useCustomColors())
+            return transactionMatchedText();
+        else
+            return KColorScheme(QPalette::Active, KColorScheme::Selection).foreground(KColorScheme::NormalText).color();
+
+    case SchemeColor::TransactionErroneous:
+        if (useCustomColors())
+            return transactionErroneousColor();
+        else
+            return KColorScheme (QPalette::Active, KColorScheme::View).foreground(KColorScheme::NegativeText).color();
+    case SchemeColor::FieldRequired:
+        if (useCustomColors())
+            return fieldRequiredColor();
+        else
+            return KColorScheme (QPalette::Active, KColorScheme::View).background(KColorScheme::NeutralBackground).color();
+
+    case SchemeColor::GroupMarker:
+        if (useCustomColors())
+            return groupMarkerColor();
+        else
+            return KColorScheme (QPalette::Active, KColorScheme::Selection).background(KColorScheme::LinkBackground).color();
+
+    case SchemeColor::GroupMarkerText:
+        if (useCustomColors())
+            return groupMarkerText();
+        else
+            return KColorScheme(QPalette::Active, KColorScheme::Selection).foreground(KColorScheme::NormalText).color();
+
+    case SchemeColor::MissingConversionRate:
+        if (useCustomColors())
+            return missingConversionRateColor();
+        else
+            return KColorScheme (QPalette::Active, KColorScheme::Complementary).foreground(KColorScheme::LinkText).color();
+    default:
+        return QColor();
+
+    }
+}
+
+QStringList KMyMoneySettings::listOfItems()
+{
+    bool prevValue = self()->useDefaults(true);
+    QStringList all = itemList().split(',', Qt::SkipEmptyParts);
+    self()->useDefaults(prevValue);
+    QStringList list = itemList().split(',', Qt::SkipEmptyParts);
+
+    // now add all from 'all' that are missing in 'list'
+    static const QRegularExpression exp(QLatin1String("-?(\\d+)"));
+    QStringList::iterator it_s;
+    for (it_s = all.begin(); it_s != all.end(); ++it_s) {
+        const auto item(exp.match(*it_s));
+        if ((item.hasMatch()) && !list.contains(item.captured(1)) && !list.contains(QString("-%1").arg(item.captured(1)))) {
+            list << *it_s;
+        }
+    }
+    return list;
+}
+
+int KMyMoneySettings::firstFiscalMonth()
+{
+    return fiscalYearBegin() + 1;
+}
+
+int KMyMoneySettings::firstFiscalDay()
+{
+    const auto day = fiscalYearBeginDay();
+    const auto month = fiscalYearBegin() + 1;
+
+    // make sure to use the calendar of a non leap year to keep
+    // the last day in February at 28 days
+    const auto maxDay = QDate(2001, month, 1).addMonths(1).addDays(-1).day();
+
+    // Clamp to the valid range
+    return (day > maxDay) ? maxDay : day;
+}
+
+QDate KMyMoneySettings::firstFiscalDate()
+{
+    QDate date = QDate(QDate::currentDate().year(), firstFiscalMonth(), firstFiscalDay());
+    if (date > QDate::currentDate())
+        date = date.addYears(-1);
+    return date;
+}
+

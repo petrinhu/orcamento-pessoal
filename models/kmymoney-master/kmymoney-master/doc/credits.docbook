@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter id="credits">
+<chapterinfo>
+  <date>2024-12-01</date>
+  <releaseinfo>5.2.0</releaseinfo>
+</chapterinfo>
+
+<title>Credits</title>
+
+<para>
+  Program Copyright &copy; 2000-2024 The &kmymoney; Development Team
+</para>
+
+<para>
+&underGPL;            <!-- GPL License -->
+</para>
+
+<para>
+  Documentation Copyright &copy; 2000-2024 The &kmymoney; Development Team
+</para>
+
+<!-- TRANS:CREDIT_FOR_TRANSLATORS -->
+<para>
+&underFDL;            <!-- FDL: do not remove -->
+</para>
+
+<sect1 id="credits.active"><title>Active Developers</title>
+<itemizedlist>
+  <listitem>
+    <para>
+      <emphasis>&Thomas.Baumgart; &Thomas.Baumgart.mail;</emphasis>:
+      Release manager and de-facto Maintainer. Core engine. Project admin.
+    </para>
+  </listitem>
+
+  <listitem>
+    <para>
+      <emphasis>&Ralf.Habacker; &Ralf.Habacker.mail;</emphasis>:Developer.
+      
+    </para>
+  </listitem>
+</itemizedlist>
+</sect1>
+
+<sect1 id="credits.special"><title>Special Thanks</title>
+<itemizedlist>
+  <listitem>
+    <para>
+      <emphasis role="bold">&Allan.Anderson;</emphasis>: Patches. CSV import/export.
+    </para>
+  </listitem>
+
+  <listitem>
+    <para>
+      <emphasis role="bold">Marko Käning <email>mk-lists@email.de</email></emphasis>:
+      Patches, packaging, and KF5-CI for OS-X.
+    </para>
+  </listitem>
+
+  <listitem>
+    <para>
+      <emphasis role="bold">Laurent Montel <email>montel@kde.org</email></emphasis>:
+      Patches.
+    </para>
+  </listitem>
+
+  <listitem>
+    <para>
+      <emphasis role="bold">Javier Campos Morales <email>javi_c@users.sourceforge.net</email></emphasis>:
+      Developer &amp; Artist.
+    </para>
+  </listitem>
+
+  <listitem>
+    <para>
+      <emphasis role="bold">&Jack.H.Ostroff; &Jack.H.Ostroff.mail;</emphasis>:
+      Documentation and user support.
+    </para>
+  </listitem>
+
+  <listitem>
+    <para>
+      <emphasis role="bold">Wolfgang Rohdewald <email>woro@users.sourceforge.net</email></emphasis>:
+      Patches.
+    </para>
+  </listitem>
+
+  <listitem>
+    <para>
+      <emphasis role="bold">Kevin Tambascio <email>tambascio@users.sourceforge.net</email></emphasis>:
+      Initial investment support.
+    </para>
+  </listitem>
+
+  <listitem>
+    <para>
+      <emphasis role="bold">&Robert.Wadley; &Robert.Wadley.mail;</emphasis>: 
+      Artist. Icons, splash screen, Home View.
+    </para>
+  </listitem>
+</itemizedlist>
+</sect1>
+
+<sect1 id="credits.past"><title>Inactive Developers and Contributors to Previous Versions</title>
+<itemizedlist>
+  <listitem>
+    <para>
+      <emphasis>&Tony.Bloomfield; &Tony.Bloomfield.mail;</emphasis>:
+      &gnucash; Importer. Database support.
+    </para>
+  </listitem>
+
+  <listitem>
+    <para>
+      <emphasis>John C <email>tacoturtle@users.sourceforge.net</email></emphasis>:
+      Developer.
+    </para>
+  </listitem>
+ 
+  <listitem>
+    <para>
+      <emphasis>&Christian.David; &Christian.David.mail;</emphasis>: Developer.
+    </para>
+  </listitem>
+
+  <listitem>
+    <para>
+      <emphasis>&Michael.T.Edwardes; &Michael.T.Edwardes.mail;</emphasis>:
+      Original author, much initial source code. Project admin.
+    </para>
+  </listitem>
+
+  <listitem>
+    <para>
+      <emphasis>Bernd Gonsior <email>bernd.gonsior@googlemail.com</email></emphasis>:
+      Reports.
+    </para>
+  </listitem>
+
+  <listitem>
+    <para>
+      <emphasis>&Ace.Jones; &Ace.Jones.mail;</emphasis>:
+      Reporting logic. OFX Import. Online Quotes. Documentation.
+    </para>
+  </listitem>
+
+  <listitem>
+    <para>
+      <emphasis>&Roger.Lum; &Roger.Lum.mail;</emphasis>: Documentation.
+    </para>
+  </listitem>
+
+  <listitem>
+    <para>
+      <emphasis>Ian Neal <email>iann_bugzilla@blueyonder.co.uk</email></emphasis>:
+      Scheduled transactions and calendars.
+    </para>
+  </listitem>
+
+  <listitem>
+    <para>
+      <emphasis>&Cristian.Onet; &Cristian.Onet.mail;</emphasis>: Patches and Plugins.
+    </para>
+  </listitem>
+
+  <listitem>
+    <para>
+      <emphasis>Felix Rodriguez <email>frodriguez@users.sourceforge.net</email></emphasis>:
+      Project admin.
+    </para>
+  </listitem>
+
+  <listitem>
+    <para>
+      <emphasis>&Alvaro.Soliverez; &Alvaro.Soliverez.mail;</emphasis>:Forecast. Reports.
+    </para>
+  </listitem>
+
+  <listitem>
+    <para>
+      <emphasis>&Darin.Strait; &Darin.Strait.mail;</emphasis>: Documentation.
+    </para>
+  </listitem>
+
+  <listitem>
+    <para>
+      <emphasis>&Fernando.Vilas; &Fernando.Vilas.mail;</emphasis>:Database support.
+    </para>
+  </listitem>
+
+  <listitem>
+    <para>
+      <emphasis>&Lukasz.Wojnilowicz; &Lukasz.Wojnilowicz.mail;</emphasis>: Developer.
+    </para>
+  </listitem>
+
+  <listitem>
+    <para>
+      <emphasis>&Colin.Wright; &Colin.Wright.mail;</emphasis>: Patches and Documentation.
+    </para>
+  </listitem>
+
+  <listitem>
+    <para>
+      <emphasis>&Dawid.Wrobel; &Dawid.Wrobel.mail;</emphasis>:
+      Patches and Woob integration.
+    </para>
+  </listitem>
+</itemizedlist>
+
+</sect1>
+</chapter>

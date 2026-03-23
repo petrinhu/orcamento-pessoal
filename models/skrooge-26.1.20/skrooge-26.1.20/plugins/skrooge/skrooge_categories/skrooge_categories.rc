@@ -1,0 +1,23 @@
+<!DOCTYPE kpartgui SYSTEM "kpartgui.dtd">
+<kpartgui name="skrooge_categories" version="5">
+<MenuBar>
+  <Menu name="file"><text>File</text>
+  <Menu name="import"><text>Import</text>
+    <Merge/>
+    <Action name="import_categories" />
+    <Separator/>
+  </Menu>  
+  </Menu>  
+  <Menu name="go"><text>Go</text>
+	  <Menu name="other"><text>Other</text>
+		  <Separator/>
+		  <Action name="view_open_similar_categories" group="go_subgroup_3"/>
+	  </Menu>	  
+  </Menu>
+  <Menu name="tool"><text>Tools</text>
+	  <Action name="clean_delete_unused_categories" group="tool_group_2"/>
+  </Menu>        
+</MenuBar>
+<ToolBar name="mainToolBar"><text>Main Toolbar</text>
+</ToolBar>
+</kpartgui>

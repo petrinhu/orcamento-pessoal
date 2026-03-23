@@ -1,0 +1,659 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <author>
+SPDX-FileCopyrightText: 2024 S. MANKOWSKI stephane@mankowski.fr
+SPDX-FileCopyrightText: 2024 G. DE BURE support@mankowski.fr
+SPDX-License-Identifier: GPL-3.0-or-later
+ </author>      
+ <class>skgreportplugin_base</class>
+ <widget class="QWidget" name="skgreportplugin_base">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1047</width>
+    <height>669</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="spacing">
+    <number>2</number>
+   </property>
+   <item>
+    <widget class="SKGTableWithGraph" name="kTableWithGraph">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QWidget" name="setupWidget" native="true">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <layout class="QGridLayout" name="gridLayout">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <property name="spacing">
+       <number>2</number>
+      </property>
+      <item row="0" column="13" colspan="2">
+       <widget class="QLabel" name="label_6">
+        <property name="text">
+         <string>Other filters</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+        <property name="buddy">
+         <cstring>kOtherFilters</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="12" rowspan="7">
+       <widget class="Line" name="line_3">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="7" rowspan="7">
+       <widget class="Line" name="line">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="10" colspan="2">
+       <widget class="QLabel" name="label_4">
+        <property name="text">
+         <string>Transaction Types</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="kColumnsLabel">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Columns:</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+        <property name="buddy">
+         <cstring>kColumns</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="1">
+       <widget class="SKGComboBox" name="kCorrectedByMode">
+        <property name="maximumSize">
+         <size>
+          <width>40</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>Select how you want to correct values</string>
+        </property>
+        <property name="statusTip">
+         <string>Select how you want to correct values</string>
+        </property>
+        <property name="sizeAdjustPolicy">
+         <enum>QComboBox::AdjustToContents</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="5">
+       <widget class="QToolButton" name="kColDown">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>22</width>
+          <height>22</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>Reduce level</string>
+        </property>
+        <property name="statusTip">
+         <string>Reduce level</string>
+        </property>
+        <property name="autoRaise">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="5">
+       <widget class="QToolButton" name="kLineDown">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>22</width>
+          <height>22</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>Collapse</string>
+        </property>
+        <property name="statusTip">
+         <string>Collapse</string>
+        </property>
+        <property name="autoRaise">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="3">
+       <widget class="QToolButton" name="kLineRemove">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>22</width>
+          <height>22</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>Remove</string>
+        </property>
+        <property name="statusTip">
+         <string>Remove</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="autoRaise">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="10">
+       <widget class="QCheckBox" name="kGrouped">
+        <property name="toolTip">
+         <string>Include grouped transactions or not in report</string>
+        </property>
+        <property name="statusTip">
+         <string>Include grouped transactions or not in report</string>
+        </property>
+        <property name="text">
+         <string>Grouped</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="1" colspan="4">
+       <widget class="SKGComboBox" name="kMode">
+        <property name="toolTip">
+         <string>Select what you want to do with values</string>
+        </property>
+        <property name="statusTip">
+         <string>Select what you want to do with values</string>
+        </property>
+        <property name="sizeAdjustPolicy">
+         <enum>QComboBox::AdjustToContents</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="10">
+       <widget class="QCheckBox" name="kTracked">
+        <property name="toolTip">
+         <string>Include tracked transactions or not in report</string>
+        </property>
+        <property name="statusTip">
+         <string>Include tracked transactions or not in report</string>
+        </property>
+        <property name="text">
+         <string>Tracked</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="10">
+       <widget class="QCheckBox" name="kIncomes">
+        <property name="toolTip">
+         <string>Include incomes or not in report</string>
+        </property>
+        <property name="statusTip">
+         <string>Include incomes or not in report</string>
+        </property>
+        <property name="text">
+         <string>Incomes</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="9" rowspan="7">
+       <widget class="Line" name="line_2">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="8" rowspan="2">
+       <widget class="SKGPeriodEdit" name="kPeriod"/>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="kLinesLabel">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Lines:</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+        <property name="buddy">
+         <cstring>kLines</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="0">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Corrected &amp;by:</string>
+        </property>
+        <property name="buddy">
+         <cstring>kCorrectedByMode</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0" colspan="7">
+       <widget class="QLabel" name="label_5">
+        <property name="text">
+         <string>Data</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QLabel" name="kLineLabel">
+        <property name="maximumSize">
+         <size>
+          <width>200</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="text">
+         <string notr="true"/>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="2">
+       <widget class="SKGComboBox" name="kLines">
+        <property name="toolTip">
+         <string>Select what you want to see in the rows</string>
+        </property>
+        <property name="statusTip">
+         <string>Select what you want to see in the rows</string>
+        </property>
+        <property name="sizeAdjustPolicy">
+         <enum>QComboBox::AdjustToContents</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="11">
+       <widget class="QCheckBox" name="kExpenses">
+        <property name="toolTip">
+         <string>Include expenses or not in report</string>
+        </property>
+        <property name="statusTip">
+         <string>Include expenses or not in report</string>
+        </property>
+        <property name="text">
+         <string>Expenses</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="6">
+       <widget class="QToolButton" name="kLineUp">
+        <property name="maximumSize">
+         <size>
+          <width>22</width>
+          <height>22</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>Expand</string>
+        </property>
+        <property name="statusTip">
+         <string>Expand</string>
+        </property>
+        <property name="autoRaise">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="8">
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>Dates</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0">
+       <widget class="QLabel" name="kModeLabel">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Mode:</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+        <property name="buddy">
+         <cstring>kMode</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="8">
+       <widget class="QFrame" name="kForecastFrm">
+        <layout class="QHBoxLayout" name="horizontalLayout_4">
+         <property name="spacing">
+          <number>2</number>
+         </property>
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="label_2">
+           <property name="text">
+            <string>Forecast:</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+           <property name="buddy">
+            <cstring>kForecastCmb</cstring>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="SKGComboBox" name="kForecastCmb">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>150</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="toolTip">
+            <string>Choose forecast method:
+- Schedule: Use the scheduled transactions in forecast.
+- Average: Use average of the three previous months in forecast</string>
+           </property>
+           <property name="sizeAdjustPolicy">
+            <enum>QComboBox::AdjustToContents</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="kForecastValue">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="maximum">
+            <number>100</number>
+           </property>
+           <property name="value">
+            <number>20</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item row="6" column="2" colspan="3">
+       <widget class="SKGUnitComboBox" name="kCorrectedBy">
+        <property name="toolTip">
+         <string>Select the index to correct the values</string>
+        </property>
+        <property name="statusTip">
+         <string>Select the index to correct the values</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="6">
+       <widget class="QToolButton" name="kColUp">
+        <property name="maximumSize">
+         <size>
+          <width>22</width>
+          <height>22</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>Increase level</string>
+        </property>
+        <property name="statusTip">
+         <string>Increase level</string>
+        </property>
+        <property name="autoRaise">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="11">
+       <widget class="QCheckBox" name="kTransfers">
+        <property name="toolTip">
+         <string>Include transfers or not in report</string>
+        </property>
+        <property name="statusTip">
+         <string>Include transfers or not in report</string>
+        </property>
+        <property name="text">
+         <string>Transfers</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="4">
+       <widget class="QToolButton" name="kLineAdd">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>22</width>
+          <height>22</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>Add</string>
+        </property>
+        <property name="statusTip">
+         <string>Add</string>
+        </property>
+        <property name="text">
+         <string notr="true">&gt;</string>
+        </property>
+        <property name="autoRaise">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1" colspan="4">
+       <widget class="SKGComboBox" name="kColumns">
+        <property name="toolTip">
+         <string>Select what you want to see in the columns</string>
+        </property>
+        <property name="statusTip">
+         <string>Select what you want to see in the columns</string>
+        </property>
+        <property name="sizeAdjustPolicy">
+         <enum>QComboBox::AdjustToContents</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="13" rowspan="4">
+       <widget class="QListWidget" name="kOtherFilters">
+        <property name="toolTip">
+         <string>The list of additional filters from other open pages that can be added</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="Line" name="kLine">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="SKGWidgetSelector" name="kWidgetSelector"/>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>SKGUnitComboBox</class>
+   <extends>SKGComboBox</extends>
+   <header>skgunitcombobox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>SKGComboBox</class>
+   <extends>QComboBox</extends>
+   <header>skgcombobox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>SKGTableWithGraph</class>
+   <extends>QWidget</extends>
+   <header>skgtablewithgraph.h</header>
+  </customwidget>
+  <customwidget>
+   <class>SKGWidgetSelector</class>
+   <extends>QWidget</extends>
+   <header>skgwidgetselector.h</header>
+  </customwidget>
+  <customwidget>
+   <class>SKGPeriodEdit</class>
+   <extends>QWidget</extends>
+   <header>skgperiodedit.h</header>
+  </customwidget>
+ </customwidgets>
+ <tabstops>
+  <tabstop>kLines</tabstop>
+  <tabstop>kLineRemove</tabstop>
+  <tabstop>kLineAdd</tabstop>
+  <tabstop>kLineDown</tabstop>
+  <tabstop>kLineUp</tabstop>
+  <tabstop>kColumns</tabstop>
+  <tabstop>kColDown</tabstop>
+  <tabstop>kColUp</tabstop>
+  <tabstop>kMode</tabstop>
+  <tabstop>kCorrectedByMode</tabstop>
+  <tabstop>kCorrectedBy</tabstop>
+  <tabstop>kPeriod</tabstop>
+  <tabstop>kForecastCmb</tabstop>
+  <tabstop>kForecastValue</tabstop>
+  <tabstop>kIncomes</tabstop>
+  <tabstop>kExpenses</tabstop>
+  <tabstop>kGrouped</tabstop>
+  <tabstop>kTransfers</tabstop>
+  <tabstop>kTracked</tabstop>
+  <tabstop>kOtherFilters</tabstop>
+ </tabstops>
+ <resources/>
+ <connections/>
+ <slots>
+  <slot>onDoubleClick(int,int)</slot>
+  <slot>onSelectionChanged(QTableWidgetItem*,QTableWidgetItem*)</slot>
+  <slot>onDateChanged()</slot>
+  <slot>onBtnModeClicked()</slot>
+  <slot>onOneLevelLess()</slot>
+  <slot>onOneLevelMore()</slot>
+  <slot>onAddLine()</slot>
+  <slot>onRemoveLine()</slot>
+  <slot>onResetInternalFilter()</slot>
+ </slots>
+</ui>

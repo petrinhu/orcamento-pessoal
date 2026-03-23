@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>KNewInvestmentWizard</class>
+ <widget class="QWizard" name="KNewInvestmentWizard">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>584</width>
+    <height>527</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>New Investment wizard</string>
+  </property>
+  <property name="wizardStyle">
+   <enum>QWizard::ModernStyle</enum>
+  </property>
+  <widget class="KInvestmentTypeWizardPage" name="m_investmentTypePage"/>
+  <widget class="KInvestmentDetailsWizardPage" name="m_investmentDetailsPage"/>
+  <widget class="KOnlineUpdateWizardPage" name="m_onlineUpdatePage"/>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>KInvestmentDetailsWizardPage</class>
+   <extends>QWizardPage</extends>
+   <header location="global">kinvestmentdetailswizardpage.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>KInvestmentTypeWizardPage</class>
+   <extends>QWizardPage</extends>
+   <header>kinvestmenttypewizardpage.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>KOnlineUpdateWizardPage</class>
+   <extends>QWizardPage</extends>
+   <header>konlineupdatewizardpage.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

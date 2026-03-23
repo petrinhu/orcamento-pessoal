@@ -1,0 +1,80 @@
+app: Skrooge
+binpatch: true
+compression: zstd
+
+ingredients:
+  dist: plucky
+  packages:
+    - skrooge-kf6
+    # Qt6 runtime
+    - libqt6core6
+    - libqt6gui6
+    - libqt6widgets6
+    - libqt6sql6
+    - libqt6dbus6
+    - libqt6printsupport6
+    - libqt6network6
+    - libqt6xml6
+    - qt6-base-dev
+    - qt6-qpa-plugins
+    # X11/XCB dependencies (critique pour xcb)
+    - libx11-6
+    - libx11-xcb1
+    - libxcb1
+    - libxcb-util1
+    - libxcb-xinerama0
+    - libxcb-cursor0
+    - libxcb-icccm4
+    - libxcb-image0
+    - libxcb-keysyms1
+    - libxcb-render-util0
+    - libxcb-shape0
+    - libxcb-shm0
+    - libxcb-randr0
+    - libxcb-xfixes0
+    - libxcb-xkb1
+    - libxext6
+    - libxrender1
+    - libxkbcommon0
+    - libxkbcommon-x11-0
+    - libgl1
+    - libegl1
+    - libglu1-mesa
+  sources: 
+    - deb http://archive.ubuntu.com/ubuntu/ plucky main universe
+    - deb http://ppa.launchpad.net/s-mankowski/ppa-kf6/ubuntu/ plucky main
+  exclude:
+    - libegl-mesa0
+    - vlc-plugin-video-output
+    - perl
+    - kinit
+    - x11-common
+    - gnupg
+
+script:
+    - cp -r usr/* .
+    - rm -rf usr/share/doc usr/share/man usr/share/lintian || true
+    - find usr/lib -name "*.a" -delete || true
+    - find usr/lib -name "*.la" -delete || true
+    - find usr/lib -name "qt5" -delete || true
+
+    - mkdir -p usr/plugins/platforms
+    - mkdir -p usr/plugins/styles
+
+    - cp -r /usr/lib/x86_64-linux-gnu/qt6/plugins/platforms usr/plugins/ || true
+    - cp -r /usr/lib/x86_64-linux-gnu/qt6/plugins/styles usr/plugins/ || true
+    - cp usr/share/applications/org.kde.skrooge.desktop skrooge.desktop
+    - rm -Rf usr/share/fonts
+    - rm -Rf usr/share/qt4
+
+    - find /usr -name libqxcb.so -exec cp {} usr/plugins/platforms/ \; || true
+    - mkdir -p usr/bin
+    - sed -i 's|Exec=skrooge|Exec=skrooge-launch|' skrooge.desktop
+
+    - echo '#!/bin/bash' > usr/bin/skrooge-launch
+    - echo 'HERE="$(dirname "$(readlink -f "$0")")"' >> usr/bin/skrooge-launch
+    - echo 'export QT_QPA_PLATFORM_PLUGIN_PATH="$HERE/../plugins/platforms"' >> usr/bin/skrooge-launch
+    - echo 'export QT_PLUGIN_PATH="$HERE/../plugins"' >> usr/bin/skrooge-launch
+    - echo 'exec "$HERE/skrooge" "$@"' >> usr/bin/skrooge-launch
+    - chmod +x usr/bin/skrooge-launch
+

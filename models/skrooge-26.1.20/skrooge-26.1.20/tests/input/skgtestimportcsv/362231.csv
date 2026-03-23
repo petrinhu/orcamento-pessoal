@@ -1,0 +1,4 @@
+"date";"account";"number";"mode";"payee";"comment";"quantity";"unit";"amount";"sign";"category";"status";"bookmarked";"id";"idtransaction";"idgroup"
+"0000-00-00";"test";"0";"";"";"";"0";"€";"0";"";"";"Y";"N";"1";"1";"0"
+"2016-05-15";"test";"0";"";"";"test";"5";"€";"5";"+";"";"N";"N";"3";"2";"0"
+"2016-05-20";"test";"0";"";"";"test";"5";"€";"5";"+";"";"N";"N";"4";"2";"0"

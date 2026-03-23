@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <author>
+SPDX-FileCopyrightText: 2024 S. MANKOWSKI stephane@mankowski.fr
+SPDX-FileCopyrightText: 2024 G. DE BURE support@mankowski.fr
+SPDX-License-Identifier: GPL-3.0-or-later
+ </author>      
+ <class>skgdebugplugin_base</class>
+ <widget class="QWidget" name="skgdebugplugin_base">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>579</width>
+    <height>335</height>
+   </rect>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QHBoxLayout">
+     <item>
+      <widget class="SKGComboBox" name="kExplainCmb">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="sizeAdjustPolicy">
+        <enum>QComboBox::AdjustToContents</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="SKGComboBox" name="kSQLInput">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="focusPolicy">
+        <enum>Qt::StrongFocus</enum>
+       </property>
+       <property name="toolTip">
+        <string>SQL command to execute</string>
+       </property>
+       <property name="statusTip">
+        <string>SQL command to execute</string>
+       </property>
+       <property name="editable">
+        <bool>true</bool>
+       </property>
+       <property name="sizeAdjustPolicy">
+        <enum>QComboBox::AdjustToMinimumContentsLengthWithIcon</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPlainTextEdit" name="kInput">
+       <property name="toolTip">
+        <string>Script to execute</string>
+       </property>
+       <property name="statusTip">
+        <string>Script to execute</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QPushButton" name="kSQLPushButton">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="toolTip">
+        <string>Execute</string>
+       </property>
+       <property name="statusTip">
+        <string>Execute</string>
+       </property>
+       <property name="text">
+        <string>Execute</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="kSQLTransactionPushButton">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="toolTip">
+        <string>Execute in a transaction</string>
+       </property>
+       <property name="statusTip">
+        <string>Execute in a transaction</string>
+       </property>
+       <property name="text">
+        <string>Execute in a transaction</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="kRefreshViewsAndIndexes">
+       <property name="toolTip">
+        <string>Refresh Database (views, indexes, triggers)</string>
+       </property>
+       <property name="statusTip">
+        <string>Refresh Database (views, indexes, triggers)</string>
+       </property>
+       <property name="text">
+        <string>Refresh Database</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QTextEdit" name="kSQLResult">
+     <property name="font">
+      <font>
+       <family>Courier New</family>
+      </font>
+     </property>
+     <property name="toolTip">
+      <string>SQL output</string>
+     </property>
+     <property name="statusTip">
+      <string>SQL output</string>
+     </property>
+     <property name="lineWrapMode">
+      <enum>QTextEdit::NoWrap</enum>
+     </property>
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+     <property name="acceptRichText">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout">
+     <item>
+      <widget class="QLabel" name="kTraceLevelLbl">
+       <property name="text">
+        <string>&amp;Trace level:</string>
+       </property>
+       <property name="buddy">
+        <cstring>kTraceLevel</cstring>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QSlider" name="kTraceLevel">
+       <property name="toolTip">
+        <string>Select level of traces</string>
+       </property>
+       <property name="statusTip">
+        <string>Select level of traces</string>
+       </property>
+       <property name="maximum">
+        <number>30</number>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="tickPosition">
+        <enum>QSlider::TicksAbove</enum>
+       </property>
+       <property name="tickInterval">
+        <number>1</number>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="kEnableProfilingChk">
+       <property name="toolTip">
+        <string>Enable or disable profiling</string>
+       </property>
+       <property name="statusTip">
+        <string>Enable or disable profiling</string>
+       </property>
+       <property name="text">
+        <string>Enable profiling</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>SKGComboBox</class>
+   <extends>QComboBox</extends>
+   <header>skgcombobox.h</header>
+  </customwidget>
+ </customwidgets>
+ <tabstops>
+  <tabstop>kExplainCmb</tabstop>
+  <tabstop>kSQLInput</tabstop>
+  <tabstop>kInput</tabstop>
+  <tabstop>kSQLPushButton</tabstop>
+  <tabstop>kSQLTransactionPushButton</tabstop>
+  <tabstop>kRefreshViewsAndIndexes</tabstop>
+  <tabstop>kSQLResult</tabstop>
+  <tabstop>kTraceLevel</tabstop>
+  <tabstop>kEnableProfilingChk</tabstop>
+ </tabstops>
+ <resources/>
+ <connections/>
+ <slots>
+  <slot>onExecuteSqlOrder()</slot>
+  <slot>onExecuteSqlOrderInTransaction()</slot>
+  <slot>onTraceLevelModified()</slot>
+  <slot>onProfilingModeChanged()</slot>
+  <slot>onRefreshViewsAndIndexes()</slot>
+  <slot>onModeChanged()</slot>
+ </slots>
+</ui>

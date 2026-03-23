@@ -1,0 +1,51 @@
+!Account
+NCortal PEA
+!Type:Invst
+D02/06'2003
+C*
+MRachat Consors par Cortal
+T2,312.25
+NBuy
+YCAC40 Master Unit Tracker
+I30.83
+Q75
+^
+D17/09'2003
+C*
+M75 * ,5
+T37.50
+NDiv
+YCAC40 Master Unit Tracker
+I
+Q
+LRevenus de placement:Dividendes
+^
+D14/09'2004
+C*
+MDividende 2004
+T48.00
+NDiv
+YCAC40 Master Unit Tracker
+I
+Q
+LRevenus de placement:Dividendes
+^
+D13/09'2005
+C*
+T64.50
+NDiv
+YCAC40 Master Unit Tracker
+I
+Q
+LRevenus de placement:Dividendes
+^
+D08/11'2005
+C*
+T3,357.85
+NSell
+YCAC40 Master Unit Tracker
+I44.93
+Q75
+O11.90
+LRevenus de placement:Plus-values
+^

@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<homebank v="0.59999999999999998">
+<properties title="a" car_category="0" auto_nbdays="2"/>
+<account key="5" flags="0" pos="5" type="5" name="Dettes" number="" bankname="" initial="0" minimum="0" cheque1="0" cheque2="0"/>
+<account key="4" flags="0" pos="4" type="4" name="Carte crédit" number="" bankname="" initial="0" minimum="0" cheque1="0" cheque2="0"/>
+<account key="3" flags="0" pos="3" type="3" name="Biens" number="" bankname="" initial="0" minimum="0" cheque1="0" cheque2="0"/>
+<account key="2" flags="0" pos="2" type="2" name="Espèces" number="" bankname="" initial="0" minimum="0" cheque1="0" cheque2="0"/>
+<account key="1" flags="0" pos="1" type="1" name="Banque" number="" bankname="" initial="0" minimum="0" cheque1="0" cheque2="0"/>
+</homebank>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<page xmlns="http://projectmallard.org/1.0/" xmlns:its="http://www.w3.org/2005/11/its" type="topic" id="transfer" its:version="2.0" xml:lang="ru">
+<info>
+	<link type="guide" xref="index"/>
+	<title type="link">Перевод средств</title>
+	<credit type="author copyright">
+		<name>Фёдор Соболев</name>
+		<years its:translate="no">2023</years>
+	</credit>
+	<credit type="publisher copyright">
+		<name>Nicholas Logozzo</name>
+		<years its:translate="no">2023</years>
+	</credit>
+	<license href="http://creativecommons.org/licenses/by/4.0/" its:translate="no"><p>Creative Commons Attribution 4.0 International License</p></license>
+</info>
+
+<title>Перевод средств</title>
+<p>Перевод средств — это способ перечислить деньги с одного счёта на другой. После выполнения перевода будут созданы 2 транзакции со следующими описаниями:</p>
+<list>
+	<item>
+		<p>«Перевод на <input>Имя целевого счёта</input>» на исходном счёте.</p>
+	</item>
+	<item>
+		<p>«Перевод с <input>Имя исходного счёта</input>» на целевом счёте.</p>
+	</item>
+</list>
+<p>Транзакции, созданные с помощью перевода средств, являются простыми транзакциями, которые можно свободно редактировать и удалять. Эти транзакции не связаны: изменение транзакции на исходном счёте не изменит транзакцию на целевом счёте, и наоборот.</p>
+<p>Перевод средств не позволяет создавать повторяющиеся транзакции или задавать какие-либо другие свойства, кроме суммы. Цвет, выбранный в <link xref="configuration">конфигурации</link>, будет использован для созданных транзакций.</p>
+<p>Если вы производите перевод средств между счетами с разными валютами, <app>Denaro</app> попросит вас указать обменный курс.</p>
+</page>

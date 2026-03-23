@@ -1,0 +1,27 @@
+{% if report.budget_table|length %}
+<table id="table_budget" class="table">
+    <thead>
+    <tr class="tabletitle">
+	<th align="center">{{ report.budget_table.0.1 }}</th>
+	<th align="center">{{ report.budget_table.0.2 }}</th>
+	<th align="center">{{ report.budget_table.0.3 }}</th>
+	<th align="center">{{ report.budget_table.0.4 }}</th>
+    </tr>
+    </thead>
+    <tbody>    
+{% for item in report.budget_table %}
+    {% if forloop.first %}
+    {% else %}        
+    <tr{% if item.0 %} class="tabletotal" {% endif %}>
+	<td>{% if item.0 %}<b>{% endif %}{{ item.1 }}{% if item.0 %}</b>{% endif %}</td>
+	<td align="right">{% if item.0 %}<b>{% endif %}{% ifequal item.2 item.5 %}{{ item.5|money|safe }}{% else %}{{ item.5|money|safe }}<br/><s><small>{{ item.2|money|safe }}</small></s>{% endifequal %}{% if item.0 %}</b>{% endif %}</td>
+	<td align="right">{% if item.0 %}<b>{% endif %}{{ item.3|money|safe }}{% if item.0 %}</b>{% endif %}</td>
+	<td align="right">{% if item.0 %}<b>{% endif %}{{ item.4|money|safe }}{% if item.0 %}</b>{% endif %}</td>
+    </tr>
+    {% endif %}
+{% endfor %}    
+    </tbody>
+</table>   
+{% else %}
+{{ msg_no_budget|safe }}
+{% endif %}

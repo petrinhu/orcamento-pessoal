@@ -1,0 +1,5 @@
+aqhbci-tool4 listaccounts > accounts.txt
+
+aqbanking-cli request --balance > balance.txt
+
+aqbanking-cli request --transactions -c /tmp/transactions.ctx;aqbanking-cli listtrans -c transactions.ctx --exporter=csv --profile=full -o transactions.csv 

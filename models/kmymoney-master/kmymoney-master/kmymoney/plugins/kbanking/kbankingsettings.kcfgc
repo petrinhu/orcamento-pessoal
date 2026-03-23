@@ -1,0 +1,6 @@
+File=kbanking.kcfg
+ClassName=KBankingSettings
+Singleton=true
+Mutators=true
+MemberVariables=private
+UseEnumTypes=true

@@ -1,0 +1,20 @@
+#***************************************************************************
+#* SPDX-FileCopyrightText: 2024 S. MANKOWSKI stephane@mankowski.fr
+#* SPDX-FileCopyrightText: 2024 G. DE BURE support@mankowski.fr
+#* SPDX-License-Identifier: GPL-3.0-or-later
+#***************************************************************************
+MESSAGE( STATUS "..:: CMAKE PLUGIN_IMPORT_SKG ::..")
+
+PROJECT(plugin_import_skg)
+
+LINK_DIRECTORIES (${LIBRARY_OUTPUT_PATH})
+
+SET(skrooge_import_skg_SRCS
+	skgimportpluginskg.cpp
+)
+
+KCOREADDONS_ADD_PLUGIN(skrooge_import_skg SOURCES ${skrooge_import_skg_SRCS} INSTALL_NAMESPACE "skrooge_import")
+TARGET_LINK_LIBRARIES(skrooge_import_skg KF6::Parts Qt6::Sql skgbasemodeler skgbasegui skgbankmodeler skgbankgui)
+
+########### install files ###############
+

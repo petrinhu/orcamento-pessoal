@@ -1,0 +1,7 @@
+payee=REGEXPCAP:^(ETIKOLO) BP
+date=REGEXP:^ETIKOLO BP.*$|LINEOFFSET:-2
+dateformat=dd/MM/yyyy
+number=REGEXPCAP:^FACTURE N°(.*)$
+mode=SET:Carte
+comment=REGEXP:^N° de commande :$|LINEOFFSET:6|SET:Commande %1
+amount=REGEXP:^Total à payer :$|LINEOFFSET:2

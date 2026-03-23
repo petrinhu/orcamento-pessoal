@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<page xmlns="http://projectmallard.org/1.0/" xmlns:its="http://www.w3.org/2005/11/its" type="topic" id="import-export" its:version="2.0" xml:lang="fr">
+<info>
+	<link type="guide" xref="index"/>
+	<title type="link">Importer / Exporter 📤</title>
+	<credit type="author copyright">
+		<name>Fyodor Sobolev</name>
+		<years its:translate="no">2023</years>
+	</credit>
+	<credit type="publisher copyright">
+		<name>Nicholas Logozzo</name>
+		<years its:translate="no">2023</years>
+	</credit>
+	<license href="http://creativecommons.org/licenses/by/4.0/" its:translate="no"><p>Creative Commons Attribution 4.0 International License</p></license>
+</info>
+
+<title>Importer / Exporter</title>
+<div>
+	<title>Formats d’importation</title>
+	<list>
+		<item>
+			<p its:translate="no">Open Financial Exchange (<file>.ofx</file>)</p>
+			<p>Les dates devraient être au format <em>AAAAMMJJ</em>.</p>
+		</item>
+		<item>
+			<p its:translate="no">Quicken Interchange Format (<file>.qif</file>)</p>
+			<p>Les dates devraient être au format Anglais (US) (<em>MM/JJ/AAAA</em>).</p>
+		</item>
+		<item>
+			<p its:translate="no">Denaro CSV (<file>.csv</file>)</p>
+			<p>❗ Bien que le format CSV soit courant et que certaines banques permettent à leurs utilisateurs d’exporter des informations au format CSV, ces fichiers sont en fait des tableaux qui peuvent contenir n’importe quelles données. L’importation d’un fichier CSV créé dans un autre programme échouera, car ses données ne seront pas compatibles avec ce que <app>Denaro</app> tentera d’obtenir du fichier. L’objectif de l’importation/exportation de fichiers CSV est de fournir un moyen d’ajouter des données à un compte à l’aide de programmes externes tels que des éditeurs de texte et des suites bureautiques. L’importation n’ajoutera que les nouvelles transactions sans remplacer les transactions existantes. Si vous souhaitez créer un fichier CSV manuellement, voici l’en-tête qui inclut toutes les colonnes que <app>Denaro</app> s’attend à trouver :</p>
+			<p its:translate="no"><code>ID;Date;Description;Type;RepeatInterval;RepeatFrom;RepeatEndDate;Amount;RGBA;UseGroupColor;Group;GroupName;GroupDescription;GroupRGBA</code></p>
+			<list>
+				<item>
+					<title its:translate="no">ID</title>
+					<p>Identification de transaction, devrait être unique pour un compte donné. Les identifiants commencent à 1.</p>
+				</item>
+				<item>
+					<title its:translate="no">Date</title>
+					<p>La date de la transaction (ou la date de départ dans le cas d’une transaction répétée), devrait être au format américain (<em>MM/JJ/AAAA</em>).</p>
+				</item>
+				<item>
+					<title its:translate="no">Description</title>
+					<p>Description de la transaction, elle peut contenir n’importe quel caractère sauf des points-virgules.</p>
+				</item>
+				<item>
+					<title its:translate="no">Type</title>
+					<p>Type de transaction : 0 pour un revenu, 1 pour une dépense.</p>
+				</item>
+				<item>
+					<title its:translate="no">RepeatInterval</title>
+					<p>Un nombre représentant un intervalle de répétition de la transaction :</p>
+					<p>0 - Jamais</p>
+					<p>1 - Quotidien</p>
+					<p>2 - Hebdomadaire</p>
+					<p>7 - Bi-hebdomadaire</p>
+					<p>3 - Mensuel</p>
+					<p>4 - Trimestriel</p>
+					<p>5 - Annuel</p>
+					<p>6 - Bi-annuel</p>
+					<p>Voir <em>Intervalle de répétition</em> dans la page des <link xref="transaction">transactions</link> pour des détails sur les transactions répétées.</p>
+				</item>
+				<item>
+					<title its:translate="no">RepeatFrom</title>
+					<p>Devrait être soit un identifiant de transaction source, ou 0 si c’est une transaction source, ou -1 si ce n’est pas une transaction répétée.</p>
+				</item>
+				<item>
+					<title its:translate="no">RepeatEndDate</title>
+					<p>Date de fin pour la transaction répétée ; elle devrait être au format américain (<em>MM/JJ/AAAA</em>). Laissez-la vide si ce n’est pas une transaction répétée.</p>
+				</item>
+				<item>
+					<title its:translate="no">Amount</title>
+					<p>Montant de la transaction au format américain (<em>123,456.78</em>).</p>
+				</item>
+				<item>
+					<title its:translate="no">RGBA</title>
+					<p>Couleur de la transaction ; elle devrait être au format <em>rgb (R,G,B)</em>) où <em>R</em>, <em>G</em> et <em>B</em> sont des nombres entiers compris entre 0 et 255.</p>
+				</item>
+				<item>
+					<title its:translate="no">UseGroupColor</title>
+					<p>Indique si une transaction devrait utiliser le groupe de couleur : 0 — non, 1 — oui.</p>
+				</item>
+				<item>
+					<title its:translate="no">Group</title>
+					<p>Identifiant du groupe de transactions. Les identifiant commencent à 1. Pour les transactions sans groupe, ce devrait être -1 (et non pas 0 qui est une valeur incorrecte pour un identifiant de groupe).</p>
+				</item>
+				<item>
+					<title its:translate="no">GroupName</title>
+					<p>Nom du groupe de transactions ; il devrait correspondre à l’identifiant du groupe. Il peut contenir n’importe quel caractère, à l’exception des points-virgules. Laissez-le vide pour les transactions sans groupe ; dans tous les autres cas il ne devrait pas être vide.</p>
+				</item>
+				<item>
+					<title its:translate="no">GroupDescription</title>
+					<p>Description du groupe de transactions ; elle devrait correspondre à l’identifiant du groupe. Elle peut contenir n’importe quel caractère à l’exception des points-virgules. Laissez-la vide pour les transactions sans groupe.</p>
+				</item>
+				<item>
+					<title its:translate="no">GroupRGBA</title>
+					<p>Couleur du groupe ; elle devrait être au format <em>rgb(R,G,B)</em> où <em>R</em>, <em>G</em> et <em>B</em> sont des nombres entiers compris entre 0 et 255.</p>
+				</item>
+			</list>
+			<p>Les reçus et les notes ne sont pas présents dans le fichier CSV.</p>
+		</item>
+	</list>
+</div>
+<div>
+	<title>Formats d’exportation</title>
+	<p>Vous pouvez choisir d’exporter toutes les informations ou seulement celles de la vue actuelle. Si vous sélectionnez cette dernière option, les transactions actuellement affichées seront exportées dans le même ordre que celui dans lequel elles apparaissent.</p>
+	<list>
+		<item>
+			<p its:translate="no">Portable Document Format (<file>.pdf</file>)</p>
+			<p>Un fichier contiendra les informations du compte, une liste des transactions et les images des reçus. Les transactions seront colorées comme dans l’application, mais les couleurs seront modifiées en étant rendues à moitié transparentes pour que le texte en noir reste toujours visible. Vous pouvez définir un mot de passe pour le fichier exporté.</p>
+		</item>
+		<item>
+			<p its:translate="no">Denaro CSV (<file>.csv</file>)</p>
+		</item>
+	</list>
+</div>
+</page>

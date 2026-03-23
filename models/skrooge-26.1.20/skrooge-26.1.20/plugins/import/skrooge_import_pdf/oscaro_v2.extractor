@@ -1,0 +1,7 @@
+payee=REGEXPCAP:^(OSCARO).COM$
+date=REGEXPCAP:^Date de facturation : (.*)$
+dateformat=dd/MM/yyyy
+number=REGEXPCAP:^Facture : (.*)$
+mode=SET:Carte
+comment=REGEXPCAP:^Numéro de commande : (.*)$|SET:Commande %1
+amount=REGEXP:^Montant TTC :$|LINEOFFSET:9

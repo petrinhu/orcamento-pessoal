@@ -1,0 +1,30 @@
+# From: https://github.com/shuhaoliu/docker-clion-dev/blob/master/docker-compose.yml
+
+version: '3'
+
+services:
+  gdbserver:
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    image: kmymoney_dev
+    security_opt:
+      - seccomp:unconfined
+    container_name: kmymoney_dev_env
+    volumes:
+      - ${HOST_KMM_BOOKS_FOLDER}:/kmm_books
+      - ~/.aqbanking:/root/.aqbanking
+      - ${HOST_KMM_CONFIG_FOLDER}:/root/.config/kmymoney
+      - ~/.gdbinit:/root/.gdbinit
+      - ~/.gdb:/root/.gdb
+      - build:/build
+    extra_hosts:
+      host.docker.internal: host-gateway
+    ports:
+      - "${HOST_SSH_PORT}:22"
+    environment:
+      - DISPLAY=host.docker.internal:0
+    hostname: kmymoney_dev_env
+
+volumes:
+  build:

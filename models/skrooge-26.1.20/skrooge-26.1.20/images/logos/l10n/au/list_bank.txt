@@ -1,0 +1,8 @@
+ citibank.png
+ commonwealth.png
+ ing_direct__14559.png
+ hsbc.png
+ national_bank.png
+ paypal.png
+ st_george_bank.png
+ westpac.png

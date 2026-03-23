@@ -50,7 +50,8 @@ private:
     ParcelasWidget *m_parcelas   = nullptr;
     EntradasWidget *m_entradas   = nullptr;
     QTabWidget     *m_tabs       = nullptr;
-    QLabel         *m_statusUser = nullptr;
+    QLabel         *m_statusUser  = nullptr;
+    QLabel         *m_statusTotal = nullptr;
 
     // Theme cycle button (Auto → Light → Dark → Auto)
     QToolButton *m_btnTheme = nullptr;

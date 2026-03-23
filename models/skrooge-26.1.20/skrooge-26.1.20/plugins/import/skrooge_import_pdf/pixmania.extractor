@@ -1,0 +1,7 @@
+payee=REGEXPCAP:^(PIXMANIA).COM :
+date=REGEXP:^Date de facture :$|LINEOFFSET:2
+dateformat=yyyy-MM-dd
+number=REGEXPCAP:^BON DE LIVRAISON ET FACTURE (.*)$
+mode=SET:Carte
+comment=REGEXP:^N° de commande :$|LINEOFFSET:2|SET:Commande %1
+amount=REGEXP:^Total TTC$|LINEOFFSET:2|REGEXPCAP:^(.*) .*$

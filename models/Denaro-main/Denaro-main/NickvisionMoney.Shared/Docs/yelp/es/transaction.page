@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<page xmlns="http://projectmallard.org/1.0/" xmlns:its="http://www.w3.org/2005/11/its" type="topic" id="transaction" its:version="2.0" xml:lang="es">
+<info>
+	<link type="guide" xref="index"/>
+	<title type="link">Transacción 🧾</title>
+	<credit type="author copyright">
+		<name>Fyodor Sobolev</name>
+		<years its:translate="no">2023</years>
+	</credit>
+	<credit type="publisher copyright">
+		<name>Nicholas Logozzo</name>
+		<years its:translate="no">2023</years>
+	</credit>
+	<license href="http://creativecommons.org/licenses/by/4.0/" its:translate="no"><p>Creative Commons Attribution 4.0 International License</p></license>
+
+    <mal:credit xmlns:mal="http://projectmallard.org/1.0/" type="translator copyright">
+      <mal:name>Óscar Fernández Díaz</mal:name>
+      <mal:email>oscfdezdz@tuta.io</mal:email>
+      <mal:years>2023</mal:years>
+    </mal:credit>
+  </info>
+
+<title>Transacción</title>
+<p>Esta página explica todas las propiedades de las transacciones en <app>Denaro</app>.</p>
+
+<terms>
+	<item>
+		<title>Id</title>
+		<p>Cada transacción tiene una identificación que es única para una cuenta determinada. Los identificadores comienzan con 1 y aumentan con cada transacción agregada. Los ID no se pueden cambiar, los ID de las transacciones eliminadas no se reusan.</p>
+	</item>
+	<item>
+		<title>Descripción</title>
+		<p>Sin límite de longitud. No puede contener punto y coma.</p>
+	</item>
+	<item>
+		<title>Cantidad</title>
+		<p>Un número en un formato que sea válido para su región, consulte <em>Moneda del sistema</em> en <link xref="account">Página de la cuenta</link> para obtener detalles.</p>
+	</item>
+	<item>
+		<title>Tipo</title>
+		<p><em>Ingresos</em> o <em>Gastos</em>. De forma predeterminada, el elegido en <link xref="account">configuración de la cuenta</link> se seleccionará cuando abra un cuadro de diálogo para agregar una transacción nueva.</p>
+	</item>
+	<item>
+		<title>Fecha</title>
+		<p>Se puede seleccionar cualquier fecha, también puede crear transacciones para fechas futuras.</p>
+	</item>
+	<item>
+		<title>Intervalo de repetición</title>
+		<p>Use esta opción para crear una transacción recurrente. Después de agregar una transacción con un intervalo de repetición, esta transacción se convertirá en una transacción de <em>origen</em>. <app>Denaro</app> generará automáticamente transacciones <em>repetidas</em> para las fechas hasta hoy o una fecha de finalización proporcionada si se estableció en el pasado. Las transacciones <em>repetidas</em> no se pueden editar ni eliminar, solo se puede modificar <em>origen</em>. Cuando modifique la transacción <em>fuente</em>, <app>Denaro</app> le preguntará si desea modificar o desasociar las transacciones <em>repetidas</em>. Si elige desasociar, las transacciones <em>repetidas</em> se convierten en transacciones normales y se pueden editar o eliminar por separado.</p>
+	</item>
+	<item>
+		<title>Repetir fecha final</title>
+		<p>Fecha de finalización de una transacción con repetición. No puede ser anterior o el mismo día que la fecha de inicio.</p>
+	</item>
+	<item>
+		<title>Grupo</title>
+		<p>Cada transacción puede pertenecer a un solo grupo o a ninguno (grupo "No agrupado").</p>
+	</item>
+	<item>
+		<title>Color</title>
+		<p>Un color para la transacción. Puede configurarse para usar un color de grupo o un color único. Al seleccionar un color único, se establecerá por defecto el color seleccionado en la <link xref="configuration">configuración</link>, pero puede cambiarse a cualquier color.</p>
+	</item>
+    <item>
+        <title>Etiquetas</title>
+        <p>Una lista de etiquetas para la transacción. Una transacción puede tener un número ilimitado de etiquetas (o no tener etiquetas). Las etiquetas pueden contener cualquier carácter excepto una coma (<code>,</code>) y tener cualquier longitud, pero se espera que sean palabras clave cortas. Las etiquetas están destinadas a usarse para el filtrado adicional cuando el uso de los grupos no es suficiente. Las etiquetas solo se guardan en las transacciones mismas y, como un resultado, las etiquetas no usadas desaparecen automáticamente al cerrar la cuenta.</p>
+    </item>
+	<item>
+		<title>Recibo</title>
+		<p>Una imagen de un recibo de transacción. Puede cargar una imagen JPEG o PNG o un documento PDF, pero sin importar el formato, se convertirá y se guardará como una imagen JPEG. En caso de PDF, solo se guardará la primera página. Puede eliminar o cargar otro archivo en cualquier momento.</p>
+	</item>
+	<item>
+		<title>Notas</title>
+		<p>Una nota de texto libre para adjuntar a la transacción.</p>
+	</item>
+</terms>
+</page>

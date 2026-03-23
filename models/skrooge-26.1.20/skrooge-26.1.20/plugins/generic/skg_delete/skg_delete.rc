@@ -1,0 +1,12 @@
+<!DOCTYPE kpartgui SYSTEM "kpartgui.dtd">
+<kpartgui name="skg_delete" version="2">
+<MenuBar>
+  <Menu name="edit"><text>Edit</text>
+	  <Action name="edit_delete" group="edit_group_copy"/>
+  </Menu>
+</MenuBar>
+<ToolBar name="mainToolBar"><text>Main Toolbar</text>
+	<Action name="edit_delete" group="main_group_edit"/>
+	<Separator/>
+</ToolBar>
+</kpartgui>

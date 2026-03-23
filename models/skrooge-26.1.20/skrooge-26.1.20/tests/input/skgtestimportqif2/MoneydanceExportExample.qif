@@ -1,0 +1,283 @@
+!Type:Class
+NSampleClass
+DSample Class Description
+^
+!Type:Cat
+NATM Withdrawal
+DATM Withdrawal
+E
+^
+NATM Withdrawal:Cash
+DATM Withdrawal:Cash
+E
+^
+NATM Withdrawal:Service Charge
+DATM Withdrawal:Service Charge
+E
+^
+NAutomotive
+DAutomotive
+E
+^
+NAutomotive:Fuel
+DAutomotive:Fuel
+E
+^
+NAutomotive:Misc
+DAutomotive:Misc
+E
+^
+NAutomotive:Parking
+DAutomotive:Parking
+E
+^
+NAutomotive:Service
+DAutomotive:Service
+E
+^
+NBills
+DBills
+E
+^
+NBills:Cell Phone
+DBills:Cell Phone
+E
+^
+NBills:City Utilities
+DBills:City Utilities
+E
+^
+NBills:Electric
+DBills:Electric
+E
+^
+NBills:Garbage
+DBills:Garbage
+E
+^
+NBills:Gas
+DBills:Gas
+E
+^
+NBills:Magazine Subscriptions
+DBills:Magazine Subscriptions
+E
+^
+NBills:Rent
+DBills:Rent
+E
+^
+NBills:Telephone
+DBills:Telephone
+E
+^
+NBooks
+DBooks
+E
+^
+NClothing
+DClothing
+E
+^
+NClothing:Laundry
+DClothing:Laundry
+E
+^
+NDining Out
+DDining Out
+E
+^
+NFees
+DFees
+E
+^
+NGrocery
+DGrocery
+E
+^
+NHealth Care
+DHealth Care
+E
+^
+NTravel
+DTravel
+E
+^
+NVacation
+DVacation
+E
+^
+NPayments
+DPayments
+I
+^
+NPayments:Interest
+DPayments:Interest
+I
+^
+NSalary
+DSalary
+I
+^
+!Option:AutoSwitch
+!Account
+NBank of Timbuktu
+D
+TBank
+^
+!Account
+NBank of Timbuktu:Free Checking 2.0
+D
+TBank
+^
+!Account
+NBank of America
+DBank of America
+TBank
+^
+!Account
+NBank of America:BofA Checking
+DBank of America
+TBank
+^
+!Account
+NBank of America:BofA Savings
+DBank of America
+TBank
+^
+!Account
+NBank of America:Other State Checking
+DBank of America
+TBank
+^
+!Account
+NSomewhere Credit Union
+D
+TBank
+^
+!Account
+NWells Fargo
+D
+TBank
+^
+!Account
+NWells Fargo:Checking
+DWells Fargo
+TBank
+^
+!Account
+NWells Fargo:Savings
+DWells Fargo
+TBank
+^
+!Account
+NMastercard
+DMastercard
+TBank
+^
+!Account
+NVisa
+DVisa
+TBank
+^
+!Account
+NAMEX
+DAMEX
+TBank
+^
+!Account
+NAuto Loan 1
+DAuto Loan 1
+TBank
+^
+!Account
+NAuto Loan 2
+DAuto Loan 2
+TBank
+^
+!Account
+NStudent Loan
+DStudent Loan
+TBank
+^
+!Clear:AutoSwitch
+!Account
+NBank of Timbuktu
+D
+TBank
+^
+!Type:Bank
+!Account
+NBank of Timbuktu:Free Checking 2.0
+D
+TBank
+^
+!Type:Bank
+D06/21/2011
+T-20.00
+C 
+N
+PAccount inactivity fee
+M
+LFees
+^
+D06/21/2011
+T-10.00
+C 
+N
+PClose-out cash withdrawal
+M
+LDining Out:Lunches
+^
+D05/14/2010
+T-1095.00
+CX
+N
+PProperty Management
+MFirst Months Rent
+LBills:Rent
+^
+D05/14/2010
+T-1000.00
+CX
+N
+PSecurity Deposit
+M
+LBills:Rent
+^
+D05/03/2010
+T2000.00
+CX
+PInitial Deposit
+L[Wells Fargo:Checking]
+^
+D06/30/2009
+T75.00
+CX
+N
+PAccount opening bonus
+M
+LPayments
+^
+D06/25/2009
+T50.00
+CX
+N
+PInitial Deposit
+M
+L[Wells Fargo:Checking]
+^
+!Type:Bank
+!Account
+NBank of America:BofA Checking
+DBank of America
+TBank
+^
+!Type:Bank
+D12/31/1969
+T571.55CX
+N
+PDeposit
+M
+L[Start Balance]
+^

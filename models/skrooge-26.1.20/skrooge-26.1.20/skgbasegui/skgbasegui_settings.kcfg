@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kcfg xmlns="http://www.kde.org/standards/kcfg/1.0"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.kde.org/standards/kcfg/1.0
+      http://www.kde.org/standards/kcfg/1.0/kcfg.xsd" >
+  <kcfgfile/>
+    <group name="Main Panel">
+    <entry name="show_splash_screen" type="Bool">
+	<label>Show splash screen</label>
+	<default>true</default>
+    </entry>
+    <entry name="update_modified_bookmarks" type="Int">
+	<label>Update modified bookmarks on close</label>
+	<default>2</default>
+    </entry>
+    <entry name="update_modified_contexts" type="Int">
+	<label>Update modified pages on close</label>
+	<default>2</default>
+    </entry>
+    <entry name="main_tabs_position" type="Int">
+	<label>Main tabs position</label>
+	<default>0</default>
+    </entry>
+    <entry name="date_format" type="Int">
+	<label>Date format</label>
+	<default>2</default>
+    </entry> 
+    <entry name="icon_in_system_tray" type="Bool">
+        <label>Icon in system tray</label>
+        <default>false</default>
+    </entry>
+  </group>
+</kcfg>

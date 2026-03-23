@@ -1,0 +1,19 @@
+.denaro-total {
+  color: @blue_1;
+}
+
+.denaro-income {
+  color: @green_1;
+}
+
+.denaro-expense {
+  color: @red_1;
+}
+
+.group-filter-disabled check {
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.15) inset;
+}
+
+.group-filter-disabled check:hover {
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2) inset;
+}

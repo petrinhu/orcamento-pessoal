@@ -1,0 +1,6 @@
+#!/bin/bash
+if [[ $1 = "ls" ]]; then
+  #Simulate: boobank ls -q -f csv -v -s id,balance
+  echo "id;label;balance"
+  echo "invalid line"
+fi

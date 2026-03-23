@@ -20,6 +20,7 @@ public:
 
 signals:
     void dadosAlterados();
+    void statusAtualizado(const QString &msg);
 
 public slots:
     void recarregar();
@@ -38,6 +39,7 @@ private:
     QList<FonteRenda> fontesDisponiveis() const;
 
     static const int COL_PER_MONTH = 4; // Fonte | Valor | Data | Obs
+    static const int HEADER_ROWS   = 2; // row 0 = mês, row 1 = sub-labels
 
     QTableWidget *m_table   = nullptr;
     QPushButton  *m_btnDel  = nullptr;

@@ -1,0 +1,7 @@
+date;amount;comment;type
+"1/1/2010";1000;"transfer 1
+from account A
+to account B";TRANSFER
+"2/2/2010";2000;"transfer 2
+from account A
+to account C";TRANSFER

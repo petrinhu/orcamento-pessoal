@@ -63,7 +63,7 @@ void ParcelasWidget::buildUi()
 
     // ── Toolbar ────────────────────────────────────────────────────────────
     auto *toolbar = new QHBoxLayout;
-    m_btnNova = new QPushButton(tr("+ Nova compra"), this);
+    m_btnNova = new QPushButton(tr("+ Novo item"), this);
     m_btnNova->setObjectName(QStringLiteral("primary"));
     m_btnExcluir = new QPushButton(tr("Excluir"), this);
     m_btnExcluir->setEnabled(false);
@@ -83,7 +83,7 @@ void ParcelasWidget::buildUi()
     // ── Table ───────────────────────────────────────────────────────────────
     m_table = new QTableWidget(this);
     m_table->setAlternatingRowColors(true);
-    m_table->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    m_table->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
     m_table->horizontalHeader()->setStretchLastSection(false);
     m_table->verticalHeader()->setVisible(false);
     m_table->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -180,6 +180,20 @@ void ParcelasWidget::recarregar()
     populateTable();
     aplicarOrdenacao();
     m_loading = false;
+
+    // Status bar — total do mês atual
+    qint64 totalMes = 0;
+    for (int i = 0; i < m_compras.size(); ++i) {
+        for (const auto &p : m_parcelasPorCompra[i]) {
+            const QDate d = ParcelaService::dataParaParcela(m_compras[i], p.numero);
+            if (d.year() == m_currentMonth.year() && d.month() == m_currentMonth.month())
+                totalMes += p.valor;
+        }
+    }
+    emit statusAtualizado(tr("%1 compra(s)  •  %2: %3")
+        .arg(m_compras.size())
+        .arg(m_currentMonth.toString(QStringLiteral("MMM/yy")))
+        .arg(ParcelaService::formatarValor(totalMes)));
 }
 
 QDate ParcelasWidget::dateForColumn(int col) const
@@ -316,6 +330,14 @@ void ParcelasWidget::populateTable()
                           QAbstractItemView::PositionAtTop);
 
     m_table->blockSignals(false);
+
+    // Expande colunas ao conteúdo; nunca encolhe (preserva ajuste manual)
+    for (int c = 0; c < m_table->columnCount(); ++c) {
+        const int prev = m_table->columnWidth(c);
+        m_table->resizeColumnToContents(c);
+        if (m_table->columnWidth(c) < prev)
+            m_table->setColumnWidth(c, prev);
+    }
 
     m_lblStatus->setText(tr("%1 compra(s)").arg(m_compras.size()));
 }

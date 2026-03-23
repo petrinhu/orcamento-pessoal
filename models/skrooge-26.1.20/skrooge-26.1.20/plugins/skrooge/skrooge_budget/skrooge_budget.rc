@@ -1,0 +1,11 @@
+<!DOCTYPE kpartgui SYSTEM "kpartgui.dtd">
+<kpartgui name="skrooge_budget" version="4">
+<MenuBar>
+<Menu name="edit"><text>Edit</text></Menu>
+  <Menu name="tool"><text>Tools</text>
+	  <Action name="tool_process_budget_rules" group="tool_group_3"/>
+  </Menu>  
+</MenuBar>
+<ToolBar name="mainToolBar"><text>Main Toolbar</text>
+</ToolBar>
+</kpartgui>

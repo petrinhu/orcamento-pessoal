@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<page xmlns="http://projectmallard.org/1.0/" xmlns:its="http://www.w3.org/2005/11/its" type="topic" id="account" its:version="2.0" xml:lang="cs">
+<info>
+	<link type="guide" xref="index"/>
+	<title type="link">Účet 🏦</title>
+	<credit type="author copyright">
+		<name>Fyodor Sobolev</name>
+		<years its:translate="no">2023</years>
+	</credit>
+	<credit type="publisher copyright">
+		<name>Nicholas Logozzo</name>
+		<years its:translate="no">2023</years>
+	</credit>
+	<license href="http://creativecommons.org/licenses/by/4.0/" its:translate="no"><p>Creative Commons Attribution 4.0 International License</p></license>
+
+    <mal:credit xmlns:mal="http://projectmallard.org/1.0/" type="translator copyright">
+      <mal:name>Jonáš Loskot</mal:name>
+      <mal:email>osobni@jonasloskot.cz</mal:email>
+      <mal:years>2023</mal:years>
+    </mal:credit>
+  </info>
+
+<title>Účet</title>
+<p>Na této stránce jsou vysvětleny všechny vlastnosti účtů v aplikaci <app>Denaro</app>. Většina z nich je uvedena v <gui>dialogovém okně Nastavení účtu</gui>. Toto okno se také automaticky otevře po vytvoření nového účtu.</p>
+<p>Každý účet je uložen v jednom souboru <file>*.nmoney</file>. Soubory vytvořené ve starší <em>stabilní</em> verzi aplikace <app>Denaro</app> lze bezpečně otevřít v novější <em>stabilní</em> verzi aplikace. Přestože aplikace může běžet na různých platformách (Windows a Linux), soubory <file>*.nmoney</file> jsou mezi platformami 100% kompatibilní, pokud pocházejí ze stejné verze aplikace (např. V2023.1.0).</p>
+<note style="warning">
+	<p>Nestabilní (beta a RC) verze aplikace mohou obsahovat chyby nebo nedokončené úpravy, které mohou způsobit ztrátu dat. NEPOUŽÍVEJTE soubory účtů, které obsahují skutečná data, v nestabilních verzích aplikace!</p>
+</note>
+
+<terms>
+	<item>
+		<title>Název</title>
+		<p>Název účtu se zobrazuje v seznamu posledních účtů a na kartách. Název nemá omezenou délku a může obsahovat libovolné znaky včetně emotikonů.</p>
+	</item>
+	<item>
+		<title>Typ účtu</title>
+		<p>K dispozici jsou 3 typy účtů: 🟣<em>Běžný</em>, 🔵<em>Spořicí</em> a 🟢<em>Firemní</em>. Typ účtu je pouze užitečné označení, které se zobrazuje v seznamu posledních účtů a nemá vliv na to, jak aplikace funguje nebo co můžete s účtem dělat. Každý typ účtu má svou vlastní barvu, tyto barvy lze nakonfigurovat v <link xref="configuration">globálním nastavení</link> .</p>
+	</item>
+	<item>
+		<title>Výchozí typ transakce</title>
+		<p>Při vytváření nové transakce bude její typ ve výchozím nastavení stejný jako v tomto nastavení.</p>
+	</item>
+	<item>
+        <title>Hranice pro připomenutí transakcí</title>
+        <p>Hranice použitá při zobrazování připomínek o nadcházejících transakcích.</p>
+    </item>
+	<item>
+		<title>Systémová měna</title>
+		<p>Při každém spuštění získá aplikace údaje o měně a formátování čísel z vašich systémových místních nastavení. Tyto údaje se použijí k zobrazení symbolu měny (pokud není použita vlastní měna, viz níže) a k určení, v jakém formátu budou čísla přijímána jako hodnoty částek transakcí. Několik příkladů:</p>
+		<list>
+			<item><p>Pokud je vaše místní prostředí <em>Angličtina (Spojené státy)</em>, symbol měny bude nastaven na <em>$</em> a <em>1,000.00</em> bude akceptováno jako platné číslo.</p></item>
+			<item><p>Pokud je vaše místní prostředí <em>Čeština</em>, symbol měny bude nastaven na <em>Kč</em> a <em>1 000,00</em> bude akceptováno jako platné číslo.</p></item>
+			<item><p>Pokud je vaše místní prostředí <em>Ruština</em>, symbol měny bude nastaven na <em>₽</em> a <em>1000,00</em> bude akceptováno jako platné číslo.</p></item>
+		</list>
+		<note style="advanced">
+			<p>V systému Linux je možné nastavit různé místní jazyky a formáty systému. Změna těchto nastavení se liší v závislosti na používaném desktopovém prostředí. Navzdory rozdílům v umístění těchto nastavení jejich změna upraví proměnné systémového prostředí, například <code>LANG</code>, <code>LC_TIME</code> a <code>LC_MONETARY</code>. <app>Denaro</app> se pokusí použít formáty částek a dat podle těchto proměnných. Pokud aplikace očekávané formáty nepoužívá, zkontrolujte, zda jsou proměnné správně nastaveny pomocí příkazu <code>locale</code> v terminálu. Pokud jste našli chybu a chcete ji nahlásit, poskytněte prosím výstup příkazu <code>locale</code>, aby mohli vývojáři reprodukovat váš problém se stejným nastavením.</p>
+		</note>
+	</item>
+	<item>
+		<title>Použít vlastní měnu</title>
+		<p>Pokud je tato možnost povolena, bude místo symbolu měny, který poskytuje vaše systémové prostředí, použit <gui>vlastní symbol měny</gui>.</p>
+	</item>
+	<item>
+		<title>Vlastní symbol měny</title>
+		<p>Až 3 znaky nebo 1 emotikon. Nemůže to být číslo.</p>
+	</item>
+	<item>
+		<title>Vlastní kód měny</title>
+		<p>Až 3 znaky nebo 1 emotikon.</p>
+		<p>Příklad pro pochopení rozdílu mezi symbolem a kódem: <em>Kč</em> je symbol, <em>CZK</em> je kód.</p>
+	</item>
+	<item>
+        <title>Vlastní styl množství měny</title>
+        <p>Výběr mezi zobrazením množství jedním z následujících způsobů:</p>
+        <list>
+            <item><p>$n</p></item>
+            <item><p>n$</p></item>
+            <item><p>$ n</p></item>
+            <item><p>n $</p></item>
+        </list>
+    </item>
+	<item>
+		<title>Vlastní oddělovače desetinných míst a skupin měn</title>
+		<p>Až 2 znaky nebo 1 emotikon.</p>
+	</item>
+	<item>
+		<title>Vlastní desetinné číslice měny</title>
+		<p>Velikost desetinné části hodnot částek. Při „neomezeném“ počtu číslic bude v desetinné části tolik čísel, kolik je potřeba k zobrazení přesné částky, ale pokud je částka celým číslem, nebude desetinná část žádná.</p>
+	</item>
+	<item>
+		<title>Heslo</title>
+		<p>Každý účet může být chráněn heslem. Přidáním hesla se účet zašifruje (bez dešifrování pomocí hesla není možné data číst). Buďte opatrní: pokud heslo ztratíte, nebudete moci data obnovit! Heslo lze také změnit nebo odstranit pomocí dialogového okna nastavení otevřeného účtu. Odstraněním hesla dojde k dešifrování účtu.</p>
+	</item>
+	<item>
+		<title>Řazení podle ID, data nebo částky</title>
+		<p>U každého účtu je uloženo, zda se mají transakce v hlavním okně řadit podle ID, data nebo částky. Pokaždé, když toto nastavení změníte, bude uloženo do souboru účtu a obnoví se při jeho opětovném otevření.</p>
+	</item>
+	<item>
+		<title>Pořadí řazení</title>
+		<p>Každý účet uchovává informace o pořadí transakcí v hlavním okně. Pokaždé, když je změníte, uloží se do souboru účtu a obnoví se při jeho opětovném otevření.</p>
+	</item>
+	<item>
+		<title>Viditelnost skupin</title>
+		<p>Každý účet ukládá informace o tom, zda je seznam skupin v hlavním okně skrytý, nebo ne. Pokaždé, když změníte viditelnost seznamu skupin, je tato informace uložena a poté obnovena při opětovném otevření účtu.</p>
+	</item>
+	<item>
+        <title>Viditelnost štítků</title>
+        <p>Každý účet ukládá informace o tom, zda je seznam štítků v hlavním okně skrytý, nebo ne. Pokaždé, když změníte viditelnost seznamu štítků, je tato informace uložena a poté obnovena při opětovném otevření účtu.</p>
+    </item>
+</terms>
+</page>

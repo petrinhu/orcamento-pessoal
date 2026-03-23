@@ -235,7 +235,7 @@ static QString gerarQss()
            No gradients — pure colour-contrast depth (BreezeStyleSheets pattern).
         ── */
         QTabWidget::pane {
-            background-color: %3;
+            background-color: %2;
             border: 1px solid %7;
             border-top: none;
         }
@@ -250,7 +250,7 @@ static QString gerarQss()
             margin-right: 2px;
         }
         QTabBar::tab:selected {
-            background-color: %3;
+            background-color: %2;
             color: %1;
             border-top: 2px solid %4;
             margin-top: -1px;

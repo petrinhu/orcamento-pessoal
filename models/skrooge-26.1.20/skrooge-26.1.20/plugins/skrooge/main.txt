@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="https://www.w3.org/1999/xhtml">
+    <head>
+        <style type="text/css">
+            {{ kde_infopage_css|safe }}
+            {{ kde_infopage_rtl_css|safe }}
+            body {
+            font-size: %3px;
+	    font-family : {{ font_family }};              
+            }
+        </style>
+        <title>Skrooge</title>
+    </head>
+    <body>
+
+    <div id="header">
+        <div id="headerL"><img src="{{ logo }}" height="128" width="128"/></div>
+        <div id="headerR"></div>
+        <div id="title">Skrooge</div>
+        <div id="tagline"></div>
+    </div>
+
+    <!-- the bar -->
+    <div id="bar">
+        <div id="barT">
+            <div id="barTL"></div>
+            <div id="barTR"></div>
+            <div id="barTC"></div>
+        </div>
+        <div id="barL">
+            <div id="barR">
+                <div id="barCenter" class="bar_text">{{ about_shortdescription|safe }}</div>
+            </div>
+        </div>
+        <div id="barB">
+            <div id="barBL"></div>
+            <div id="barBR"></div>
+            <div id="barBC"></div>
+        </div>
+    </div>
+
+    <!-- the main text box -->
+    <div id="box">
+        <div id="boxT">
+            <div id="boxTL"></div>
+            <div id="boxTR"></div>
+            <div id="boxTC"></div>
+        </div>
+        <div id="boxL">
+        <div id="boxR">
+            <div id="boxCenter">
+                <h2 style="margin-top: 0px;">{{ about_welcome }} {{about_version}}</h2>
+                {{ about_maintext|safe }}
+            </div>
+        </div>
+        </div>
+        <div id="boxB">
+            <div id="boxBL"></div>
+            <div id="boxBR"></div>
+            <div id="boxBC"></div>
+        </div>
+    </div>
+
+    <div id="footer">
+        <div id="footerL"></div>
+        <div id="footerR"></div>
+    </div>
+    
+    
+
+    <!-- the main text box -->
+    <div id="box">
+        <div id="boxT">
+            <div id="boxTL"></div>
+            <div id="boxTR"></div>
+            <div id="boxTC"></div>
+        </div>
+        <div id="boxL">
+        <div id="boxR">
+            <div id="boxCenter">
+                <h2 style="margin-top: 0px;"><a onclick="genQuote()">{{ about_did_you_know }}</a></h2>
+                <div id="quote"></div><br/>
+            </div>
+        </div>
+        </div>
+        <div id="boxB">
+            <div id="boxBL"></div>
+            <div id="boxBR"></div>
+            <div id="boxBC"></div>
+        </div>
+    </div>
+
+    <div id="footer">
+        <div id="footerL"></div>
+        <div id="footerR"></div>
+    </div>    
+    <script >
+        function genQuote() {
+            document.getElementById('quote').innerHTML = quotes[Math.floor(Math.random() * quotes.length)];
+        }
+
+        //quote array
+        var quotes = [
+{% for item in report.tips_of_day %}
+            "{{ item|replace:"\";\\\""|safe }}",
+{% endfor %} 
+        ];
+        
+        genQuote();
+    </script>
+    </body>
+</html>

@@ -1,0 +1,14 @@
+#!/bin/bash
+if [[ $1 = "ls" ]]; then
+    #Simulate: boobank ls -q -f csv -v -s id,balance
+  echo "id;label;balance"
+    echo "LEO-987654321@ldlc;;"  
+else
+    #Simulate: boobank -q -f csv history "47896@creditcooperatif" -s date,rdate,type,raw,label,amount --condition "rdate>%4" -n 99999
+    echo "date;rdate;type;raw;label;amount"
+    echo "2018-09-25;Not available;1;;;307.00"
+    echo "2018-09-18;Not available;1;;;150.00"
+    echo "2018-09-04;Not available;4;;;141.80"
+
+
+fi

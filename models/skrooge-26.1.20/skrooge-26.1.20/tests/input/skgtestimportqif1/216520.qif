@@ -1,0 +1,19 @@
+!Type:Bank
+D01/08'2009
+T1,196.64
+CX
+POpening Balance
+L[BNP CC]
+^
+D30/11/1998
+C*
+MEmargement
+T10,000.00
+PStorageTek
+LSalaire!:Salaire net
+SSalaire!:Salaire net
+EEmargement Novembre
+$11,750.00
+S[CA PAA STK]
+$-1,750.00
+^

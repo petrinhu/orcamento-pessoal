@@ -1,0 +1,492 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <author>
+SPDX-FileCopyrightText: 2024 S. MANKOWSKI stephane@mankowski.fr
+SPDX-FileCopyrightText: 2024 G. DE BURE support@mankowski.fr
+SPDX-License-Identifier: GPL-3.0-or-later
+ </author>      
+ <class>skgsearchplugin_base</class>
+ <widget class="QWidget" name="skgsearchplugin_base">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>750</width>
+    <height>754</height>
+   </rect>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_5">
+     <property name="spacing">
+      <number>2</number>
+     </property>
+     <item>
+      <widget class="SKGFilteredTableView" name="kView"/>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout_3">
+       <property name="spacing">
+        <number>2</number>
+       </property>
+       <item>
+        <widget class="QToolButton" name="kTopBtn">
+         <property name="autoRaise">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QToolButton" name="kUpBtn">
+         <property name="autoRaise">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QToolButton" name="kDownBtn">
+         <property name="autoRaise">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QToolButton" name="kBottomBtn">
+         <property name="autoRaise">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_3">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <property name="spacing">
+      <number>2</number>
+     </property>
+     <item>
+      <widget class="QLabel" name="kQueryInfo">
+       <property name="text">
+        <string/>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="kApply">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="toolTip">
+        <string>Apply processes</string>
+       </property>
+       <property name="statusTip">
+        <string>Apply processes</string>
+       </property>
+       <property name="text">
+        <string>Execute</string>
+       </property>
+       <property name="toolButtonStyle">
+        <enum>Qt::ToolButtonTextBesideIcon</enum>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="kQueryGrp">
+     <property name="title">
+      <string>Search</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_4">
+      <item>
+       <widget class="SKGQueryCreator" name="kQueryCreator">
+        <property name="statusTip">
+         <string>Allow search definition</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="kAlarmFrm">
+     <property name="title">
+      <string>Alarm</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout">
+      <item row="1" column="0">
+       <widget class="QLabel" name="kAlarmLbl">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Ala&amp;rm amount:</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+        <property name="buddy">
+         <cstring>kAlarmAmount</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="kAlarmMessageLbl">
+        <property name="text">
+         <string>Alarm &amp;message:</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+        <property name="buddy">
+         <cstring>kAlarmMessage</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1" colspan="3">
+       <widget class="QLineEdit" name="kAlarmMessage"/>
+      </item>
+      <item row="1" column="2">
+       <widget class="QLabel" name="kAlarmUnit">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="font">
+         <font>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="text">
+         <string>$</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="SKGCalculatorEdit" name="kAlarmAmount">
+        <property name="minimumSize">
+         <size>
+          <width>50</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>100</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>Amount triggering the alarm</string>
+        </property>
+        <property name="statusTip">
+         <string>Amount triggering the alarm</string>
+        </property>
+        <property name="mode">
+         <enum>SKGCalculatorEdit::EXPRESSION</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="3">
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="kTemplateFrm">
+     <property name="title">
+      <string>Template</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_2">
+      <item row="1" column="2">
+       <spacer name="horizontalSpacer_2">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item row="1" column="1">
+       <widget class="SKGComboBox" name="kTemplate">
+        <property name="toolTip">
+         <string>The template to apply on all transactions matching the condition</string>
+        </property>
+        <property name="statusTip">
+         <string>The template to apply on all transactions matching the condition</string>
+        </property>
+        <property name="sizeAdjustPolicy">
+         <enum>QComboBox::AdjustToContents</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="kAlarmLbl_2">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>&amp;Template to apply:</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+        <property name="buddy">
+         <cstring>kTemplate</cstring>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="kActionGrp">
+     <property name="title">
+      <string>Process</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_6">
+      <item>
+       <widget class="SKGQueryCreator" name="kActionCreator">
+        <property name="statusTip">
+         <string>Allow process definition</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_12">
+     <property name="spacing">
+      <number>2</number>
+     </property>
+     <item>
+      <widget class="SKGWidgetSelector" name="kWidgetSelector"/>
+     </item>
+     <item>
+      <widget class="QFrame" name="kBtnFrm">
+       <property name="frameShadow">
+        <enum>QFrame::Raised</enum>
+       </property>
+       <layout class="QHBoxLayout" name="_2">
+        <property name="spacing">
+         <number>2</number>
+        </property>
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <spacer name="verticalSpacer">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Maximum</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>0</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QPushButton" name="kAdd">
+          <property name="toolTip">
+           <string>Add a search or a process (Ctrl+Enter)</string>
+          </property>
+          <property name="statusTip">
+           <string>Add a search or a process (Ctrl+Enter)</string>
+          </property>
+          <property name="text">
+           <string>Add</string>
+          </property>
+          <property name="autoDefault">
+           <bool>true</bool>
+          </property>
+          <property name="default">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="kUpdate">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="toolTip">
+           <string>Update selected search or process (Shift+Enter)</string>
+          </property>
+          <property name="statusTip">
+           <string>Update selected search or process (Shift+Enter)</string>
+          </property>
+          <property name="text">
+           <string>Modify</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_3">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Fixed</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QPushButton" name="kSearch">
+          <property name="toolTip">
+           <string>Search without creating rule</string>
+          </property>
+          <property name="statusTip">
+           <string>Search without creating rule</string>
+          </property>
+          <property name="text">
+           <string>Search</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="kOpenReport">
+          <property name="toolTip">
+           <string>Open report without creating rule</string>
+          </property>
+          <property name="statusTip">
+           <string>Open report without creating rule</string>
+          </property>
+          <property name="text">
+           <string>Open report</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>SKGQueryCreator</class>
+   <extends>QWidget</extends>
+   <header>skgquerycreator.h</header>
+  </customwidget>
+  <customwidget>
+   <class>SKGCalculatorEdit</class>
+   <extends>QLineEdit</extends>
+   <header>skgcalculatoredit.h</header>
+  </customwidget>
+  <customwidget>
+   <class>SKGComboBox</class>
+   <extends>QComboBox</extends>
+   <header>skgcombobox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>SKGFilteredTableView</class>
+   <extends>QWidget</extends>
+   <header>skgfilteredtableview.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>SKGWidgetSelector</class>
+   <extends>QWidget</extends>
+   <header>skgwidgetselector.h</header>
+  </customwidget>
+ </customwidgets>
+ <tabstops>
+  <tabstop>kTopBtn</tabstop>
+  <tabstop>kUpBtn</tabstop>
+  <tabstop>kDownBtn</tabstop>
+  <tabstop>kBottomBtn</tabstop>
+  <tabstop>kApply</tabstop>
+  <tabstop>kAlarmAmount</tabstop>
+  <tabstop>kAlarmMessage</tabstop>
+  <tabstop>kTemplate</tabstop>
+  <tabstop>kAdd</tabstop>
+  <tabstop>kUpdate</tabstop>
+  <tabstop>kSearch</tabstop>
+  <tabstop>kOpenReport</tabstop>
+ </tabstops>
+ <resources/>
+ <connections/>
+ <slots>
+  <slot>onEditorModified()</slot>
+  <slot>onAddRule()</slot>
+  <slot>onModifyRule()</slot>
+  <slot>onApply()</slot>
+  <slot>onTop()</slot>
+  <slot>onUp()</slot>
+  <slot>onDown()</slot>
+  <slot>onBottom()</slot>
+  <slot>onAttributeChanged()</slot>
+  <slot>onDoubleClick()</slot>
+  <slot>onBtnModeClicked()</slot>
+  <slot>cleanEditor()</slot>
+  <slot>onActionTypeChanged()</slot>
+  <slot>onOpen()</slot>
+ </slots>
+</ui>

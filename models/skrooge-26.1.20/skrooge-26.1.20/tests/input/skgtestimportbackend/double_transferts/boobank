@@ -1,0 +1,19 @@
+#!/bin/bash
+if [[ $1 = "ls" ]]; then
+    #Simulate: boobank ls -q -f csv -v -s id,balance
+  echo "id;label;balance"
+    echo "CPT1-1111111@bank;;"
+    echo "CPT2-2222222@bank;;"
+else
+    if [[ $5 = "CPT1-1111111@bank" ]]; then
+        #Simulate: boobank -q -f csv history "47896@creditcooperatif" -s rdate,type,raw,label,amount --condition "rdate>%4" -n 99999
+        echo "rdate;date;type;raw;label;amount"
+        echo "2019-03-28;2019-03-28;0;VIR C/C CONTRAT PERSONNEL AJUST;VIR C/C CONTRAT PERSONNEL AJUST;-500.00"
+        echo "2019-03-28;2019-03-28;0;VIR C/C CONTRAT PERSONNEL AJUST;VIR C/C CONTRAT PERSONNEL AJUST;-500.00"
+    else
+        echo "rdate;date;type;raw;label;amount"
+        echo "2019-03-28;2019-03-28;0;VIR DE MME M MARTINI OU M V FRI;VIR DE MME M MARTINI OU M V FRI;500.00"
+        echo "2019-03-28;2019-03-28;0;VIR DE MME M MARTINI OU M V FRI;VIR DE MME M MARTINI OU M V FRI;500.00"
+    fi
+
+fi

@@ -1,0 +1,904 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <author>
+SPDX-FileCopyrightText: 2024 S. MANKOWSKI stephane@mankowski.fr
+SPDX-FileCopyrightText: 2024 G. DE BURE support@mankowski.fr
+SPDX-License-Identifier: GPL-3.0-or-later
+ </author>      
+ <class>skgcalculatorplugin_base</class>
+ <widget class="QWidget" name="skgcalculatorplugin_base">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>489</width>
+    <height>722</height>
+   </rect>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_5">
+   <item>
+    <widget class="QFrame" name="kCalculatorFrm">
+     <layout class="QGridLayout" name="gridLayout_2">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <property name="spacing">
+       <number>2</number>
+      </property>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QFrame" name="kInterestFrm">
+     <layout class="QVBoxLayout" name="verticalLayout_4">
+      <property name="spacing">
+       <number>2</number>
+      </property>
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item>
+       <widget class="QWidget" name="widget" native="true">
+        <layout class="QGridLayout" name="gridLayout">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <property name="spacing">
+          <number>2</number>
+         </property>
+         <item row="0" column="0" colspan="3">
+          <layout class="QHBoxLayout">
+           <property name="spacing">
+            <number>2</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="kAccountLabel">
+             <property name="text">
+              <string comment="Noun, an account as in a bank account">Account:</string>
+             </property>
+             <property name="buddy">
+              <cstring>kDisplayAccountCombo</cstring>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="SKGComboBox" name="kDisplayAccountCombo">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="toolTip">
+              <string>Displayed account</string>
+             </property>
+             <property name="statusTip">
+              <string>Displayed account</string>
+             </property>
+             <property name="sizeAdjustPolicy">
+              <enum>QComboBox::AdjustToContents</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="kYearLabel">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string comment="Noun, a year">&amp;Year:</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+             <property name="buddy">
+              <cstring>KYearEdit</cstring>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="SKGComboBox" name="KYearEdit">
+             <property name="toolTip">
+              <string>Year of computation</string>
+             </property>
+             <property name="statusTip">
+              <string>Year of computation</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer>
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeType">
+              <enum>QSizePolicy::MinimumExpanding</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>0</width>
+               <height>35</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </item>
+         <item row="1" column="0" colspan="3">
+          <widget class="KTitleWidget" name="kInterestResultsTitle" native="true">
+           <property name="text" stdset="0">
+            <string>Interest Results</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0" colspan="3">
+          <widget class="SKGTableView" name="kInterestResultTable">
+           <property name="toolTip">
+            <string>Result of interest computation</string>
+           </property>
+           <property name="statusTip">
+            <string>Result of interest computation</string>
+           </property>
+           <property name="alternatingRowColors">
+            <bool>true</bool>
+           </property>
+           <property name="selectionMode">
+            <enum>QAbstractItemView::NoSelection</enum>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0" colspan="3">
+          <widget class="QLabel" name="kInterestLbl">
+           <property name="text">
+            <string notr="true"/>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+           <property name="textInteractionFlags">
+            <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="0">
+          <widget class="KTitleWidget" name="kInterestValuesTitle" native="true">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text" stdset="0">
+            <string>Interest Values</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="1" colspan="2">
+          <widget class="KTitleWidget" name="kDefineValueTitle" native="true">
+           <property name="text" stdset="0">
+            <string>Define Value</string>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="0" rowspan="6">
+          <widget class="SKGTableView" name="kInterestView">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="toolTip">
+            <string>Parameters for interest computation</string>
+           </property>
+           <property name="statusTip">
+            <string>Parameters for interest computation</string>
+           </property>
+           <property name="alternatingRowColors">
+            <bool>true</bool>
+           </property>
+           <property name="selectionBehavior">
+            <enum>QAbstractItemView::SelectRows</enum>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="1">
+          <widget class="QLabel" name="kDateLabel">
+           <property name="font">
+            <font>
+             <weight>75</weight>
+             <bold>true</bold>
+            </font>
+           </property>
+           <property name="text">
+            <string>Da&amp;te:</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+           <property name="buddy">
+            <cstring>kDateEdit</cstring>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="2">
+          <widget class="SKGDateEdit" name="kDateEdit">
+           <property name="minimumSize">
+            <size>
+             <width>120</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="toolTip">
+            <string>Date of the interest's quote</string>
+           </property>
+           <property name="statusTip">
+            <string>Date of the interest's quote</string>
+           </property>
+          </widget>
+         </item>
+         <item row="6" column="1">
+          <widget class="QLabel" name="kRateLabel">
+           <property name="font">
+            <font>
+             <weight>75</weight>
+             <bold>true</bold>
+            </font>
+           </property>
+           <property name="text">
+            <string>Rate (%):</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+           <property name="buddy">
+            <cstring>kRateEdit</cstring>
+           </property>
+          </widget>
+         </item>
+         <item row="7" column="1">
+          <widget class="QLabel" name="kCreditValueDateLbl">
+           <property name="font">
+            <font>
+             <weight>75</weight>
+             <bold>true</bold>
+            </font>
+           </property>
+           <property name="text">
+            <string>Credit value date:</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+           <property name="buddy">
+            <cstring>kCreditValueDate</cstring>
+           </property>
+          </widget>
+         </item>
+         <item row="7" column="2">
+          <widget class="SKGComboBox" name="kCreditValueDate">
+           <property name="toolTip">
+            <string>The credit value date computation mode.</string>
+           </property>
+           <property name="statusTip">
+            <string>The credit value date computation mode.</string>
+           </property>
+          </widget>
+         </item>
+         <item row="8" column="1">
+          <widget class="QLabel" name="kDebitValueDateLbl">
+           <property name="font">
+            <font>
+             <weight>75</weight>
+             <bold>true</bold>
+            </font>
+           </property>
+           <property name="text">
+            <string>Debit value date:</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+           <property name="buddy">
+            <cstring>kDebitValueDate</cstring>
+           </property>
+          </widget>
+         </item>
+         <item row="8" column="2">
+          <widget class="SKGComboBox" name="kDebitValueDate">
+           <property name="toolTip">
+            <string>The debit value date computation mode.</string>
+           </property>
+           <property name="statusTip">
+            <string>The debit value date computation mode.</string>
+           </property>
+          </widget>
+         </item>
+         <item row="9" column="1">
+          <widget class="QLabel" name="kModeLbl">
+           <property name="font">
+            <font>
+             <weight>75</weight>
+             <bold>true</bold>
+            </font>
+           </property>
+           <property name="text">
+            <string>&amp;Base computation:</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+           <property name="buddy">
+            <cstring>kMode</cstring>
+           </property>
+          </widget>
+         </item>
+         <item row="9" column="2">
+          <widget class="SKGComboBox" name="kMode">
+           <property name="toolTip">
+            <string>The base of the computation.</string>
+           </property>
+           <property name="statusTip">
+            <string>The base of the computation.</string>
+           </property>
+          </widget>
+         </item>
+         <item row="10" column="2">
+          <spacer name="verticalSpacer">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item row="6" column="2">
+          <widget class="QDoubleSpinBox" name="kRateEdit">
+           <property name="focusPolicy">
+            <enum>Qt::WheelFocus</enum>
+           </property>
+           <property name="toolTip">
+            <string>Rate of the interest</string>
+           </property>
+           <property name="statusTip">
+            <string>Rate of the interest</string>
+           </property>
+           <property name="maximum">
+            <double>100.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QFrame" name="kAmortizationFrm">
+     <layout class="QGridLayout" name="gridLayout_3">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <property name="spacing">
+       <number>2</number>
+      </property>
+      <item row="0" column="0">
+       <widget class="KTitleWidget" name="kAmortizationTableTitle" native="true">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text" stdset="0">
+         <string>Amortization Table</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1" rowspan="2">
+       <widget class="QWidget" name="gridWidget_2" native="true">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_5">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <property name="spacing">
+          <number>2</number>
+         </property>
+         <item row="2" column="0">
+          <widget class="QLabel" name="kAnnualRateLabel">
+           <property name="font">
+            <font>
+             <weight>75</weight>
+             <bold>true</bold>
+            </font>
+           </property>
+           <property name="text">
+            <string>Annual interest rate (%):</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+           <property name="buddy">
+            <cstring>kAnnualRateEdit</cstring>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="kLoanLabel">
+           <property name="font">
+            <font>
+             <weight>75</weight>
+             <bold>true</bold>
+            </font>
+           </property>
+           <property name="text">
+            <string>Loan amount (principal):</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+           <property name="buddy">
+            <cstring>kLoanEdit</cstring>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="0">
+          <widget class="QLabel" name="kLength">
+           <property name="font">
+            <font>
+             <weight>75</weight>
+             <bold>true</bold>
+            </font>
+           </property>
+           <property name="text">
+            <string>Length (years):</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+           <property name="buddy">
+            <cstring>kLenghtEdit</cstring>
+           </property>
+          </widget>
+         </item>
+         <item row="11" column="1">
+          <spacer name="verticalSpacer_2">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item row="1" column="1">
+          <widget class="SKGCalculatorEdit" name="kLoanEdit">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>70</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="toolTip">
+            <string>Amount of the loan</string>
+           </property>
+           <property name="statusTip">
+            <string>Amount of the loan</string>
+           </property>
+           <property name="text">
+            <string>100000</string>
+           </property>
+           <property name="value">
+            <double>100000.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item row="8" column="0" colspan="3">
+          <widget class="Line" name="line">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item row="10" column="0" colspan="3">
+          <widget class="QLabel" name="kAmortizationResult">
+           <property name="text">
+            <string/>
+           </property>
+           <property name="textInteractionFlags">
+            <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="2">
+          <widget class="SKGUnitComboBox" name="kUnitEdit">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>100</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>100</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="toolTip">
+            <string>Unit of the loan</string>
+           </property>
+           <property name="statusTip">
+            <string>Unit of the loan</string>
+           </property>
+           <property name="sizeAdjustPolicy">
+            <enum>QComboBox::AdjustToContents</enum>
+           </property>
+          </widget>
+         </item>
+         <item row="9" column="0" colspan="3">
+          <widget class="KTitleWidget" name="kPaymentSummaryTitle" native="true">
+           <property name="text" stdset="0">
+            <string>Payment Summary</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0" colspan="3">
+          <widget class="KTitleWidget" name="kLoadSummaryTitle" native="true">
+           <property name="text" stdset="0">
+            <string>Loan Summary</string>
+           </property>
+          </widget>
+         </item>
+         <item row="6" column="0">
+          <widget class="QLabel" name="kInsuranceRateLbl">
+           <property name="text">
+            <string>Insurance rate(%):</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+           <property name="buddy">
+            <cstring>kInsuranceRateEdit</cstring>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="1" colspan="2">
+          <widget class="QSpinBox" name="kLenghtEdit">
+           <property name="toolTip">
+            <string>Length of the loan in years</string>
+           </property>
+           <property name="statusTip">
+            <string>Length of the loan in years</string>
+           </property>
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>100</number>
+           </property>
+           <property name="singleStep">
+            <number>5</number>
+           </property>
+           <property name="value">
+            <number>15</number>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1" colspan="2">
+          <widget class="QDoubleSpinBox" name="kAnnualRateEdit">
+           <property name="focusPolicy">
+            <enum>Qt::WheelFocus</enum>
+           </property>
+           <property name="toolTip">
+            <string>Annual rate of the loan</string>
+           </property>
+           <property name="statusTip">
+            <string>Annual rate of the loan</string>
+           </property>
+           <property name="maximum">
+            <double>100.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item row="6" column="1" colspan="2">
+          <widget class="QDoubleSpinBox" name="kInsuranceRateEdit">
+           <property name="focusPolicy">
+            <enum>Qt::WheelFocus</enum>
+           </property>
+           <property name="toolTip">
+            <string>Insurance rate of the loan</string>
+           </property>
+           <property name="statusTip">
+            <string>Insurance rate of the loan</string>
+           </property>
+           <property name="maximum">
+            <double>100.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QTableWidget" name="kAmortizationTable">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="toolTip">
+         <string>Amortization Table</string>
+        </property>
+        <property name="statusTip">
+         <string>Amortization Table</string>
+        </property>
+        <property name="editTriggers">
+         <set>QAbstractItemView::NoEditTriggers</set>
+        </property>
+        <property name="alternatingRowColors">
+         <bool>true</bool>
+        </property>
+        <property name="selectionMode">
+         <enum>QAbstractItemView::NoSelection</enum>
+        </property>
+        <property name="showGrid">
+         <bool>false</bool>
+        </property>
+        <column>
+         <property name="text">
+          <string>Amount</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Principal</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Interest</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Insurance</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Balance</string>
+         </property>
+        </column>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_12">
+     <property name="spacing">
+      <number>2</number>
+     </property>
+     <item>
+      <widget class="SKGWidgetSelector" name="kWidgetSelector">
+       <property name="alwaysOneOpen">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QFrame" name="kBtnFrm">
+       <property name="minimumSize">
+        <size>
+         <width>100</width>
+         <height>0</height>
+        </size>
+       </property>
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <property name="spacing">
+         <number>2</number>
+        </property>
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QPushButton" name="kAdd">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="toolTip">
+           <string>Create a new interest parameter (Ctrl+Enter)</string>
+          </property>
+          <property name="statusTip">
+           <string>Create a new interest parameter (Ctrl+Enter)</string>
+          </property>
+          <property name="text">
+           <string>Add</string>
+          </property>
+          <property name="autoDefault">
+           <bool>true</bool>
+          </property>
+          <property name="default">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="kUpdate">
+          <property name="toolTip">
+           <string>Update interest parameters (Shift+Enter)</string>
+          </property>
+          <property name="statusTip">
+           <string>Update interest parameters (Shift+Enter)</string>
+          </property>
+          <property name="text">
+           <string>Modify</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>SKGUnitComboBox</class>
+   <extends>SKGComboBox</extends>
+   <header>skgunitcombobox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>SKGCalculatorEdit</class>
+   <extends>QLineEdit</extends>
+   <header>skgcalculatoredit.h</header>
+  </customwidget>
+  <customwidget>
+   <class>SKGComboBox</class>
+   <extends>QComboBox</extends>
+   <header>skgcombobox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>SKGDateEdit</class>
+   <extends>QComboBox</extends>
+   <header>skgdateedit.h</header>
+  </customwidget>
+  <customwidget>
+   <class>SKGTableView</class>
+   <extends>SKGTreeView</extends>
+   <header>skgtableview.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>SKGTreeView</class>
+   <extends>QTreeView</extends>
+   <header>skgtreeview.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>SKGWidgetSelector</class>
+   <extends>QWidget</extends>
+   <header>skgwidgetselector.h</header>
+  </customwidget>
+  <customwidget>
+   <class>KTitleWidget</class>
+   <extends>QWidget</extends>
+   <header>ktitlewidget.h</header>
+  </customwidget>
+ </customwidgets>
+ <tabstops>
+  <tabstop>kDisplayAccountCombo</tabstop>
+  <tabstop>KYearEdit</tabstop>
+  <tabstop>kInterestResultTable</tabstop>
+  <tabstop>kInterestView</tabstop>
+  <tabstop>kDateEdit</tabstop>
+  <tabstop>kRateEdit</tabstop>
+  <tabstop>kCreditValueDate</tabstop>
+  <tabstop>kDebitValueDate</tabstop>
+  <tabstop>kMode</tabstop>
+  <tabstop>kAmortizationTable</tabstop>
+  <tabstop>kLoanEdit</tabstop>
+  <tabstop>kUnitEdit</tabstop>
+  <tabstop>kAnnualRateEdit</tabstop>
+  <tabstop>kLenghtEdit</tabstop>
+  <tabstop>kInsuranceRateEdit</tabstop>
+  <tabstop>kAdd</tabstop>
+  <tabstop>kUpdate</tabstop>
+ </tabstops>
+ <resources/>
+ <connections/>
+ <slots>
+  <slot>onBtnModeClicked()</slot>
+  <slot>onCalculatorReturnPressed(QString)</slot>
+  <slot>onCalculatorListClicked(QString)</slot>
+  <slot>onUpdate()</slot>
+  <slot>onAdd()</slot>
+  <slot>onSelectedInterestChanged()</slot>
+  <slot>onAmortizationComputationDelayed()</slot>
+ </slots>
+</ui>

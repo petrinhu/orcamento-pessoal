@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<page xmlns="http://projectmallard.org/1.0/" xmlns:its="http://www.w3.org/2005/11/its" type="topic" id="transfer" its:version="2.0" xml:lang="hr">
+<info>
+	<link type="guide" xref="index"/>
+	<title type="link">Transfer 💸</title>
+	<credit type="author copyright">
+		<name>Fyodor Sobolev</name>
+		<years its:translate="no">2023</years>
+	</credit>
+	<credit type="publisher copyright">
+		<name>Nicholas Logozzo</name>
+		<years its:translate="no">2023</years>
+	</credit>
+	<license href="http://creativecommons.org/licenses/by/4.0/" its:translate="no"><p>Creative Commons Attribution 4.0 International License</p></license>
+
+    <mal:credit xmlns:mal="http://projectmallard.org/1.0/" type="translator copyright">
+      <mal:name>Milo Ivir</mal:name>
+      <mal:email>mail@milotype.de</mal:email>
+      <mal:years>2023</mal:years>
+    </mal:credit>
+  </info>
+
+<title>Transfer</title>
+<p>Transfer je način premještanja novca s jednog računa na drugi. Nakon pokretanja transfera stvorit će se 2 transakcije sa sljedećim opisima:</p>
+<list>
+	<item>
+		<p>„Transfer na <input>Ime odredišnog računa</input>” na izvornom računu.</p>
+	</item>
+	<item>
+		<p>„Transfer iz <input>Ime izvornog računa</input>” na odredišni račun.</p>
+	</item>
+</list>
+<p>Transakcije koje su stvorene korištenjem tranfera su jednostavne transakcije koje se mogu slobodno urediti ili izbrisati. Ove transakcije nisu povezane: mijenjanje transakcije u izvornom računu neće utjecati na transakciju u odredišnom računu, i obratno.</p>
+<p>Transfer ne dozvoljava stvaranje ponavljajućih transakcija niti postavljanje bilo kojih svojstava osim iznosa. Za stvaranje transakcije će se koristiti boja koja je odabrana u <link xref="configuration">konfiguraciji</link>.</p>
+<p>Ako stvoriš transfer između računa s različitim valutama morat ćeš zadati stopu konverzije.</p>
+</page>

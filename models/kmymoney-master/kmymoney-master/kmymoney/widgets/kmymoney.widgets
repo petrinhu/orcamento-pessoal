@@ -1,0 +1,72 @@
+[Global]
+PluginName=kmmwidgets
+Includes=kcomponentdata.h
+Init=new KInstance("kmmwidgets");
+Group=KMyMoney widgets
+
+[kMyMoneyEdit]
+ToolTip=The KMyMoney edit widget
+
+[KMyMoneyTextEdit]
+ToolTip=The KMyMoney version of KTextEdit
+
+[kMyMoneyDateInput]
+ToolTip=The KMyMoney date input widget
+
+[KMyMoneySecuritySelector]
+ToolTip=The KMyMoney widget for selecting a security
+IncludeFile=kmymoneycurrencyselector.h
+
+[KMyMoneyCurrencySelector]
+ToolTip=The KMyMoney widget for selecting a currency
+
+[KMyMoneyRegister::Register]
+IconSet=register.png
+ToolTip=The KMyMoney register widget
+IncludeFile=register.h
+
+[KMyMoneyTransactionForm::TransactionForm]
+IconSet=transactionform.png
+ToolTip=The KMyMoney transaction form widget
+IncludeFile=transactionform.h
+
+[KMyMoneyCategory]
+ToolTip=The KMyMoney widget that displays categories
+
+[KMyMoneyPayeeCombo]
+ToolTip=The KMyMoney widget that displays payees
+IncludeFile=kmymoneymvccombo.h
+
+[KMyMoneyTagCombo]
+ToolTip=The KMyMoney widget that displays tags
+IncludeFile=kmymoneymvccombo.h
+
+[KMyMoneyPeriodCombo]
+ToolTip=The KMyMoney widget that displays time periods
+IncludeFile=kmymoneycombo.h
+
+[KMyMoneyFrequencyCombo]
+ToolTip=The KMyMoney widget that displays frequencies
+IncludeFile=kmymoneycombo.h
+
+[KMyMoneyOccurrencePeriodCombo]
+ToolTip=The KMyMoney widget that displays schedule occurrences
+IncludeFile=kmymoneycombo.h
+
+[TransactionSortOption]
+IncludeFile=transactionsortoptionimpl.h
+
+[KMyMoneyGeneralCombo]
+IncludeFile=kmymoneymvccombo.h
+
+[KBudgetValues]
+
+[KAccountTemplateSelector]
+
+[KMyMoneyAccountTreeView]
+ToolTip=The KMyMoney model/view based widget that displays accounts
+
+# deprecated will be removed at some point in time
+
+[KMyMoneyAccountCombo]
+ToolTip=The KMyMoney widget that displays accounts

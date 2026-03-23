@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?OFX OFXHEADER="200" VERSION="202" SECURITY="NONE" OLDFILEUID="NONE"
+NEWFILEUID="NONE"?>
+<OFX>
+  <SIGNONMSGSRSV1>
+    <SONRS>
+      <STATUS>
+        <CODE>0</CODE>
+        <SEVERITY>INFO</SEVERITY>
+      </STATUS>
+      <DTSERVER>20101024</DTSERVER>
+      <LANGUAGE>SLO</LANGUAGE>
+    </SONRS>
+  </SIGNONMSGSRSV1>
+  
+  <BANKMSGSRSV1>
+    <STMTTRNRS>
+      <TRNUID>0</TRNUID>
+      <STATUS>
+        <CODE>0</CODE>
+        <SEVERITY>INFO</SEVERITY>
+      </STATUS>
+      <STMTRS>
+        <CURDEF>EUR</CURDEF>
+        <BANKACCTFROM>
+          <BANKID>SKBASI2X</BANKID>
+          <ACCTID>39971-7999571822 (EUR)</ACCTID>
+          <ACCTTYPE>CHECKING</ACCTTYPE>
+        </BANKACCTFROM>
+        <BANKTRANLIST>
+          <DTSTART>201009011.9</DTSTART>
+
+          <DTEND>201009011.9</DTEND>
+          
+          <STMTTRN>
+            <TRNTYPE>OTHER</TRNTYPE>
+            <DTPOSTED>20100901</DTPOSTED>
+            <TRNAMT>-400,00</TRNAMT>
+            <FITID>388144317</FITID>
+            <NAME>142I7 LJUBLJANA</NAME>
+            <MEMO>Dvig gotovine na SKB BA</MEMO>
+          </STMTTRN>
+         
+
+          <STMTTRN>
+            <TRNTYPE>CREDIT</TRNTYPE>
+            <DTPOSTED>20100901</DTPOSTED>
+            <TRNAMT>167,51</TRNAMT>
+            <FITID>388116734</FITID>
+            <NAME>KR NEKAJ</NAME>
+            <MEMO>RENKO</MEMO>
+          </STMTTRN>
+         
+
+          <STMTTRN>
+            <TRNTYPE>CREDIT</TRNTYPE>
+            <DTPOSTED>20100901</DTPOSTED>
+            <TRNAMT>167,50</TRNAMT>
+            <FITID>388061205</FITID>
+            <NAME>JA8</NAME>
+            <MEMO>Nakazilo</MEMO>
+          </STMTTRN>
+         
+
+        </BANKTRANLIST>
+        
+      </STMTRS>
+    </STMTTRNRS>
+  </BANKMSGSRSV1>
+</OFX>

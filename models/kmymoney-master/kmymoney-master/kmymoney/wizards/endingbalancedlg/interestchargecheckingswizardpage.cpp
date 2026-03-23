@@ -1,0 +1,85 @@
+/*
+    SPDX-FileCopyrightText: 2010 Fernando Vilas <kmymoney-devel@kde.org>
+    SPDX-License-Identifier: GPL-2.0-or-later
+*/
+
+#include "interestchargecheckingswizardpage.h"
+
+// ----------------------------------------------------------------------------
+// QT Includes
+
+// ----------------------------------------------------------------------------
+// KDE Includes
+
+// ----------------------------------------------------------------------------
+// Project Includes
+
+#include "widgethintframe.h"
+
+#include "ui_interestchargecheckingswizardpage.h"
+
+InterestChargeCheckingsWizardPage::InterestChargeCheckingsWizardPage(QWidget *parent) :
+    QWizardPage(parent),
+    ui(new Ui::InterestChargeCheckingsWizardPage)
+{
+    ui->setupUi(this);
+
+    auto frameCollection = new WidgetHintFrameCollection(this);
+    frameCollection->addFrame(new WidgetHintFrame(ui->m_interestDateEdit));
+    frameCollection->addFrame(new WidgetHintFrame(ui->m_chargesDateEdit));
+
+    // Register the fields with the QWizard and connect the
+    // appropriate signals to update the "Next" button correctly
+    registerField("interestDateEdit", ui->m_interestDateEdit, "date", SIGNAL(dateChanged(QDate)));
+    registerField("chargesDateEdit", ui->m_chargesDateEdit, "date", SIGNAL(dateChanged(QDate)));
+
+    registerField("interestEdit", ui->m_interestEdit, "value", SIGNAL(textChanged()));
+    registerField("interestEditValid", ui->m_interestEdit, "valid", SIGNAL(textChanged()));
+    registerField("chargesEdit", ui->m_chargesEdit, "value", SIGNAL(textChanged()));
+    registerField("chargesEditValid", ui->m_chargesEdit, "valid", SIGNAL(textChanged()));
+
+    registerField("interestCategoryEdit", ui->m_interestCategoryEdit, "selectedItem", SIGNAL(itemSelected(QString)));
+    registerField("chargesCategoryEdit", ui->m_chargesCategoryEdit, "selectedItem", SIGNAL(itemSelected(QString)));
+
+    registerField("payeeEdit", ui->m_payeeEdit, "selectedItem", SIGNAL(itemSelected(QString)));
+
+    // reduce the amount of characters shown for a payee
+    ui->m_payeeEdit->setMinimumContentsLength(40);
+    ui->m_payeeEdit->setSizeAdjustPolicy(QComboBox::AdjustToContentsOnFirstShow);
+
+    auto updateDateFrame = [&](QWidget* w, bool state) {
+        WidgetHintFrame::hide(w);
+        if (!state) {
+            WidgetHintFrame::show(w, i18nc("@info:tooltip", "The date is invalid."));
+        }
+    };
+
+    connect(ui->m_interestDateEdit, &KMyMoneyDateEdit::dateValidityChanged, this, [&](const QDate& date) {
+        updateDateFrame(qobject_cast<QWidget*>(sender()), date.isValid());
+        Q_EMIT completeChanged();
+    });
+    connect(ui->m_chargesDateEdit, &KMyMoneyDateEdit::dateValidityChanged, this, [&](const QDate& date) {
+        updateDateFrame(qobject_cast<QWidget*>(sender()), date.isValid());
+        Q_EMIT completeChanged();
+    });
+    connect(ui->m_interestEdit, &AmountEdit::textChanged, this, &QWizardPage::completeChanged);
+    connect(ui->m_interestCategoryEdit, &QComboBox::editTextChanged, this, &QWizardPage::completeChanged);
+    connect(ui->m_chargesEdit, &AmountEdit::textChanged, this, &QWizardPage::completeChanged);
+    connect(ui->m_chargesCategoryEdit, &QComboBox::editTextChanged, this, &QWizardPage::completeChanged);
+}
+
+InterestChargeCheckingsWizardPage::~InterestChargeCheckingsWizardPage()
+{
+    delete ui;
+}
+
+bool InterestChargeCheckingsWizardPage::isComplete() const
+{
+    auto cnt1 = !ui->m_interestEdit->value().isZero() + !ui->m_interestCategoryEdit->selectedItem().isEmpty();
+    auto cnt2 = !ui->m_chargesEdit->value().isZero() + !ui->m_chargesCategoryEdit->selectedItem().isEmpty();
+    if (cnt1 == 1 || cnt2 == 1)
+        return false;
+
+    return ui->m_interestDateEdit->isValid() && ui->m_chargesDateEdit->isValid();
+}
+

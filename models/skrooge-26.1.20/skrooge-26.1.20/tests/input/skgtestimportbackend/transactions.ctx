@@ -1,0 +1,298 @@
+accountInfoList {
+  #[...]
+
+  accountInfo {
+    char bankCode="20041155"
+    char bankName="comdirect bank"
+    char accountNumber="535416200"
+    char accountName="Girokonto"
+    char owner="Felix Mauch"
+    char currency="EUR"
+    int  accountType="0"
+    int  accountId="86"
+
+    statusList {
+      status {
+        int  time="1352116800"
+
+        notedBalance {
+          value {
+            char value="50246%2F100"
+            char currency="EUR"
+          } #value
+
+          int  time="1352116800"
+        } #notedBalance
+      } #status
+
+      status {
+        int  time="1352289600"
+
+        notedBalance {
+          value {
+            char value="19008%2F100"
+            char currency="EUR"
+          } #value
+
+          int  time="1352289600"
+        } #notedBalance
+      } #status
+
+      status {
+        int  time="1353931200"
+
+        notedBalance {
+          value {
+            char value="1008%2F100"
+            char currency="EUR"
+          } #value
+
+          int  time="1353931200"
+        } #notedBalance
+      } #status
+
+      status {
+        int  time="1359720000"
+
+        notedBalance {
+          value {
+            char value="809%2F100"
+            char currency="EUR"
+          } #value
+
+          int  time="1359720000"
+        } #notedBalance
+      } #status
+
+      status {
+        int  time="1360065600"
+
+        notedBalance {
+          value {
+            char value="11809%2F100"
+            char currency="EUR"
+          } #value
+
+          int  time="1360065600"
+        } #notedBalance
+      } #status
+
+      status {
+        int  time="1360584000"
+
+        notedBalance {
+          value {
+            char value="46809%2F100"
+            char currency="EUR"
+          } #value
+
+          int  time="1360584000"
+        } #notedBalance
+      } #status
+
+      status {
+        int  time="1360843200"
+
+        notedBalance {
+          value {
+            char value="5009%2F100"
+            char currency="EUR"
+          } #value
+
+          int  time="1360843200"
+        } #notedBalance
+      } #status
+    } #statusList
+
+    transactionList {
+      transaction {
+        char localBankCode="20041155"
+        char localAccountNumber="535416200"
+        char localName="Felix Mauch"
+        char remoteName="FELIX MAUCH"
+        int  uniqueId="0"
+        int  idForApplication="0"
+        int  groupId="0"
+
+        valutaDate {
+          date {
+            int  day="24"
+            int  month="10"
+            int  year="2012"
+          } #date
+
+          int  inUtc="1"
+
+          time {
+            int  hour="12"
+            int  min="0"
+            int  sec="0"
+          } #time
+        } #valutaDate
+
+        date {
+          date {
+            int  day="24"
+            int  month="10"
+            int  year="2012"
+          } #date
+
+          int  inUtc="1"
+
+          time {
+            int  hour="12"
+            int  min="0"
+            int  sec="0"
+          } #time
+        } #date
+
+        value {
+          char value="40000%2F100"
+          char currency="EUR"
+        } #value
+
+        int  textKey="0"
+        int  textKeyExt="0"
+        char transactionKey="MSC"
+        char bankReference="POS 1499868867"
+        int  transactionCode="820"
+        char purpose="%C3%9CBERTRAG%2F%C3%9CBERWEISUNG", "STOCKHOLM", "Ref. GX212297K3358323%2F36790"
+        char period="unknown"
+        int  cycle="0"
+        int  executionDay="0"
+        char type="unknown"
+        char subType="unknown"
+        char status="unknown"
+        char charge="unknown"
+      } #transaction
+
+      transaction {
+        char localBankCode="20041155"
+        char localAccountNumber="535416200"
+        char localName="Felix Mauch"
+        int  uniqueId="0"
+        int  idForApplication="0"
+        int  groupId="0"
+
+        valutaDate {
+          date {
+            int  day="5"
+            int  month="11"
+            int  year="2012"
+          } #date
+
+          int  inUtc="1"
+
+          time {
+            int  hour="12"
+            int  min="0"
+            int  sec="0"
+          } #time
+        } #valutaDate
+
+        date {
+          date {
+            int  day="5"
+            int  month="11"
+            int  year="2012"
+          } #date
+
+          int  inUtc="1"
+
+          time {
+            int  hour="12"
+            int  min="0"
+            int  sec="0"
+          } #time
+        } #date
+
+        value {
+          char value="-31238%2F100"
+          char currency="EUR"
+        } #value
+
+        int  textKey="0"
+        int  textKeyExt="0"
+        char transactionKey="MSC"
+        char bankReference="POS 1512510849"
+        int  transactionCode="5"
+        char purpose="LASTSCHRIFT EINZUG", "VISA-KARTE NR. 426354 XXXX", "0,00", "WOCHENBUCHUNG IHRER 02.11.", "FELIX MAUCH", "Ref. IV21230863922977%2F62181"
+        char period="unknown"
+        int  cycle="0"
+        int  executionDay="0"
+        char type="unknown"
+        char subType="unknown"
+        char status="unknown"
+        char charge="unknown"
+      } #transaction
+
+      transaction {
+        char localBankCode="20041155"
+        char localAccountNumber="535416200"
+        char localName="Felix Mauch"
+        char remoteBankCode="36010043"
+        char remoteAccountNumber="0289789434"
+        char remoteName="FELIX MAUCH"
+        int  uniqueId="0"
+        int  idForApplication="0"
+        int  groupId="0"
+
+        valutaDate {
+          date {
+            int  day="7"
+            int  month="11"
+            int  year="2012"
+          } #date
+
+          int  inUtc="1"
+
+          time {
+            int  hour="12"
+            int  min="0"
+            int  sec="0"
+          } #time
+        } #valutaDate
+
+        date {
+          date {
+            int  day="7"
+            int  month="11"
+            int  year="2012"
+          } #date
+
+          int  inUtc="1"
+
+          time {
+            int  hour="12"
+            int  min="0"
+            int  sec="0"
+          } #time
+        } #date
+
+        value {
+          char value="-18000%2F100"
+          char currency="EUR"
+        } #value
+
+        int  textKey="0"
+        int  textKeyExt="0"
+        char transactionKey="MSC"
+        char bankReference="POS 1514891338"
+        int  transactionCode="820"
+        char purpose="%C3%9CBERTRAG%2F%C3%9CBERWEISUNG", "COMDIRECT", "Ref. HZ512311N0559650%2F2"
+        char period="unknown"
+        int  cycle="0"
+        int  executionDay="0"
+        char type="unknown"
+        char subType="unknown"
+        char status="unknown"
+        char charge="unknown"
+      } #transaction
+
+      #[... more transactions as above ...]
+    } #transactionList
+  } #accountInfo
+
+  #[... other accounts as above ...]
+
+} #accountInfoList

@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<page xmlns="http://projectmallard.org/1.0/" xmlns:its="http://www.w3.org/2005/11/its" type="topic" id="account" its:version="2.0" xml:lang="ta">
+<info>
+	<link type="guide" xref="index"/>
+	<title type="link">கணக்கு</title>
+	<credit type="author copyright">
+		<name>ஃபெடோர் சோபோலெவ்</name>
+		<years its:translate="no">2023</years>
+	</credit>
+	<credit type="publisher copyright">
+		<name>நிக்கோலச் லோகோச்சோ</name>
+		<years its:translate="no">2023</years>
+	</credit>
+	<license href="http://creativecommons.org/licenses/by/4.0/" its:translate="no"><p>Creative Commons Attribution 4.0 International License</p></license>
+</info>
+
+<title>கணக்கு</title>
+<p>This page explains all properties of accounts in <app>Denaro</app>. Most of them are shown in <gui>Account Settings Dialog</gui>. This dialog also opens automatically after you create a new account.</p>
+<p>Each account is stored in a single <file>*.nmoney</file> file. Files created in an older <em>stable</em> version of <app>Denaro</app> can be safely opened in a more recent <em>stable</em> version of the application. Although the app can run on different platforms (Windows and Linux), the <file>*.nmoney</file> files are 100% compatible between platforms as long as they are from the same application version (i.e. V2023.1.0).</p>
+<note style="warning">
+	<p>பயன்பாட்டின் நிலையற்ற (பீட்டா மற்றும் ஆர்.சி) பதிப்புகள் தரவு இழப்பை ஏற்படுத்தும் பிழைகள் அல்லது முடிக்கப்படாத மாற்றங்களைக் கொண்டிருக்கலாம். பயன்பாட்டின் நிலையற்ற பதிப்புகளில் உண்மையான தரவைக் கொண்ட கணக்குக் கோப்புகளைப் பயன்படுத்த வேண்டாம்!</p>
+</note>
+
+<terms>
+	<item>
+		<title>பெயர்</title>
+		<p>கணக்கு பெயர் அண்மைக் கால கணக்குகளின் பட்டியலில் மற்றும் தாவல்களில் காட்டப்பட்டுள்ளது. ஒரு பெயருக்கு நீள வரம்பு இல்லை, அதில் ஈமோசிகள் உட்பட எந்த எழுத்துக்களும் இருக்கலாம்.</p>
+	</item>
+	<item>
+		<title>கணக்கு வகை</title>
+		<p>There are 3 account types available: 🟣<em>Checking</em>, 🔵<em>Savings</em> and 🟢<em>Business</em>. Account type is only a useful label that is shown in the list of recent accounts and doesn't affect how the application works or what you can do with an account. Each account type has its own color, these colors can be configured in <link xref="configuration">global settings</link>.</p>
+	</item>
+	<item>
+		<title>இயல்புநிலை பரிவர்த்தனை வகை</title>
+		<p>நீங்கள் ஒரு புதிய பரிவர்த்தனையை உருவாக்கும்போது அதன் வகை இயல்புநிலையாக இந்த அமைப்பைப் போலவே இருக்கும்.</p>
+	</item>
+	<item>
+        <title>பரிவர்த்தனை நினைவூட்டல்கள் வாசல்</title>
+        <p>வரவிருக்கும் பரிவர்த்தனைகள் பற்றிய நினைவூட்டல்களைக் காட்டும்போது பயன்படுத்தப்படும் வாசல்.</p>
+    </item>
+	<item>
+		<title>கணினி நாணயம்</title>
+		<p>பயன்பாடு தொடங்கும் ஒவ்வொரு முறையும், உங்கள் கணினி இருப்பிடத்திலிருந்து நாணயம் மற்றும் எண்கள் வடிவமைத்தல் பற்றிய தரவைப் பெறுகிறது, மேலும் இந்த தரவு நாணய சின்னத்தைக் காட்டப் பயன்படுகிறது (தனிப்பயன் நாணயம் பயன்படுத்தப்படாவிட்டால், கீழே காண்க) மற்றும் எண்கள் எந்த வடிவத்தில் ஏற்றுக்கொள்ளப்படும் என்பதை தீர்மானிக்க பரிவர்த்தனை அளவுகளுக்கான மதிப்புகள். சில எடுத்துக்காட்டுகள்:</p>
+		<list>
+			<item><p>உங்கள் இருப்பிடம் <em> ஆங்கிலம் (யுஎச்) </em> ஆக இருந்தால், நாணய அடையாளம் <em> $ </em> ஆகவும், <em> 1,000.00 </em> செல்லுபடியாகும் எண்ணாகவும் ஏற்றுக்கொள்ளப்படும்.</p></item>
+			<item><p>உங்கள் இருப்பிடம் <em> இத்தாலியன் </em> ஆக இருந்தால், நாணய அடையாளம் <em> € </em> ஆகவும், <em> 1.000,00 </em> ஆகவும் செல்லுபடியாகும் எண்ணாக ஏற்றுக்கொள்ளப்படும்.</p></item>
+			<item><p>உங்கள் இடம் <em> ரச்ய </em> ஆக இருந்தால், நாணய அடையாளம் <em> ₽ </em> ஆகவும், <em> 1000,00 </em> செல்லுபடியாகும் எண்ணாகவும் ஏற்றுக்கொள்ளப்படும்.</p></item>
+		</list>
+		<note style="advanced">
+			<p>On Linux, it is possible to set different locales for system language and formats. Changing these settings varies depending on the desktop environment you are using. Despite differences in the location of these settings on the desktop, changing these settings modify system environment variables, such as <code>LANG</code>, <code>LC_TIME</code>, and <code>LC_MONETARY</code>. <app>Denaro</app> will try to use amount and date formats according to these variables. If the app fails to use the expected formats, please make sure the variables are set correctly via the <code>locale</code> command in a terminal. If you found a bug and want to report it, please provide the output of the <code>locale</code> command to allow developers to reproduce your issue with the same settings.</p>
+		</note>
+	</item>
+	<item>
+		<title>தனிப்பயன் நாணயத்தைப் பயன்படுத்தவும்</title>
+		<p>இந்த விருப்பம் இயக்கப்பட்டிருந்தால், <gui> தனிப்பயன் நாணய அடையாளம் </gui> உங்கள் கணினி இருப்பிடத்தால் வழங்கப்பட்ட நாணய சின்னத்திற்கு பதிலாக பயன்படுத்தப்படும்.</p>
+	</item>
+	<item>
+		<title>தனிப்பயன் நாணய அடையாளம்</title>
+		<p>3 எழுத்துக்கள் அல்லது 1 ஈமோசி வரை. இது ஒரு எண்ணாக இருக்க முடியாது.</p>
+	</item>
+	<item>
+		<title>தனிப்பயன் நாணய குறியீடு</title>
+		<p>3 எழுத்துக்கள் அல்லது 1 ஈமோசி வரை.</p>
+		<p>ஒரு சின்னத்திற்கும் குறியீட்டிற்கும் உள்ள வித்தியாசத்தைப் புரிந்துகொள்வதற்கான எடுத்துக்காட்டு: <em> $ </em> ஒரு அடையாளம், <em> அமெரிக்க டாலர் </em> என்பது ஒரு குறியீடு.</p>
+	</item>
+	<item>
+        <title>தனிப்பயன் நாணய அளவு நடை</title>
+        <p>பின்வரும் வழிகளில் ஒன்றில் ஒரு தொகையைக் காண்பிக்கும் தேர்வு:</p>
+        <list>
+            <item><p>$ n</p></item>
+            <item><p>n $</p></item>
+            <item><p>$ n</p></item>
+            <item><p>n $</p></item>
+        </list>
+    </item>
+	<item>
+		<title>தனிப்பயன் நாணய தசம மற்றும் குழு பிரிப்பான்கள்</title>
+		<p>2 எழுத்துக்கள் அல்லது 1 ஈமோசி வரை.</p>
+	</item>
+	<item>
+		<title>தனிப்பயன் நாணய தசம இலக்கங்கள்</title>
+		<p>அளவு மதிப்புகளின் தசம பகுதியின் அளவு. "வரம்பற்ற" இலக்கங்களுடன் துல்லியமான தொகையைக் காண்பிக்க தேவையான அளவுக்கு தசமப் பகுதியில் அதிகமான எண்கள் இருக்கும், ஆனால் தொகை ஒரு முழு எண் எண்ணாக இருந்தால் தசமப் பகுதி இருக்காது.</p>
+	</item>
+	<item>
+		<title>கடவுச்சொல்</title>
+		<p>ஒவ்வொரு கணக்கும் கடவுச்சொல் பாதுகாக்கப்படலாம். கடவுச்சொல்லைச் சேர்ப்பது ஒரு கணக்கு மறைகுறியாக்கப்படுவதற்கு காரணமாகிறது (கடவுச்சொல்லைப் பயன்படுத்தி தரவை மறைகுறியாக்காமல் தரவைப் படிக்க இயலாது). கவனமாக இருங்கள்: கடவுச்சொல் இழந்தால், நீங்கள் தரவை மீட்டெடுக்க முடியாது! திறந்த கணக்கின் கணக்கு அமைப்புகள் உரையாடலைப் பயன்படுத்தி கடவுச்சொல்லை மாற்றலாம் அல்லது அகற்றலாம். கடவுச்சொல்லை அகற்றுவது கணக்கை மறைகுறியாக்கும்.</p>
+	</item>
+	<item>
+		<title>ஐடி, தேதி அல்லது தொகை மூலம் வரிசைப்படுத்தவும்</title>
+		<p>ஒவ்வொரு கணக்கும் முதன்மையான சாளரத்தில் பரிவர்த்தனைகளை அவற்றின் ஐடி, தேதி அல்லது தொகை மூலம் வரிசைப்படுத்த வேண்டுமா என்று சேமிக்கிறது. ஒவ்வொரு முறையும் இதை மாற்றும்போது, அது கணக்கில் சேமிக்கப்படும் மற்றும் கணக்கை மீண்டும் திறக்கும்போது மீட்டமைக்கப்படும்.</p>
+	</item>
+	<item>
+		<title>வரிசைப்படுத்துதல் ஒழுங்கு</title>
+		<p>ஒவ்வொரு கணக்கும் முதன்மையான சாளரத்தில் பரிவர்த்தனைகளின் வரிசை பற்றிய தகவல்களை சேமிக்கிறது. ஒவ்வொரு முறையும் இதை மாற்றும்போது, அது கணக்கில் சேமிக்கப்படும் மற்றும் கணக்கை மீண்டும் திறக்கும்போது மீட்டமைக்கப்படும்.</p>
+	</item>
+	<item>
+		<title>குழுக்கள் தெரிவுநிலை</title>
+		<p>ஒவ்வொரு கணக்கும் முதன்மையான சாளரத்தில் உள்ள குழுக்கள் மறைக்கப்பட்டதா இல்லையா என்பது பற்றிய தகவல்களை சேமிக்கிறது. ஒவ்வொரு முறையும் நீங்கள் குழுக்களின் பட்டியல் தெரிவுநிலையை மாற்றும்போது, கணக்கை மீண்டும் திறக்கும்போது அது சேமிக்கப்படுகிறது, பின்னர் மீட்டமைக்கப்படுகிறது.</p>
+	</item>
+	<item>
+        <title>குறிச்சொற்கள் தெரிவுநிலை</title>
+        <p>ஒவ்வொரு கணக்கும் முதன்மையான சாளரத்தில் உள்ள குறிச்சொற்கள் பட்டியல் மறைக்கப்பட்டதா இல்லையா என்பது பற்றிய தகவல்களை சேமிக்கிறது. ஒவ்வொரு முறையும் நீங்கள் குறிச்சொற்கள் பட்டியல் தெரிவுநிலையை மாற்றும்போது, நீங்கள் கணக்கை மீண்டும் திறக்கும்போது அது சேமிக்கப்படுகிறது, பின்னர் மீட்டமைக்கப்படுகிறது.</p>
+    </item>
+</terms>
+</page>

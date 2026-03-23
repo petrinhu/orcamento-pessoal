@@ -1,0 +1,7 @@
+payee=REGEXPCAP:^(ENGIE) - SA au capital de
+date=REGEXPCAP:^VOTRE FACTURE DU (.*)
+dateformat=dd/MM/yy
+number=REGEXPCAP:^N°(.*)$
+mode=SET:Carte
+comment=LINEOFFSET:1
+amount=REGEXPCAP:^Montant : (.*) €$

@@ -1,0 +1,618 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+SPDX-FileCopyrightText: 2024 S. MANKOWSKI stephane@mankowski.fr
+SPDX-FileCopyrightText: 2024 G. DE BURE support@mankowski.fr
+SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<!-- Copyright 2019 S. MANKOWSKI / G. DE BURE support@mankowski.fr -->
+<component type="desktop">
+  <id>org.kde.skrooge</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-2.0+</project_license>
+  <launchable type="desktop-id">org.kde.skrooge.desktop</launchable>
+  <name>Skrooge</name>
+  <name xml:lang="ar">راصد</name>
+  <name xml:lang="ca">Skrooge</name>
+  <name xml:lang="ca-valencia">Skrooge</name>
+  <name xml:lang="cs">Skrooge</name>
+  <name xml:lang="da">Skrooge</name>
+  <name xml:lang="de">Skrooge</name>
+  <name xml:lang="el">Skrooge</name>
+  <name xml:lang="en-GB">Skrooge</name>
+  <name xml:lang="eo">Skrooge</name>
+  <name xml:lang="es">Skrooge</name>
+  <name xml:lang="et">Skrooge</name>
+  <name xml:lang="eu">Skrooge</name>
+  <name xml:lang="fi">Skrooge</name>
+  <name xml:lang="fr">Skrooge</name>
+  <name xml:lang="gl">Skrooge</name>
+  <name xml:lang="he">Skrooge</name>
+  <name xml:lang="ia">Skrooge</name>
+  <name xml:lang="id">Skrooge</name>
+  <name xml:lang="it">Skrooge</name>
+  <name xml:lang="ka">Skrooge</name>
+  <name xml:lang="ko">Skrooge</name>
+  <name xml:lang="nl">Skrooge</name>
+  <name xml:lang="pl">Skrooge</name>
+  <name xml:lang="pt">Skrooge</name>
+  <name xml:lang="pt-BR">Skrooge</name>
+  <name xml:lang="ru">Skrooge</name>
+  <name xml:lang="sk">Skrooge</name>
+  <name xml:lang="sl">Skrooge</name>
+  <name xml:lang="sv">Skrooge</name>
+  <name xml:lang="tr">Varyemez</name>
+  <name xml:lang="uk">Skrooge</name>
+  <name xml:lang="zh-CN">Skrooge</name>
+  <summary>Single-entry bookkeeping for home use</summary>
+  <summary xml:lang="ar">مسك الدفاتر للاستخدام المنزلي</summary>
+  <summary xml:lang="ca">Comptabilitat d'entrada única per a ús particular</summary>
+  <summary xml:lang="ca-valencia">Comptabilitat d'entrada única per a ús particular</summary>
+  <summary xml:lang="de">Einfache Buchführung für den privaten Gebrauch</summary>
+  <summary xml:lang="el">Λογιστική απλών εγγραφών για οικιακή χρήση</summary>
+  <summary xml:lang="en-GB">Single-entry bookkeeping for home use</summary>
+  <summary xml:lang="eo">Unuenira librotenado por hejma uzo</summary>
+  <summary xml:lang="es">Contabilidad de registro único para uso doméstico</summary>
+  <summary xml:lang="eu">Etxeko erabilerarako sarrera bakarreko kontabilitatea</summary>
+  <summary xml:lang="fr">Comptabilité à partie simple pour un usage domestique</summary>
+  <summary xml:lang="gl">Contabilidade individual para uso persoal</summary>
+  <summary xml:lang="he">הנהלת חשבונות עם רשומות בודדות לשימוש ביתי</summary>
+  <summary xml:lang="id">Pembukuan tunggal untuk penggunaan rumahan</summary>
+  <summary xml:lang="it">Contabilità a partita semplice per uso domestico</summary>
+  <summary xml:lang="ka">ერთხაზიანი ბუღალტერია სახლისთვის</summary>
+  <summary xml:lang="ko">가정용 단식 부기 가계부</summary>
+  <summary xml:lang="nl">Enkelvoudige boekhouding voor thuisgebruik</summary>
+  <summary xml:lang="pl">Pojedyncze wpisy księgujący do domowego użytku</summary>
+  <summary xml:lang="pt">Contabilidade de registo único para uso doméstico</summary>
+  <summary xml:lang="pt-BR">Contabilidade de entrada única para uso doméstico</summary>
+  <summary xml:lang="ru">Управление личными финансами, основанное на принципе простой записи</summary>
+  <summary xml:lang="sl">Enostavno knjigovodstvo za domačo rabo</summary>
+  <summary xml:lang="sv">Enkel bokföring för hemanvändning</summary>
+  <summary xml:lang="tr">Ev kullanımı için tek girişli muhasebe yönetimi</summary>
+  <summary xml:lang="uk">Бухгалтерська система із одинарним записом для домашнього використання</summary>
+  <description>
+    <p>Skrooge is a personal finance manager powered by KDE that aims to be simple and intuitive. Skrooge allows you to keep track of your expenses and income, categorize them, and build reports of them.</p>
+    <p xml:lang="ar">راصد هو مدير مالي شخصي مدعوم من كِيدِي ويهدف إلى أن يكون بسيطًا وبديهيًا. يسمح لك راصد بتتبع نفقاتك ودخلك، وتصنيفها، وإنشاء تقارير عنها.</p>
+    <p xml:lang="ca">L'Skrooge és un gestor de les finances personals desenvolupat pel KDE, que té l'objectiu de ser senzill i intuïtiu. L'Skrooge permet registrar els ingressos i les despeses, categoritzar-les i fer-ne informes.</p>
+    <p xml:lang="ca-valencia">Skrooge és un gestor de les finances personals desenvolupat per KDE, que té l'objectiu de ser senzill i intuïtiu. Skrooge permet registrar els ingressos i les despeses, categoritzar-les i fer-ne informes.</p>
+    <p xml:lang="de">Skrooge ist eine einfache und intuitive persönliche Finanzverwaltung von KDE. Mit Skrooge können Sie Ihre Ausgaben und Einnahmen im Auge behalten, kategorisieren und Berichte darüber erstellen.</p>
+    <p xml:lang="el">Το Skrooge είναι ένας προσωπικός διαχειριστής των οικονομικών από το KDE που στοχεύει να είναι απλός και διαισθητικός. Με το Skrooge πρακολουθείτε τα έξοδα και τα έσοδα, τα κατηγοριοποιείτε και εκδίδετε σχετικές αναφορές.</p>
+    <p xml:lang="en-GB">Skrooge is a personal finance manager powered by KDE that aims to be simple and intuitive. Skrooge allows you to keep track of your expenses and income, categorise them, and build reports of them.</p>
+    <p xml:lang="eo">Skrooge estas administranto pri persona financado funkciigita de KDE, kiu celas esti simpla kaj intuicia. Skrooge permesas vin konservi trakon de viaj elspezoj kaj enspezoj, kategoriigi ilin kaj konstrui raportojn pri ili.</p>
+    <p xml:lang="es">Skrooge es un gestor de finanzas personales creado por KDE que pretende ser sencillo e intuitivo. Skrooge le permite seguir el rastro de sus gastos e ingresos, asignarles categorías y crear informes sobre ellos.</p>
+    <p xml:lang="et">Skrooge on KDE isiklike rahaasjade haldamise tööriist, mille siht on olla lihtne ja mõistetav. Skrooge võimaldab hoida silma peal väljaminekutel ja sissetulekutel, neid liigitada ja nende kohta aruandeid koostada lasta.</p>
+    <p xml:lang="eu">Skrooge finantza pertsonalen kudeatzaile bat da, KDEk bultzatua, sinplea eta intuitiboa izan nahi duen. Skroogek zure gastuen eta diru-sarreren jarraipena egiteko, sailkatzeko eta horien txostenak sortzeko aukera ematen dizu.</p>
+    <p xml:lang="fi">Skrooge on KDE:n kehittämä henkilökohtainen taloudenhallintaohjelma, joka pyrkii yksinkertaisuuteen ja intuitiivisuuteen. Skroogella voit pitää kirjaa tuloistasi ja menoistasi, luokitella niitä sekä koostaa niistä raportteja.</p>
+    <p xml:lang="fr">Skrooge est un gestionnaire de finances personnelles de KDE, qui vise à être simple et intuitif. Skrooge vous permet de suivre vos dépenses et revenus, de les catégoriser, et de fabriquer des rapports.</p>
+    <p xml:lang="gl">Skrooge é un xestor de finanzas persoais baseado en KDE, e que ten por obxectivo ser sinxelo e intuitivo. Skrooge permite facer un seguimento dos gastos e ingresos, organizalos por categorías, e construír informes sobre os mesmos.</p>
+    <p xml:lang="he">Skrooge הוא מנהל כספים אישיים שפותח על ידי KDE ומשתדל להיות פשוט וקל לתפעול. Skrooge מאפשר לך לעקוב אחר ההוצאות וההכנסות שלך, לסדר אותן בקטגוריות ולבנות מהן דוחות.</p>
+    <p xml:lang="id">Skrooge adalah sebuah pengelola keuangan personal yang diberdayakan oleh KDE yang bertujuan untuk menjadi sederhana dan intuitif. Skrooge memungkinkan Anda melacak pengeluaran dan pendapatan Anda, mengategorikannya, dan membuat laporannya.</p>
+    <p xml:lang="it">Skrooge è un gestore delle finanze personali, semplice e intuitivo, che utilizza KDE, il cui scopo è tenere traccia delle tue entrate e uscite, di categorizzarle e creare rapporti.</p>
+    <p xml:lang="ka">Skrooge პირადი ფინანსების მმართველია KDE-სგან, რომლის მიზანია, მარტივი და ინტიუციური იყოს. Skrooge საშუალებას გაძლევთ მართოთ თქვენი ხარჯები და შემოსავლები, დაალაგოთ ისინი და ააგოთ ანგარიშები.</p>
+    <p xml:lang="ko">Skrooge는 KDE의 간단하고 직관적인 개인 재무 관리자입니다. Skrooge에서는 수입과 지출을 관리하고, 각각 항목에 분류를 할당하고, 보고서를 작성할 수 있습니다.</p>
+    <p xml:lang="nl">Skrooge is een persoonlijke beheerder van financiën binnen KDE, met als doel eenvoudig en intuïtief te zijn. Skrooge stelt u in staat uw uitgaven en inkomsten bij te houden, ze te categoriseren en er over te rapporteren.</p>
+    <p xml:lang="pl">Skrooge jest programem do zarządzania finansami osobistymi napędzanym przez KDE, którego celem jest bycie prostym i intuicyjnym. Skrooge umożliwia śledzenie twoich rozchodów, przychodów, kategoryzowanie ich i tworzenie dla nich sprawozdań.</p>
+    <p xml:lang="pt">O Skrooge é um gestor de finanças pessoais que usa a plataforma KDE, pretendendo ser simples e intuitivo. O Skrooge permite-lhe manter um registo das suas despesas e receitas, classificá-las e criar relatórios sobre elas.</p>
+    <p xml:lang="pt-BR">Skrooge é um gerenciador de finanças pessoais desenvolvido pelo KDE com o objetivo de ser simples e intuitivo. Ele permite manter um registro das suas despesas e receitas, classificá-las e criar relatórios sobre elas.</p>
+    <p xml:lang="ru">Skrooge — приложение для управления личными финансами с интуитивно-понятным интерфейсом, разработанное KDE. Skrooge позволяет отслеживать доходы и расходы, назначать им категории и формировать по ним отчёты.</p>
+    <p xml:lang="sl">Skrooge je osebni finančni upravljalnik, ki ga poganja KDE, s ciljem da preprost in intuitiven. Skrooge vam omogoča, da spremljate svoje stroške in dohodke, jih kategorizirate in sestavite poročila o njih.</p>
+    <p xml:lang="sv">Skrooge är ett hemekonomiprogram drivet av KDE, med målsättning att vara enkelt och intuitivt. Skrooge låter dig hålla reda på dina utgifter och intäkter, kategorisera dem, och skapa rapporter om dem.</p>
+    <p xml:lang="tr">Varyemez, basit ve sezgisel olmayı amaçlayan, KDE tarafından desteklenen bir kişisel finans yöneticisidir. Varyemez; harcamalarınızı ve gelirlerinizi takip etmenize, kategorilere ayırmanıza ve bunlarla ilgili raporlar oluşturmanıza olanak tanır.</p>
+    <p xml:lang="uk">Skrooge — програма для керування особистими фінансами, створена на основі технологій KDE. Вона проста і інтуїтивно зрозуміла. За допомогою Skrooge ви зможете стежити за вашими витратами та прибутками, розподіляти записи за категоріями та створювати на їхній основі звіти.</p>
+    <p>Features:</p>
+    <p xml:lang="ar">الميزات:</p>
+    <p xml:lang="ca">Característiques:</p>
+    <p xml:lang="ca-valencia">Característiques:</p>
+    <p xml:lang="cs">Vlastnosti:</p>
+    <p xml:lang="de">Funktionen:</p>
+    <p xml:lang="el">Χαρακτηριστικά:</p>
+    <p xml:lang="en-GB">Features:</p>
+    <p xml:lang="eo">Trajtoj:</p>
+    <p xml:lang="es">Funciones:</p>
+    <p xml:lang="et">Omadused:</p>
+    <p xml:lang="eu">Ezaugarriak:</p>
+    <p xml:lang="fi">Ominaisuuksia:</p>
+    <p xml:lang="fr">Fonctionnalités :</p>
+    <p xml:lang="gl">Funcionalidades:</p>
+    <p xml:lang="he">יכולות:</p>
+    <p xml:lang="ia">Characteristicas:</p>
+    <p xml:lang="id">Fitur:</p>
+    <p xml:lang="it">Caratteristiche:</p>
+    <p xml:lang="ka">თვისებები:</p>
+    <p xml:lang="ko">기능:</p>
+    <p xml:lang="nl">Mogelijkheden:</p>
+    <p xml:lang="pl">Możliwości:</p>
+    <p xml:lang="pt">Funcionalidades:</p>
+    <p xml:lang="pt-BR">Funcionalidades:</p>
+    <p xml:lang="ru">Возможности:</p>
+    <p xml:lang="sk">Funkcie:</p>
+    <p xml:lang="sl">Zmožnosti:</p>
+    <p xml:lang="sv">Funktioner:</p>
+    <p xml:lang="tr">Özellikler:</p>
+    <p xml:lang="uk">Можливості:</p>
+    <p xml:lang="zh-CN">功能：</p>
+    <ul>
+      <li>QIF, CSV, SKROOGE, KMYMONEY import/export</li>
+      <li xml:lang="ar">استيراد / تصدير QIF، CSV، SKROOGE، KMYMONEY </li>
+      <li xml:lang="ca">Importació/exportació de QIF, CSV, SKROOGE, KMYMONEY</li>
+      <li xml:lang="ca-valencia">Importació/exportació de QIF, CSV, SKROOGE, KMYMONEY</li>
+      <li xml:lang="de">Import und Export der Formate QIF, CSV, Skrooge, KMymoney</li>
+      <li xml:lang="el">Εισαγωγή/εξαγωγή QIF, CSV, SKROOGE, KMYMONEY</li>
+      <li xml:lang="en-GB">QIF, CSV, SKROOGE, KMYMONEY import/export</li>
+      <li xml:lang="eo">QIF, CSV, SKROOGE, KMYMONEY importo/eksportado</li>
+      <li xml:lang="es">Importar y exportar QIF, CSV, SKROOGE, KMYMONEY</li>
+      <li xml:lang="et">QIF, CSV, SKROOGE, KMYMONEY import/eksport</li>
+      <li xml:lang="eu">QIF, CSV, SKROOGE, KMYMONEY inportatzea/esportatzea</li>
+      <li xml:lang="fi">QIF-, CSV-, Skrooge- ja KMyMoney-tuonti ja -vienti</li>
+      <li xml:lang="fr">Importation / exportation QIF, CSV, Skrooge, KMyMoney </li>
+      <li xml:lang="gl">Permite importar e exportar QIF, CSV, SKROOGE e KMYMONEY.</li>
+      <li xml:lang="he">ייבוא/ייצוא של QIF,‏ CSV,‏ SKROOGE,‏ KMYMONEY</li>
+      <li xml:lang="ia">importation/exportation de QIF, CSV, SKROOGE, KMYMONEY</li>
+      <li xml:lang="id">Impor/ekspor QIF, CSV, SKROOGE, KMYMONEY</li>
+      <li xml:lang="it">Importazione ed esportazione QIF, CSV, SKROOGE, KMYMONEY</li>
+      <li xml:lang="ka">QIF, CSV, SKROOGE, KMYMONEY შეტანა/გატანა</li>
+      <li xml:lang="ko">QIF, CSV, SKROOGE, KMYMONEY 가져오기/내보내기</li>
+      <li xml:lang="nl">Importeren/exporteren van QIF, CSV, SKROOGE en KMYMONEY</li>
+      <li xml:lang="pl">Import/eksport QIF, CSV, SKROOGE, KMYMONEY</li>
+      <li xml:lang="pt">Importação/exportação para QIF, CSV, SKROOGE, KMYMONEY</li>
+      <li xml:lang="pt-BR">Importação/exportação para QIF, CSV, SKROOGE e KMYMONEY</li>
+      <li xml:lang="ru">Импорт и экспорт файлов QIF, CSV, SKROOGE, KMYMONEY</li>
+      <li xml:lang="sl">uvoz/zvoz QIF, CSV, SKROOGE, KMYMONEY</li>
+      <li xml:lang="sv">Import och export av QIF, CSV, SKROOGE, KMYMONEY</li>
+      <li xml:lang="tr">QIF, CSV, SKROOGE, KMYMONEY içe/dışa aktarma</li>
+      <li xml:lang="uk">Імпортування та експортування даних QIF, CSV, SKROOGE, KMYMONEY</li>
+      <li xml:lang="zh-CN">QIF, CSV, SKROOGE, KMYMONEY 导入/导出</li>
+      <li>Microsoft Money, OFX, QFX, MT940, GNUCASH, GRISBI, HOMEBANK and MONEY MANAGER EX import</li>
+      <li xml:lang="ar">استيراد Microsoft Money و OFX و QFX و MT940 و GNUCASH و GRISBI و HOMEBANK و MONEY MANAGER EX</li>
+      <li xml:lang="ca">Importació del Microsoft Money, OFX, QFX, MT940, GNUCASH, GRISBI, HOMEBANK i MONEY MANAGER EX</li>
+      <li xml:lang="ca-valencia">Importeu Microsoft Money, OFX, QFX, MT940, GNUCASH, GRISBI, HOMEBANK i MONEY MANAGER EX</li>
+      <li xml:lang="de">Import der Formate Money, OFX, QFX, MT940, GNUCASH, GRISBI, HOMEBANK und MONEY MANAGER EX</li>
+      <li xml:lang="el">Εισαγωγή Microsoft Money, OFX, QFX, MT940, GNUCASH, GRISBI, HOMEBANK και MONEY MANAGER EX</li>
+      <li xml:lang="en-GB">Microsoft Money, OFX, QFX, MT940, GNUCASH, GRISBI, HOMEBANK and MONEY MANAGER EX import</li>
+      <li xml:lang="eo">Importado de Microsoft Money, OFX, QFX, MT940, GNUCASH, GRISBI, HOMEBANK kaj MONEY MANAGER EX</li>
+      <li xml:lang="es">Importar de Microsoft Money, OFX, QFX, MT940, GNUCASH, GRISBI, HOMEBANK y MONEY MANAGER EX</li>
+      <li xml:lang="et">Microsoft Money, OFX, QFX, MT940, GNUCASH, GRISBI, HOMEBANK ja MONEY MANAGER EX import</li>
+      <li xml:lang="eu">Microsoft Money, OFX, QFX, MT940, GNUCASH, GRISBI, HOMEBANK eta MONEY MANAGER EX inportatzea</li>
+      <li xml:lang="fi">Microsoft Money-, OFX-, QFX-, MT940-, GNUCash-, Grisbi-, Homebank- ja Money Manager Ex -tuonti</li>
+      <li xml:lang="fr">Importation Microsoft Money, OFX, QFX, MT940, GNUCash, Grisbi, Homebank et Money Manager EX</li>
+      <li xml:lang="gl">Permite importar Microsoft Money, OFX, QFX, MT940, GNUCASH, GRISBI, HOMEBANK e MONEY MANAGER EX.</li>
+      <li xml:lang="he">ייבוא של Microsoft Money,‏ OFX,‏ QFX,‏ MT940,‏ GNUCASH,‏ GRISBI,‏ HOMEBANK ו־MONEY MANAGER EX</li>
+      <li xml:lang="ia">Importation de Microsoft Money, OFX, QFX, MT940, GNUCASH, GRISBI, HOMEBANK e MONEY MANAGER EX</li>
+      <li xml:lang="id">Impor Microsoft Money, OFX, QFX, MT940, GNUCASH, GRISBI, HOMEBANK dan MONEY MANAGER EX</li>
+      <li xml:lang="it">Importazione Microsoft Money, OFX, QFX, MT940, GNUCASH, GRISBI, HOMEBANK e MONEY MANAGER EX</li>
+      <li xml:lang="ka">Microsoft Money, OFX, QFX, MT940, GNUCASH, GRISBI, HOMEBANK and MONEY MANAGER EX-დან შემოტანა</li>
+      <li xml:lang="ko">Microsoft Money, OFX, QFX, MT940, GNUCASH, GRISBI, HOMEBANK, MONEY MANAGER EX 가져오기</li>
+      <li xml:lang="nl">Importeren van Microsoft Money, OFX, QFX, MT940, GNUCASH, GRISBI, HOMEBANK en MONEY MANAGER</li>
+      <li xml:lang="pl">Import Microsoft Money, OFX, QFX, MT940, GNUCASH, GRISBI, HOMEBANK oraz MONEY MANAGER EX</li>
+      <li xml:lang="pt">Importação do Microsoft Money, OFX, QFX, MT940, GNUCASH, GRISBI, HOMEBANK e MONEY MANAGER EX</li>
+      <li xml:lang="pt-BR">Importação do Microsoft Money, OFX, QFX, MT940, GNUCASH, GRISBI, HOMEBANK e MONEY MANAGER EX</li>
+      <li xml:lang="ru">Импорт файлов Microsoft Money, OFX, QFX, MT940, GNUCASH, GRISBI, HOMEBANK и MONEY MANAGER EX</li>
+      <li xml:lang="sl">Uvoz Microsoft Money, OFX, QFX, MT940, GNUCASH, GRISBI, HOMEBANK in MONEY MANAGER EX</li>
+      <li xml:lang="sv">Import av Microsoft Money, OFX, QFX, MT940, GNUCASH, GRISBI, HOMEBANK och MONEY MANAGER EX</li>
+      <li xml:lang="tr">Microsoft Money, OFX, QFX, MT940, GNUCASH, GRISBI, HOMEBANK ve MONEY MANAGER EX içe aktarma</li>
+      <li xml:lang="uk">Імпортування даних Microsoft Money, OFX, QFX, MT940, GNUCASH, GRISBI, HOMEBANK та MONEY MANAGER EX</li>
+      <li xml:lang="zh-CN">Microsoft Money, OFX, QFX, MT940, GNUCASH, GRISBI, HOMEBANK 和 MONEY MANAGER EX 导入</li>
+      <li>Advanced Graphical Reports</li>
+      <li xml:lang="ar">تقارير رسومية متقدمة</li>
+      <li xml:lang="ca">Informes gràfics avançats</li>
+      <li xml:lang="ca-valencia">Informes gràfics avançats</li>
+      <li xml:lang="de">Erweiterte grafische Berichte</li>
+      <li xml:lang="el">Προηγμένες γραφικές αναφορές</li>
+      <li xml:lang="en-GB">Advanced Graphical Reports</li>
+      <li xml:lang="eo">Altnivelaj Grafikaj Raportoj</li>
+      <li xml:lang="es">Informes gráficos avanzados</li>
+      <li xml:lang="et">Täiustatud graafilised aruanded</li>
+      <li xml:lang="eu">Txosten grafiko aurreratuak</li>
+      <li xml:lang="fi">Edistyneet graafiset raportit</li>
+      <li xml:lang="fr">Rapports graphique avancés</li>
+      <li xml:lang="gl">Informes gráficos avanzados.</li>
+      <li xml:lang="he">דוחות גרפיים מתקדמים</li>
+      <li xml:lang="id">Laporan Grafikal Tingkat-lanjut</li>
+      <li xml:lang="it">Rapporti grafici avanzati</li>
+      <li xml:lang="ka">დამატებითი გრაფიკული ანგარიშები</li>
+      <li xml:lang="ko">고급 그래픽 보고서</li>
+      <li xml:lang="nl">Geavanceerde grafische rapporten</li>
+      <li xml:lang="pl">Rozbudowane sprawozdania graficzne</li>
+      <li xml:lang="pt">Relatórios Gráficos Avançados</li>
+      <li xml:lang="pt-BR">Relatórios gráficos avançados</li>
+      <li xml:lang="ru">Расширенные графические отчёты</li>
+      <li xml:lang="sl">Napredna grafična poročila</li>
+      <li xml:lang="sv">Avancerade grafiska rapporter</li>
+      <li xml:lang="tr">Gelişmiş Grafiksel Raporlar</li>
+      <li xml:lang="uk">Розширені графічні звіти</li>
+      <li xml:lang="zh-CN">高级图形报表</li>
+      <li>Multiple tabs to help you organize your work</li>
+      <li xml:lang="ar">ألسنة متعددة لمساعدتك على تنظيم عملك</li>
+      <li xml:lang="ca">Múltiples pestanyes us ajuden a organitzar el treball</li>
+      <li xml:lang="ca-valencia">Múltiples pestanyes vos ajuden a organitzar el treball</li>
+      <li xml:lang="de">Mehrere Unterfenster um Ihre Arbeit zu organisieren</li>
+      <li xml:lang="el">Πολλές καρτέλες για την οργάνωση της εργασίας σας</li>
+      <li xml:lang="en-GB">Multiple tabs to help you organise your work</li>
+      <li xml:lang="eo">Multoblaj langetoj por helpi vin organizi vian laboron</li>
+      <li xml:lang="es">Múltiples pestañas para ayudarle a organizar su trabajo</li>
+      <li xml:lang="et">Mitme kaardi kasutamine tegevuse paremaks korraldamiseks</li>
+      <li xml:lang="eu">Fitxa anizkoitzak zure lana antolatzen laguntzeko</li>
+      <li xml:lang="fi">Välilehdet helpottavat järjestämään työtä</li>
+      <li xml:lang="fr">Plusieurs onglets pour vous aider à organiser votre travail</li>
+      <li xml:lang="gl">Dispón de varios separadores para permitirlle organizar o traballo.</li>
+      <li xml:lang="he">ריבוי לשוניות כדי לסייע לך לסדר את העבודה שלך</li>
+      <li xml:lang="id">Tab yang multipel untuk membantu Anda mengatur pekerjaan Anda</li>
+      <li xml:lang="it">Più schede ti aiutano a organizzare il tuo lavoro</li>
+      <li xml:lang="ka">მრავალჩანართიანი ინტერფეისი თქვენი სამუშაოს დალაგებაში გეთანხმებათ</li>
+      <li xml:lang="ko">작업을 정리할 수 있는 다양한 탭</li>
+      <li xml:lang="nl">Meerdere tabbladen om uw werk te helpen organiseren</li>
+      <li xml:lang="pl">Wiele kart ułatwiających pracę</li>
+      <li xml:lang="pt">Diversas páginas que o ajudam a organizar o seu trabalho</li>
+      <li xml:lang="pt-BR">Diversas abas que auxiliam na organização do seu trabalho</li>
+      <li xml:lang="ru">Вкладки для удобной организации работы</li>
+      <li xml:lang="sl">Več zavihkov, ki vam pomagajo organizirati svoje delo</li>
+      <li xml:lang="sv">Flera flikar för att hjälpa till att organisera arbetet</li>
+      <li xml:lang="tr">Çalışmanızı organize edebilmeniz için çeşitli sekmeler</li>
+      <li xml:lang="uk">Декілька вкладок для упорядковування вашої роботи</li>
+      <li>Infinite undo/redo (even after the file was closed !)</li>
+      <li xml:lang="ar">التراجع / الإعادة اللانهائية (حتى بعد إغلاق الملف!)</li>
+      <li xml:lang="ca">Desfer/refer infinits (inclús després de tancar el fitxer!)</li>
+      <li xml:lang="ca-valencia">Desfer/refer infinits (inclús després de tancar el fitxer!)</li>
+      <li xml:lang="de">Unbegrenztes Zurücknehmen und Wiederherstellen, sogar nach dem Schließen der Datei.</li>
+      <li xml:lang="el">Απεριόριστες αναιρέσεις/επαναλήψεις (ακόμη και αφού το αρχείο έχει κλείσει !)</li>
+      <li xml:lang="en-GB">Infinite undo/redo (even after the file was closed !)</li>
+      <li xml:lang="eo">Senfina malfari/refari (eĉ post kiam la dosiero estis fermita!)</li>
+      <li xml:lang="es">Deshacer/rehacer sin límite (incluso tras cerrar archivos)</li>
+      <li xml:lang="et">Piiramata hulgal tagasivõtmisi ja uuestitegemisi (isegi pärast faili sulgemist!)</li>
+      <li xml:lang="eu">Desegite/berregite infinitua (fitxategia itxi ondoren ere!)</li>
+      <li xml:lang="fi">Rajaton kumoaminen ja uudelleen tekeminen (vaikka tiedosto suljettaisiin välillä!)</li>
+      <li xml:lang="fr">Annuler / Refaire infini (même après la fermeture du fichier!)</li>
+      <li xml:lang="gl">Funcionalidade de desfacer e refacer sen limitacións (incluso tras pechar o ficheiro).</li>
+      <li xml:lang="he">הסגה/ביצוע מחדש ללא הגדרה (אפילו לאחר סגירת הקובץ!)</li>
+      <li xml:lang="id">Urung/ulang yang tak terbatas (bahkan setelah file ditutup !)</li>
+      <li xml:lang="it">Infinite operazioni di annullamento/ripristino (anche quando il file è stato chiuso!)</li>
+      <li xml:lang="ka">უსასრულო გაუქმება/დაბრუნება (მაშინაც კი, თუ ფაილი დახურეთ!)</li>
+      <li xml:lang="ko">무한 실행 취소/다시 실행 지원(파일이 닫힌 이후에도 사용 가능!)</li>
+      <li xml:lang="nl">Oneindig ongedaan maken/opnieuw doen (zelfs nadat het bestand was gesloten!)</li>
+      <li xml:lang="pl">Nieskończona historia cofania/przywracania (nawet po zamknięciu pliku !)</li>
+      <li xml:lang="pt">Capacidade infinita de desfazer/refazer operações (mesmo depois de fechar o ficheiro!)</li>
+      <li xml:lang="pt-BR">Capacidade infinita de desfazer/refazer operações (mesmo depois de fechar o arquivo!)</li>
+      <li xml:lang="ru">Неограниченное количество операций отмены/повтора (даже после закрытия файла!)</li>
+      <li xml:lang="sl">Neskončno število razveljavitev/ponovitev (celo po zaprtju datoteke!)</li>
+      <li xml:lang="sv">Obegränsat stöd för ångra och gör om (även efter filen har stängs)</li>
+      <li xml:lang="tr">Sınırsız geri al/yinele (dosya kapatıldıktan sonra bile!)</li>
+      <li xml:lang="uk">Підтримка нескінченного буфера скасування і повторення дій (навіть після закриття файла!)</li>
+      <li xml:lang="zh-CN">无限制撤销/重做支持 (文件关闭后也支持！)</li>
+      <li>Instant filtering on transactions and reports</li>
+      <li xml:lang="ar">تصفية فورية للمعاملات والتقارير</li>
+      <li xml:lang="ca">Filtratge instantani d'operacions i informes</li>
+      <li xml:lang="ca-valencia">Filtratge instantani d'operacions i informes</li>
+      <li xml:lang="de">Sofortige Filterung von Buchungen und Berichten</li>
+      <li xml:lang="en-GB">Instant filtering on transactions and reports</li>
+      <li xml:lang="eo">Tuja filtrado je transakcioj kaj raportoj</li>
+      <li xml:lang="es">Filtrado instantáneo en transacciones e informes</li>
+      <li xml:lang="eu">Transakzioak eta txostenak berehala iragaztea</li>
+      <li xml:lang="fr">Filtre immédiat sur les opérations et les rapports</li>
+      <li xml:lang="gl">Filtro instantáneo de asentos e informes.</li>
+      <li xml:lang="he">סינון מיידי על העברות ודוחות</li>
+      <li xml:lang="it">Filtro istantaneo su transazioni e rapporti</li>
+      <li xml:lang="ka">ტრანზაქციებისა და ანგარიშების მყისიერი გაფილტვრა</li>
+      <li xml:lang="nl">Onmiddellijke filtering op transacties en rapporten</li>
+      <li xml:lang="pl">Natychmiastowe filtrowanie transakcji i sprawozdań</li>
+      <li xml:lang="pt-BR">Filtragem instantânea nas transações e relatórios</li>
+      <li xml:lang="sl">Takojšnje filtriranje transakcij in poročil</li>
+      <li xml:lang="sv">Omedelbar filtrering av transaktioner och rapporter</li>
+      <li xml:lang="tr">İşlemlerde ve raporlarda anında süzme</li>
+      <li xml:lang="uk">Миттєве фільтрування операцій та звітів</li>
+      <li>Infinite category levels</li>
+      <li xml:lang="ar">مستويات فئات لا حصر لها</li>
+      <li xml:lang="ca">Nivells infinits de categories</li>
+      <li xml:lang="ca-valencia">Nivells infinits de categories</li>
+      <li xml:lang="de">Unbegrenzte Kategorieebenen</li>
+      <li xml:lang="el">Απεριόριστα επίπεδα κατηγοριών</li>
+      <li xml:lang="en-GB">Infinite category levels</li>
+      <li xml:lang="eo">Senfinaj kategoriniveloj</li>
+      <li xml:lang="es">Infinitos niveles de categorías</li>
+      <li xml:lang="et">Piiramata hulgal kategooriatasemeid</li>
+      <li xml:lang="eu">Kategoria-maila infinitua</li>
+      <li xml:lang="fi">Rajattomasti luokkien tasoja</li>
+      <li xml:lang="fr">Niveaux de catégories infinis</li>
+      <li xml:lang="gl">Niveis de categorías sen limitacións.</li>
+      <li xml:lang="he">רמות קטגוריות אינסופיות</li>
+      <li xml:lang="id">Level kategori tak terbatas</li>
+      <li xml:lang="it">Livelli infiniti di categorie</li>
+      <li xml:lang="ka">კატეგორიის უსასრულო დონეები</li>
+      <li xml:lang="ko">무한 분류 단계 수준</li>
+      <li xml:lang="nl">Oneindig aantal categorieniveaus</li>
+      <li xml:lang="pl">Nieskończone poziomy kategorii</li>
+      <li xml:lang="pt">Níveis infinitos de categorias</li>
+      <li xml:lang="pt-BR">Níveis de categoria infinitos</li>
+      <li xml:lang="ru">Неограниченное количество уровней категорий</li>
+      <li xml:lang="sl">Neskončno število nivojev kategorij</li>
+      <li xml:lang="sv">Obegränsade kategorinivåer</li>
+      <li xml:lang="tr">Sınırsız kategori düzeyleri</li>
+      <li xml:lang="uk">Можливість створення необмеженої за кількістю рівнів ієрархії категорій</li>
+      <li>Mass update of transactions</li>
+      <li xml:lang="ar">تحديث جماعي للمعاملات</li>
+      <li xml:lang="ca">Actualització massiva d'operacions</li>
+      <li xml:lang="ca-valencia">Actualització massiva d'operacions</li>
+      <li xml:lang="cs">Hromadná aktualizace transakcí</li>
+      <li xml:lang="de">Massenaktualisierung von Buchungen</li>
+      <li xml:lang="en-GB">Mass update of transactions</li>
+      <li xml:lang="eo">Amasa ĝisdatigo de transakcioj</li>
+      <li xml:lang="es">Actualización de transacciones en masa</li>
+      <li xml:lang="eu">Transakzioen eguneratze masiboa</li>
+      <li xml:lang="fr">Mise à jour massive d'opérations</li>
+      <li xml:lang="gl">Actualización masiva de asentos.</li>
+      <li xml:lang="he">עדכון של העברות במרוכז</li>
+      <li xml:lang="it">Aggiornamento di massa delle transazioni</li>
+      <li xml:lang="ka">ტრანზაქციების მასიური განახლება</li>
+      <li xml:lang="nl">Massaal bijwerken van transacties</li>
+      <li xml:lang="pl">Masowe uaktualnianie transakcji</li>
+      <li xml:lang="pt-BR">Atualização de transações em lote</li>
+      <li xml:lang="sl">Množična posodobitev transakcij</li>
+      <li xml:lang="sv">Mängduppdatering av transaktioner</li>
+      <li xml:lang="tr">İşlemlerin toplu güncellenmesi</li>
+      <li xml:lang="uk">Пакетне оновлення операцій</li>
+      <li>Scheduled transactions</li>
+      <li xml:lang="ar">المعاملات المجدولة</li>
+      <li xml:lang="ca">Operacions planificades</li>
+      <li xml:lang="ca-valencia">Operacions planificades</li>
+      <li xml:lang="cs">Naplánované transakce</li>
+      <li xml:lang="de">Geplante Buchungen</li>
+      <li xml:lang="en-GB">Scheduled transactions</li>
+      <li xml:lang="eo">Planitaj transakcioj</li>
+      <li xml:lang="es">Transacciones planificadas</li>
+      <li xml:lang="eu">Antolatutako transakzioak</li>
+      <li xml:lang="fr">Opérations programmées</li>
+      <li xml:lang="gl">Asentos planificados.</li>
+      <li xml:lang="he">העברות מתוזמנות</li>
+      <li xml:lang="it">Transazioni pianificate</li>
+      <li xml:lang="ka">დაგეგმილი ტრანზაქციები</li>
+      <li xml:lang="nl">Periodieke transacties</li>
+      <li xml:lang="pl">Transakcje planowane</li>
+      <li xml:lang="pt-BR">Transações agendadas</li>
+      <li xml:lang="sl">Časovno načrtovane transakcije</li>
+      <li xml:lang="sv">Schemalagda transaktioner</li>
+      <li xml:lang="tr">Zamanlanmış işlemler</li>
+      <li xml:lang="uk">Заплановані операції</li>
+      <li>Track refund of your expenses</li>
+      <li xml:lang="ar">تتبع استرداد نفقاتك</li>
+      <li xml:lang="ca">Seguiment del reemborsament de les despeses</li>
+      <li xml:lang="ca-valencia">Seguiment del reemborsament de les despeses</li>
+      <li xml:lang="de">Verfolgen Sie die Erstattung Ihrer Ausgaben</li>
+      <li xml:lang="el">Παρακολούθηση επιστροφής χρημάτων στα έξοδά σας</li>
+      <li xml:lang="en-GB">Track refund of your expenses</li>
+      <li xml:lang="eo">Spuri repagon de viaj elspezoj</li>
+      <li xml:lang="es">Seguimiento de reembolsos de sus gastos</li>
+      <li xml:lang="et">Kuluhüvituste jälgimine</li>
+      <li xml:lang="eu">Zure gastuen itzulketaren jarraipena</li>
+      <li xml:lang="fi">Kulujesi suoritusten jäljitys</li>
+      <li xml:lang="fr">Suivi des remboursements de dépenses</li>
+      <li xml:lang="gl">Seguimento da devolución dos gastos.</li>
+      <li xml:lang="he">מעקב אחרי החזרי הוצאות</li>
+      <li xml:lang="id">Lacak kembalian pengeluaran Anda</li>
+      <li xml:lang="it">Traccia i rimborsi delle tue spese</li>
+      <li xml:lang="ka">თქვენი ხარჯების დაბრუნების თვალყურის დევნება</li>
+      <li xml:lang="ko">지출 환불 추적</li>
+      <li xml:lang="nl">Volgen van aanvullen van uitgaven</li>
+      <li xml:lang="pl">Śledzenie zwrotu twoich wydatków</li>
+      <li xml:lang="pt">Seguir o reembolso das suas despesas</li>
+      <li xml:lang="pt-BR">Acompanhe o reembolso das suas despesas</li>
+      <li xml:lang="ru">Отслеживание возмещения расходов</li>
+      <li xml:lang="sl">Sledenje povračil stroškov</li>
+      <li xml:lang="sv">Följ återbetalning av utgifter</li>
+      <li xml:lang="tr">Harcamalarınızın geri iadesini takip edin</li>
+      <li xml:lang="uk">Стеження за відшкодуваннями ваших витрат</li>
+      <li>Automatically process transactions based on search conditions</li>
+      <li xml:lang="ar">معالجة المعاملات آلياً بناءً على شروط البحث</li>
+      <li xml:lang="ca">Procés automàtic d'operacions basat en les condicions de cerca</li>
+      <li xml:lang="ca-valencia">Procés automàtic d'operacions basat en les condicions de busca</li>
+      <li xml:lang="cs">Automaticky zpracovat transakce podle podmínek vyhledávání</li>
+      <li xml:lang="de">Buchungen automatisch auf der Grundlage von Suchbedingungen bearbeiten</li>
+      <li xml:lang="en-GB">Automatically process transactions based on search conditions</li>
+      <li xml:lang="eo">Aŭtomate prilabori transakciojn surbaze de serĉkondiĉoj</li>
+      <li xml:lang="es">Procesamiento automático de transacciones basado en condiciones de búsqueda</li>
+      <li xml:lang="eu">Bilaketa-baldintzen arabera transakzioak automatikoki prozesatzea</li>
+      <li xml:lang="fr">Traiter automatiquement les transactions selon les conditions de recherche</li>
+      <li xml:lang="gl">Procesamento automático de asentos baseado en condicións de busca.</li>
+      <li xml:lang="he">עיבוד אוטומטי של העברות לפי תנאי חיפוש</li>
+      <li xml:lang="it">Elabora automaticamente le transazioni basandosi sulle condizioni di ricerca</li>
+      <li xml:lang="ka">ტრანზაქციების ავტომატური დამუშავება ძებნის პირობების მიხედვით</li>
+      <li xml:lang="nl">Automatisch transacties gebaseerd op zoekcondities verwerken</li>
+      <li xml:lang="pl">Przetwarzanie transakcji na podstawie warunków wyszukiwania</li>
+      <li xml:lang="pt-BR">Processa transações automaticamente com base nas condições de pesquisa</li>
+      <li xml:lang="sl">Samodejno obdelane transakcije na podlagi pogojev iskanja</li>
+      <li xml:lang="sv">Behandla automatiskt transaktioner baserat på sökvillkor</li>
+      <li xml:lang="tr">Arama koşullarına bağlı olarak işlemleri kendiliğinden işleyin</li>
+      <li xml:lang="uk">Автоматична обробка операцій на основі умов пошуку</li>
+      <li>Multiple currencies</li>
+      <li xml:lang="ar">عملات متعددة</li>
+      <li xml:lang="ca">Múltiples divises</li>
+      <li xml:lang="ca-valencia">Múltiples divises</li>
+      <li xml:lang="cs">Více měn</li>
+      <li xml:lang="de">Mehrere Währungen</li>
+      <li xml:lang="el">Πολλά νομίσματα</li>
+      <li xml:lang="en-GB">Multiple currencies</li>
+      <li xml:lang="eo">Multoblaj valutoj</li>
+      <li xml:lang="es">Múltiples divisas</li>
+      <li xml:lang="et">Paljude vääringute kasutamise võimalus</li>
+      <li xml:lang="eu">Dibisa ugari</li>
+      <li xml:lang="fi">Useammat valuutat</li>
+      <li xml:lang="fr">Multi-devises</li>
+      <li xml:lang="gl">Permite combinar divisas distintas.</li>
+      <li xml:lang="he">ריבוי מטבעות</li>
+      <li xml:lang="id">Multipel mata uang</li>
+      <li xml:lang="it">Valute multiple</li>
+      <li xml:lang="ka">მრავალი ვალუტა</li>
+      <li xml:lang="ko">다중 통화</li>
+      <li xml:lang="nl">Meerdere valuta</li>
+      <li xml:lang="pl">Wiele walut</li>
+      <li xml:lang="pt">Múltiplas moedas</li>
+      <li xml:lang="pt-BR">Múltiplas moedas</li>
+      <li xml:lang="ru">Множество валют</li>
+      <li xml:lang="sl">Več valut</li>
+      <li xml:lang="sv">Flera valutor</li>
+      <li xml:lang="tr">Birden çok para birimi ile kullanma</li>
+      <li xml:lang="uk">Можливість використання декількох валют</li>
+      <li>Budget</li>
+      <li xml:lang="ar">الميزانية</li>
+      <li xml:lang="ca">Pressupost</li>
+      <li xml:lang="ca-valencia">Pressupost</li>
+      <li xml:lang="cs">Rozpočet</li>
+      <li xml:lang="de">Budget</li>
+      <li xml:lang="el">Προϋπολογισμός</li>
+      <li xml:lang="en-GB">Budget</li>
+      <li xml:lang="eo">Buĝeto</li>
+      <li xml:lang="es">Presupuestos</li>
+      <li xml:lang="et">Eelarve</li>
+      <li xml:lang="eu">Aurrekontua</li>
+      <li xml:lang="fi">Budjetti</li>
+      <li xml:lang="fr">Budget</li>
+      <li xml:lang="gl">Orzamento.</li>
+      <li xml:lang="he">תקציב</li>
+      <li xml:lang="ia">Budget</li>
+      <li xml:lang="id">Anggaran</li>
+      <li xml:lang="it">Budget</li>
+      <li xml:lang="ka">ბიუჯეტი</li>
+      <li xml:lang="ko">예산</li>
+      <li xml:lang="nl">Budget</li>
+      <li xml:lang="pl">Budżet</li>
+      <li xml:lang="pt">Orçamento</li>
+      <li xml:lang="pt-BR">Orçamento</li>
+      <li xml:lang="ru">Бюджет</li>
+      <li xml:lang="sk">Rozpočet</li>
+      <li xml:lang="sl">Proračun</li>
+      <li xml:lang="sv">Budget</li>
+      <li xml:lang="tr">Bütçe</li>
+      <li xml:lang="uk">Бюджет</li>
+      <li xml:lang="zh-CN">预算</li>
+      <li>Dashboard</li>
+      <li xml:lang="ar">لوحة التحكم</li>
+      <li xml:lang="ca">Tauler</li>
+      <li xml:lang="ca-valencia">Tauler</li>
+      <li xml:lang="cs">Přístrojová deska</li>
+      <li xml:lang="de">Übersichtsseite</li>
+      <li xml:lang="el">Πίνακς ελέγχου</li>
+      <li xml:lang="en-GB">Dashboard</li>
+      <li xml:lang="eo">Panelo</li>
+      <li xml:lang="es">Tablero de mandos</li>
+      <li xml:lang="et">Vidinavaade</li>
+      <li xml:lang="eu">Aginte-mahaia</li>
+      <li xml:lang="fi">Kojelauta</li>
+      <li xml:lang="fr">Tableau de bord</li>
+      <li xml:lang="gl">Cadro de control.</li>
+      <li xml:lang="he">לוח בקרה</li>
+      <li xml:lang="ia">Pannello de instrumentos</li>
+      <li xml:lang="id">Dashboard</li>
+      <li xml:lang="it">Quadro degli strumenti</li>
+      <li xml:lang="ka">სამუშაო დაფა</li>
+      <li xml:lang="ko">대시보드</li>
+      <li xml:lang="nl">Dashboard</li>
+      <li xml:lang="pl">Tablica</li>
+      <li xml:lang="pt">Painel</li>
+      <li xml:lang="pt-BR">Painel</li>
+      <li xml:lang="ru">Виджеты</li>
+      <li xml:lang="sk">Nástenka</li>
+      <li xml:lang="sl">Pregledna plošča</li>
+      <li xml:lang="sv">Instrumentpanel</li>
+      <li xml:lang="tr">Gösterge Tablosu</li>
+      <li xml:lang="uk">Панель приладів</li>
+      <li xml:lang="zh-CN">部件板</li>
+      <li>Advice</li>
+      <li xml:lang="ar">النصيحة</li>
+      <li xml:lang="ca">Consell</li>
+      <li xml:lang="ca-valencia">Consell</li>
+      <li xml:lang="cs">Doporučení</li>
+      <li xml:lang="de">Empfehlungen</li>
+      <li xml:lang="el">Συμβουλή</li>
+      <li xml:lang="en-GB">Advice</li>
+      <li xml:lang="eo">Konsilo</li>
+      <li xml:lang="es">Consejos</li>
+      <li xml:lang="et">Nõuanded</li>
+      <li xml:lang="eu">Aholkua</li>
+      <li xml:lang="fi">Neuvot</li>
+      <li xml:lang="fr">Conseils</li>
+      <li xml:lang="gl">Consellos.</li>
+      <li xml:lang="he">עצה</li>
+      <li xml:lang="ia">Consilio</li>
+      <li xml:lang="id">Penasehat</li>
+      <li xml:lang="it">Suggerimento</li>
+      <li xml:lang="ka">რჩევა</li>
+      <li xml:lang="ko">조언</li>
+      <li xml:lang="nl">Advies</li>
+      <li xml:lang="pl">Porady</li>
+      <li xml:lang="pt">Aviso</li>
+      <li xml:lang="pt-BR">Aviso</li>
+      <li xml:lang="ru">Рекомендации</li>
+      <li xml:lang="sk">Rady</li>
+      <li xml:lang="sl">Svetovanje</li>
+      <li xml:lang="sv">Råd</li>
+      <li xml:lang="tr">Tavsiye</li>
+      <li xml:lang="uk">Поради</li>
+    </ul>
+  </description>
+  <url type="homepage">https://skrooge.org/</url>
+  <url type="bugtracker">https://bugs.kde.org/enter_bug.cgi?format=guided&amp;product=skrooge</url>
+  <url type="help">https://docs.kde.org/?application=skrooge</url>
+  <screenshots>
+    <screenshot type="default">
+      <caption>The default screenshot</caption>
+      <caption xml:lang="ar">لقطة المبدئيّة</caption>
+      <caption xml:lang="ca">La captura de pantalla predeterminada</caption>
+      <caption xml:lang="ca-valencia">La captura de pantalla predeterminada</caption>
+      <caption xml:lang="cs">Výchozí snímek obrazovky</caption>
+      <caption xml:lang="de">Standard-Bildschirmfoto</caption>
+      <caption xml:lang="el">Το προκαθορισμένο στιγμιότυπο</caption>
+      <caption xml:lang="en-GB">The default screenshot</caption>
+      <caption xml:lang="eo">La defaŭlta ekrankopio</caption>
+      <caption xml:lang="es">Captura de pantalla predeterminada</caption>
+      <caption xml:lang="et">Vaikimisi ekraanipilt</caption>
+      <caption xml:lang="eu">Pantaila-argazki lehenetsia</caption>
+      <caption xml:lang="fi">Oletusruutukaappaus</caption>
+      <caption xml:lang="fr">La copie d'écran par défaut</caption>
+      <caption xml:lang="gl">A captura de pantalla predeterminada.</caption>
+      <caption xml:lang="he">צילום מסך כברירת מחדל</caption>
+      <caption xml:lang="ia">Le instantanee de schermo predefinite</caption>
+      <caption xml:lang="id">Screenshot baku</caption>
+      <caption xml:lang="it">La schermata predefinita</caption>
+      <caption xml:lang="ka">ნაგულისხმევი ეკრანის ანაბეჭდი</caption>
+      <caption xml:lang="ko">기본 스크린샷</caption>
+      <caption xml:lang="nl">De standaard schermafbeelding</caption>
+      <caption xml:lang="pl">Domyślny zrzut ekranu</caption>
+      <caption xml:lang="pt">A captura do ecrã predefinida</caption>
+      <caption xml:lang="pt-BR">Captura de tela padrão</caption>
+      <caption xml:lang="ru">Снимок экрана по умолчанию</caption>
+      <caption xml:lang="sl">Privzeti posnetek zaslona</caption>
+      <caption xml:lang="sv">Standardskärmbilden</caption>
+      <caption xml:lang="tr">Öntanımlı ekran görüntüsü</caption>
+      <caption xml:lang="uk">Типовий знімок вікна</caption>
+      <image>https://cdn.kde.org/screenshots/skrooge/skrooge-dashboard.png</image>
+    </screenshot>
+  </screenshots>
+  <project_group>KDE</project_group>
+  <provides>
+    <binary>skrooge</binary>
+  </provides>
+  <developer id="kde.org">
+    <name translate="no">Stephane Mankowski</name>
+  </developer>
+  <update_contact>stephane@mankowski.fr</update_contact>
+  <content_rating type="oars-1.1"/>
+  <releases>
+    <release version="25.4.0" date="2025-04-24"/>
+    <release version="25.1.0" date="2025-01-11"/>
+    <release version="2.33.0" date="2024-09-22"/>
+    <release version="2.32.0" date="2024-04-02"/>
+    <release version="2.31.0" date="2023-10-02"/>
+    <release version="2.30.0" date="2023-06-25"/>
+    <release version="2.29.0" date="2023-02-12"/>
+    <release version="2.28.0" date="2022-07-30"/>
+    <release version="2.27.0" date="2022-01-21"/>
+    <release version="2.26.0" date="2021-07-23"/>
+    <release version="2.25.0" date="2021-04-18"/>
+    <release version="2.24.0" date="2020-12-05"/>
+    <release version="2.23.0" date="2020-07-18"/>
+    <release version="2.22.0" date="2020-04-09"/>
+    <release version="2.21.0" date="2019-12-01"/>
+    <release version="2.20.0" date="2019-06-20"/>
+    <release version="2.19.0" date="2019-04-20"/>
+    <release version="2.18.0" date="2019-02-11"/>
+    <release version="2.17.0" date="2018-12-16"/>
+  </releases>
+  <translation type="gettext">skrooge</translation>
+</component>

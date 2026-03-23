@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<page xmlns="http://projectmallard.org/1.0/" xmlns:its="http://www.w3.org/2005/11/its" type="topic" id="import-export" its:version="2.0" xml:lang="hr">
+<info>
+	<link type="guide" xref="index"/>
+	<title type="link">Uvoz/Izvoz 📤</title>
+	<credit type="author copyright">
+		<name>Fyodor Sobolev</name>
+		<years its:translate="no">2023</years>
+	</credit>
+	<credit type="publisher copyright">
+		<name>Nicholas Logozzo</name>
+		<years its:translate="no">2023</years>
+	</credit>
+	<license href="http://creativecommons.org/licenses/by/4.0/" its:translate="no"><p>Creative Commons Attribution 4.0 International License</p></license>
+
+    <mal:credit xmlns:mal="http://projectmallard.org/1.0/" type="translator copyright">
+      <mal:name>Milo Ivir</mal:name>
+      <mal:email>mail@milotype.de</mal:email>
+      <mal:years>2023</mal:years>
+    </mal:credit>
+  </info>
+
+<title>Uvoz/Izvoz</title>
+<div>
+	<title>Formati uvoza</title>
+	<list>
+		<item>
+			<p its:translate="no">Open Financial Exchange (<file>.ofx</file>)</p>
+			<p>Datumi bi trebali biti u formatu <em>YYYYMMDD</em>.</p>
+		</item>
+		<item>
+			<p its:translate="no">Quicken Interchange Format (<file>.qif</file>)</p>
+			<p>Datumi bi trebali biti u engleskom (SAD) formatu (<em>MM/DD/YYYY</em>).</p>
+		</item>
+		<item>
+			<p its:translate="no">Denaro CSV (<file>.csv</file>)</p>
+			<p>❗ Iako je CSV uobičajeni format i neke banke dopuštaju svojim korisnicima izvoz podataka u CSV formatu, te su datoteke zapravo tablice koje mogu sadržati proizvoljne podatke. Uvoz CSV datoteke stvorene u jednom drugom programu neće uspjeti jer njezini podaci neće biti kompatibilni s onim što <app>Denaro</app> pokušava dobiti iz datoteke. Svrha uvoza/izvoza CSV datoteka je omogućiti način dodavanja podataka računu pomoću programa kao što su uređivači teksta i uredski paketi. Uvoz će samo dodati nove transakcije bez prepisivanja postojećih. Ako želiš ručno izraditi CSV datoteku, ovo je zaglavlje koje uključuje sve stupce koje <app>Denaro</app> očekuje pronaći:</p>
+			<p its:translate="no"><code>ID;Date;Description;Type;RepeatInterval;RepeatFrom;RepeatEndDate;Amount;RGBA;UseGroupColor;Group;GroupName;GroupDescription;GroupRGBA</code></p>
+			<list>
+				<item>
+					<title its:translate="no">ID</title>
+					<p>ID transakcije. Mora biti jedinstven za određeni račun. ID-ovi počinju s 1.</p>
+				</item>
+				<item>
+					<title its:translate="no">Date</title>
+					<p>Datum transakcije (ili početni datum u slučaju ponovljajuće transakcije). Mora biti u engleskom (SAD) formatu (<em>MM/DD/YYYY</em>).</p>
+				</item>
+				<item>
+					<title its:translate="no">Description</title>
+					<p>Opis transakcije. Može sadržati bilo koje znakove osim točke sa zarezom (;).</p>
+				</item>
+				<item>
+					<title its:translate="no">Type</title>
+					<p>Vrsta transakcije: 0 za prihod, 1 za rashod.</p>
+				</item>
+				<item>
+					<title its:translate="no">RepeatInterval</title>
+					<p>Broj koji predstavlja interval ponavljanja transakcije:</p>
+					<p>0 – Nikada</p>
+					<p>1 – Dnevno</p>
+					<p>2 – Tjedno</p>
+					<p>7 – Dvotjeno</p>
+					<p>3 – Mjesečno</p>
+					<p>4 – Kvartalno</p>
+					<p>5 – Godišnje</p>
+					<p>6 – Dvogodišnje</p>
+					<p>Za detalje o ponovljajućim transakcijama pogledaj <em>Interval ponavljanja</em> na stranici <link xref="transaction">transakcija</link>.</p>
+				</item>
+				<item>
+					<title its:translate="no">RepeatFrom</title>
+					<p>Treba biti ID izvorne transakcije ili 0 ako je izvorna transakcija ili -1 ako nije ponavljajuća transakcija.</p>
+				</item>
+				<item>
+					<title its:translate="no">RepeatEndDate</title>
+					<p>Krajnji datum ponavljajuće transakcije. Mora biti u engleskom (SAD) formatu (<em>MM/DD/YYYY</em>). Ostavi polje praznim ako nije ponavljajuća transakcija.</p>
+				</item>
+				<item>
+					<title its:translate="no">Amount</title>
+					<p>Iznos transakcije u engleskom (SAD) formatu (<em>123,456.78</em>).</p>
+				</item>
+				<item>
+					<title its:translate="no">RGBA</title>
+					<p>Boja transakcije u <em>rgb(R,G,B)</em> formatu, gdje su <em>R</em>, <em>G</em> i <em>B</em> cijeli brojevi od 0 do 255.</p>
+				</item>
+				<item>
+					<title its:translate="no">UseGroupColor</title>
+					<p>Treba li transakcija koristiti boju grupe: 0 – ne, 1 – da.</p>
+				</item>
+				<item>
+					<title its:translate="no">Group</title>
+					<p>ID grupe transakcije. ID-ovi počinju s brojem 1. Za negrupirane transakcije trebao bi biti -1 (ne 0, jer to nije valjana vrijednost za ID grupe).</p>
+				</item>
+				<item>
+					<title its:translate="no">GroupName</title>
+					<p>Ime grupe transakcije treba odgovarati ID-u grupe. Može sadržati bilo koje znakove osim točke sa zarezom (;). Ostavi polje prazno za negrupirane transakcije. U svim drugim slučajevima polje ne bi trebalo biti prazno.</p>
+				</item>
+				<item>
+					<title its:translate="no">GroupDescription</title>
+					<p>Opis grupe transakcije trebao bi odgovarati ID-u grupe. Može sadržati bilo koje znakove osim točke sa zarezom (;) i može biti prazan. Ostavi polje prazno za negrupiranu transakciju.</p>
+				</item>
+				<item>
+					<title its:translate="no">GroupRGBA</title>
+					<p>Boja grupe u <em>rgb(R,G,B)</em> formatu, gdje su <em>R</em>, <em>G</em> i <em>B</em> cijeli brojevi od 0 do 255.</p>
+				</item>
+			</list>
+			<p>CSV datoteka ne sadrži podatke o priznanici i bilješke.</p>
+		</item>
+	</list>
+</div>
+<div>
+	<title>Formati izvoza</title>
+	<p>Odaberi želiš li izvesti sve podatke ili samo podatke iz trenutačnog prikaza. Ako odabereš trenutačni prikaz, trenutačno prikazane transakcije će se izvesti u prikazanom redoslijedu.</p>
+	<list>
+		<item>
+			<p its:translate="no">Portable Document Format (<file>.pdf</file>)</p>
+			<p>Datoteka će sadržati podatke o računu, popis transakcija i slike priznanica. Transakcije su obojene kao u aplikaciji, ali su boje poluprozirne, kako bi crni tekst uvijek bio jasno vidljiv. Za izvezenu datoteku možeš postaviti lozinku.</p>
+		</item>
+		<item>
+			<p its:translate="no">Denaro CSV (<file>.csv</file>)</p>
+		</item>
+	</list>
+</div>
+</page>

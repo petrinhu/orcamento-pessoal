@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <author>
+SPDX-FileCopyrightText: 2024 S. MANKOWSKI stephane@mankowski.fr
+SPDX-FileCopyrightText: 2024 G. DE BURE support@mankowski.fr
+SPDX-License-Identifier: GPL-3.0-or-later
+ </author>      
+ <class>skgmonthlyplugin_base</class>
+ <widget class="QWidget" name="skgmonthlyplugin_base">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>614</width>
+    <height>356</height>
+   </rect>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <property name="spacing">
+      <number>2</number>
+     </property>
+     <item>
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string comment="Will be followed by a month on which the report will be built">Report of:</string>
+       </property>
+       <property name="buddy">
+        <cstring>kMonth</cstring>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="SKGSimplePeriodEdit" name="kMonth">
+       <property name="minimumSize">
+        <size>
+         <width>100</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>Month of the report</string>
+       </property>
+       <property name="statusTip">
+        <string>Month of the report</string>
+       </property>
+       <property name="sizeAdjustPolicy">
+        <enum>QComboBox::AdjustToContents</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="kRefresh">
+       <property name="toolTip">
+        <string>Refresh the monthly report</string>
+       </property>
+       <property name="statusTip">
+        <string>Refresh the monthly report</string>
+       </property>
+       <property name="autoRaise">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>&amp;Template:</string>
+       </property>
+       <property name="buddy">
+        <cstring>kTemplate</cstring>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="SKGSimplePeriodEdit" name="kTemplate">
+       <property name="toolTip">
+        <string>The template to use</string>
+       </property>
+       <property name="statusTip">
+        <string>The template to use</string>
+       </property>
+       <property name="editable">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="kDeleteTemplate">
+       <property name="maximumSize">
+        <size>
+         <width>22</width>
+         <height>22</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>Delete the selected source</string>
+       </property>
+       <property name="statusTip">
+        <string>Delete the selected source</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="autoRaise">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="kGetNewHotStuff">
+       <property name="maximumSize">
+        <size>
+         <width>22</width>
+         <height>22</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>Get more templates</string>
+       </property>
+       <property name="statusTip">
+        <string>Get more templates</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="autoRaise">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QFrame" name="frame">
+     <property name="frameShape">
+      <enum>QFrame::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Raised</enum>
+     </property>
+     <layout class="QGridLayout" name="gridLayout">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <property name="spacing">
+       <number>2</number>
+      </property>
+      <item row="0" column="0">
+       <widget class="SKGWebView" name="kWebView"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QWebView</class>
+   <extends>QWidget</extends>
+  </customwidget>
+  <customwidget>
+   <class>SKGComboBox</class>
+   <extends>QComboBox</extends>
+   <header>skgcombobox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>SKGWebView</class>
+   <header>skgwebview.h</header>
+  </customwidget>
+  <customwidget>
+   <class>SKGSimplePeriodEdit</class>
+   <extends>SKGComboBox</extends>
+   <header>skgsimpleperiodedit.h</header>
+  </customwidget>
+ </customwidgets>
+ <tabstops>
+  <tabstop>kMonth</tabstop>
+  <tabstop>kRefresh</tabstop>
+  <tabstop>kTemplate</tabstop>
+  <tabstop>kWebView</tabstop>
+ </tabstops>
+ <resources/>
+ <connections/>
+ <slots>
+  <slot>onPrint()</slot>
+  <slot>onGetNewHotStuff()</slot>
+  <slot>onDeleteTemplate()</slot>
+  <slot>onAddTemplate()</slot>
+  <slot>onTemplateChanged()</slot>
+  <slot>onPeriodChanged()</slot>
+ </slots>
+</ui>

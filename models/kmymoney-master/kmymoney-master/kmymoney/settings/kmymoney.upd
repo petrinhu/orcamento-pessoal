@@ -1,0 +1,48 @@
+Version=5
+Id=1
+File=kmymoney/kmymoneyrc
+Group=List Options
+Key=listErronousTransactionColor,listErroneousTransactionColor
+
+Id=remove-hide-acc-opt-2021
+File=kmymoney/kmymoneyrc
+Group=List Options
+RemoveKey=HideClosedAccounts
+
+Id=remove-show-title-bar-2021
+File=kmymoney/kmymoneyrc
+Group=General Options
+RemoveKey=showTitleBar
+
+Id=reset-accountview-2021
+File=kmymoney/kmymoneyrc
+RemoveGroup=KAccountsView
+
+Id=reset-categoriesview-2021
+File=kmymoney/kmymoneyrc
+RemoveGroup=KCategoriesView
+
+Id=reset-institutionsview-2021
+File=kmymoney/kmymoneyrc
+RemoveGroup=KInstitutionsView
+
+Id=remove-account-autodetection-2021
+File=kmymoney/csvimporterrc
+Group=Misc
+RemoveKey=AutoAccountBank
+RemoveKey=AutoAccountInvest
+
+Id=general-zero-balance-accounts-2023
+File=kmymoney/kmymoneyrc
+Group=Homepage Options,List Options
+Key=HideZeroBalanceLiabilities,HideZeroBalanceAccounts
+RemoveKey=HideZeroBalanceLiabilities
+
+# Remove all journal and split view settings due
+# to newly inserted column in the resp. models
+Id=invisible-column-2025
+File=kmymoney/kmymoneyrc
+RemoveGroup=PayeeLedger
+RemoveGroup=SplitEditor
+RemoveGroup=SplitTransactionEditor
+RemoveGroup=StandardLedger

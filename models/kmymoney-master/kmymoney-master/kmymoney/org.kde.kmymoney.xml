@@ -1,0 +1,12 @@
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<node>
+  <interface name="org.kde.kmymoney">
+    <method name="filename">
+      <arg type="s" direction="out"/>
+    </method>
+    <method name="webConnect">
+      <arg name="url" type="s" direction="in"/>
+      <arg name="asn_id" type="ay" direction="in"/>
+    </method>
+  </interface>
+</node>

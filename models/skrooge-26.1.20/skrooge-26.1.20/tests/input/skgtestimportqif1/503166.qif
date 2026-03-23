@@ -1,0 +1,22 @@
+!Clear:AutoSwitch
+!Type:Security
+NCitibank
+SC
+TStock
+^
+!Option:AutoSwitch
+!Account
+NMy Investments
+TInvst
+^
+!Type:Invst
+D1/15' 8
+NBuy
+YCitibank
+I1.00
+Q20
+Cc
+U20.00
+T20.00
+^
+

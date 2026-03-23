@@ -36,6 +36,7 @@ public slots:
 
 signals:
     void dadosAlterados();
+    void statusAtualizado(const QString &msg);
 
 private slots:
     void onNovaCompra();

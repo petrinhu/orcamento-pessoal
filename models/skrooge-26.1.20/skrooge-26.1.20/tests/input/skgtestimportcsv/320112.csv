@@ -1,0 +1,4 @@
+date;type;payee;info;amount
+2013-04-01;transfer;"a1";"some text 1";10,03
+2013-04-02;transfer;"a2";'some text 2';-20,13
+2013-04-03;transfer;"a3";'some text 3';16,23

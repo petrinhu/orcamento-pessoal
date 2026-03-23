@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<page xmlns="http://projectmallard.org/1.0/" xmlns:its="http://www.w3.org/2005/11/its" type="topic" id="transfer" its:version="2.0" xml:lang="it">
+<info>
+	<link type="guide" xref="index"/>
+	<title type="link">Trasferimenti 💸</title>
+	<credit type="author copyright">
+		<name>Fyodor Sobolev</name>
+		<years its:translate="no">2023</years>
+	</credit>
+	<credit type="publisher copyright">
+		<name>Nicholas Logozzo</name>
+		<years its:translate="no">2023</years>
+	</credit>
+	<license href="http://creativecommons.org/licenses/by/4.0/" its:translate="no"><p>Creative Commons Attribution 4.0 International License</p></license>
+</info>
+
+<title>Trasferimenti</title>
+<p>I trasferimenti sono un modo per spostare denaro da un conto all'altro. Una volta creato un trasferimento, verranno create due transazioni con le seguenti descrizioni:</p>
+<list>
+	<item>
+		<p>«Trasferimento a <input>Conto di destinazione</input>» sul conto di origine.</p>
+	</item>
+	<item>
+		<p>«Trasferimento da <input>Conto di origine</input>» sul conto di destinazione.</p>
+	</item>
+</list>
+<p>Le transazioni create da un trasferimento sono delle semplici transazioni che possono essere modificate o eliminate liberamente. Non sono connesse tra loro: modificare la transazione sul conto di origine non avrà effetto sul conto di destinazione, e viceversa.</p>
+<p>I trasferimenti non permettono di creare transazioni ricorrenti o di impostare altre proprietà oltre all'importo. Il colore scelto nella <link xref="configuration">configurazione</link> sarà usato per le transazioni generate.</p>
+<p>Se si crea un trasferimento tra conti in valute diverse, verrà chiesto di specificare un tasso di conversione.</p>
+</page>

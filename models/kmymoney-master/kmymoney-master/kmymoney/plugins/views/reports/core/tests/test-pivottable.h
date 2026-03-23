@@ -1,0 +1,57 @@
+/*
+    SPDX-FileCopyrightText: 2005-2018 Thomas Baumgart <tbaumgart@kde.org>
+    SPDX-FileCopyrightText: 2005-2006 Ace Jones <acejones@users.sourceforge.net>
+    SPDX-License-Identifier: GPL-2.0-or-later
+*/
+
+#ifndef PIVOTTABLETEST_H
+#define PIVOTTABLETEST_H
+
+#include <QObject>
+
+namespace reports {
+class PivotTableTest;
+}
+
+#define KMM_MYMONEY_UNIT_TESTABLE friend class reports::PivotTableTest;
+
+#include "mymoneyfile.h"
+#include "mymoneytestutils.h"
+#include "reporttable.h"
+
+namespace reports {
+
+class PivotTableTest : public QObject, public MyMoneyTestBase
+{
+    Q_OBJECT
+private:
+    MyMoneyFile* file;
+
+private Q_SLOTS:
+    void init();
+    void cleanup();
+    void testNetWorthSingle();
+    void testNetWorthOfsetting();
+    void testNetWorthOpeningPrior();
+    void testNetWorthDateFilter();
+    void testNetWorthOpening();
+    void testSpendingEmpty();
+    void testSingleTransaction();
+    void testSubAccount();
+    void testFilterIEvsIE();
+    void testFilterALvsAL();
+    void testFilterALvsIE();
+    void testFilterAllvsIE();
+    void testFilterBasics();
+    void testMultipleCurrencies();
+    void testAdvancedFilter();
+    void testColumnType();
+    void testInvestment();
+    void testBudget();
+    void testHtmlEncoding();
+    void testCurrentDateColumnUsesEvaluationDate();
+    void testCurrentDateColumnUsesEvaluationDateMonthly();
+};
+
+}
+#endif // PIVOTTABLETEST_H

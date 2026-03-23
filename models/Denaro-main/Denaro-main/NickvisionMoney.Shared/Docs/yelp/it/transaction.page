@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<page xmlns="http://projectmallard.org/1.0/" xmlns:its="http://www.w3.org/2005/11/its" type="topic" id="transaction" its:version="2.0" xml:lang="it">
+<info>
+	<link type="guide" xref="index"/>
+	<title type="link">Transazioni 🧾</title>
+	<credit type="author copyright">
+		<name>Fyodor Sobolev</name>
+		<years its:translate="no">2023</years>
+	</credit>
+	<credit type="publisher copyright">
+		<name>Nicholas Logozzo</name>
+		<years its:translate="no">2023</years>
+	</credit>
+	<license href="http://creativecommons.org/licenses/by/4.0/" its:translate="no"><p>Creative Commons Attribution 4.0 International License</p></license>
+</info>
+
+<title>Transazione</title>
+<p>Questa pagina spiega tutte le proprietà delle transazioni in <app>Denaro</app>.</p>
+
+<terms>
+	<item>
+		<title>ID</title>
+		<p>Ciascuna transazione possiede un ID, che è univoco all'interno di ciascun conto. L'ID parte da 1 e viene incrementato ad ogni transazione aggiunta. Gli ID non possono essere cambiati, e quelli delle transazioni rimosse non vengono riusati.</p>
+	</item>
+	<item>
+		<title>Descrizione</title>
+		<p>Nessun limite di lunghezza. Non può contenere punti e virgola.</p>
+	</item>
+	<item>
+		<title>Importo</title>
+		<p>Un numero valido per le proprie impostazioni regionali; si veda <em>Valuta di sistema</em> nella pagina <link xref="account">Conti</link> per dettagli.</p>
+	</item>
+	<item>
+		<title>Tipo</title>
+		<p><em>Entrate</em> o <em>Uscite</em>. All'apertura della finestra per creare una nuova transazione, sarà selezionata l'opzione predefinita scelta nelle <link xref="account">impostazioni conto</link>.</p>
+	</item>
+	<item>
+		<title>Data</title>
+		<p>Si può selezionare qualsiasi data, e creare transazioni anche per date future.</p>
+	</item>
+	<item>
+		<title>Frequenza</title>
+		<p>Usare questa opzione per creare una transazione ricorrente. Una volta aggiunta una transazione impostando una frequenza di ricorsione, essa diventerà una transazione <em>sorgente</em>. <app>Denaro</app> genererà automaticamente le transazioni <em>collegate</em> per le date fino ad oggi o fino alla data di termine indicata se è nel passato. Le transazioni <em>collegate</em> non possono essere modificate o eliminate, solo la <em>sorgente</em> può esserlo. Quando si modifica la transazione <em>sorgente</em>, <app>Denaro</app> chiederà se si desidera modificare anche le transazioni <em>collegate</em> o se scollegarle. Se si sceglie di scollegarle, esse diventeranno delle normali transazioni e potranno essere modificate o eliminate individualmente.</p>
+	</item>
+	<item>
+		<title>Fine ripetizione</title>
+		<p>La data di termine di una transazione ricorrente. Non può essere uguale alla data di inizio o precederla.</p>
+	</item>
+	<item>
+		<title>Gruppo</title>
+		<p>Ciascuna transazione può appartenere a un solo gruppo, oppure nessuno (cioè appartiene al gruppo «Senza gruppo»).</p>
+	</item>
+	<item>
+		<title>Colore</title>
+		<p>Un colore per la transazione. Si può impostare affinché la transazione usi il colore del gruppo a cui appartiene, oppure un colore speciale. Se si sceglie il secondo, verrà inizialmente impostato al colore predefinito selezionato nella <link xref="configuration">configurazione</link>, ma può essere cambiato in qualsiasi altro colore.</p>
+	</item>
+    <item>
+        <title>Etichette</title>
+        <p>Un elenco di tag per la transazione. Una transazione può avere un numero illimitato di tag (o non avere tag). I tag possono contenere qualsiasi carattere tranne la virgola (<code>,</code>) e avere qualsiasi lunghezza, ma si prevede che siano parole chiave brevi. I tag sono pensati per essere utilizzati per ulteriori filtri quando l'utilizzo dei gruppi non è sufficiente. I tag vengono salvati solo nelle transazioni stesse e, di conseguenza, i tag non utilizzati scompaiono automaticamente alla chiusura del conto.</p>
+    </item>
+	<item>
+		<title>Ricevuta</title>
+		<p>L'immagine di una ricevuta per la transazione. È possibile caricare immagini in formato JPEG o PNG, oppure documenti PDF, ma a prescindere dal formato verrà convertita e salvata come immagine JPEG. Nel caso del PDF, verrà salvata solo la prima pagina. È possibile eliminare o caricare un altro file in qualsiasi momento.</p>
+	</item>
+	<item>
+		<title>Annotazioni</title>
+		<p>Un testo libero da allegare alla transazione.</p>
+	</item>
+</terms>
+</page>

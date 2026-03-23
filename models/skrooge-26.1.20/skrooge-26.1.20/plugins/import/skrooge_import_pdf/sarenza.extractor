@@ -1,0 +1,7 @@
+payee=REGEXPCAP:^(Sarenza) –.*$
+date=REGEXPCAP:^Facture n° .* du (.*)$
+dateformat=dd/MM/yyyy
+number=REGEXPCAP:^Facture n° (.*) du .*$
+mode=SET:Carte
+comment=REGEXP:^Qté$|LINEOFFSET:2
+amount=REGEXP:^Total TTC$|LINEOFFSET:2

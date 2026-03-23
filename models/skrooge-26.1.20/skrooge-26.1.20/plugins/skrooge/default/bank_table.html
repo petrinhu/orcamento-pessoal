@@ -1,0 +1,31 @@
+{% if report.bank_table %}
+<table id="table_bank" class="table">
+    <thead>
+    <tr class="tabletitle">
+	<th align="center">{{ report.bank_table.0.1 }}</th>
+	<th align="center">{{ report.bank_table.0.2 }}</th>
+	<th align="center">{{ report.bank_table.0.3 }}</th>
+	<th align="center">{{ report.bank_table.0.4 }}</th>
+	<th align="center">{{ report.bank_table.0.5 }}</th>
+	<th align="center">{{ report.bank_table.0.6 }}</th>
+	<th align="center">{{ report.bank_table.0.7 }}</th>
+    </tr>
+    </thead>
+    <tbody>    
+{% for item in report.bank_table %}
+    {% if forloop.first %}
+    {% else %}    
+	<tr{% if item.0 %} class="tabletotal" {% endif %}>
+	    <td align="left">{% if item.8 %}<img src="file://{{ item.8 }}" style="vertical-align:middle;width: 20px; height: auto;" />{% endif %}{% if item.0 %}<b>{{ item.1 }}</b>{% else %}<a href="skg://Skrooge_operation_plugin/?operationWhereClause=t_BANK='{{ item.1|encode }}'&title={{ item.1|encode }}&title_icon=view-bank-account">{{ item.1 }}</a>{% endif %}</td>
+	    <td align="right">{% if item.0 %}<b>{% endif %}{{ item.2|money|safe }}{% if item.0 %}</b>{% endif %}</td>
+	    <td align="right">{% if item.0 %}<b>{% endif %}{{ item.3|money|safe }}{% if item.0 %}</b>{% endif %}</td>
+	    <td align="right">{% if item.0 %}<b>{% endif %}{{ item.4|percent|safe }}{% if item.0 %}</b>{% endif %}</td>
+	    <td align="right">{% if item.0 %}<b>{% endif %}{{ item.5|money|safe }}{% if item.0 %}</b>{% endif %}</td>
+	    <td align="right">{% if item.0 %}<b>{% endif %}{{ item.6|money|safe }}{% if item.0 %}</b>{% endif %}</td>
+	    <td align="right">{% if item.0 %}<b>{% endif %}{{ item.7|percent|safe }}{% if item.0 %}</b>{% endif %}</td>
+	</tr>
+    {% endif %}        
+{% endfor %}     
+    </tbody>
+</table>   
+{% endif %}   

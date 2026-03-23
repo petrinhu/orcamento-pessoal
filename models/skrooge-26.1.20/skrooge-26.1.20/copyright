@@ -1,0 +1,8 @@
+Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: Skrooge
+Source: https://skrooge.org/
+
+Files: *
+Copyright: Copyright 2016 by Stephane MANKOWSKI <stephane@mankowski.fr>
+License: GPL-2+
+

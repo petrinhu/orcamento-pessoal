@@ -1,0 +1,71 @@
+!Type:Bank 
+D1.1.01
+U1,234.56
+T1,234.56
+CX
+PEröffnungssaldo
+L[Bankkonto]
+^
+D3.21.01
+U100.10
+T100.10
+CX
+N102
+PSome kind of income
+MTogether with a secons line
+LGehalt
+^
+D3.21.01
+U10.23
+T10.23
+CX
+N103
+PUnusally but try it Ächt
+Mbla
+LComputer
+^
+D3.23.01
+U-53.94
+T-53.94
+CX
+N104
+Pcar things
+Mgasoline
+LFahrzeuge:Benzin
+^
+D4.2.01
+U-200.20
+T-200.20
+CX
+N105
+Pto try with period in account
+Msomething
+LUnterhaltszahl.
+^
+D4.2.01
+U-11.25
+T-11.25
+CX
+N110
+PSome bank in Nürnberg
+Mwants to have money, jump nr
+LBankgebühren
+^
+D4.3.01
+U-3.23
+T-3.23
+CX
+N111
+PDEPOTPREIS
+Mwant money again
+LDepotgebühren
+^
+D9.28.01
+U-18.90
+T-18.90
+CX
+N112
+POffice stuff
+Mpaper and pens
+LBüro
+^

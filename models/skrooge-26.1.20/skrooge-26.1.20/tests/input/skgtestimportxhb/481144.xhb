@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<homebank v="1.3999999999999999" d="050704">
+<properties title="Inconnu" curr="1" auto_smode="0" auto_weekday="1" auto_nbmonths="1"/>
+<cur key="1" flags="0" iso="EUR" name="Euro" symb="€" syprf="0" dchar="," gchar=" " frac="2" rate="0" mdate="0"/>
+<account key="1" pos="1" type="1" curr="1" name="Acc" initial="350" minimum="0" maximum="0"/>
+<cat key="1" name="location salle"/>
+<tag key="1" name="WE_co"/>
+<ope date="738925" amount="-100" account="1" category="1" wording="xhb pour Stéphane" tags="WE_co"/>
+</homebank>

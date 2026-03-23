@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<homebank v="0.69999999999999996">
+<properties title="Inconnu" auto_weekday="1" />
+<account key="1" pos="1" type="1" name="Courant" initial="0" minimum="0" />
+<account key="2" pos="2" type="2" name="Espece" initial="0" minimum="0" />
+<ope date="735315" amount="20" account="2" flags="2" />
+<ope date="735315" amount="10" account="1" flags="2" />
+</homebank>

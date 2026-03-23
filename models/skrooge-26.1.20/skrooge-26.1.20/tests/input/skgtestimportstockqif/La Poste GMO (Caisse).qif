@@ -1,0 +1,19 @@
+!Type:Bank
+D21/12'2001
+T0.00
+CX
+POpening Balance
+L[La Poste GMO (Caisse)]
+^
+D14/12'2001
+CX
+T1,524.49
+L[La Poste CC]
+^
+D21/12'2001
+CX
+MFrais d'entrée 3,5% de 1524,49€=10000FF
+T-53.36
+PLa Poste
+LFrais financiers:Autres frais
+^

@@ -1,0 +1,7 @@
+"date";"bank";"account";"number";"mode";"payee";"comment";"quantity";"unit";"amount";"sign";"category";"status";"tracker";"bookmarked";"id";"idtransaction";"idgroup"
+"2010-03-19";"bp";"Compte NEF";"0";"Virement";"Remboursements santé";"CPAM";"15.40";"EURO";"15.40";"+";"Autres revenus > Remboursement santé";"P";"";"N";"1";"1";"0"
+"2010-03-19";"bp";"Compte NEF";"0";"Virement";"Remboursements santé";"CPAM";"-1.00";"EURO";"-1.00";"-";"Santé > Participation forfaitaire";"P";"";"N";"2";"1";"0"
+"2010-03-19";"bp";"Compte NEF";"0";"Virement";"Remboursements santé";"CPAM";"15.40";"EURO";"15.40";"+";"Autres revenus > Remboursement santé";"P";"";"N";"3";"2";"0"
+"2010-03-19";"bp";"Compte NEF";"0";"Virement";"Remboursements santé";"CPAM";"-1.00";"EURO";"-1.00";"-";"Santé > Participation forfaitaire";"P";"";"N";"4";"2";"0"
+"2010-04-14";"bp";"Compte NEF";"0";"Virement émis";"";"";"-500.00";"EURO";"-500.00";"-";"";"N";"";"N";"5";"3";"1"
+"2010-04-14";"bp";"PEL";"0";"Virement reçu";"";"";"500.00";"EURO";"500.00";"+";"";"N";"";"N";"6";"4";"1"

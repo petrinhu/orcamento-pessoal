@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<page xmlns="http://projectmallard.org/1.0/" xmlns:its="http://www.w3.org/2005/11/its" type="topic" id="transfer" its:version="2.0" xml:lang="es">
+<info>
+	<link type="guide" xref="index"/>
+	<title type="link">Transferencia 💸</title>
+	<credit type="author copyright">
+		<name>Fyodor Sobolev</name>
+		<years its:translate="no">2023</years>
+	</credit>
+	<credit type="publisher copyright">
+		<name>Nicholas Logozzo</name>
+		<years its:translate="no">2023</years>
+	</credit>
+	<license href="http://creativecommons.org/licenses/by/4.0/" its:translate="no"><p>Creative Commons Attribution 4.0 International License</p></license>
+
+    <mal:credit xmlns:mal="http://projectmallard.org/1.0/" type="translator copyright">
+      <mal:name>Óscar Fernández Díaz</mal:name>
+      <mal:email>oscfdezdz@tuta.io</mal:email>
+      <mal:years>2023</mal:years>
+    </mal:credit>
+  </info>
+
+<title>Transferencia</title>
+<p>La transferencia es una forma de mover dinero de una cuenta a otra. Después de ejecutar una transferencia, se crearán 2 transacciones con las siguientes descripciones:</p>
+<list>
+	<item>
+		<p>«Transferencia a <input>Nombre de la cuenta de destino</input>» en la cuenta de origen.</p>
+	</item>
+	<item>
+		<p>«Transferencia desde <input>Nombre de la cuenta de origen</input>» en la cuenta de destino.</p>
+	</item>
+</list>
+<p>Las transacciones creadas mediante la transferencia son transacciones simples que se pueden editar o eliminar libremente. Estas transacciones no están conectadas: la modificación de la transacción en la cuenta de origen no afectará la transacción en la cuenta de destino y viceversa.</p>
+<p>La transferencia no le permite crear transacciones repetitivas ni establecer ninguna otra propiedad que no sea la cantidad. El color seleccionado en <link xref="configuration">configuration</link> se usará para las transacciones creadas.</p>
+<p>Si crea una transferencia entre cuentas con divisas diferentes, se le pedirá que indique un tipo de conversión.</p>
+</page>

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OFX>
+  <STMTRS>
+    <BANKACCTFROM>
+      <BANKID>1234</BANKID>
+      <ACCTID>1234567890</ACCTID>
+    </BANKACCTFROM>
+    <BANKTRANLIST>
+      <DTSTART>20130101</DTSTART>
+      <DTEND>20131231</DTEND>
+      <STMTTRN>
+        <TRNTYPE>ATM</TRNTYPE>
+        <DTPOSTED>20131231</DTPOSTED>
+        <DTAVAIL>20131231</DTAVAIL>
+        <TRNAMT>2.50</TRNAMT>
+        <BANKACCTTO>
+          <ACCTID>0</ACCTID>
+        </BANKACCTTO>
+        <MEMO>ATM deposit</MEMO>
+        <CURRENCY>EUR</CURRENCY>
+      </STMTTRN>
+      <STMTTRN>
+        <TRNTYPE>ATM</TRNTYPE>
+        <DTPOSTED>20131231</DTPOSTED>
+        <DTAVAIL>20131231</DTAVAIL>
+        <TRNAMT>-2.50</TRNAMT>
+        <BANKACCTTO>
+          <ACCTID>0</ACCTID>
+        </BANKACCTTO>
+        <MEMO>ATM withdrawal</MEMO>
+        <CURRENCY>EUR</CURRENCY>
+      </STMTTRN>
+      <STMTTRN>
+        <TRNTYPE>DEBIT</TRNTYPE>
+        <DTPOSTED>20131231</DTPOSTED>
+        <DTAVAIL>20131231</DTAVAIL>
+        <TRNAMT>-2.50</TRNAMT>
+        <BANKACCTTO>
+          <ACCTID>0</ACCTID>
+        </BANKACCTTO>
+        <MEMO>Ordinary debit</MEMO>
+        <CURRENCY>EUR</CURRENCY>
+      </STMTTRN>
+      <STMTTRN>
+        <TRNTYPE>DEBIT</TRNTYPE>
+        <DTPOSTED>20131231</DTPOSTED>
+        <DTAVAIL>20131231</DTAVAIL>
+        <TRNAMT>2.50</TRNAMT>
+        <BANKACCTTO>
+          <ACCTID>0</ACCTID>
+        </BANKACCTTO>
+        <MEMO>Debit with positive amount, breaks OFX spec section 3.2.9.2</MEMO>
+        <CURRENCY>EUR</CURRENCY>
+      </STMTTRN>
+    </BANKTRANLIST>
+  </STMTRS>
+</OFX>

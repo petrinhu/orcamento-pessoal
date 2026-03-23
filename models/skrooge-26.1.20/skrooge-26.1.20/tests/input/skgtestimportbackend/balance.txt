@@ -1,0 +1,29 @@
+accountInfoList {
+  accountInfo {
+    char bankCode="20041155"
+    char bankName="comdirect bank"
+    char accountNumber="535416200"
+    char accountName="Girokonto"
+    char owner="Felix Mauch"
+    char currency="EUR"
+    int  accountType="0"
+    int  accountId="0"
+
+    statusList {
+      status {
+        int  time="1360868474"
+
+        bookedBalance {
+          value {
+            char value="5009%2F100"
+            char currency="EUR"
+          } #value
+
+          int  time="1360868474"
+        } #bookedBalance
+      } #status
+    } #statusList
+  } #accountInfo
+
+  #[... more accounts as above ...]
+} #accountInfoList

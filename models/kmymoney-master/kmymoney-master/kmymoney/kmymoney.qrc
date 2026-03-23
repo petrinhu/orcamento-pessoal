@@ -1,0 +1,10 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+    <qresource prefix="/kxmlgui5/kmymoney">
+        <file>kmymoneyui.rc</file>
+    </qresource>
+    <qresource prefix="/">
+        <file>html/kmymoney.css</file>
+        <file>html/images/bg-texture.png</file>
+    </qresource>
+</RCC>

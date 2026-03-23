@@ -1,0 +1,156 @@
+/**************/
+/* ComboBoxes */
+/**************/
+combobox arrow {
+    -gtk-icon-source: -gtk-icontheme("pan-down-symbolic");
+}
+
+/************/
+/* private  */
+/************/
+#accueil_nom_compte {
+	background-color:@background_ligne_compte;
+	background-image: none;
+	color: @couleur_nom_compte_normal;
+}
+
+#accueil_nom_compte:hover {
+	background-color:@background_ligne_compte;
+	background-image: none;
+	color: @couleur_nom_compte_hover;
+}
+
+#accueil_solde_normal {
+	background-color:@background_ligne_compte;
+	background-image: none;
+	color: @couleur_solde_normal;
+}
+
+#accueil_solde_normal:hover {
+	background-color:@background_ligne_compte;
+	background-image: none;
+	color: @couleur_solde_hover;
+}
+
+#accueil_solde_alarme_low {
+	background-color:@background_ligne_compte;
+	background-image: none;
+	color: @couleur_solde_alarme_low_normal;
+}
+
+#accueil_solde_alarme_low:hover {
+	background-color:@background_ligne_compte;
+	background-image: none;
+	color: @couleur_solde_alarme_low_hover;
+}
+
+#accueil_solde_alarme_high {
+	background-color:@background_ligne_compte;
+	background-image: none;
+	color: @couleur_solde_alarme_high_normal;
+}
+
+#accueil_solde_alarme_high:hover {
+	background-color:@background_ligne_compte;
+	background-image: none;
+	color: @couleur_solde_alarme_high_hover;
+}
+
+#etat_event_box {
+	color: @text_color_0;
+}
+
+#etat_event_box:hover {
+	color: @couleur_solde_alarme_high_hover;
+}
+
+#form_entry {
+	color: @text_color_0;
+}
+
+#form_entry_empty {
+	color: @text_color_2;
+}
+
+#form_entry_error {
+	color: @text_color_1;
+}
+
+#global_statusbar {
+	font-size: 14px;
+}
+
+#grey_box {
+	background-color: @background_grey_box;
+	background-image: none;
+}
+
+#label_gsetting_option {
+	color: @text_gsetting_option_normal;
+}
+
+#label_gsetting_option.file {
+	color: @text_gsetting_option_normal;
+}
+
+button#list_config_buttons {
+	color: red;
+	background-color: @background_grey_box;
+	background-image: none;
+}
+
+button:checked#list_config_buttons {
+	color: green;
+	background-color: @background_selection;
+	background-image: none;
+}
+
+#reconcile_old_entry {
+	color: @text_color_0;
+}
+
+#reconcile_old_entry_insensitive {
+	background-color: transparent;
+	background-image: none;
+	color: @text_insensitive_entry;
+}
+
+#gsettings_tree_view.view {
+	background-color: transparent;
+	background-image: none;
+	color: @text_gsetting_option_normal;
+}
+
+#gsettings_tree_view.view:hover {
+	background-color: transparent;
+	background-image: none;
+	color: @text_gsetting_option_hover;
+}
+
+#gsettings_tree_view.view:selected {
+	background-color: @background_selection;
+	background-image: none;
+	color: @text_selection;
+}
+#colorized_tree_view.view:hover {
+	background-color: transparent;
+	background-image: none;
+	color: @text_gsetting_option_hover;
+}
+
+#colorized_tree_view.view:selected {
+	background-color: @background_selection;
+	background-image: none;
+	color: @text_selection;
+}
+#tree_view.view:hover {
+	background-color: mix(@background_selection, white, 0.5);
+	background-image: none;
+	color: @text_selection;
+}
+
+#tree_view.view:selected {
+	background-color: @background_selection;
+	background-image: none;
+	color: @text_selection;
+}

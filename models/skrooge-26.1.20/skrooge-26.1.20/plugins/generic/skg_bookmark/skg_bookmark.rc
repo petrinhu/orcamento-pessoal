@@ -1,0 +1,25 @@
+<!DOCTYPE kpartgui SYSTEM "kpartgui.dtd">
+<kpartgui name="skg_bookmark" version="2">
+<MenuBar>
+	<Menu name="file"><text>File</text>
+		<Menu name="import"><text>&amp;Import</text>
+			<Action name="import_standard_bookmarks" />
+			<Merge/>
+		</Menu>
+        </Menu>
+	<Menu name="view">
+		<Menu name="panels"><text>Panels</text>
+	  		<Action name="view_bookmarks"/>
+		</Menu>
+  	</Menu>
+  <Menu name="go"><text>Go</text>
+	  <Action name="go_home" group="go_group_2"/>
+  	  <Separator/>
+	  <Action name="edit_bookmark" group="go_group_1"/>
+  </Menu>
+</MenuBar>
+<ToolBar name="mainToolBar"><text>Main Toolbar</text>
+	<Action name="go_home" group="main_group_nav1"/>
+	<Action name="edit_bookmark" group="main_group_nav2"/>
+</ToolBar>
+</kpartgui>

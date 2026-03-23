@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<page xmlns="http://projectmallard.org/1.0/" xmlns:its="http://www.w3.org/2005/11/its" type="topic" id="account" its:version="2.0" xml:lang="fr">
+<info>
+	<link type="guide" xref="index"/>
+	<title type="link">Compte 🏦</title>
+	<credit type="author copyright">
+		<name>Fyodor Sobolev</name>
+		<years its:translate="no">2023</years>
+	</credit>
+	<credit type="publisher copyright">
+		<name>Nicholas Logozzo</name>
+		<years its:translate="no">2023</years>
+	</credit>
+	<license href="http://creativecommons.org/licenses/by/4.0/" its:translate="no"><p>Creative Commons Attribution 4.0 International License</p></license>
+</info>
+
+<title>Compte</title>
+<p>Cette page explique toutes les propriétés des comptes dans <app>Denaro</app>. La plupart sont affichées dans la <gui>boîte de dialogue des Paramètres du compte</gui>. Cette boîte de dialogue s’ouvre automatiquement à la création d’un nouveau compte.</p>
+<p>Chaque compte est enregistré dans un fichier <file>*.nmoney</file>. Les fichiers créés dans une ancienne version <em>stable</em> de <app>Denaro</app> peuvent être ouverts sans risque dans une version <em>stable</em> plus récente de l’application. Bien que l’application puisse être exécutée sous plusieurs plateformes (Windows et Linux), les fichiers <file>*.nmoney</file> sont 100% compatibles entre ces plateformes, tant qu’ils proviennent de la même version de l’application (i.e. V2023.1.0).</p>
+<note style="warning">
+	<p>Les version instables (Beta et RC) de l’application peuvent contenir des bogues ou des modifications inachevées pouvant causer des pertes de données. N'UTILISEZ PAS des fichiers de comptes contenant vos vraies données dans des versions instables de l’application !</p>
+</note>
+
+<terms>
+	<item>
+		<title>Nom</title>
+		<p>Le nom du compte est affiché dans la liste des comptes récents et dans les onglets. Un nom n’a pas de limite de taille et peut contenir n’importe quel caractère, dont des émojis.</p>
+	</item>
+	<item>
+		<title>Type de compte</title>
+		<p>Il y a trois types de comptes possibles : 🟣<em>Chèques</em>, 🔵<em>Épargne</em> et 🟢<em>Affaires</em>. Le type de compte est uniquement une étiquette utile affichée dans la liste des comptes récents et n’affecte ni le fonctionnement de l’application ni les actions possibles avec un compte. Chaque type de compte a sa propre couleur, qui peut être configurée dans les <link xref="configuration">paramètres généraux</link>.</p>
+	</item>
+	<item>
+		<title>Type de transaction par défaut</title>
+		<p>Lorsque vous créerez une nouvelle transaction, son type par défaut sera le même que dans ce paramètre.</p>
+	</item>
+	<item>
+        <title>Seuil de rappel des transactions</title>
+        <p>Le seuil utilisé pour afficher des rappels des transactions à venir.</p>
+    </item>
+	<item>
+		<title>Devise du système</title>
+		<p>Chaque fois que l’application est lancée, elle récupère les données sur la monnaie et le format numérique de la langue locale de votre système ; ces données sont utilisées pour afficher le symbole monétaire (à moins qu’une devise personnalisée soit spécifiée, voir ci-dessous) et pour déterminer dans quel format les nombres seront acceptés comme des valeurs pour des montants de transactions. Quelques exemples :</p>
+		<list>
+			<item><p>Si votre langue locale est l’<em>Anglais (US)</em>, le symbole monétaire sera <em>$</em> et <em>1,000.00</em> sera accepté comme une valeur numérique valide.</p></item>
+			<item><p>Si votre langue locale est l’<em>Italien</em>, le symbole monétaire sera <em>€</em> et <em>1.000,00</em> sera accepté comme une valeur numérique valide.</p></item>
+			<item><p>Si votre langue locale est le <em>Russe</em>, le symbole monétaire sera <em>₽</em> et <em>1000,00</em> sera accepté comme une valeur numérique valide.</p></item>
+		</list>
+		<note style="advanced">
+			<p>Sous Linux il est possible de définir plusieurs langues locales et formats numériques. La manière de modifier ce paramètre varie selon l’environnement de bureau utilisé. Malgré ces différences dans l’emplacement de ces paramètres, les modifier affecte des variables de l’environnement du système, comme <code>LANG</code>, <code>LC_TIME</code>, et <code>LC_MONETARY</code>. <app>Denaro</app> essaiera d’utiliser les formats numériques et de langue selon ces variables. Si l’application échoue à utiliser les formats attendus, assurez-vous que les variables sont correctement définies via la commande <code>locale</code> dans un terminal. Si vous trouvez un bogue et souhaitez le signaler, veillez fournir le résultat donné par la commande <code>locale</code> pour permettre aux développeurs de reproduire votre problème avec les mêmes paramètres.</p>
+		</note>
+	</item>
+	<item>
+		<title>Utiliser une devise personnalisée</title>
+		<p>Si cette option est activée, un <gui>Symbole monétaire personnalisé</gui> sera utilisé à la place de celui fourni par la langue locale de votre système.</p>
+	</item>
+	<item>
+		<title>Symbole monétaire personnalisé</title>
+		<p>Jusqu’à trois caractères ou 1 émoji. Il ne peut s’agir d’un nombre.</p>
+	</item>
+	<item>
+		<title>Code de devise personnalisé</title>
+		<p>Jusqu’à trois caractères ou 1 émoji.</p>
+		<p>Un exemple pour comprendre la différence entre un symbole et un code : <em>$</em> est un symbole, <em>USD</em> est un code.</p>
+	</item>
+	<item>
+        <title>Style d’affichage personnalisé des montants de devises</title>
+        <p>Un choix entre plusieurs affichages possibles pour les montants de devises :</p>
+        <list>
+            <item><p>$n</p></item>
+            <item><p>n$</p></item>
+            <item><p>$ n</p></item>
+            <item><p>n $</p></item>
+        </list>
+    </item>
+	<item>
+		<title>Séparateur de décimales et de groupes personnalisé</title>
+		<p>Jusqu’à 2 caractères ou 1 émoji.</p>
+	</item>
+	<item>
+		<title>Chiffres des décimales personnalisés</title>
+		<p>La taille des décimales de la valeur d’un montant. Avec des chiffres « Illimités » la taille des décimales sera celle requise pour afficher le montant précis, mais il n’y aura pas de décimales si le montant est un nombre entier.</p>
+	</item>
+	<item>
+		<title>Mot de passe</title>
+		<p>Chaque compte peut être protégé par un mot de passe. Ajouter un mot de passe cryptera le compte (ce qui rendra la lecture des données impossible sans décryptage avec le bon mot de passe). Soyez prudent⋅e : si le mot de passe est perdu, vous ne pourrez pas récupérer les données ! Un mot de passe peut également être changé ou supprimé en utilisant la boîte de dialogue des paramètres du compte. Supprimer un mot de passe décryptera le compte.</p>
+	</item>
+	<item>
+		<title>Trier par identifiant, date ou montant</title>
+		<p>Au sein de chaque compte vous pouvez trier les transactions dans la fenêtre principale par identifiant, date ou montant. Chaque fois que vous le modifierez, le tri sera enregistré dans le fichier du compte et restauré à la prochaine ouverture.</p>
+	</item>
+	<item>
+		<title>Ordre de tri</title>
+		<p>Au sein de chaque compte vous pouvez modifier l’ordre des transactions dans la fenêtre principale. Chaque fois que vous modifierez l’ordre de tri, celui-ci sera enregistré dans le fichier du compte et restauré à la prochaine ouverture.</p>
+	</item>
+	<item>
+		<title>Visibilité des groupes</title>
+		<p>Chaque compte enregistre l’état affiché ou masqué de la liste des groupes dans la fenêtre principale. Chaque fois que vous modifierez la visibilité de la liste des groupes, ce paramètre sera enregistré puis restauré à la prochaine ouverture.</p>
+	</item>
+	<item>
+        <title>Visibilité des étiquettes</title>
+        <p>Chaque compte enregistre l’état affiché ou masqué de la liste des étiquettes dans la fenêtre principale. Chaque fois que vous modifierez la visibilité de la liste des étiquettes, ce paramètre sera enregistré puis restauré à la prochaine ouverture.</p>
+    </item>
+</terms>
+</page>

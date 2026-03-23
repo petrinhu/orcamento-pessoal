@@ -1,0 +1,17 @@
+2017-08-19 10:32:38,485 [main] INFO  com.le.sunriise.export.ExportToJSON - dbFile=/home/s/Developpements/skrooge/tests/input/skgtestimportmny1/notreadable.mny
+2017-08-19 10:32:38,492 [main] INFO  com.le.sunriise.export.ExportToJSON - outDir=/tmp/{f8116072-980f-4104-b1c0-1409cb7c2f86}
+2017-08-19 10:32:38,501 [main] INFO  com.le.sunriise.Utils - # Opening dbFile=/home/s/Developpements/skrooge/tests/input/skgtestimportmny1/notreadable.mny
+2017-08-19 10:32:39,081 [main] INFO  com.le.sunriise.accountviewer.AccountUtil - > getTransactions, account=Investments to Watch
+2017-08-19 10:32:39,102 [main] INFO  com.le.sunriise.accountviewer.AccountUtil - < getTransactions, delta=19
+2017-08-19 10:32:39,105 [main] INFO  com.le.sunriise.mnyobject.impl.MnyObjectUtil - cashAccountValue=null
+2017-08-19 10:32:39,105 [main] INFO  com.le.sunriise.export.ExportToJSON - > Investments to Watch
+2017-08-19 10:32:39,143 [main] INFO  com.le.sunriise.accountviewer.AccountUtil - > getTransactions, account=None Investment
+2017-08-19 10:32:39,171 [main] INFO  com.le.sunriise.accountviewer.AccountUtil - < getTransactions, delta=21, 0.35 per txn
+2017-08-19 10:32:39,176 [main] INFO  com.le.sunriise.accountviewer.AccountUtil - > getTransactions, account=None Investment (Cash)
+2017-08-19 10:32:39,178 [main] INFO  com.le.sunriise.accountviewer.AccountUtil - < getTransactions, delta=1
+2017-08-19 10:32:39,178 [main] INFO  com.le.sunriise.mnyobject.impl.MnyObjectUtil - cashAccountValue=0.0
+2017-08-19 10:32:39,179 [main] INFO  com.le.sunriise.export.ExportToJSON - > None Investment
+2017-08-19 10:32:39,267 [main] INFO  com.le.sunriise.accountviewer.AccountUtil - > getTransactions, account=None Investment (Cash)
+2017-08-19 10:32:39,269 [main] INFO  com.le.sunriise.accountviewer.AccountUtil - < getTransactions, delta=2
+2017-08-19 10:32:39,269 [main] INFO  com.le.sunriise.export.ExportToJSON - > None Investment (Cash)
+2017-08-19 10:32:39,275 [main] INFO  com.le.sunriise.export.ExportToJSON - < DONE

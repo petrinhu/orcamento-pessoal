@@ -1,0 +1,29 @@
+!Type:Bank
+D18/05'2010
+T100.00
+CX
+PSolde initial
+L[40Compte D]
+^
+D18/05'2011
+CX
+T10.00
+L[30Compte C]
+^
+D27/05'2011
+CX
+T-150.00
+PRetrait
+LVersement
+^
+D27/05'2011
+CX
+T40.00
+L[30Compte C]
+^
+D27/05'2011
+CX
+T40.00
+L[10Compte A]
+^
+

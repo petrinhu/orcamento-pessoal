@@ -1,0 +1,10 @@
+<!DOCTYPE kpartgui>
+<kpartgui name="kmymoneyplugin-csvexporter" version="1">
+  <MenuBar>
+    <Menu name="file">
+      <Menu name="export" append="export_merge">
+        <Action name="file_export_csv" />
+      </Menu>
+    </Menu>
+  </MenuBar>
+</kpartgui>

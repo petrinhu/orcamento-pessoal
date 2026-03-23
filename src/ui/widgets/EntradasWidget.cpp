@@ -115,9 +115,9 @@ void EntradasWidget::buildUi()
         for (auto *item : m_table->selectedItems()) {
             const int col  = item->column();
             const int row  = item->row();
-            if (row == 0 || row == m_table->rowCount() - 1) continue; // header / total
-            const int k    = col / COL_PER_MONTH;
-            const int dataRow = row - 1; // row 0 is header
+            if (row < HEADER_ROWS || row == m_table->rowCount() - 1) continue; // headers / total
+            const int k       = col / COL_PER_MONTH;
+            const int dataRow = row - HEADER_ROWS;
             if (dataRow < 0 || dataRow >= m_maxRows) continue;
             if (k < 0 || k >= m_numMonths) continue;
             const auto &list = m_data[k];
@@ -137,7 +137,7 @@ void EntradasWidget::buildUi()
         emit dadosAlterados();
     });
 
-    connect(m_table, &QTableWidget::cellActivated,
+    connect(m_table, &QTableWidget::cellClicked,
             this, &EntradasWidget::onCellActivated);
     connect(m_table->selectionModel(), &QItemSelectionModel::selectionChanged,
             this, [this]() {
@@ -179,6 +179,18 @@ void EntradasWidget::recarregar()
         m_maxRows = qMax(m_maxRows, list.size() + 2);
 
     populateTable();
+
+    // Status bar — total líquido do mês atual
+    const QDate cur(QDate::currentDate().year(), QDate::currentDate().month(), 1);
+    const int kCur = (cur.year() - m_firstMonth.year()) * 12
+                   + (cur.month() - m_firstMonth.month());
+    qint64 totalMes = 0;
+    if (kCur >= 0 && kCur < m_numMonths)
+        for (const auto &l : m_data[kCur])
+            totalMes += l.valorBruto - l.irpf - l.inss;
+    emit statusAtualizado(tr("Entradas %1: %2")
+        .arg(cur.toString(QStringLiteral("MMM/yy")))
+        .arg(formatCentavos(totalMes)));
 }
 
 void EntradasWidget::populateTable()
@@ -186,7 +198,7 @@ void EntradasWidget::populateTable()
     m_table->blockSignals(true);
 
     const int totalCols = m_numMonths * COL_PER_MONTH;
-    const int totalRows = 1 + m_maxRows + 1; // header row + data rows + total row
+    const int totalRows = HEADER_ROWS + m_maxRows + 1; // 2 header rows + data rows + total row
 
     m_table->setRowCount(totalRows);
     m_table->setColumnCount(totalCols);
@@ -203,15 +215,27 @@ void EntradasWidget::populateTable()
         hdr->setTextAlignment(Qt::AlignCenter);
         m_table->setItem(0, baseCol, hdr);
         m_table->setSpan(0, baseCol, 1, COL_PER_MONTH);
-
-        // Sub-column headers as tooltips on row 0 cols (visual only)
-        // The actual sub-header labels are encoded in column widths / tooltips
     }
     m_table->setRowHeight(0, 28);
 
+    // ── Row 1: Sub-column labels ────────────────────────────────────────────
+    static const char* const kSubLabels[COL_PER_MONTH] =
+        { QT_TR_NOOP("Fonte"), QT_TR_NOOP("Valor"), QT_TR_NOOP("Data"), QT_TR_NOOP("Obs") };
+    for (int k = 0; k < m_numMonths; ++k) {
+        for (int c = 0; c < COL_PER_MONTH; ++c) {
+            auto *it = readOnlyItem(tr(kSubLabels[c]));
+            QFont f = it->font();
+            f.setBold(true);
+            f.setPointSize(11);
+            it->setFont(f);
+            m_table->setItem(1, k * COL_PER_MONTH + c, it);
+        }
+    }
+    m_table->setRowHeight(1, 24);
+
     // ── Data rows ──────────────────────────────────────────────────────────
     for (int dataRow = 0; dataRow < m_maxRows; ++dataRow) {
-        const int tableRow = dataRow + 1;
+        const int tableRow = dataRow + HEADER_ROWS;
         m_table->setRowHeight(tableRow, 28);
 
         for (int k = 0; k < m_numMonths; ++k) {
@@ -280,13 +304,12 @@ void EntradasWidget::populateTable()
         m_table->setItem(totalRow, baseCol + 3, readOnlyItem({}));
     }
 
-    // ── Column widths ──────────────────────────────────────────────────────
-    for (int k = 0; k < m_numMonths; ++k) {
-        const int base = k * COL_PER_MONTH;
-        m_table->setColumnWidth(base + 0, 140); // Fonte
-        m_table->setColumnWidth(base + 1, 110); // Valor
-        m_table->setColumnWidth(base + 2,  80); // Data
-        m_table->setColumnWidth(base + 3, 140); // Obs
+    // Expande colunas ao conteúdo; nunca encolhe (preserva ajuste manual)
+    for (int c = 0; c < m_table->columnCount(); ++c) {
+        const int prev = m_table->columnWidth(c);
+        m_table->resizeColumnToContents(c);
+        if (m_table->columnWidth(c) < prev)
+            m_table->setColumnWidth(c, prev);
     }
 
     m_table->blockSignals(false);
@@ -296,11 +319,11 @@ void EntradasWidget::populateTable()
 
 void EntradasWidget::onCellActivated(int row, int col)
 {
-    if (row == 0) return;                      // month header row
+    if (row < HEADER_ROWS) return;             // month header or sub-label row
     if (col < 0 || col >= m_table->columnCount()) return;
 
-    const int k       = col / COL_PER_MONTH;
-    const int dataRow = row - 1;               // row 0 is header
+    const int k        = col / COL_PER_MONTH;
+    const int dataRow  = row - HEADER_ROWS;
     const int totalRow = m_table->rowCount() - 1;
 
     if (row == totalRow) return;               // TOTAL row

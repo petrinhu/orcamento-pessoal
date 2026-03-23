@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<page xmlns="http://projectmallard.org/1.0/" xmlns:its="http://www.w3.org/2005/11/its" type="topic" id="account" its:version="2.0" xml:lang="hr">
+<info>
+	<link type="guide" xref="index"/>
+	<title type="link">Račun 🏦</title>
+	<credit type="author copyright">
+		<name>Fyodor Sobolev</name>
+		<years its:translate="no">2023</years>
+	</credit>
+	<credit type="publisher copyright">
+		<name>Nicholas Logozzo</name>
+		<years its:translate="no">2023</years>
+	</credit>
+	<license href="http://creativecommons.org/licenses/by/4.0/" its:translate="no"><p>Creative Commons Attribution 4.0 International License</p></license>
+
+    <mal:credit xmlns:mal="http://projectmallard.org/1.0/" type="translator copyright">
+      <mal:name>Milo Ivir</mal:name>
+      <mal:email>mail@milotype.de</mal:email>
+      <mal:years>2023</mal:years>
+    </mal:credit>
+  </info>
+
+<title>Račun</title>
+<p>Ova stranica objašnjava sva svojstva računa u aplikaciji <app>Denaro</app>. Većina se prikazuju u <gui>Dijalog postavki računa</gui>. Ovaj se dijalog također automatski otvara nakon stvaranja novog računa.</p>
+<p>Svaki račun se sprema u yasebnu <file>*.nmoney</file> datoteku. Datoteke stvorene u starijoj <em>stabilnoj</em> verziji <app>Denaro</app> aplikacije mogu se sigurno otvoriti u novijoj <em>stabilnoj</em> verziji aplikacije. Iako aplikacija radi na različitim platformama (Windows i Linux), <file>*.nmoney</file> datoteke su 100 % kompatibilne između platformi sve dok su stvorene s istom verzijom aplikacije (tj. V2023.1.0).</p>
+<note style="warning">
+	<p>Nestabilne verzije aplikacije (beta i kandidati za izdanje) mogu sadržati greške ili nedovršene promjene i mogu uzrokovati gubitak podataka. U nestabilnim verzijama aplikacije NEMOJ koristiti datoteke računa koje sadrže stvarne podatke!</p>
+</note>
+
+<terms>
+	<item>
+		<title>Ime</title>
+		<p>Ime računa se prikazuje u popisu nedavnih računa i na karticama. Dužina imena nije ograničena i može sadržati bilo koje znakove, uključujući emojije.</p>
+	</item>
+	<item>
+		<title>Vrsta računa</title>
+		<p>Postoje 3 vrste računa: 🟣<em>žiro račun</em>, 🔵<em>štedni račun</em> i 🟢<em>poslovni račun</em>. Vrsta računa je samo korisna oznaka koja se prikazuje u popisu nedavnih računa i ne utječe na to kako aplikacija radi ili što možeš učiniti s računom. Svaka vrsta računa ima vlastitu boju. Boje se mogu odrediti u <link xref="configuration">globalnim postavkama</link>.</p>
+	</item>
+	<item>
+		<title>Standardna vrsta transakcije</title>
+		<p>Kada stvoriš novu transakciju, njezina će vrsta standardno biti ista kao u ovoj postavci.</p>
+	</item>
+	<item>
+        <title>Prag podsjetnika za transakcije</title>
+        <p>Prag koji se koristi prilikom prikazivanja podsjetnika o nadolazećim transakcijama.</p>
+    </item>
+	<item>
+		<title>Valuta sustava</title>
+		<p>Svaki put kada se aplikacija pokrene, ona dobiva podatke o valuti i formatu brojeva iz postavke jezičnog područja tvog sustava. Ti se podaci koriste za prikaz simbola valute (osim ako se koristi prilagođena valuta, pogledaj dolje) i za određivanje formata brojeva koji će se prihvatiti kao vrijednosti za iznose transakcija. Par primjera:</p>
+		<list>
+			<item><p>Ako je tvoje jezično područje <em>engleski (SAD)</em>, simbol valute će biti <em>$</em> i <em>1,000.00</em> će se prihvatiti kao valjani broj.</p></item>
+			<item><p>Ako je tvoje jezično područje <em>hrvatski</em>, simbol valute će biti <em>€</em> i <em>1.000,00</em> će se prihvatiti kao valjani broj.</p></item>
+			<item><p>Ako je tvoje jezično područje <em>ruski</em>, simbol valute će biti <em>₽</em> i <em>1000,00</em> će se prihvatiti kao valjani broj.</p></item>
+		</list>
+		<note style="advanced">
+			<p>Na Linuxu je moguće postaviti različita jezična područja za jezik sustava i formate. Mijenjanje ovih postavki razlikuje se ovisno o radnoj površini. Unatoč razlikama u smještaju ovih postavki u okruženju, mijenjanje tih postavki mijenja varijable okruženja sustava, kao što su <code>LANG</code>, <code>LC_TIME</code> i <code>LC_MONETARY</code>. <app>Denaro</app> će pokušati koristiti formate iznosa i datuma u skladu s tim varijablama. Ako aplikacija ne uspije koristiti očekivane formate, provjeri jesu li varijable ispravno postavljene putem naredbe <code>locale</code> u terminalu. Ako naiđeš na grešku i želiš je prijaviti, pošalji rezultat naredbe <code>locale</code> kako bi programeri mogli reproducirati problem s istim postavkama.</p>
+		</note>
+	</item>
+	<item>
+		<title>Koristi prilagođenu valutu</title>
+		<p>Ako je ova opcija aktivirana, umjesto simbola valute jezičnog područja tvog sustava koristit će se <gui>Prilagođeni simbol valute</gui>.</p>
+	</item>
+	<item>
+		<title>Simbol prilagođene valute</title>
+		<p>Do 3 znaka ili 1 emoji. Ne može biti broj.</p>
+	</item>
+	<item>
+		<title>Kȏd prilagođene valute</title>
+		<p>Do 3 znaka ili 1 emoji.</p>
+		<p>Primjer za razumijevanje razlike između simbola i koda: <em>$</em> je simbol, <em>USD</em> je kod.</p>
+	</item>
+	<item>
+        <title>Prilagođeni stil iznosa valute</title>
+        <p>Izbor prikaza iznosa na jedan od sljedećih načina:</p>
+        <list>
+            <item><p>$n</p></item>
+            <item><p>n$</p></item>
+            <item><p>$ n</p></item>
+            <item><p>n $</p></item>
+        </list>
+    </item>
+	<item>
+		<title>Prilagođeni decimalni znakovi i znakovi tisućica valute</title>
+		<p>Do 2 znaka ili 1 emoji.</p>
+	</item>
+	<item>
+		<title>Prilagođeni broj decimala valute</title>
+		<p>Broj decimala za iznose. S opcijom „Neograničeno” prikazat će se onoliko decimala koliko je potrebno za prikaz točnog iznosa. Decimale se neće koristiti ako je iznos cijeli broj.</p>
+	</item>
+	<item>
+		<title>Lozinka</title>
+		<p>Svaki račun se može zaštititi lozinkom. Dodavanje lozinke uzrokuje šifriranje računa (što onemogućuje čitanje podataka bez dešifriranja pomoću lozinke). Oprez: ako izgubiš lozinku, nećeš moći obnoviti podatke! Lozinka se također može promijeniti ili ukloniti pomoću dijaloga postavki računa jednog otvorenog računa. Uklanjanje lozinke će dešifrirati račun.</p>
+	</item>
+	<item>
+		<title>Razvrstaj prema ID-u, datumu ili iznosu</title>
+		<p>Svaki račun sprema razvrstavanje transakcija u glavnom prozoru prema ID-u, datumu ili iznosu. Pri svakoj promjeni će se razvrstavanje spremiti u datoteku računa i obnoviti kada ponovo otvoriš račun.</p>
+	</item>
+	<item>
+		<title>Redoslijed</title>
+		<p>Svaki račun sprema podatke o redoslijedu transakcija u glavnom prozoru. Pri svakoj promjeni će se redoslijed spremiti u datoteku računa i obnoviti kada ponovo otvoriš račun.</p>
+	</item>
+	<item>
+		<title>Vidljivost grupa</title>
+		<p>Svaki račun sprema podatke o prikazivanju ii skrivanju popisa grupa u glavnom prozoru. Pri svakoj promjeni će se vidljivost popisa grupa spremiti i obnoviti kada ponovo otvoriš račun.</p>
+	</item>
+	<item>
+        <title>Vidljivost oznaka</title>
+        <p>Svaki račun sprema podatke o prikazivanju ii skrivanju popisa oznaka u glavnom prozoru. Pri svakoj promjeni vidljivosti popisa oznaka, promjena će se spremiti i obnoviti kada ponovo otvoriš račun.</p>
+    </item>
+</terms>
+</page>

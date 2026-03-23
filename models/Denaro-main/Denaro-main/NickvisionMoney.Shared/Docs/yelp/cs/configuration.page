@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<page xmlns="http://projectmallard.org/1.0/" xmlns:its="http://www.w3.org/2005/11/its" type="topic" id="configuration" its:version="2.0" xml:lang="cs">
+<info>
+	<link type="guide" xref="index"/>
+	<title type="link">Nastavení 🔧</title>
+	<credit type="author copyright">
+		<name>Fyodor Sobolev</name>
+		<years its:translate="no">2023</years>
+	</credit>
+	<credit type="publisher copyright">
+		<name>Nicholas Logozzo</name>
+		<years its:translate="no">2023</years>
+	</credit>
+	<license href="http://creativecommons.org/licenses/by/4.0/" its:translate="no"><p>Creative Commons Attribution 4.0 International License</p></license>
+
+    <mal:credit xmlns:mal="http://projectmallard.org/1.0/" type="translator copyright">
+      <mal:name>Jonáš Loskot</mal:name>
+      <mal:email>osobni@jonasloskot.cz</mal:email>
+      <mal:years>2023</mal:years>
+    </mal:credit>
+  </info>
+
+<title>Nastavení</title>
+<p>Na této stránce je popsáno, co můžete změnit v nastavení aplikace.</p>
+<p>V závislosti na platformě je konfigurace v rozhraní aplikace označena jako <gui>Předvolby</gui> nebo <gui>Nastavení</gui>.</p>
+<terms>
+	<item>
+		<title>Motiv</title>
+		<p>Nastavte si světlý nebo tmavý motiv, nebo nastavte, aby <app>Denaro</app> následovalo váš systémový motiv. Změna tohoto nastavení v systému Windows vyžaduje restart aplikace, aby se uplatnila.</p>
+	</item>
+	<item>
+		<title>Výchozí barva transakce</title>
+		<p>Barva, která bude vybrána jako výchozí při přidání nové <link xref="transaction">transakce</link> s jedinečnou barvou. Její změna neovlivní existující transakce, i když používají dříve zvolenou výchozí barvu.</p>
+	</item>
+	<item>
+		<title>Výchozí barva převodu</title>
+		<p>Barva, která bude použita pro transakce vytvořené pomocí <link xref="transfer">převodu</link> . Změna tohoto parametru neovlivní existující transakce.</p>
+	</item>
+	<item>
+		<title>Výchozí barva skupiny</title>
+		<p>Barva, která bude ve výchozím nastavení vybrána při přidávání nové skupiny. Je to také barva pro skupinu „Neseskupené“.</p>
+	</item>
+	<item>
+		<title>Barva běžného účtu</title>
+		<p>Barva používaná k označení <link xref="account">účtů</link> s typem <em>Běžný</em> v seznamu nedávných účtů.</p>
+	</item>
+	<item>
+		<title>Barva spořicího účtu</title>
+		<p>Barva používaná k označení <link xref="account">účtů</link> s typem <em>Spořicí</em> v seznamu nedávných účtů.</p>
+	</item>
+	<item>
+		<title>Barva firemního účtu</title>
+		<p>Barva používaná k označení <link xref="account">účtů</link> s typem <em>Firemní</em> v seznamu nedávných účtů.</p>
+	</item>
+	<item>
+		<title>Použít nativní číslice</title>
+		<p>Nastavení, zda se mají místo latinských číslic používat číslice, které jsou pro vaši oblast přirozené. Pokud je toto nastavení povoleno, bude například <em>٠١٢</em> použito místo <em>012</em> pro lokality, které používají východoarabské číslice.</p>
+	</item>
+	<item>
+		<title>Vložení desetinného oddělovače</title>
+		<p>Nastavení, pro které stisknuté klávesy se do pole částky vloží desetinný oddělovač lokálního jazyka: tečka na numerickém bloku, libovolná tečka a čárka nebo žádný. Pokud již je desetinný oddělovač v poli, nebude vložen.</p>
+	</item>
+	<item>
+		<title>Složka zálohy CSV</title>
+		<p>Složka, do které budou vaše data po každé změně automaticky <link xref="import-export">exportována jako soubor CSV</link>. Tato funkce nefunguje pro účty chráněné heslem, protože soubory CSV nelze chránit heslem.</p>
+	</item>
+</terms>
+</page>

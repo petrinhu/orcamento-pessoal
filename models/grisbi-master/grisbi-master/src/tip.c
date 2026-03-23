@@ -1,0 +1,197 @@
+/* ************************************************************************** */
+/* Ce fichier s'occupe des astuces                                            */
+/*                                                                            */
+/*     Copyright (C)    2004-2008 Benjamin Drieu (bdrieu@april.org)           */
+/*          2009 Pierre Biava (grisbi@pierre.biava.name)                      */
+/*          https://www.grisbi.org/                                            */
+/*                                                                            */
+/*  This program is free software; you can redistribute it and/or modify      */
+/*  it under the terms of the GNU General Public License as published by      */
+/*  the Free Software Foundation; either version 2 of the License, or         */
+/*  (at your option) any later version.                                       */
+/*                                                                            */
+/*  This program is distributed in the hope that it will be useful,           */
+/*  but WITHOUT ANY WARRANTY; without even the implied warranty of            */
+/*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             */
+/*  GNU General Public License for more details.                              */
+/*                                                                            */
+/*  You should have received a copy of the GNU General Public License         */
+/*  along with this program; if not, see <https://www.gnu.org/licenses/>.     */
+/*                                                                            */
+/* ************************************************************************** */
+
+
+#include "config.h"
+
+#include "include.h"
+#include <glib/gi18n.h>
+
+#define START_INCLUDE
+#include "tip.h"
+#include "dialog.h"
+#include "grisbi_app.h"
+#include "gsb_automem.h"
+#include "structures.h"
+#define END_INCLUDE
+
+static const gchar* tips[] =
+{
+    N_("You can reconcile transactions to match your real financial state as "
+    "seen on your bank receipts. If you just spend 15mn each month reconciling "
+    "Grisbi transactions with your bank receipts, you are guaranteed that your "
+    "accounts are in perfect shape."),
+    N_("Grisbi automatically saves a copy of your work if it crashes.\n\nThus "
+    "it is unlikely that you loose any data in case Grisbi encounters a "
+    "programming error."),
+    N_("Grisbi can import Gnucash files natively, then you don't loose your work "
+    "when you switch from Gnucash to Grisbi."),
+    N_("You can organize transactions into budgetary lines, which are budgetary "
+    "items (why money is spent) that can help you classify your spendings.\n\n"
+    "Combined with categories (how money is spend), budgetary lines are a "
+    "powerful way to analyse budget and to make reports."),
+    N_("You can create categories or budgetary lines directly by typing them in "
+    "transaction form.\n\nIf you write a category or a budgetary line which name "
+    "contains a ':', a sub-category or sub-budgetary line will be created as "
+    "well."),
+    N_("You can encrypt your Grisbi files to improve your privacy.  Just select "
+    "the 'Encrypt Grisbi file' in preferences window and enter a password next "
+    "time you save your file.\n\nEncryption is irreversible, if you loose your "
+    "password, there is NO WAY to restore your Grisbi accounts. Use with "
+    "caution!"),
+    N_("You can efficiently manage your professional expenses with Grisbi.\n\n"
+    "Create a <i>Professional expenses</i> budgetary line and put all "
+    "professional expenses there.  When you are paid, split your salary as a "
+    "split of transaction, with both a <i>Salary</i> part and a <i>Profesionnal "
+    "expenses</i> part.\n\nThen, you can create a new report that sums up "
+    "transactions from the <i>Profesionnal expenses</i> budgetary line and see "
+    "the balance."),
+    N_("You can use the import facility to automatically reconcile transactions "
+    "against a QIF or OFX file from your online bank."),
+    N_("You can configure the contents of the transaction list.\n\nRight-click "
+    "on a cell of the transaction list and select the <i>Change cell content</i> "
+    "option.  Then select any content you want and configure transaction list to "
+    "your needs."),
+    N_("You can configure fields displayed in the transaction form.\n\nGo to the "
+    "<i>Preferences</i> dialog and select the <i>Form content</i> option.  Then "
+    "you can click on fields to be displayed and drag them through the form to "
+    "adjust their position."),
+    N_("You can hide annoying dialogs like this one, by clicking the <i>\'Do not "
+    "show this message again\'</i> checkbox in this dialog.\n\nYou can then "
+    "activate them again by going to the <i>Preferences</i> window and then to "
+    "the <i>Dialog and messages</i> option."),
+    N_("By double cliking on a date field, you can pop up a calendar to select "
+    "a date."),
+    N_("There are shortcuts in date fields, to avoid typing date or selecting "
+    "it with mouse.\n\n<b>+</b> and <b>-</b> increment and decrement date of one "
+    "day, <i>Page Up</i> and <i>Page Down</i> increment and decrement date of "
+    "one month ... and there are more, check out the manual."),
+    N_("You can archive previous financial years to speed up Grisbi and "
+    "possibly put old transactions into separate files for archival.  Use "
+    "'File/Archive transaction' menu to achieve this."),
+    N_("If unused payees have accumulated in the course of time due to bank "
+    "imports, you can remove all of them in one click! Just go to the "
+    "<i>Payees</i> page and click on the 'Remove unused payees' button."),
+    N_("You can sort the transaction list according to any criteria.  Click on "
+    "the column titles to sort transactions differently. For example, you can "
+    "sort transactions by payee or category name."),
+    N_("You can reorder accounts in the navigation list using drag &amp; drop."),
+    N_("You can have future scheduled transactions 'executed' before their date, "),
+    N_("No more tip available!  Please send any tips you know to "
+    "devel@listes.grisbi.org so that we can include them in next "
+    "version for all users.")
+};
+
+/**
+ * Display a tip forcefully, even if show_tip option has been disabled.
+ */
+void force_display_tip ( void )
+{
+    display_tip ( TRUE );
+}
+
+
+
+/**
+ * Display a tip.
+ *
+ * \param force  Forcefully display the tip even if show_tip option
+ *		 has been disabled.
+ */
+void display_tip ( gboolean force )
+{
+    GtkWidget * checkbox;
+    GtkWidget * dialog = NULL;
+    GtkWidget *btn_back, *btn_forward, *btn_close;
+	GrisbiAppConf *a_conf;
+
+	a_conf = (GrisbiAppConf *) grisbi_app_get_a_conf ();
+    if ( !force && !a_conf->show_tip )
+        return;
+
+    a_conf->last_tip = CLAMP ( a_conf->last_tip+1, 0, (gint) (sizeof(tips)/sizeof(gpointer)-1));
+
+    /* the dialog is created with empty text because we set it using gtk's markup
+       function instead */
+    dialog = dialogue_special_no_run ( GTK_MESSAGE_INFO, GTK_BUTTONS_NONE,
+                                       "", _("Did you know that...") );
+    gtk_message_dialog_format_secondary_markup ( GTK_MESSAGE_DIALOG (dialog),
+                                                 "%s", g_dgettext (NULL, tips[a_conf->last_tip]) );
+    gtk_window_set_modal ( GTK_WINDOW ( dialog ), FALSE );
+
+    checkbox = gsb_automem_checkbutton_new ( _("Display tips at next start"),
+                        &(a_conf->show_tip), NULL, NULL );
+    gtk_box_pack_start ( GTK_BOX ( dialog_get_content_area ( dialog )  ), checkbox, FALSE, FALSE, 6 );
+    gtk_widget_show ( checkbox );
+
+	btn_back = gtk_button_new_with_label (_("Prévious"));
+	gtk_dialog_add_action_widget (GTK_DIALOG (dialog), btn_back, 1);
+	gtk_widget_show (btn_back);
+
+	btn_forward = gtk_button_new_with_label (_("Following"));
+	gtk_dialog_add_action_widget (GTK_DIALOG (dialog), btn_forward, 2);
+	gtk_widget_show (btn_forward);
+
+    btn_close = gtk_button_new_with_label (_("Close"));
+	gtk_dialog_add_action_widget (GTK_DIALOG (dialog), btn_close, 3);
+	gtk_widget_show (btn_close);
+	(void) btn_close; /* unused value: fix warning -Wunused-but-set-variable */
+
+    gtk_widget_set_size_request ( dialog, 680, 380 );
+    /* We iterate as user can select several tips. */
+    while ( TRUE )
+    {
+    switch ( gtk_dialog_run ( GTK_DIALOG(dialog) ) )
+    {
+        case 1:
+        if ( a_conf->last_tip > 0 )
+            a_conf->last_tip--;
+		else
+			a_conf->last_tip = sizeof(tips)/sizeof(gpointer)-1;
+
+        gtk_widget_set_sensitive (btn_forward, TRUE);
+        gtk_message_dialog_format_secondary_markup ( GTK_MESSAGE_DIALOG (dialog),
+                                                     "%s", g_dgettext (NULL, tips[a_conf->last_tip]) );
+        break;
+
+        case 2:
+        if ( a_conf->last_tip < (gint) (sizeof(tips)/sizeof(gpointer)-1))
+            a_conf->last_tip++;
+		else
+			a_conf->last_tip = 0;
+
+        gtk_message_dialog_format_secondary_markup ( GTK_MESSAGE_DIALOG (dialog),
+                                                     "%s", g_dgettext (NULL, tips[a_conf->last_tip]) );
+        gtk_widget_set_sensitive (btn_back, TRUE);
+        break;
+
+        default:
+        gtk_widget_destroy ( dialog );
+        return;
+    }
+    }
+}
+
+
+/* Local Variables: */
+/* c-basic-offset: 4 */
+/* End: */

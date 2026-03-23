@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE KMYMONEY-FILE>
+<KMYMONEY-FILE>
+ <FILEINFO>
+  <CREATION_DATE date="2019-01-05"/>
+  <LAST_MODIFIED_DATE date="2019-01-05"/>
+  <VERSION id="1"/>
+  <FIXVERSION id="4"/>
+ </FILEINFO>
+ <USER name="" email="">
+  <ADDRESS telephone="" county="" zipcode="" city="" street=""/>
+ </USER>
+ <INSTITUTIONS count="0"/>
+ <PAYEES count="0"/>
+ <COSTCENTERS count="0"/>
+ <TAGS count="0"/>
+ <ACCOUNTS count="7">
+  <ACCOUNT name="Actif" lastreconciled="" parentaccount="" lastmodified="" number="" description="" opened="" institution="" type="9" currency="EUR" id="AStd::Asset">
+   <SUBACCOUNTS>
+    <SUBACCOUNT id="A000001"/>
+   </SUBACCOUNTS>
+  </ACCOUNT>
+  <ACCOUNT name="Passif" lastreconciled="" parentaccount="" lastmodified="" number="" description="" opened="" institution="" type="10" currency="EUR" id="AStd::Liability"/>
+  <ACCOUNT name="Dépense" lastreconciled="" parentaccount="" lastmodified="" number="" description="" opened="" institution="" type="13" currency="EUR" id="AStd::Expense"/>
+  <ACCOUNT name="Revenu" lastreconciled="" parentaccount="" lastmodified="" number="" description="" opened="" institution="" type="12" currency="EUR" id="AStd::Income"/>
+  <ACCOUNT name="Titre" lastreconciled="" parentaccount="" lastmodified="" number="" description="" opened="" institution="" type="16" currency="EUR" id="AStd::Equity">
+   <SUBACCOUNTS>
+    <SUBACCOUNT id="A000002"/>
+   </SUBACCOUNTS>
+  </ACCOUNT>
+  <ACCOUNT name="AAA" lastreconciled="" parentaccount="AStd::Asset" lastmodified="2019-01-05" number="" description="" opened="2019-01-01" institution="" type="1" currency="EUR" id="A000001"/>
+  <ACCOUNT name="Solde d'ouverture" lastreconciled="" parentaccount="AStd::Equity" lastmodified="2019-01-05" number="" description="" opened="2019-01-01" institution="" type="16" currency="EUR" id="A000002">
+   <KEYVALUEPAIRS>
+    <PAIR key="OpeningBalanceAccount" value="Yes"/>
+   </KEYVALUEPAIRS>
+  </ACCOUNT>
+ </ACCOUNTS>
+ <TRANSACTIONS count="1">
+  <TRANSACTION postdate="2019-01-01" memo="" commodity="EUR" entrydate="2019-01-05" id="T000000000000000001">
+   <SPLITS>
+    <SPLIT reconciledate="" bankid="" reconcileflag="0" number="" memo="" shares="123456/1" value="123456/1" price="1/1" payee="" account="A000001" action="" id="S0001"/>
+    <SPLIT reconciledate="" bankid="" reconcileflag="0" number="" memo="" shares="-123456/1" value="-123456/1" price="1/1" payee="" account="A000002" action="" id="S0002"/>
+   </SPLITS>
+  </TRANSACTION>
+ </TRANSACTIONS>
+ <KEYVALUEPAIRS>
+  <PAIR key="kmm-baseCurrency" value="EUR"/>
+  <PAIR key="kmm-id" value="{38a0320f-f1ae-4e54-a74f-70e7d50d9aa2}"/>
+ </KEYVALUEPAIRS>
+ <SCHEDULES count="0"/>
+ <SECURITIES count="0"/>
+ <CURRENCIES count="1">
+  <CURRENCY name="Euro" saf="100" pp="4" symbol="€" type="3" rounding-method="7" id="EUR" scf="100"/>
+ </CURRENCIES>
+ <PRICES count="0"/>
+ <REPORTS count="0"/>
+ <BUDGETS count="0"/>
+ <ONLINEJOBS count="0"/>
+</KMYMONEY-FILE>
