@@ -51,6 +51,7 @@ void MainWindow::buildUi()
     // ── Connections ────────────────────────────────────────────────────────
     connect(m_parcelas, &ParcelasWidget::dadosAlterados,
             m_parcelas, &ParcelasWidget::recarregar);
+
 }
 
 // ── Menu bar ──────────────────────────────────────────────────────────────────

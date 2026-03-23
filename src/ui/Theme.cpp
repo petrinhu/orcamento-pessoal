@@ -84,7 +84,8 @@ static QString gerarQss()
     // Hover background
     const QString hov  = dark ? QStringLiteral("#3B4045") : QStringLiteral("#D0E9F6");
 
-    // %1=txt  %2=bg  %3=surf  %4=acc  %5=sub  %6=neg  %7=brd  %8=alt  %9=hov
+    // %1=txt  %2=bg  %3=surf  %4=acc  %5=sub  %6=brd  %7=alt  %8=hov
+    // (neg is unused in QSS — multiArg skips absent markers, causing drift)
     QString qss = QStringLiteral(R"(
         /* ── Base ── */
         QWidget {
@@ -226,6 +227,7 @@ static QString gerarQss()
         /* ── Labels ── */
         QLabel#title    { font-size: 16px; font-weight: 600; }
         QLabel#subtitle { font-size: 12px; color: %5; }
+        QLabel#error    { font-size: 12px; color: %6; }
         /* ── Status bar ── */
         QStatusBar { background-color: %2; color: %5; border-top: 1px solid %7; }
         /* ── Tabs ─────────────────────────────────────────────────────────────
