@@ -13,6 +13,7 @@
 | 19 | Tradução i18n completa (pt-BR / en) | 🔴 Alta | Média | ❌ |
 | 20 | Aba investimentos | 🔴 Alta | Alta | ❌ |
 | 22 | Aba planejamento e orçamento | 🔴 Alta | Alta | ❌ |
+| 34 | Refactor: extrair acesso a Repository/SQL dos widgets para Services (ParcelasWidget, EntradasWidget, ConfigWidget, ConfigFontesWidget, Dialogs) | 🔴 Alta | Alta | ❌ |
 | 26 | Transações recorrentes agendadas | 🔴 Alta | Média | ❌ |
 | 7 | Colunas: auto-ajuste expand-only | 🟡 Média | Média | ✅ |
 | 10 | UX: totais na status bar | 🟡 Média | Baixa | ✅ |
