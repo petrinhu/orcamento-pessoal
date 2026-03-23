@@ -263,9 +263,8 @@ static QString gerarQss()
         QScrollBar:horizontal {
             background: %2; height: 8px; margin: 0;
         }
-        QScrollBar::handle:vertical, QScrollBar::handle:horizontal {
-            background: %7; border-radius: 4px; min-length: 20px;
-        }
+        QScrollBar::handle:vertical   { background: %7; border-radius: 4px; min-height: 20px; }
+        QScrollBar::handle:horizontal { background: %7; border-radius: 4px; min-width:  20px; }
         QScrollBar::handle:hover { background: %5; }
         QScrollBar::add-line, QScrollBar::sub-line { height: 0; width: 0; }
         /* ── GroupBox ── */

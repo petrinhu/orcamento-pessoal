@@ -59,6 +59,7 @@ void DatabaseManager::close()
 
     const QString dbPath = m_db.databaseName();
     m_db.close();
+    m_db = QSqlDatabase();  // libera a referência antes de removeDatabase
     QSqlDatabase::removeDatabase(QStringLiteral("main"));
 
 #ifndef QT_DEBUG
@@ -93,6 +94,7 @@ bool DatabaseManager::importFromFile(const QString &srcPath)
     const bool wasOpen = m_db.isOpen();
     if (wasOpen) {
         m_db.close();
+        m_db = QSqlDatabase();  // libera a referência antes de removeDatabase
         QSqlDatabase::removeDatabase(QStringLiteral("main"));
     }
 
