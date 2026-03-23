@@ -11,6 +11,7 @@
 #include <QTabWidget>
 #include <QApplication>
 #include <QClipboard>
+#include <QCheckBox>
 #include <QSettings>
 #include <QCloseEvent>
 #include <QKeyEvent>
@@ -122,12 +123,27 @@ void CalculadoraDialog::buildTabComum(QWidget *tab)
     vbox->setContentsMargins(4, 8, 4, 4);
     vbox->setSpacing(4);
 
-    // ── expression label (shows pending operation) ─────────────────────────
-    m_exprLabel = new QLabel(QString(), tab);
-    m_exprLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
-    m_exprLabel->setObjectName(QStringLiteral("subtitle"));
-    m_exprLabel->setMinimumHeight(18);
-    vbox->addWidget(m_exprLabel);
+    // ── expression label + "Sempre visível" checkbox ──────────────────────
+    {
+        auto *row = new QHBoxLayout;
+        row->setSpacing(8);
+
+        m_exprLabel = new QLabel(QString(), tab);
+        m_exprLabel->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+        m_exprLabel->setObjectName(QStringLiteral("subtitle"));
+        m_exprLabel->setMinimumHeight(18);
+
+        m_chkAlwaysOnTop = new QCheckBox(tr("Sempre visível"), tab);
+        m_chkAlwaysOnTop->setToolTip(tr("Manter calculadora sobre todas as outras janelas"));
+        connect(m_chkAlwaysOnTop, &QCheckBox::toggled, this, [this](bool on) {
+            setWindowFlag(Qt::WindowStaysOnTopHint, on);
+            show(); // required to apply the flag change
+        });
+
+        row->addWidget(m_exprLabel, 1);
+        row->addWidget(m_chkAlwaysOnTop);
+        vbox->addLayout(row);
+    }
 
     // ── display + copy button ──────────────────────────────────────────────
     {
@@ -152,23 +168,8 @@ void CalculadoraDialog::buildTabComum(QWidget *tab)
             QApplication::clipboard()->setText(m_display->text());
         });
 
-        m_btnPin = new QPushButton(QStringLiteral("📌"), tab);
-        m_btnPin->setToolTip(tr("Sempre visível (manter sobre outras janelas)"));
-        m_btnPin->setCheckable(true);
-        m_btnPin->setFixedSize(32, 32);
-        m_btnPin->setFlat(true);
-        connect(m_btnPin, &QPushButton::toggled, this, [this](bool on) {
-            setWindowFlag(Qt::WindowStaysOnTopHint, on);
-            show(); // required to apply the flag change
-        });
-
-        auto *pinCol = new QVBoxLayout;
-        pinCol->setSpacing(2);
-        pinCol->addWidget(btnCopy);
-        pinCol->addWidget(m_btnPin);
-
         row->addWidget(m_display, 1);
-        row->addLayout(pinCol);
+        row->addWidget(btnCopy);
         vbox->addLayout(row);
     }
 
