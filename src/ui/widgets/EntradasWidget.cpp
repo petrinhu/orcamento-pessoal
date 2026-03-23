@@ -4,6 +4,8 @@
 #include "repositories/LancamentoEntradaRepository.h"
 #include "core/settings/AppSettings.h"
 
+#include <QLabel>
+#include <QStackedWidget>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QTableWidget>
@@ -78,15 +80,35 @@ void EntradasWidget::buildUi()
     toolbar->addStretch();
     root->addLayout(toolbar);
 
-    // ── Table ──────────────────────────────────────────────────────────────
-    m_table = new QTableWidget(this);
+    // ── Stack: empty state (0) + table (1) ────────────────────────────────
+    m_stack = new QStackedWidget(this);
+
+    auto *emptyPage = new QWidget(m_stack);
+    auto *emptyLay  = new QVBoxLayout(emptyPage);
+    emptyLay->setAlignment(Qt::AlignCenter);
+    auto *lblEmptyTitle = new QLabel(tr("Nenhum lançamento cadastrado."), emptyPage);
+    lblEmptyTitle->setAlignment(Qt::AlignCenter);
+    QFont fTitle = lblEmptyTitle->font();
+    fTitle.setPointSize(14);
+    lblEmptyTitle->setFont(fTitle);
+    auto *lblEmptyHint = new QLabel(tr("Clique em \"+ Novo lançamento\" para começar."), emptyPage);
+    lblEmptyHint->setObjectName(QStringLiteral("subtitle"));
+    lblEmptyHint->setAlignment(Qt::AlignCenter);
+    emptyLay->addWidget(lblEmptyTitle);
+    emptyLay->addSpacing(4);
+    emptyLay->addWidget(lblEmptyHint);
+    m_stack->addWidget(emptyPage); // index 0
+
+    m_table = new QTableWidget(m_stack);
     m_table->setSelectionBehavior(QAbstractItemView::SelectItems);
     m_table->setSelectionMode(QAbstractItemView::ExtendedSelection);
     m_table->setEditTriggers(QAbstractItemView::NoEditTriggers);
     m_table->horizontalHeader()->setVisible(false); // we use row 0 as header
     m_table->verticalHeader()->setVisible(false);
     m_table->setAlternatingRowColors(true);
-    root->addWidget(m_table);
+    m_stack->addWidget(m_table); // index 1
+
+    root->addWidget(m_stack);
 
     // ── Connections ────────────────────────────────────────────────────────
     connect(btnNova, &QPushButton::clicked, this, [this]() {
@@ -150,6 +172,7 @@ void EntradasWidget::buildUi()
 void EntradasWidget::recarregar()
 {
     const auto all = LancamentoEntradaRepository().findAll();
+    m_stack->setCurrentIndex(all.isEmpty() ? 0 : 1);
 
     // Determine month range
     QDate first = QDate(QDate::currentDate().year(), QDate::currentDate().month(), 1);

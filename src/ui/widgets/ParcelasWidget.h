@@ -12,6 +12,7 @@ class QTableWidget;
 class QPushButton;
 class QLabel;
 class QHeaderView;
+class QStackedWidget;
 
 // Main view: matrix of compras (rows) × months (columns).
 // Current month is always the first visible column.
@@ -69,10 +70,11 @@ private:
     QList<Cartao>         m_cartoes;
 
     // UI
-    QTableWidget *m_table      = nullptr;
-    QPushButton  *m_btnNova    = nullptr;
-    QPushButton  *m_btnExcluir = nullptr;
-    QLabel       *m_lblStatus  = nullptr;
+    QStackedWidget *m_stack     = nullptr;
+    QTableWidget   *m_table     = nullptr;
+    QPushButton    *m_btnNova   = nullptr;
+    QPushButton    *m_btnExcluir = nullptr;
+    QLabel         *m_lblStatus  = nullptr;
 
     bool m_loading = false; // guard against recursive itemChanged
 

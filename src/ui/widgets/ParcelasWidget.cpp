@@ -27,6 +27,7 @@
 #include <QDebug>
 #include <QApplication>
 #include <QClipboard>
+#include <QStackedWidget>
 #include <algorithm>
 
 #include "core/settings/AppSettings.h"
@@ -80,8 +81,26 @@ void ParcelasWidget::buildUi()
     toolbar->addWidget(m_lblStatus);
     root->addLayout(toolbar);
 
-    // ── Table ───────────────────────────────────────────────────────────────
-    m_table = new QTableWidget(this);
+    // ── Stack: empty state (0) + table (1) ────────────────────────────────
+    m_stack = new QStackedWidget(this);
+
+    auto *emptyPage = new QWidget(m_stack);
+    auto *emptyLay  = new QVBoxLayout(emptyPage);
+    emptyLay->setAlignment(Qt::AlignCenter);
+    auto *lblEmptyTitle = new QLabel(tr("Nenhuma compra cadastrada."), emptyPage);
+    lblEmptyTitle->setAlignment(Qt::AlignCenter);
+    QFont fTitle = lblEmptyTitle->font();
+    fTitle.setPointSize(14);
+    lblEmptyTitle->setFont(fTitle);
+    auto *lblEmptyHint = new QLabel(tr("Clique em \"+ Novo item\" para começar."), emptyPage);
+    lblEmptyHint->setObjectName(QStringLiteral("subtitle"));
+    lblEmptyHint->setAlignment(Qt::AlignCenter);
+    emptyLay->addWidget(lblEmptyTitle);
+    emptyLay->addSpacing(4);
+    emptyLay->addWidget(lblEmptyHint);
+    m_stack->addWidget(emptyPage); // index 0
+
+    m_table = new QTableWidget(m_stack);
     m_table->setAlternatingRowColors(true);
     m_table->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
     m_table->horizontalHeader()->setStretchLastSection(false);
@@ -89,7 +108,9 @@ void ParcelasWidget::buildUi()
     m_table->setSelectionBehavior(QAbstractItemView::SelectRows);
     m_table->setSelectionMode(QAbstractItemView::SingleSelection);
     m_table->setEditTriggers(QAbstractItemView::DoubleClicked);
-    root->addWidget(m_table);
+    m_stack->addWidget(m_table); // index 1
+
+    root->addWidget(m_stack);
 
     connect(m_btnNova,    &QPushButton::clicked, this, &ParcelasWidget::onNovaCompra);
     connect(m_btnExcluir, &QPushButton::clicked, this, &ParcelasWidget::onExcluir);
@@ -177,6 +198,7 @@ void ParcelasWidget::recarregar()
         if (dl > m_lastMonth)  m_lastMonth  = dl;
     }
 
+    m_stack->setCurrentIndex(m_compras.isEmpty() ? 0 : 1);
     populateTable();
     aplicarOrdenacao();
     m_loading = false;

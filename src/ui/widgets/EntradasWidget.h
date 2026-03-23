@@ -9,6 +9,7 @@
 
 class QTableWidget;
 class QPushButton;
+class QStackedWidget;
 
 // Income tab widget — mirrors ParcelasWidget layout.
 // Each month = 4 sub-columns: Fonte | Valor líquido | Data | Obs
@@ -41,8 +42,9 @@ private:
     static const int COL_PER_MONTH = 4; // Fonte | Valor | Data | Obs
     static const int HEADER_ROWS   = 2; // row 0 = mês, row 1 = sub-labels
 
-    QTableWidget *m_table   = nullptr;
-    QPushButton  *m_btnDel  = nullptr;
+    QStackedWidget *m_stack  = nullptr;
+    QTableWidget   *m_table  = nullptr;
+    QPushButton    *m_btnDel = nullptr;
 
     // Data indexed by month: m_data[k] = list of lançamentos for month k
     QList<QList<LancamentoEntrada>> m_data;

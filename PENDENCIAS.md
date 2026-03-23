@@ -30,7 +30,7 @@
 | 32 | Busca/filtro global de transações | 🟡 Média | Baixa | ❌ |
 | 33 | Controle de dívidas e empréstimos | 🟡 Média | Alta | ❌ |
 | 11 | Export: exportar apenas aba ativa | 🟢 Baixa | Média | ❌ |
-| 12 | UX: estado vazio com msg "Clique para adicionar" | 🟢 Baixa | Baixa | ❌ |
+| 12 | UX: estado vazio com msg "Clique para adicionar" | 🟢 Baixa | Baixa | ✅ |
 | 17 | Utilitário calculadora → clipboard | 🟢 Baixa | Baixa | ❌ |
 | 25 | Consultor financeiro IA: gerar prompt preenchido com dados das tabelas p/ colar no ChatGPT/Claude Web; secundário: integrar API direta | 🟢 Baixa | Alta | ❌ |
 | 29 | Gestão de pagadores/recebedores | 🟢 Baixa | Baixa | ❌ |
