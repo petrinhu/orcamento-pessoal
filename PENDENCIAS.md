@@ -7,7 +7,7 @@
 | 3 | Cartões: renomear aba "Parcelas" → "Cartões" | 🔴 Alta | Baixa | ✅ |
 | 4 | Cartões: renomear "Nova compra" → "Novo item" | 🔴 Alta | Baixa | ✅ |
 | 5 | Entradas: labels sub-colunas (linha 1) | 🔴 Alta | Média | ✅ |
-| 14 | Aba gastos: lançamentos avulsos PIX/débito/dinheiro/fixos (a planejar, futuro vínculo c/ outras abas) | 🔴 Alta | Alta | ❌ |
+| 14 | Aba gastos: lançamentos avulsos PIX/débito/dinheiro/fixos (a planejar, futuro vínculo c/ outras abas) | 🔴 Alta | Alta | ✅ |
 | 20 | Aba investimentos | 🔴 Alta | Alta | ❌ |
 | 22 | Aba planejamento e orçamento | 🔴 Alta | Alta | ❌ |
 | 34 | Refactor: extrair acesso a Repository/SQL dos widgets para Services (ParcelasWidget, EntradasWidget, ConfigWidget, ConfigFontesWidget, Dialogs) | 🔴 Alta | Alta | ❌ |
