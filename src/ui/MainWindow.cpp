@@ -33,7 +33,7 @@
 #include <QDateTime>
 #include <QDir>
 #include <QCloseEvent>
-#include <QFrame>
+#include <QToolBar>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -209,15 +209,56 @@ void MainWindow::buildMenuBar()
 
 void MainWindow::buildThemeBar()
 {
-    auto *corner = new QWidget(this);
-    auto *lay    = new QHBoxLayout(corner);
-    lay->setContentsMargins(0, 4, 8, 0);
-    lay->setSpacing(2);
+    // ── Navegação de abas — corner do QTabWidget ───────────────────────────
+    auto *navCorner = new QWidget(this);
+    auto *navLay    = new QHBoxLayout(navCorner);
+    navLay->setContentsMargins(0, 0, 4, 0);
+    navLay->setSpacing(1);
 
-    // Helper: create a toolbar QToolButton
+    auto makeNavBtn = [&](const char *themeIcon, const QString &fallback,
+                          const QString &tip) -> QToolButton * {
+        auto *btn = new QToolButton(navCorner);
+        btn->setAutoRaise(true);
+        btn->setToolTip(tip);
+        const QIcon icon = QIcon::fromTheme(QLatin1String(themeIcon));
+        if (icon.isNull()) {
+            btn->setText(fallback);
+            btn->setToolButtonStyle(Qt::ToolButtonTextOnly);
+        } else {
+            btn->setIcon(icon);
+            btn->setIconSize({16, 16});
+            btn->setToolButtonStyle(Qt::ToolButtonIconOnly);
+        }
+        navLay->addWidget(btn);
+        return btn;
+    };
+
+    auto *btnFirst = makeNavBtn("media-skip-backward", QStringLiteral("⏮"), tr("Primeira aba"));
+    auto *btnPrev  = makeNavBtn("media-seek-backward", QStringLiteral("◀"), tr("Aba anterior"));
+    auto *btnNext  = makeNavBtn("media-seek-forward",  QStringLiteral("▶"), tr("Próxima aba"));
+    auto *btnLast  = makeNavBtn("media-skip-forward",  QStringLiteral("⏭"), tr("Última aba"));
+
+    connect(btnFirst, &QToolButton::clicked, this, [this]() { m_tabs->setCurrentIndex(0); });
+    connect(btnPrev,  &QToolButton::clicked, this, [this]() {
+        m_tabs->setCurrentIndex(qMax(0, m_tabs->currentIndex() - 1));
+    });
+    connect(btnNext,  &QToolButton::clicked, this, [this]() {
+        m_tabs->setCurrentIndex(qMin(m_tabs->count() - 1, m_tabs->currentIndex() + 1));
+    });
+    connect(btnLast,  &QToolButton::clicked, this, [this]() { m_tabs->setCurrentIndex(m_tabs->count() - 1); });
+
+    m_tabs->setCornerWidget(navCorner, Qt::TopRightCorner);
+
+    // ── Toolbar principal — abaixo dos menus ──────────────────────────────
+    auto *toolbar = new QToolBar(this);
+    toolbar->setMovable(false);
+    toolbar->setFloatable(false);
+    toolbar->setIconSize({20, 20});
+    addToolBar(Qt::TopToolBarArea, toolbar);
+
     auto makeBtn = [&](const char *themeIcon, const QString &fallback,
                        const QString &tip, bool enabled = true) -> QToolButton * {
-        auto *btn = new QToolButton(corner);
+        auto *btn = new QToolButton(toolbar);
         btn->setAutoRaise(true);
         btn->setEnabled(enabled);
         btn->setToolTip(tip);
@@ -227,83 +268,38 @@ void MainWindow::buildThemeBar()
             btn->setToolButtonStyle(Qt::ToolButtonTextOnly);
         } else {
             btn->setIcon(icon);
-            btn->setIconSize({18, 18});
+            btn->setIconSize({20, 20});
             btn->setToolButtonStyle(Qt::ToolButtonIconOnly);
         }
+        toolbar->addWidget(btn);
         return btn;
     };
 
-    auto addSep = [&]() {
-        lay->addSpacing(4);
-        auto *sep = new QFrame(corner);
-        sep->setFrameShape(QFrame::VLine);
-        sep->setFixedHeight(16);
-        lay->addWidget(sep);
-        lay->addSpacing(4);
-    };
-
-    // ── Navegação de abas (estilo media player) ────────────────────────────
-    auto *btnFirst = makeBtn("media-skip-backward", QStringLiteral("⏮"), tr("Primeira aba"));
-    auto *btnPrev  = makeBtn("media-seek-backward", QStringLiteral("◀"), tr("Aba anterior"));
-    auto *btnNext  = makeBtn("media-seek-forward",  QStringLiteral("▶"), tr("Próxima aba"));
-    auto *btnLast  = makeBtn("media-skip-forward",  QStringLiteral("⏭"), tr("Última aba"));
-
-    connect(btnFirst, &QToolButton::clicked, this, [this]() {
-        m_tabs->setCurrentIndex(0);
-    });
-    connect(btnPrev, &QToolButton::clicked, this, [this]() {
-        m_tabs->setCurrentIndex(qMax(0, m_tabs->currentIndex() - 1));
-    });
-    connect(btnNext, &QToolButton::clicked, this, [this]() {
-        m_tabs->setCurrentIndex(qMin(m_tabs->count() - 1, m_tabs->currentIndex() + 1));
-    });
-    connect(btnLast, &QToolButton::clicked, this, [this]() {
-        m_tabs->setCurrentIndex(m_tabs->count() - 1);
-    });
-
-    lay->addWidget(btnFirst);
-    lay->addWidget(btnPrev);
-    lay->addWidget(btnNext);
-    lay->addWidget(btnLast);
-
-    addSep();
-
-    // ── Arquivo ────────────────────────────────────────────────────────────
+    // Arquivo
     auto *btnAbrir      = makeBtn("document-open",    QStringLiteral("📂"),  tr("Abrir…"));
     auto *btnSalvar     = makeBtn("document-save",    QStringLiteral("💾"),  tr("Salvar"));
     auto *btnSalvarComo = makeBtn("document-save-as", QStringLiteral("💾+"), tr("Salvar como…"));
-
     connect(btnAbrir,      &QToolButton::clicked, this, &MainWindow::onAbrir);
     connect(btnSalvar,     &QToolButton::clicked, this, &MainWindow::onSalvar);
     connect(btnSalvarComo, &QToolButton::clicked, this, &MainWindow::onSalvarComo);
 
-    lay->addWidget(btnAbrir);
-    lay->addWidget(btnSalvar);
-    lay->addWidget(btnSalvarComo);
+    toolbar->addSeparator();
 
-    addSep();
+    // Funcionalidades (pendentes)
+    makeBtn("edit-find",              QStringLiteral("🔍"), tr("Busca  (em breve)"),        false);
+    makeBtn("go-jump-today",          QStringLiteral("📅"), tr("Hoje  (em breve)"),         false);
+    makeBtn("accessories-calculator", QStringLiteral("🧮"), tr("Calculadora  (em breve)"),  false);
 
-    // ── Funcionalidades (pendentes) ────────────────────────────────────────
-    auto *btnBusca = makeBtn("edit-find",              QStringLiteral("🔍"), tr("Busca  (em breve)"),        false);
-    auto *btnHoje  = makeBtn("go-jump-today",          QStringLiteral("📅"), tr("Hoje  (em breve)"),         false);
-    auto *btnCalc  = makeBtn("accessories-calculator", QStringLiteral("🧮"), tr("Calculadora  (em breve)"),  false);
+    toolbar->addSeparator();
 
-    lay->addWidget(btnBusca);
-    lay->addWidget(btnHoje);
-    lay->addWidget(btnCalc);
-
-    addSep();
-
-    // ── Configurações / Tema / Bloquear ────────────────────────────────────
-    auto *btnConfig   = makeBtn("preferences-system", QStringLiteral("⚙"),  tr("Configurações"));
-    auto *btnBloquear = makeBtn("system-lock-screen", QStringLiteral("🔒"), tr("Bloquear  (em breve)"), false);
-
+    // Configurações / Tema / Bloquear
+    auto *btnConfig = makeBtn("preferences-system", QStringLiteral("⚙"),  tr("Configurações"));
     connect(btnConfig, &QToolButton::clicked, this, &MainWindow::onConfiguracoes);
 
-    m_btnTheme = new QToolButton(corner);
+    m_btnTheme = new QToolButton(toolbar);
     m_btnTheme->setObjectName(QStringLiteral("themeBtn"));
     m_btnTheme->setAutoRaise(true);
-
+    toolbar->addWidget(m_btnTheme);
     connect(m_btnTheme, &QToolButton::clicked, this, [this]() {
         Theme::ThemeMode next;
         switch (Theme::currentMode()) {
@@ -314,12 +310,9 @@ void MainWindow::buildThemeBar()
         applyThemeMode(next);
     });
 
-    lay->addWidget(btnConfig);
-    lay->addWidget(m_btnTheme);
-    lay->addWidget(btnBloquear);
+    makeBtn("system-lock-screen", QStringLiteral("🔒"), tr("Bloquear  (em breve)"), false);
 
     updateThemeButton();
-    menuBar()->setCornerWidget(corner, Qt::TopRightCorner);
 }
 
 void MainWindow::applyThemeMode(Theme::ThemeMode mode)
