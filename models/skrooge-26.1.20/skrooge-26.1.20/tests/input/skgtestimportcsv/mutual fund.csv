@@ -1,5 +1,0 @@
-"date"	"account"	"number"	"mode"	"payee"	"comment"	"quantity"	"unit"	"amount"	"sign"	"category"	"status"	"bookmarked"
-06/12/92	"Janus Twenty Fund"	0	"Buy"		"buy"	10	"JAVLX"	8	"+"		"N"	"N"
-12/31/92	"Janus Twenty Fund"	0	"Reinvest Div. Lg.Term"		"reinvlg"	0.04	"JAVLX"	1	"+"	"Investment Income > Capital Gains"	"N"	"N"
-12/31/92	"Janus Twenty Fund"	0	"Reinvest Div."		"reinvdiv"	0.7	"JAVLX"	1.5	"+"	"Investment Income > Dividends"	"N"	"N"
-12/31/92	"Janus Twenty Fund"	0	"Reinvest Div. Sht. Term"		"reinvsh"	0.7	"JAVLX"	1.5	"+"	"Investment Income > Capital Gains"	"N"	"N"

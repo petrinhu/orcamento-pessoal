@@ -1,7 +1,0 @@
-payee=REGEXPCAP:^(Spartoo)$
-date=REGEXPCAP:^Date : (.*)$
-dateformat=dd/MM/yyyy
-number=REGEXPCAP:^Facture : (.*)$
-mode=SET:Carte
-comment=REGEXP:^Désignation$|LINEOFFSET:4
-amount=REGEXP:^Total TTC$|LINEOFFSET:2|REGEXPCAP:^(.*) .*$

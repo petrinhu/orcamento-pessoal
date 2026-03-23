@@ -1,4 +1,0 @@
-dbs.png
-generali.png
-amundi.png
-urbana.png

@@ -1,7 +1,0 @@
-payee=REGEXPCAP:^(TOPACHAT)-CLUST
-date=REGEXP:^Date facture$|LINEOFFSET:7
-dateformat=dd/MM/yyyy
-number=REGEXP:^Facture$|LINEOFFSET:1
-mode=SET:Carte
-comment=REGEXP:^N° Commande$|LINEOFFSET:7|SET:Commande %1
-amount=REGEXP:^TTC à payer en euros$|LINEOFFSET:3

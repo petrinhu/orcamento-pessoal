@@ -1,5 +1,0 @@
-name: 'CI Tests ArchLinux'
-description: 'Run GnuCash CI tests in an ArchLinux Docker'
-runs:
-  using: 'docker'
-  image: 'Dockerfile'

@@ -1,7 +1,0 @@
-Account 0: Bank: 20041155 Account Number: *******69
-Account 1: Bank: 70110088 Account Number: *******87
-Account 2: Bank: 59010066 Account Number: *******61
-Account 3: Bank: 20041155 Account Number: *******05
-Account 4: Bank: 36010043 Account Number: *******34
-Account 5: Bank: 20041155 Account Number: 535416200
-Account 6: Bank: 70110088 Account Number: *******06

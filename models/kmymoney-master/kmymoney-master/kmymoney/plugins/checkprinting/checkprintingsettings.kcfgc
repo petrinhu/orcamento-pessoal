@@ -1,7 +1,0 @@
-# Code generation options for kconfig_compiler
-File=checkprintingsettings.kcfg
-ClassName=CheckPrintingSettings
-Singleton=true
-Mutators=true
-DefaultValueGetters=true
-# will create the necessary code for setting those variables

@@ -1,7 +1,0 @@
-payee=REGEXPCAP:^(Oxybul) Eveil et Jeux vous remercie
-date=REGEXP:^Date de commande :$|LINEOFFSET:4
-dateformat=dd/MM/yyyy
-number=REGEXPCAP:^FACTURE N° : (.*)$
-mode=SET:Carte
-comment=REGEXP:^N° commande :$|LINEOFFSET:4|SET:Commande %1
-amount=REGEXP:^TOTAL TTC de votre commande$|LINEOFFSET:-3

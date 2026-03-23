@@ -23,6 +23,9 @@ ui_*.h
 *.swo
 *~
 
+# Apps de referência (apenas locais)
+models/
+
 # Dados locais (nunca versionados)
 *.enc
 *.json

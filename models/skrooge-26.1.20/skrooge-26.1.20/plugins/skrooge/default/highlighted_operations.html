@@ -1,5 +1,0 @@
-{% for item in document|table:"v_operation_displayname,t_bookmarked='Y' AND t_template='N' ORDER BY d_date" %}
-<li><a href="skg://Skrooge_operation_plugin/?operationWhereClause=id={{ item|att:"id" }}&title={{ title_highlighted|encode }}&title_icon=bookmarks">{{ item|att:"t_displayname" }}</a></li>
-{% empty %}
-{{ msg_no_highlighted|safe }}
-{% endfor %}

@@ -1,6 +1,0 @@
-# Code generation options for kconfig_compiler
-File=skgimportexport_settings.kcfg
-ClassName=skgimportexport_settings
-Singleton=true
-Mutators=col_background,col_foreground
-# will create the necessary code for setting those variables

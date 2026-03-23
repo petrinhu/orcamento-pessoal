@@ -1,7 +1,0 @@
-payee=REGEXPCAP:^.*(LDLC).*$
-date=REGEXPCAP:^Date de la facture : (.*)$
-dateformat=dd/MM/yyyy
-number=REGEXP:^N° de facture :$|LINEOFFSET:1
-mode=SET:Carte
-comment=REGEXP:^Désignation$|LINEOFFSET:7
-amount=REGEXP:^NET A PAYER|LINEOFFSET:-3

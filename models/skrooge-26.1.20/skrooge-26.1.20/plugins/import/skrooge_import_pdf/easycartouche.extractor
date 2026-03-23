@@ -1,7 +1,0 @@
-payee=REGEXPCAP:^(EasyCartouche) est une marque et un service
-date=REGEXPCAP:^Passée le ([^ ]*) et traitée le
-dateformat=dd/MM/yyyy
-number=REGEXPCAP:^FACTURE n° (.*)$
-mode=SET:Carte
-comment=REGEXPCAP:^Commande n° (.*)$|SET:Commande %1
-amount=REGEXP:^Total TTC$|LINEOFFSET:4

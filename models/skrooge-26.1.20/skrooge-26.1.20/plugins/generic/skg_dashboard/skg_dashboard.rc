@@ -1,8 +1,0 @@
-<!DOCTYPE kpartgui SYSTEM "kpartgui.dtd">
-<kpartgui name="skg_dashboard" version="2">
-<MenuBar>
-<Menu name="edit"><text>Edit</text></Menu>
-</MenuBar>
-<ToolBar name="mainToolBar"><text>Main Toolbar</text>
-</ToolBar>
-</kpartgui>

@@ -1,8 +1,0 @@
-payee=REGEXPCAP:^(Free) Service Abonné$
-date=REGEXPCAP:^Facture n°.* du (.*)$
-dateformat=dd MMM yyyy
-number=REGEXPCAP:^Facture n°(.*) du
-comment=REGEXPCAP:(^Communications de la ligne .*$)
-mode=SET:Prélèvement
-amount=REGEXP:^Total facture$|LINEOFFSET:13
-

@@ -1,8 +1,0 @@
-#!/bin/sh
-#
-# Update all kmymoney templates from gnucash accounts
-#
-# Author: Ralf Habacker <ralf.habacker@freenet.de>
-# 
-echo "To refresh all kmymoney templates from gnucash compile xea2kmt from kmymoney sources and run"
-echo "xea2kmt --no-level1-names --in-dir <gnucash account template dir> --out-dir <kmymoney-template-dir-in-source>"

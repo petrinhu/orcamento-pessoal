@@ -1,6 +1,0 @@
-<center style="background-color:#{{ report.personal_finance_score_details.color }};font-size:xx-large;">{{ report.personal_finance_score_details.value|floatformat }}</center>
-<p>
-= {{ title_networth }} / {{ title_annual_spending }}<br/>
-= {{ report.networth|money|safe }} / {{ report.annual_spending|money|safe }}
-</p>
-<p style="white-space:pre-wrap;">{{ report.personal_finance_score_details.message }}</p>
