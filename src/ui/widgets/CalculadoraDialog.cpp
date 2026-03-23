@@ -11,9 +11,7 @@
 #include <QTabWidget>
 #include <QApplication>
 #include <QClipboard>
-#include <QCheckBox>
 #include <QSettings>
-#include <QWindow>
 #include <QCloseEvent>
 #include <QKeyEvent>
 #include <cmath>
@@ -124,29 +122,12 @@ void CalculadoraDialog::buildTabComum(QWidget *tab)
     vbox->setContentsMargins(4, 8, 4, 4);
     vbox->setSpacing(4);
 
-    // ── expression label + "Sempre visível" checkbox ──────────────────────
-    {
-        auto *row = new QHBoxLayout;
-        row->setSpacing(8);
-
-        m_exprLabel = new QLabel(QString(), tab);
-        m_exprLabel->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-        m_exprLabel->setObjectName(QStringLiteral("subtitle"));
-        m_exprLabel->setMinimumHeight(18);
-
-        m_chkAlwaysOnTop = new QCheckBox(tr("Sempre visível"), tab);
-        m_chkAlwaysOnTop->setToolTip(tr("Manter calculadora sobre todas as outras janelas"));
-        connect(m_chkAlwaysOnTop, &QCheckBox::toggled, this, [this](bool on) {
-            // Use QWindow::setFlag() directly — does NOT recreate the native
-            // window and works with Wayland xdg-toplevel-ext (KDE Plasma 6+).
-            if (QWindow *wh = windowHandle())
-                wh->setFlag(Qt::WindowStaysOnTopHint, on);
-        });
-
-        row->addWidget(m_exprLabel, 1);
-        row->addWidget(m_chkAlwaysOnTop);
-        vbox->addLayout(row);
-    }
+    // ── expression label ───────────────────────────────────────────────────
+    m_exprLabel = new QLabel(QString(), tab);
+    m_exprLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+    m_exprLabel->setObjectName(QStringLiteral("subtitle"));
+    m_exprLabel->setMinimumHeight(18);
+    vbox->addWidget(m_exprLabel);
 
     // ── display + copy button ──────────────────────────────────────────────
     {

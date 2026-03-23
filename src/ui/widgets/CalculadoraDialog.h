@@ -2,7 +2,6 @@
 #include <QDialog>
 #include <QStringList>
 
-class QCheckBox;
 class QKeyEvent;
 class QLineEdit;
 class QLabel;
@@ -53,10 +52,9 @@ private:
     [[nodiscard]] double  aplicarOp(double a, double b, QChar op) const;
 
     // ── UI ────────────────────────────────────────────────────────────────
-    QLineEdit   *m_display        = nullptr;
-    QLabel      *m_exprLabel      = nullptr;
-    QListWidget *m_historico      = nullptr;
-    QCheckBox   *m_chkAlwaysOnTop = nullptr; // "Sempre visível" toggle
+    QLineEdit   *m_display   = nullptr;
+    QLabel      *m_exprLabel = nullptr;
+    QListWidget *m_historico = nullptr;
 
     // ── State machine ─────────────────────────────────────────────────────
     double  m_reg      = 0.0;   // stored operand (left side)
