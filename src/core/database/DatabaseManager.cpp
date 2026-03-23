@@ -199,6 +199,21 @@ void DatabaseManager::createSchema()
             criado_em   TEXT    NOT NULL
         )
     )"));
+
+    q.exec(QStringLiteral(R"(
+        CREATE TABLE IF NOT EXISTS lancamentos_gastos (
+            id          INTEGER PRIMARY KEY AUTOINCREMENT,
+            mes         INTEGER NOT NULL,
+            ano         INTEGER NOT NULL,
+            dia         INTEGER NOT NULL DEFAULT 1,
+            descricao   TEXT    NOT NULL DEFAULT '',
+            categoria   TEXT    NOT NULL DEFAULT '',
+            tipo_pgto   TEXT    NOT NULL DEFAULT 'outro',
+            valor       INTEGER NOT NULL DEFAULT 0,
+            obs         TEXT    NOT NULL DEFAULT '',
+            criado_em   TEXT    NOT NULL
+        )
+    )"));
 }
 
 bool DatabaseManager::encryptAndSave(const QString &srcDbPath,

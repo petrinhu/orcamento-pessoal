@@ -86,6 +86,9 @@ set(SOURCES
     src/ui/widgets/HelpDialog.cpp
     src/ui/widgets/EntradasWidget.cpp
     src/ui/widgets/LancamentoEntradaDialog.cpp
+    src/ui/widgets/GastosWidget.cpp
+    src/ui/widgets/GastoDialog.cpp
+    src/repositories/GastoAvulsoRepository.cpp
     src/ui/widgets/ConfigFontesWidget.cpp
     src/ui/widgets/CompraDetailPanel.cpp
     src/ui/widgets/AmortizacaoDialog.cpp

@@ -1,0 +1,503 @@
+#include "GastosWidget.h"
+#include "GastoDialog.h"
+#include "repositories/GastoAvulsoRepository.h"
+#include "core/settings/AppSettings.h"
+
+#include <QLabel>
+#include <QStackedWidget>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QTableWidget>
+#include <QTableWidgetItem>
+#include <QHeaderView>
+#include <QPushButton>
+#include <QApplication>
+#include <QClipboard>
+#include <QLocale>
+#include <QMenu>
+#include <QMessageBox>
+#include <QDate>
+#include <QFont>
+#include <QScrollBar>
+#include <QShortcut>
+#include <algorithm>
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+static QString formatMesColuna(QDate d)
+{
+    const bool enIntl =
+        AppSettings::instance().language() == AppSettings::Language::EnIntl;
+    const QLocale loc = enIntl
+        ? QLocale(QLocale::English,    QLocale::UnitedStates)
+        : QLocale(QLocale::Portuguese, QLocale::Brazil);
+    QString s = loc.toString(d, QStringLiteral("MMM/yy"));
+    s.remove(u'.');
+    if (!s.isEmpty()) s[0] = s[0].toUpper();
+    return s;
+}
+
+static QString formatCentavos(qint64 c)
+{
+    const qint64 abs_c = c < 0 ? -c : c;
+    return QStringLiteral("R$ %1%2,%3")
+        .arg(c < 0 ? QStringLiteral("-") : QString())
+        .arg(abs_c / 100)
+        .arg(abs_c % 100, 2, 10, QLatin1Char('0'));
+}
+
+static QTableWidgetItem *readOnlyItem(const QString &text)
+{
+    auto *item = new QTableWidgetItem(text);
+    item->setFlags(item->flags() & ~Qt::ItemIsEditable);
+    return item;
+}
+
+// ── Construction ──────────────────────────────────────────────────────────────
+
+GastosWidget::GastosWidget(QWidget *parent)
+    : QWidget(parent)
+{
+    buildUi();
+    recarregar();
+}
+
+void GastosWidget::buildUi()
+{
+    auto *root = new QVBoxLayout(this);
+    root->setContentsMargins(0, 0, 0, 0);
+    root->setSpacing(0);
+
+    // ── Toolbar ────────────────────────────────────────────────────────────
+    auto *toolbar = new QHBoxLayout;
+    toolbar->setContentsMargins(8, 8, 8, 4);
+    toolbar->setSpacing(8);
+
+    auto *btnNova = new QPushButton(tr("+ Novo gasto"), this);
+    btnNova->setObjectName(QStringLiteral("primary"));
+    m_btnDel = new QPushButton(tr("Excluir"), this);
+    m_btnDel->setEnabled(false);
+    m_btnOrg = new QPushButton(tr("Organizar por ▾"), this);
+    m_btnOrg->setToolTip(tr("Ordenar lançamentos dentro de cada mês"));
+
+    toolbar->addWidget(btnNova);
+    toolbar->addWidget(m_btnDel);
+    toolbar->addWidget(m_btnOrg);
+    toolbar->addStretch();
+    root->addLayout(toolbar);
+
+    // ── Stack: empty state (0) + table (1) ────────────────────────────────
+    m_stack = new QStackedWidget(this);
+
+    auto *emptyPage = new QWidget(m_stack);
+    auto *emptyLay  = new QVBoxLayout(emptyPage);
+    emptyLay->setAlignment(Qt::AlignCenter);
+    auto *lblTitle = new QLabel(tr("Nenhum gasto cadastrado."), emptyPage);
+    lblTitle->setAlignment(Qt::AlignCenter);
+    QFont fTitle = lblTitle->font();
+    fTitle.setPointSize(14);
+    lblTitle->setFont(fTitle);
+    auto *lblHint = new QLabel(tr("Clique em \"+ Novo gasto\" para começar."), emptyPage);
+    lblHint->setObjectName(QStringLiteral("subtitle"));
+    lblHint->setAlignment(Qt::AlignCenter);
+    emptyLay->addWidget(lblTitle);
+    emptyLay->addSpacing(4);
+    emptyLay->addWidget(lblHint);
+    m_stack->addWidget(emptyPage); // index 0
+
+    m_table = new QTableWidget(m_stack);
+    m_table->setSelectionBehavior(QAbstractItemView::SelectItems);
+    m_table->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    m_table->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    m_table->horizontalHeader()->setVisible(false);
+    m_table->verticalHeader()->setVisible(false);
+    m_table->setAlternatingRowColors(true);
+    m_stack->addWidget(m_table); // index 1
+
+    root->addWidget(m_stack);
+
+    // ── Connections ────────────────────────────────────────────────────────
+    connect(btnNova, &QPushButton::clicked, this, [this]() {
+        const QDate targetMonth = m_numMonths > 0
+            ? m_firstMonth : QDate::currentDate();
+        GastoAvulso empty;
+        GastoDialog dlg(empty, targetMonth.month(), targetMonth.year(),
+                        GastoAvulsoRepository().categorias(), this);
+        if (dlg.exec() != QDialog::Accepted) return;
+        GastoAvulsoRepository repo;
+        for (auto g : dlg.gastos())
+            repo.insert(g);
+        recarregar();
+        emit dadosAlterados();
+    });
+
+    connect(m_btnDel, &QPushButton::clicked, this, [this]() {
+        QSet<int> ids;
+        for (auto *item : m_table->selectedItems()) {
+            const int row = item->row();
+            const int col = item->column();
+            if (row < HEADER_ROWS || row == m_table->rowCount() - 1) continue;
+            const int k       = col / COL_PER_MONTH;
+            const int dataRow = row - HEADER_ROWS;
+            if (k < 0 || k >= m_numMonths) continue;
+            const auto &list = m_data[k];
+            if (dataRow < list.size() && list[dataRow].id > 0)
+                ids.insert(list[dataRow].id);
+        }
+        if (ids.isEmpty()) return;
+        if (QMessageBox::question(this, tr("Excluir"),
+                tr("Excluir %1 gasto(s)?").arg(ids.size()))
+            != QMessageBox::Yes) return;
+        GastoAvulsoRepository repo;
+        for (int id : std::as_const(ids))
+            repo.remove(id);
+        recarregar();
+        emit dadosAlterados();
+    });
+
+    connect(m_btnOrg, &QPushButton::clicked, this, &GastosWidget::onOrganizarPor);
+    connect(m_table, &QTableWidget::cellClicked, this, &GastosWidget::onCellClicked);
+    connect(m_table->selectionModel(), &QItemSelectionModel::selectionChanged,
+            this, [this]() {
+                m_btnDel->setEnabled(!m_table->selectedItems().isEmpty());
+            });
+
+    // ── Keyboard navigation ────────────────────────────────────────────────
+    auto *scLeft = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_Left),
+                                 this, nullptr, nullptr,
+                                 Qt::WidgetWithChildrenShortcut);
+    connect(scLeft, &QShortcut::activated, this, [this]() { navegarMes(-1); });
+
+    auto *scRight = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_Right),
+                                  this, nullptr, nullptr,
+                                  Qt::WidgetWithChildrenShortcut);
+    connect(scRight, &QShortcut::activated, this, [this]() { navegarMes(+1); });
+}
+
+// ── Data loading ──────────────────────────────────────────────────────────────
+
+void GastosWidget::recarregar()
+{
+    const auto all = GastoAvulsoRepository().findAll();
+    m_stack->setCurrentIndex(all.isEmpty() ? 0 : 1);
+
+    QDate first = QDate(QDate::currentDate().year(), QDate::currentDate().month(), 1);
+    QDate last  = first.addMonths(2);
+    for (const auto &g : all) {
+        const QDate d(g.ano, g.mes, 1);
+        if (d < first) first = d;
+        if (d > last)  last  = d;
+    }
+
+    m_firstMonth = first;
+    m_numMonths  = (last.year()  - first.year())  * 12
+                 + (last.month() - first.month()) + 1;
+
+    m_data.clear();
+    m_data.resize(m_numMonths);
+    for (const auto &g : all) {
+        const int k = (g.ano - first.year()) * 12 + (g.mes - first.month());
+        if (k >= 0 && k < m_numMonths)
+            m_data[k].append(g);
+    }
+
+    // Sort within each month
+    if (m_sortField != SortFieldGastos::None) {
+        for (auto &list : m_data) {
+            std::sort(list.begin(), list.end(),
+                [this](const GastoAvulso &a, const GastoAvulso &b) {
+                    bool less = false;
+                    switch (m_sortField) {
+                    case SortFieldGastos::Descricao:
+                        less = a.descricao.compare(b.descricao, Qt::CaseInsensitive) < 0; break;
+                    case SortFieldGastos::Categoria:
+                        less = a.categoria.compare(b.categoria, Qt::CaseInsensitive) < 0; break;
+                    case SortFieldGastos::Tipo:
+                        less = a.tipoPgto.compare(b.tipoPgto, Qt::CaseInsensitive) < 0; break;
+                    case SortFieldGastos::Valor:
+                        less = a.valor < b.valor; break;
+                    case SortFieldGastos::Data:
+                        less = QDate(a.ano, a.mes, a.dia) < QDate(b.ano, b.mes, b.dia); break;
+                    default: break;
+                    }
+                    return m_sortAsc ? less : !less;
+                });
+        }
+    }
+
+    m_maxRows = 2;
+    for (const auto &list : m_data)
+        m_maxRows = qMax(m_maxRows, list.size() + 2);
+
+    populateTable();
+
+    // Status bar — total do mês atual
+    const QDate cur(QDate::currentDate().year(), QDate::currentDate().month(), 1);
+    const int kCur = (cur.year() - m_firstMonth.year()) * 12
+                   + (cur.month() - m_firstMonth.month());
+    qint64 totalMes = 0;
+    if (kCur >= 0 && kCur < m_numMonths)
+        for (const auto &g : m_data[kCur])
+            totalMes += g.valor;
+    emit statusAtualizado(tr("Gastos %1: %2")
+        .arg(cur.toString(QStringLiteral("MMM/yy")))
+        .arg(formatCentavos(totalMes)));
+}
+
+void GastosWidget::populateTable()
+{
+    m_table->blockSignals(true);
+
+    const int totalCols = m_numMonths * COL_PER_MONTH;
+    const int totalRows = HEADER_ROWS + m_maxRows + 1;
+
+    m_table->setRowCount(totalRows);
+    m_table->setColumnCount(totalCols);
+
+    // ── Row 0: Month headers ───────────────────────────────────────────────
+    for (int k = 0; k < m_numMonths; ++k) {
+        const QDate d = m_firstMonth.addMonths(k);
+        const int baseCol = k * COL_PER_MONTH;
+        auto *hdr = readOnlyItem(formatMesColuna(d));
+        QFont f = hdr->font(); f.setBold(true);
+        hdr->setFont(f);
+        hdr->setTextAlignment(Qt::AlignCenter);
+        m_table->setItem(0, baseCol, hdr);
+        m_table->setSpan(0, baseCol, 1, COL_PER_MONTH);
+    }
+    m_table->setRowHeight(0, 28);
+
+    // ── Row 1: Sub-column labels ───────────────────────────────────────────
+    static const char* const kSubLabels[COL_PER_MONTH] = {
+        QT_TR_NOOP("Descrição"), QT_TR_NOOP("Categoria"),
+        QT_TR_NOOP("Tipo"),      QT_TR_NOOP("Valor"),
+        QT_TR_NOOP("Data"),      QT_TR_NOOP("Obs")
+    };
+    for (int k = 0; k < m_numMonths; ++k) {
+        for (int c = 0; c < COL_PER_MONTH; ++c) {
+            auto *it = readOnlyItem(tr(kSubLabels[c]));
+            QFont f = it->font(); f.setBold(true); f.setPointSize(11);
+            it->setFont(f);
+            m_table->setItem(1, k * COL_PER_MONTH + c, it);
+        }
+    }
+    m_table->setRowHeight(1, 24);
+
+    // ── Data rows ──────────────────────────────────────────────────────────
+    for (int dataRow = 0; dataRow < m_maxRows; ++dataRow) {
+        const int tableRow = dataRow + HEADER_ROWS;
+        m_table->setRowHeight(tableRow, 28);
+
+        for (int k = 0; k < m_numMonths; ++k) {
+            const int baseCol = k * COL_PER_MONTH;
+            const auto &list  = m_data[k];
+
+            if (dataRow < list.size()) {
+                const auto &g = list[dataRow];
+                const QDate d(g.ano, g.mes, g.dia);
+
+                // Col 0: Descrição (stores id in UserRole)
+                auto *itDesc = readOnlyItem(g.descricao);
+                itDesc->setData(Qt::UserRole, g.id);
+                m_table->setItem(tableRow, baseCol + 0, itDesc);
+
+                // Col 1: Categoria
+                m_table->setItem(tableRow, baseCol + 1, readOnlyItem(g.categoria));
+
+                // Col 2: Tipo
+                m_table->setItem(tableRow, baseCol + 2,
+                    readOnlyItem(tipoPgtoLabel(g.tipoPgto)));
+
+                // Col 3: Valor
+                auto *itValor = readOnlyItem(formatCentavos(g.valor));
+                itValor->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+                m_table->setItem(tableRow, baseCol + 3, itValor);
+
+                // Col 4: Data
+                m_table->setItem(tableRow, baseCol + 4,
+                    readOnlyItem(d.toString(QStringLiteral("dd/MM/yy"))));
+
+                // Col 5: Obs
+                auto *itObs = readOnlyItem(g.obs);
+                itObs->setToolTip(g.obs);
+                m_table->setItem(tableRow, baseCol + 5, itObs);
+
+            } else {
+                for (int c = 0; c < COL_PER_MONTH; ++c)
+                    m_table->setItem(tableRow, baseCol + c, readOnlyItem({}));
+            }
+        }
+    }
+
+    // ── Total row ──────────────────────────────────────────────────────────
+    const int totalRow = totalRows - 1;
+    m_table->setRowHeight(totalRow, 28);
+
+    for (int k = 0; k < m_numMonths; ++k) {
+        const int baseCol = k * COL_PER_MONTH;
+
+        auto *itLabel = readOnlyItem(tr("TOTAL"));
+        QFont f = itLabel->font(); f.setBold(true);
+        itLabel->setFont(f);
+        m_table->setItem(totalRow, baseCol + 0, itLabel);
+
+        qint64 sum = 0;
+        for (const auto &g : m_data[k]) sum += g.valor;
+        auto *itSum = readOnlyItem(formatCentavos(sum));
+        QFont fs = itSum->font(); fs.setBold(true);
+        itSum->setFont(fs);
+        itSum->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        m_table->setItem(totalRow, baseCol + 3, itSum); // col Valor
+
+        for (int c : {1, 2, 4, 5})
+            m_table->setItem(totalRow, baseCol + c, readOnlyItem({}));
+    }
+
+    // Auto-expand columns
+    for (int c = 0; c < m_table->columnCount(); ++c) {
+        const int prev = m_table->columnWidth(c);
+        m_table->resizeColumnToContents(c);
+        if (m_table->columnWidth(c) < prev)
+            m_table->setColumnWidth(c, prev);
+    }
+
+    m_table->blockSignals(false);
+}
+
+// ── Cell interaction ──────────────────────────────────────────────────────────
+
+void GastosWidget::onCellClicked(int row, int col)
+{
+    if (row < HEADER_ROWS) return;
+    if (col < 0 || col >= m_table->columnCount()) return;
+    const int totalRow = m_table->rowCount() - 1;
+    if (row == totalRow) return;
+
+    const int k       = col / COL_PER_MONTH;
+    const int dataRow = row - HEADER_ROWS;
+    const QDate monthDate = m_firstMonth.addMonths(k);
+    GastoAvulso existing  = gastoDaLinha(dataRow, k);
+
+    GastoDialog dlg(existing, monthDate.month(), monthDate.year(),
+                    GastoAvulsoRepository().categorias(), this);
+    if (dlg.exec() != QDialog::Accepted) return;
+
+    GastoAvulsoRepository repo;
+    for (auto g : dlg.gastos()) {
+        if (g.id > 0) repo.update(g);
+        else          repo.insert(g);
+    }
+    recarregar();
+    emit dadosAlterados();
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+GastoAvulso GastosWidget::gastoDaLinha(int dataRow, int monthIndex) const
+{
+    if (monthIndex < 0 || monthIndex >= m_numMonths) return {};
+    const auto &list = m_data[monthIndex];
+    if (dataRow < 0 || dataRow >= list.size()) return {};
+    return list[dataRow];
+}
+
+// ── Sort ──────────────────────────────────────────────────────────────────────
+
+void GastosWidget::onOrganizarPor()
+{
+    QMenu menu(this);
+
+    auto addOpt = [&](const QString &label, SortFieldGastos field, bool asc) {
+        auto *act = menu.addAction(label);
+        act->setCheckable(true);
+        act->setChecked(m_sortField == field && m_sortAsc == asc);
+        connect(act, &QAction::triggered, this, [this, field, asc]() {
+            m_sortField = field;
+            m_sortAsc   = asc;
+            recarregar();
+        });
+    };
+
+    addOpt(tr("Descrição A→Z"),   SortFieldGastos::Descricao, true);
+    addOpt(tr("Descrição Z→A"),   SortFieldGastos::Descricao, false);
+    menu.addSeparator();
+    addOpt(tr("Categoria A→Z"),   SortFieldGastos::Categoria, true);
+    addOpt(tr("Categoria Z→A"),   SortFieldGastos::Categoria, false);
+    menu.addSeparator();
+    addOpt(tr("Tipo A→Z"),        SortFieldGastos::Tipo, true);
+    addOpt(tr("Tipo Z→A"),        SortFieldGastos::Tipo, false);
+    menu.addSeparator();
+    addOpt(tr("Valor ↑"),         SortFieldGastos::Valor, true);
+    addOpt(tr("Valor ↓"),         SortFieldGastos::Valor, false);
+    menu.addSeparator();
+    addOpt(tr("Data ↑"),          SortFieldGastos::Data, true);
+    addOpt(tr("Data ↓"),          SortFieldGastos::Data, false);
+    menu.addSeparator();
+    auto *actNone = menu.addAction(tr("Sem ordenação"));
+    actNone->setCheckable(true);
+    actNone->setChecked(m_sortField == SortFieldGastos::None);
+    connect(actNone, &QAction::triggered, this, [this]() {
+        m_sortField = SortFieldGastos::None;
+        recarregar();
+    });
+
+    menu.exec(m_btnOrg->mapToGlobal(QPoint(0, m_btnOrg->height())));
+}
+
+// ── Clipboard ─────────────────────────────────────────────────────────────────
+
+void GastosWidget::copiar()
+{
+    const auto items = m_table->selectedItems();
+    if (items.isEmpty()) return;
+    int minRow = items.first()->row(), maxRow = items.first()->row();
+    int minCol = items.first()->column(), maxCol = items.first()->column();
+    for (auto *it : items) {
+        minRow = qMin(minRow, it->row()); maxRow = qMax(maxRow, it->row());
+        minCol = qMin(minCol, it->column()); maxCol = qMax(maxCol, it->column());
+    }
+    QString tsv;
+    for (int r = minRow; r <= maxRow; ++r) {
+        QStringList cols;
+        for (int c = minCol; c <= maxCol; ++c) {
+            auto *it = m_table->item(r, c);
+            cols << (it ? it->text() : QString());
+        }
+        tsv += cols.join(QLatin1Char('\t')) + QLatin1Char('\n');
+    }
+    QApplication::clipboard()->setText(tsv);
+}
+
+void GastosWidget::selecionarTudo()
+{
+    m_table->selectAll();
+}
+
+// ── Navigation ────────────────────────────────────────────────────────────────
+
+void GastosWidget::scrollParaMesAtual()
+{
+    if (!m_table || m_numMonths == 0) return;
+    const QDate cur(QDate::currentDate().year(), QDate::currentDate().month(), 1);
+    int k = (cur.year() - m_firstMonth.year()) * 12 + (cur.month() - m_firstMonth.month());
+    k = qBound(0, k, m_numMonths - 1);
+    m_table->horizontalScrollBar()->setValue(
+        m_table->horizontalHeader()->sectionPosition(k * COL_PER_MONTH));
+}
+
+void GastosWidget::navegarMes(int delta)
+{
+    if (!m_table || m_numMonths == 0) return;
+    const QHeaderView *hh = m_table->horizontalHeader();
+    const int currentX = m_table->horizontalScrollBar()->value();
+    int visibleMonth = 0;
+    for (int k = 0; k < m_numMonths; ++k) {
+        if (hh->sectionPosition(k * COL_PER_MONTH) >= currentX) {
+            visibleMonth = k;
+            break;
+        }
+    }
+    const int targetMonth = qBound(0, visibleMonth + delta, m_numMonths - 1);
+    m_table->horizontalScrollBar()->setValue(
+        hh->sectionPosition(targetMonth * COL_PER_MONTH));
+}

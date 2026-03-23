@@ -25,6 +25,8 @@ ui_*.h
 
 # Apps de referência (apenas locais)
 models/
+!src/models/
+!src/models/**
 
 # Dados locais (nunca versionados)
 *.enc

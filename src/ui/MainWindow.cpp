@@ -1,6 +1,7 @@
 #include "MainWindow.h"
 #include "widgets/ParcelasWidget.h"
 #include "widgets/EntradasWidget.h"
+#include "widgets/GastosWidget.h"
 #include "widgets/PrefsWidget.h"
 #include "widgets/AboutDialog.h"
 #include "widgets/HelpDialog.h"
@@ -48,9 +49,11 @@ void MainWindow::buildUi()
 {
     m_parcelas = new ParcelasWidget(this);
     m_entradas = new EntradasWidget(this);
+    m_gastos   = new GastosWidget(this);
     m_tabs     = new QTabWidget(this);
     m_tabs->addTab(m_parcelas, tr("Cartões"));
     m_tabs->addTab(m_entradas, tr("Entradas"));
+    m_tabs->addTab(m_gastos,   tr("Gastos"));
     setCentralWidget(m_tabs);
 
     buildMenuBar();
@@ -75,6 +78,10 @@ void MainWindow::buildUi()
             m_entradas, &EntradasWidget::recarregar);
     connect(m_entradas, &EntradasWidget::dadosAlterados,
             this, [this]() { m_dirty = true; });
+    connect(m_gastos, &GastosWidget::dadosAlterados,
+            m_gastos, &GastosWidget::recarregar);
+    connect(m_gastos, &GastosWidget::dadosAlterados,
+            this, [this]() { m_dirty = true; });
 
     // Status bar totals
     connect(m_parcelas, &ParcelasWidget::statusAtualizado,
@@ -87,9 +94,15 @@ void MainWindow::buildUi()
                 if (m_tabs->currentWidget() == m_entradas)
                     m_statusTotal->setText(msg + QStringLiteral("  "));
             });
+    connect(m_gastos, &GastosWidget::statusAtualizado,
+            this, [this](const QString &msg) {
+                if (m_tabs->currentWidget() == m_gastos)
+                    m_statusTotal->setText(msg + QStringLiteral("  "));
+            });
     connect(m_tabs, &QTabWidget::currentChanged, this, [this]() {
-        if (m_tabs->currentWidget() == m_parcelas) m_parcelas->recarregar();
-        else                                        m_entradas->recarregar();
+        if      (m_tabs->currentWidget() == m_parcelas) m_parcelas->recarregar();
+        else if (m_tabs->currentWidget() == m_entradas) m_entradas->recarregar();
+        else if (m_tabs->currentWidget() == m_gastos)   m_gastos->recarregar();
     });
 
     // ── Auto-save timer ────────────────────────────────────────────────────
@@ -290,10 +303,9 @@ void MainWindow::buildThemeBar()
     makeBtn("edit-find",              QStringLiteral("🔍"), tr("Busca  (em breve)"),        false);
     auto *btnHoje = makeBtn("go-jump-today", QStringLiteral("📅"), tr("Hoje"));
     connect(btnHoje, &QToolButton::clicked, this, [this]() {
-        if (m_tabs->currentWidget() == m_parcelas)
-            m_parcelas->scrollParaMesAtual();
-        else if (m_tabs->currentWidget() == m_entradas)
-            m_entradas->scrollParaMesAtual();
+        if      (m_tabs->currentWidget() == m_parcelas) m_parcelas->scrollParaMesAtual();
+        else if (m_tabs->currentWidget() == m_entradas) m_entradas->scrollParaMesAtual();
+        else if (m_tabs->currentWidget() == m_gastos)   m_gastos->scrollParaMesAtual();
     });
     auto *btnCalc = makeBtn("accessories-calculator", QStringLiteral("🧮"), tr("Calculadora"));
     connect(btnCalc, &QToolButton::clicked, this, [this]() {

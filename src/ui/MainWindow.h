@@ -5,6 +5,7 @@
 
 class ParcelasWidget;
 class EntradasWidget;
+class GastosWidget;
 class PrefsWidget;
 class QTabWidget;
 class QLabel;
@@ -49,6 +50,7 @@ private:
 
     ParcelasWidget *m_parcelas   = nullptr;
     EntradasWidget *m_entradas   = nullptr;
+    GastosWidget   *m_gastos     = nullptr;
     QTabWidget     *m_tabs       = nullptr;
     QLabel         *m_statusUser  = nullptr;
     QLabel         *m_statusTotal = nullptr;
