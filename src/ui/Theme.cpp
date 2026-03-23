@@ -222,7 +222,6 @@ static QString gerarQss()
             color: %1;
             font-size: 12px;
         }
-        QHeaderView::section:last { border-right: none; }
         QHeaderView::section:hover { color: %4; }
         /* ── Labels ── */
         QLabel#title    { font-size: 16px; font-weight: 600; }

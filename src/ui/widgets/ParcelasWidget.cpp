@@ -32,6 +32,21 @@
 #include "core/settings/AppSettings.h"
 #include "services/CurrencyService.h"
 
+#include <QLocale>
+
+static QString formatMesColuna(QDate d)
+{
+    const bool enIntl =
+        AppSettings::instance().language() == AppSettings::Language::EnIntl;
+    const QLocale loc = enIntl
+        ? QLocale(QLocale::English,    QLocale::UnitedStates)
+        : QLocale(QLocale::Portuguese, QLocale::Brazil);
+    QString s = loc.toString(d, QStringLiteral("MMM/yy"));
+    s.remove(u'.');
+    if (!s.isEmpty()) s[0] = s[0].toUpper();
+    return s;
+}
+
 ParcelasWidget::ParcelasWidget(QWidget *parent)
     : QWidget(parent)
 {
@@ -205,7 +220,7 @@ void ParcelasWidget::populateTable()
             << QStringLiteral("Total pago");
     for (int k = 0; k < totalMonths; ++k) {
         const QDate d = m_firstMonth.addMonths(k);
-        headers << d.toString(QStringLiteral("MMM/yy"));
+        headers << formatMesColuna(d);
     }
     m_table->setHorizontalHeaderLabels(headers);
 
@@ -213,7 +228,7 @@ void ParcelasWidget::populateTable()
     const int curCol = columnForDate(m_currentMonth);
     if (curCol >= 0) {
         auto *hdr = new QTableWidgetItem(
-            m_currentMonth.toString(QStringLiteral("MMM/yy")) + QStringLiteral(" ●"));
+            formatMesColuna(m_currentMonth) + QStringLiteral(" ●"));
         m_table->setHorizontalHeaderItem(curCol, hdr);
     }
 
@@ -421,7 +436,7 @@ void ParcelasWidget::onOrganizarPor()
     colNames << QStringLiteral("—") << QStringLiteral("Descrição")
              << QStringLiteral("Cartão") << QStringLiteral("Total");
     for (int k = 0; k < m_table->columnCount() - COL_FIRST_MONTH; ++k)
-        colNames << m_firstMonth.addMonths(k).toString(QStringLiteral("MMM/yy"));
+        colNames << formatMesColuna(m_firstMonth.addMonths(k));
 
     auto makeCombo = [&]() {
         auto *cb = new QComboBox(&dlg);
