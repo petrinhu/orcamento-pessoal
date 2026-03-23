@@ -183,7 +183,7 @@ void AddCompraDialog::buildTabJuros(QWidget *tab)
         lockBtn = new QPushButton(locked ? QStringLiteral("✏️") : QStringLiteral("🚫"), w);
         lockBtn->setCheckable(true);
         lockBtn->setChecked(locked);
-        lockBtn->setFixedWidth(32);
+        lockBtn->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
         lockBtn->setToolTip(tr("✏️ campo editável (entrada)   🚫 campo calculado automaticamente\n"
                                "Clique para alternar"));
         h->addWidget(lockBtn);
