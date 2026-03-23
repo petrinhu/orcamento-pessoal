@@ -11,6 +11,7 @@
 #include "services/ExportService.h"
 #include "repositories/CompraRepository.h"
 #include "repositories/ParcelaRepository.h"
+#include "core/CalculadoraHub.h"
 
 #include <QLabel>
 #include <QTabWidget>
@@ -288,7 +289,10 @@ void MainWindow::buildThemeBar()
     // Funcionalidades (pendentes)
     makeBtn("edit-find",              QStringLiteral("🔍"), tr("Busca  (em breve)"),        false);
     makeBtn("go-jump-today",          QStringLiteral("📅"), tr("Hoje  (em breve)"),         false);
-    makeBtn("accessories-calculator", QStringLiteral("🧮"), tr("Calculadora  (em breve)"),  false);
+    auto *btnCalc = makeBtn("accessories-calculator", QStringLiteral("🧮"), tr("Calculadora"));
+    connect(btnCalc, &QToolButton::clicked, this, [this]() {
+        CalculadoraHub::instance().mostrarGlobal(this);
+    });
 
     toolbar->addSeparator();
 

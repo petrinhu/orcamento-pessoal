@@ -1,0 +1,46 @@
+#include "CalculadoraHub.h"
+#include "ui/widgets/CalculadoraDialog.h"
+#include "services/CalculadoraService.h"
+
+#include <QLineEdit>
+
+CalculadoraHub &CalculadoraHub::instance()
+{
+    static CalculadoraHub inst;
+    return inst;
+}
+
+CalculadoraHub::CalculadoraHub() : QObject(nullptr) {}
+
+void CalculadoraHub::ensureDialog()
+{
+    if (!m_dialog) {
+        m_dialog = new CalculadoraDialog(nullptr); // top-level, non-modal
+        connect(m_dialog, &CalculadoraDialog::resultadoDisponivel,
+                this, &CalculadoraHub::onResultado);
+    }
+}
+
+void CalculadoraHub::mostrar(QLineEdit *invoker, QWidget *parent)
+{
+    Q_UNUSED(parent)
+    ensureDialog();
+    m_invoker = invoker;
+    if (invoker && !invoker->text().trimmed().isEmpty())
+        m_dialog->setValorInicial(CalculadoraService::parsearDisplay(invoker->text()));
+    m_dialog->show();
+    m_dialog->raise();
+    m_dialog->activateWindow();
+}
+
+void CalculadoraHub::mostrarGlobal(QWidget *parent)
+{
+    mostrar(nullptr, parent);
+}
+
+void CalculadoraHub::onResultado(double valor)
+{
+    if (m_invoker)
+        m_invoker->setText(CalculadoraService::formatarDisplay(valor, 2));
+    emit resultadoDisponivel(valor);
+}

@@ -51,6 +51,9 @@ set(SOURCES
     # Core — session
     src/core/session/UserSession.cpp
 
+    # Core — calculator hub
+    src/core/CalculadoraHub.cpp
+
     # Core — settings
     src/core/settings/AppSettings.cpp
 
@@ -64,6 +67,7 @@ set(SOURCES
     src/repositories/LancamentoEntradaRepository.cpp
 
     # Services
+    src/services/CalculadoraService.cpp
     src/services/ParcelaService.cpp
     src/services/CurrencyService.cpp
     src/services/ImportService.cpp
@@ -85,6 +89,8 @@ set(SOURCES
     src/ui/widgets/ConfigFontesWidget.cpp
     src/ui/widgets/CompraDetailPanel.cpp
     src/ui/widgets/AmortizacaoDialog.cpp
+    src/ui/widgets/CalculadoraEdit.cpp
+    src/ui/widgets/CalculadoraDialog.cpp
 )
 
 set(RESOURCES

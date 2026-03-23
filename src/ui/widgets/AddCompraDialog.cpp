@@ -1,4 +1,5 @@
 #include "AddCompraDialog.h"
+#include "CalculadoraEdit.h"
 #include "services/ParcelaService.h"
 #include <cmath>
 #include "models/Cartao.h"
@@ -125,7 +126,7 @@ void AddCompraDialog::buildTabSimples(QWidget *tab)
     form->setContentsMargins(16, 16, 16, 16);
     form->setSpacing(10);
 
-    m_valorParcela = new QLineEdit(tab);
+    m_valorParcela = new CalculadoraEdit(tab);
     m_valorParcela->setPlaceholderText(QStringLiteral("0,00"));
     form->addRow(tr("Valor da parcela (R$)"), m_valorParcela);
 
@@ -146,7 +147,7 @@ void AddCompraDialog::buildTabTotal(QWidget *tab)
     form->setContentsMargins(16, 16, 16, 16);
     form->setSpacing(10);
 
-    m_valorTotal_t = new QLineEdit(tab);
+    m_valorTotal_t = new CalculadoraEdit(tab);
     m_valorTotal_t->setPlaceholderText(QStringLiteral("0,00"));
     form->addRow(tr("Valor total (R$)"), m_valorTotal_t);
 
@@ -192,7 +193,7 @@ void AddCompraDialog::buildTabJuros(QWidget *tab)
     };
 
     // ── Fields ────────────────────────────────────────────────────────────
-    m_valorTotal_j = new QLineEdit(tab);
+    m_valorTotal_j = new CalculadoraEdit(tab);
     m_valorTotal_j->setPlaceholderText(QStringLiteral("0,00"));
     m_valorTotal_j->setToolTip(tr("Valor financiado / principal (PV) — o que você está comprando a prazo."));
     form->addRow(tr("Valor à vista (R$)"),
@@ -205,7 +206,7 @@ void AddCompraDialog::buildTabJuros(QWidget *tab)
     form->addRow(tr("Número de parcelas"),
                  makeLockRow(m_numParcelas_j, m_lockN, /*locked=*/true));
 
-    m_valorParcela_j = new QLineEdit(tab);
+    m_valorParcela_j = new CalculadoraEdit(tab);
     m_valorParcela_j->setPlaceholderText(QStringLiteral("0,00"));
     m_valorParcela_j->setReadOnly(true); // default output field
     form->addRow(tr("Valor de cada parcela (R$)"),
@@ -248,7 +249,7 @@ void AddCompraDialog::buildTabJuros(QWidget *tab)
     }
 
     // ── Valor total pago (PMT × N) ─────────────────────────────────────────
-    m_valorTotalPago_j = new QLineEdit(tab);
+    m_valorTotalPago_j = new CalculadoraEdit(tab);
     m_valorTotalPago_j->setPlaceholderText(QStringLiteral("0,00"));
     m_valorTotalPago_j->setReadOnly(true); // default: output
     m_valorTotalPago_j->setToolTip(tr("Total efetivamente pago = Valor parcela × Nº parcelas (inclui juros)."));

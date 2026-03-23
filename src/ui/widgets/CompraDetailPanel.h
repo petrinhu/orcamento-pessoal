@@ -5,6 +5,7 @@
 
 #include <QWidget>
 
+class CalculadoraEdit;
 class QLineEdit;
 class QComboBox;
 class QPushButton;
@@ -51,12 +52,12 @@ private:
     DadosFinanceiros m_dados;
     SolveFor         m_solveFor = SolveFor::Parcela;
 
-    QComboBox   *m_cmbSolveFor     = nullptr;
-    QLineEdit   *m_edtTotal        = nullptr;
-    QLineEdit   *m_edtNumParcelas  = nullptr;
-    QLineEdit   *m_edtJurosMensais = nullptr;
-    QLineEdit   *m_edtCet          = nullptr;
-    QLineEdit   *m_edtValorParcela = nullptr;
-    QLineEdit   *m_edtJurosTotais  = nullptr;
+    QComboBox       *m_cmbSolveFor     = nullptr;
+    CalculadoraEdit *m_edtTotal        = nullptr;  // monetary
+    QLineEdit       *m_edtNumParcelas  = nullptr;  // count — plain QLineEdit
+    QLineEdit       *m_edtJurosMensais = nullptr;  // % — plain QLineEdit
+    QLineEdit       *m_edtCet          = nullptr;  // % — plain QLineEdit
+    CalculadoraEdit *m_edtValorParcela = nullptr;  // monetary
+    CalculadoraEdit *m_edtJurosTotais  = nullptr;  // monetary (always read-only → button hidden)
     QPushButton *m_btnAmortizacao  = nullptr;
 };

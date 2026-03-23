@@ -32,7 +32,9 @@
 | 33 | Controle de dívidas e empréstimos | 🟡 Média | Alta | ❌ |
 | 11 | Export: exportar apenas aba ativa | 🟢 Baixa | Média | ❌ |
 | 12 | UX: estado vazio com msg "Clique para adicionar" | 🟢 Baixa | Baixa | ✅ |
-| 17 | Utilitário calculadora → clipboard | 🟢 Baixa | Baixa | ❌ |
+| 17 | Calculadora v1: aba Comum (teclado + histórico + clipboard) + CalculadoraEdit em campos monetários + CalculadoraHub + botão 🧮 na toolbar | 🟡 Média | Média | ❌ |
+| 36 | Calculadora v2: aba Financeira HP-style (RPN/ALG, TVM N/i/PV/PMT/FV, tabela amortização inline, BEGIN/END, "Enviar para Cartões") | 🟡 Média | Alta | ❌ |
+| 37 | Calculadora v3: aba Wizards (CET, juros mensais/anuais, parcelas Price/SAC, equivalência de taxas, valor futuro, renda passiva, ROI, comprometimento de renda, quitação antecipada, meta financeira) | 🟢 Baixa | Alta | ❌ |
 | 25 | Consultor financeiro IA: gerar prompt preenchido com dados das tabelas p/ colar no ChatGPT/Claude Web; secundário: integrar API direta | 🟢 Baixa | Alta | ❌ |
 | 29 | Gestão de pagadores/recebedores | 🟢 Baixa | Baixa | ❌ |
 | 18 | Testes completos CLI automatizados (após features estáveis) | 🟢 Baixa | Alta | ❌ |

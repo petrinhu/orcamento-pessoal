@@ -1,5 +1,6 @@
 #include "CompraDetailPanel.h"
 #include "AmortizacaoDialog.h"
+#include "CalculadoraEdit.h"
 #include "services/ParcelaService.h"
 
 #include <QRegularExpression>
@@ -83,6 +84,22 @@ void CompraDetailPanel::buildUi()
     auto *fieldsRow = new QHBoxLayout;
     fieldsRow->setSpacing(12);
 
+    // Helper: create a labelled column and add it to fieldsRow.
+    // Two variants: monetary (CalculadoraEdit — shows ⊞ button) and plain (QLineEdit).
+    auto makeFieldCalc = [&](const QString &label, CalculadoraEdit *&edt) {
+        auto *col = new QVBoxLayout;
+        col->setSpacing(2);
+        auto *lbl = new QLabel(label, this);
+        QFont f = lbl->font();
+        f.setPointSize(f.pointSize() - 1);
+        lbl->setFont(f);
+        lbl->setObjectName(QStringLiteral("subtitle"));
+        edt = new CalculadoraEdit(this);
+        edt->setMinimumWidth(90);
+        col->addWidget(lbl);
+        col->addWidget(edt);
+        fieldsRow->addLayout(col);
+    };
     auto makeField = [&](const QString &label, QLineEdit *&edt) {
         auto *col = new QVBoxLayout;
         col->setSpacing(2);
@@ -98,13 +115,13 @@ void CompraDetailPanel::buildUi()
         fieldsRow->addLayout(col);
     };
 
-    makeField(tr("Total"),          m_edtTotal);
-    makeField(tr("Parcelas"),       m_edtNumParcelas);
-    makeField(tr("Juros a.m."),     m_edtJurosMensais);
-    makeField(tr("CET a.a."),       m_edtCet);
-    makeField(tr("Valor parcela"),  m_edtValorParcela);
-    makeField(tr("Juros totais"),   m_edtJurosTotais);
-    m_edtJurosTotais->setReadOnly(true);
+    makeFieldCalc(tr("Total"),          m_edtTotal);
+    makeField    (tr("Parcelas"),       m_edtNumParcelas);
+    makeField    (tr("Juros a.m."),     m_edtJurosMensais);
+    makeField    (tr("CET a.a."),       m_edtCet);
+    makeFieldCalc(tr("Valor parcela"),  m_edtValorParcela);
+    makeFieldCalc(tr("Juros totais"),   m_edtJurosTotais);
+    m_edtJurosTotais->setReadOnly(true); // always read-only → button auto-hidden
 
     fieldsRow->addStretch();
     inner->addLayout(fieldsRow);

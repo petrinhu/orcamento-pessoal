@@ -7,6 +7,7 @@
 #include <QDialog>
 #include <QList>
 
+class CalculadoraEdit;
 class QLineEdit;
 class QSpinBox;
 class QDoubleSpinBox;
@@ -58,15 +59,15 @@ private:
     QSpinBox     *m_numParcelas_j = nullptr; // Juros tab
 
     // Simples tab
-    QLineEdit    *m_valorParcela  = nullptr;
+    CalculadoraEdit *m_valorParcela  = nullptr;
 
     // Total tab
-    QLineEdit    *m_valorTotal_t  = nullptr;
+    CalculadoraEdit *m_valorTotal_t  = nullptr;
 
     // Juros tab — fields
-    QLineEdit      *m_valorTotal_j    = nullptr;  // Valor à vista (PV)
-    QLineEdit      *m_valorParcela_j  = nullptr;  // PMT
-    QLineEdit      *m_valorTotalPago_j = nullptr; // Total pago = PMT × N
+    CalculadoraEdit *m_valorTotal_j    = nullptr;  // Valor à vista (PV)
+    CalculadoraEdit *m_valorParcela_j  = nullptr;  // PMT
+    CalculadoraEdit *m_valorTotalPago_j = nullptr; // Total pago = PMT × N
     QDoubleSpinBox *m_jurosMensais    = nullptr;
     QDoubleSpinBox *m_cet_j           = nullptr;
     QLabel         *m_lblJurosTotais  = nullptr;
