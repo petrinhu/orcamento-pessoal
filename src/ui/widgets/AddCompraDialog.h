@@ -62,10 +62,11 @@ private:
     QLineEdit    *m_valorTotal_t  = nullptr;
 
     // Juros tab
-    QLineEdit    *m_valorTotal_j  = nullptr;
+    QLineEdit    *m_valorTotal_j   = nullptr;
     QLineEdit    *m_valorParcela_j = nullptr;
     QDoubleSpinBox *m_jurosMensais = nullptr;
-    QLabel       *m_lblCET        = nullptr;
+    QDoubleSpinBox *m_cet_j        = nullptr;
+    QLabel       *m_lblCET         = nullptr;
     QLabel       *m_lblJurosTotais = nullptr;
     QLabel       *m_lblJurosMensais = nullptr;
 

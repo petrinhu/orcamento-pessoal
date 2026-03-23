@@ -1,5 +1,6 @@
 #include "AddCompraDialog.h"
 #include "services/ParcelaService.h"
+#include <cmath>
 #include "models/Cartao.h"
 #include "ui/Theme.h"
 
@@ -192,10 +193,18 @@ void AddCompraDialog::buildTabJuros(QWidget *tab)
     m_jurosMensais->setDecimals(4);
     m_jurosMensais->setSuffix(QStringLiteral("% a.m."));
     m_jurosMensais->setToolTip(
-        tr("Preencha a taxa para calcular as parcelas,\n"
-           "ou deixe em 0 e preencha o valor da parcela\n"
-           "para que o app calcule a taxa."));
+        tr("Taxa mensal. Preencha junto com Total ou Valor da parcela\n"
+           "para que o app calcule o campo faltante.\n"
+           "Ou preencha Total + Valor da parcela para calcular a taxa."));
     form->addRow(tr("Juros mensais"), m_jurosMensais);
+
+    m_cet_j = new QDoubleSpinBox(tab);
+    m_cet_j->setRange(0.0, 100000.0);
+    m_cet_j->setSingleStep(0.5);
+    m_cet_j->setDecimals(2);
+    m_cet_j->setSuffix(QStringLiteral("% a.a."));
+    m_cet_j->setToolTip(tr("CET (Custo Efetivo Total) anual. Equivalente aos juros mensais compostos."));
+    form->addRow(tr("CET / Juros anuais"), m_cet_j);
 
     // Info labels
     m_lblCET          = new QLabel(tr("CET: —"), tab);
@@ -210,8 +219,22 @@ void AddCompraDialog::buildTabJuros(QWidget *tab)
     connect(m_valorParcela_j, &QLineEdit::textChanged, this, &AddCompraDialog::recalcular);
     connect(m_numParcelas_j,  QOverload<int>::of(&QSpinBox::valueChanged),
             this, &AddCompraDialog::recalcular);
-    connect(m_jurosMensais,   QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-            this, &AddCompraDialog::recalcular);
+
+    // Juros mensais ↔ CET cross-update (bidirectional, each triggers recalcular)
+    connect(m_jurosMensais, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, [this](double v) {
+                m_cet_j->blockSignals(true);
+                m_cet_j->setValue(ParcelaService::cetFromJurosMensais(v));
+                m_cet_j->blockSignals(false);
+                recalcular();
+            });
+    connect(m_cet_j, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, [this](double v) {
+                m_jurosMensais->blockSignals(true);
+                m_jurosMensais->setValue(ParcelaService::jurosMensaisFromCet(v));
+                m_jurosMensais->blockSignals(false);
+                recalcular();
+            });
 }
 
 void AddCompraDialog::buildPreview()
@@ -251,6 +274,14 @@ static Compra compraFromUi(
     c.numParcelas     = numParcelas;
     c.jurosMensais    = jurosMensais100k;
     return c;
+}
+
+// Format centavos as a plain number "1.234,56" (no currency symbol) for edit fields
+static QString formatFieldValue(qint64 centavos, const QString &moeda)
+{
+    const QString full = ParcelaService::formatarValor(centavos, moeda);
+    const int idx = full.indexOf(QLatin1Char(' '));
+    return idx >= 0 ? full.mid(idx + 1) : full;
 }
 
 void AddCompraDialog::recalcular()
@@ -298,6 +329,16 @@ void AddCompraDialog::recalcular()
             } else if (vt > 0 && jm > 0) {
                 // Mode 2.4: given rate
                 Compra c = compraFromUi(QString(), 0, moeda, dataFat, piIni, vt, n, 0);
+                r = ParcelaService::comJurosMensais(c, jm);
+            } else if (vp > 0 && jm > 0) {
+                // Solve for PV: PV = PMT × [1-(1+i)^-n] / i
+                const double i = jm / 100.0;
+                const qint64 vtCalc = static_cast<qint64>(
+                    std::round(static_cast<double>(vp) * (1.0 - std::pow(1.0 + i, -n)) / i));
+                m_valorTotal_j->blockSignals(true);
+                m_valorTotal_j->setText(formatFieldValue(vtCalc, moeda));
+                m_valorTotal_j->blockSignals(false);
+                Compra c = compraFromUi(QString(), 0, moeda, dataFat, piIni, vtCalc, n, 0);
                 r = ParcelaService::comJurosMensais(c, jm);
             } else if (vt > 0) {
                 // No interest
@@ -362,12 +403,15 @@ void AddCompraDialog::accept()
     m_compra.parcelaInicial = piIni;
     m_compra.numParcelas    = m_parcelas.size();
 
-    if (tab == 0)
+    if (tab == 0) {
         m_compra.valorTotal = ParcelaService::parsearValor(m_valorParcela->text()) * m_parcelas.size();
-    else if (tab == 1)
+    } else if (tab == 1) {
         m_compra.valorTotal = ParcelaService::parsearValor(m_valorTotal_t->text());
-    else
-        m_compra.valorTotal = ParcelaService::parsearValor(m_valorTotal_j->text());
+    } else {
+        m_compra.valorTotal   = ParcelaService::parsearValor(m_valorTotal_j->text());
+        m_compra.jurosMensais = static_cast<qint64>(
+            std::round(m_jurosMensais->value() * 10000.0));
+    }
 
     QDialog::accept();
 }
