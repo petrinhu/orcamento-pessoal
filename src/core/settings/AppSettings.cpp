@@ -1,6 +1,8 @@
 #include "AppSettings.h"
 #include "services/ParcelaService.h"
 
+#include <QStandardPaths>
+
 AppSettings &AppSettings::instance()
 {
     static AppSettings s;
@@ -53,4 +55,58 @@ void AppSettings::setDefaultCurrency(const QString &code)
 QString AppSettings::currencySymbol() const
 {
     return ParcelaService::simboloMoeda(defaultCurrency());
+}
+
+// ── Save / autosave settings ──────────────────────────────────────────────────
+
+bool AppSettings::autosaveEnabled() const
+{
+    return m_s.value(QStringLiteral("autosave_enabled"), true).toBool();
+}
+
+void AppSettings::setAutosaveEnabled(bool on)
+{
+    if (m_s.value(QStringLiteral("autosave_enabled"), true).toBool() == on) return;
+    m_s.setValue(QStringLiteral("autosave_enabled"), on);
+    emit autosaveSettingsChanged();
+}
+
+int AppSettings::autosaveIntervalMinutes() const
+{
+    return m_s.value(QStringLiteral("autosave_interval"), 5).toInt();
+}
+
+void AppSettings::setAutosaveIntervalMinutes(int minutes)
+{
+    if (m_s.value(QStringLiteral("autosave_interval"), 5).toInt() == minutes) return;
+    m_s.setValue(QStringLiteral("autosave_interval"), minutes);
+    emit autosaveSettingsChanged();
+}
+
+QString AppSettings::savesFolder() const
+{
+    const QString defaultPath =
+        QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
+        + QStringLiteral("/PeuBud");
+    return m_s.value(QStringLiteral("saves_folder"), defaultPath).toString();
+}
+
+void AppSettings::setSavesFolder(const QString &path)
+{
+    if (m_s.value(QStringLiteral("saves_folder")).toString() == path) return;
+    m_s.setValue(QStringLiteral("saves_folder"), path);
+    emit autosaveSettingsChanged();
+}
+
+QString AppSettings::autosavesFolder() const
+{
+    const QString defaultPath = savesFolder() + QStringLiteral("/autosaves");
+    return m_s.value(QStringLiteral("autosaves_folder"), defaultPath).toString();
+}
+
+void AppSettings::setAutosavesFolder(const QString &path)
+{
+    if (m_s.value(QStringLiteral("autosaves_folder")).toString() == path) return;
+    m_s.setValue(QStringLiteral("autosaves_folder"), path);
+    emit autosaveSettingsChanged();
 }

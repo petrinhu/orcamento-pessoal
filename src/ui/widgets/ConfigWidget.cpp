@@ -27,21 +27,21 @@ void ConfigWidget::buildUi()
     root->setContentsMargins(24, 24, 24, 24);
     root->setSpacing(16);
 
-    auto *title = new QLabel(QStringLiteral("Cartões de Crédito"), this);
+    auto *title = new QLabel(tr("Cartões de Crédito"), this);
     title->setObjectName(QStringLiteral("title"));
     root->addWidget(title);
 
     auto *subtitle = new QLabel(
-        QStringLiteral("Cadastre aqui os apelidos dos seus cartões."), this);
+        tr("Cadastre aqui os apelidos dos seus cartões."), this);
     subtitle->setObjectName(QStringLiteral("subtitle"));
     root->addWidget(subtitle);
 
     // Add row
     auto *addRow = new QHBoxLayout;
     m_edtNome = new QLineEdit(this);
-    m_edtNome->setPlaceholderText(QStringLiteral("Ex: Nubank, XP Visa..."));
+    m_edtNome->setPlaceholderText(tr("Ex: Nubank, XP Visa..."));
     m_edtNome->setMaxLength(60);
-    m_btnAdd = new QPushButton(QStringLiteral("+ Adicionar"), this);
+    m_btnAdd = new QPushButton(tr("+ Adicionar"), this);
     m_btnAdd->setObjectName(QStringLiteral("primary"));
     m_btnAdd->setEnabled(false);
     addRow->addWidget(m_edtNome);
@@ -50,7 +50,7 @@ void ConfigWidget::buildUi()
 
     // Table
     m_table = new QTableWidget(0, 1, this);
-    m_table->setHorizontalHeaderLabels({QStringLiteral("Apelido do cartão")});
+    m_table->setHorizontalHeaderLabels({tr("Apelido do cartão")});
     m_table->horizontalHeader()->setStretchLastSection(true);
     m_table->verticalHeader()->setVisible(false);
     m_table->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -58,7 +58,7 @@ void ConfigWidget::buildUi()
     root->addWidget(m_table);
 
     // Remove button
-    m_btnRem = new QPushButton(QStringLiteral("Remover selecionado"), this);
+    m_btnRem = new QPushButton(tr("Remover selecionado"), this);
     m_btnRem->setEnabled(false);
     root->addWidget(m_btnRem, 0, Qt::AlignLeft);
 
@@ -109,8 +109,8 @@ void ConfigWidget::onAdicionar()
 
     if (!q.exec()) {
         if (q.lastError().text().contains(QStringLiteral("UNIQUE")))
-            QMessageBox::warning(this, QStringLiteral("Duplicado"),
-                QStringLiteral("Já existe um cartão com esse apelido."));
+            QMessageBox::warning(this, tr("Duplicado"),
+                tr("Já existe um cartão com esse apelido."));
         else
             qWarning() << "ConfigWidget::onAdicionar:" << q.lastError().text();
         return;
@@ -129,9 +129,9 @@ void ConfigWidget::onRemover()
     const QString apelido = m_table->item(row, 0)->text();
 
     if (QMessageBox::question(this,
-            QStringLiteral("Remover cartão"),
-            QStringLiteral("Remover \"%1\"?\n"
-                           "As compras vinculadas ficarão sem cartão.").arg(apelido))
+            tr("Remover cartão"),
+            tr("Remover \"%1\"?\n"
+               "As compras vinculadas ficarão sem cartão.").arg(apelido))
         != QMessageBox::Yes) return;
 
     QSqlQuery q(DatabaseManager::instance().db());

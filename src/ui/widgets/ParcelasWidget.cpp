@@ -63,12 +63,12 @@ void ParcelasWidget::buildUi()
 
     // ── Toolbar ────────────────────────────────────────────────────────────
     auto *toolbar = new QHBoxLayout;
-    m_btnNova = new QPushButton(QStringLiteral("+ Nova compra"), this);
+    m_btnNova = new QPushButton(tr("+ Nova compra"), this);
     m_btnNova->setObjectName(QStringLiteral("primary"));
-    m_btnExcluir = new QPushButton(QStringLiteral("Excluir"), this);
+    m_btnExcluir = new QPushButton(tr("Excluir"), this);
     m_btnExcluir->setEnabled(false);
 
-    auto *btnOrganizar = new QPushButton(QStringLiteral("Organizar por ▾"), this);
+    auto *btnOrganizar = new QPushButton(tr("Organizar por ▾"), this);
 
     m_lblStatus = new QLabel(this);
     m_lblStatus->setObjectName(QStringLiteral("subtitle"));
@@ -215,9 +215,9 @@ void ParcelasWidget::populateTable()
 
     // Headers
     QStringList headers;
-    headers << QStringLiteral("Descrição")
-            << QStringLiteral("Cartão")
-            << QStringLiteral("Total pago");
+    headers << tr("Descrição")
+            << tr("Cartão")
+            << tr("Total pago");
     for (int k = 0; k < totalMonths; ++k) {
         const QDate d = m_firstMonth.addMonths(k);
         headers << formatMesColuna(d);
@@ -281,7 +281,7 @@ void ParcelasWidget::populateTable()
 
     // Total row
     const int totalRow = m_compras.size();
-    auto *lblTotal = new QTableWidgetItem(QStringLiteral("TOTAL"));
+    auto *lblTotal = new QTableWidgetItem(tr("TOTAL"));
     lblTotal->setFlags(lblTotal->flags() & ~Qt::ItemIsEditable);
     QFont f = lblTotal->font();
     f.setBold(true);
@@ -317,7 +317,7 @@ void ParcelasWidget::populateTable()
 
     m_table->blockSignals(false);
 
-    m_lblStatus->setText(QStringLiteral("%1 compra(s)").arg(m_compras.size()));
+    m_lblStatus->setText(tr("%1 compra(s)").arg(m_compras.size()));
 }
 
 void ParcelasWidget::aplicarOrdenacao()
@@ -377,8 +377,8 @@ void ParcelasWidget::onNovaCompra()
     ParcelaRepository pr;
 
     if (!cr.insert(compra)) {
-        QMessageBox::warning(this, QStringLiteral("Erro"),
-                             QStringLiteral("Não foi possível salvar a compra."));
+        QMessageBox::warning(this, tr("Erro"),
+                             tr("Não foi possível salvar a compra."));
         return;
     }
     for (auto &p : parcelas) {
@@ -399,8 +399,8 @@ void ParcelasWidget::onExcluir()
     const QString nome = m_compras[row].nome;
 
     if (QMessageBox::question(this,
-            QStringLiteral("Confirmar exclusão"),
-            QStringLiteral("Excluir \"%1\" e todas as suas parcelas?").arg(nome))
+            tr("Confirmar exclusão"),
+            tr("Excluir \"%1\" e todas as suas parcelas?").arg(nome))
         != QMessageBox::Yes) return;
 
     CompraRepository cr;
@@ -427,14 +427,14 @@ void ParcelasWidget::onOrganizarPor()
 {
     // Dialog with 3 combo boxes for sort levels
     QDialog dlg(this);
-    dlg.setWindowTitle(QStringLiteral("Organizar por"));
+    dlg.setWindowTitle(tr("Organizar por"));
     auto *form = new QFormLayout(&dlg);
     form->setContentsMargins(20, 20, 20, 20);
     form->setSpacing(12);
 
     QStringList colNames;
-    colNames << QStringLiteral("—") << QStringLiteral("Descrição")
-             << QStringLiteral("Cartão") << QStringLiteral("Total");
+    colNames << QStringLiteral("—") << tr("Descrição")
+             << tr("Cartão") << tr("Total");
     for (int k = 0; k < m_table->columnCount() - COL_FIRST_MONTH; ++k)
         colNames << formatMesColuna(m_firstMonth.addMonths(k));
 
@@ -444,9 +444,9 @@ void ParcelasWidget::onOrganizarPor()
         return cb;
     };
 
-    auto *cb1 = makeCombo(); form->addRow(QStringLiteral("Primeiro por"), cb1);
-    auto *cb2 = makeCombo(); form->addRow(QStringLiteral("Segundo por"),  cb2);
-    auto *cb3 = makeCombo(); form->addRow(QStringLiteral("Terceiro por"), cb3);
+    auto *cb1 = makeCombo(); form->addRow(tr("Primeiro por"), cb1);
+    auto *cb2 = makeCombo(); form->addRow(tr("Segundo por"),  cb2);
+    auto *cb3 = makeCombo(); form->addRow(tr("Terceiro por"), cb3);
 
     auto *btns = new QDialogButtonBox(
         QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dlg);

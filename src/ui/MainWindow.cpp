@@ -5,6 +5,7 @@
 #include "widgets/HelpDialog.h"
 #include "core/session/UserSession.h"
 #include "core/database/DatabaseManager.h"
+#include "core/settings/AppSettings.h"
 #include "services/ImportService.h"
 #include "services/ExportService.h"
 #include "repositories/CompraRepository.h"
@@ -25,6 +26,11 @@
 #include <QApplication>
 #include <QClipboard>
 #include <QSqlQuery>
+#include <QPushButton>
+#include <QTimer>
+#include <QDateTime>
+#include <QDir>
+#include <QCloseEvent>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -45,13 +51,21 @@ void MainWindow::buildUi()
     // ── Status bar ─────────────────────────────────────────────────────────
     m_statusUser = new QLabel(this);
     const QString name = UserSession::instance().name();
-    m_statusUser->setText(QStringLiteral("  Usuário: %1").arg(name));
+    m_statusUser->setText(tr("  Usuário: %1").arg(name));
     statusBar()->addWidget(m_statusUser);
 
-    // ── Connections ────────────────────────────────────────────────────────
+    // ── Dirty flag ─────────────────────────────────────────────────────────
     connect(m_parcelas, &ParcelasWidget::dadosAlterados,
             m_parcelas, &ParcelasWidget::recarregar);
+    connect(m_parcelas, &ParcelasWidget::dadosAlterados,
+            this, [this]() { m_dirty = true; });
 
+    // ── Auto-save timer ────────────────────────────────────────────────────
+    m_autosaveTimer = new QTimer(this);
+    connect(m_autosaveTimer, &QTimer::timeout, this, &MainWindow::onAutosave);
+    connect(&AppSettings::instance(), &AppSettings::autosaveSettingsChanged,
+            this, &MainWindow::resetAutosaveTimer);
+    resetAutosaveTimer();
 }
 
 // ── Menu bar ──────────────────────────────────────────────────────────────────
@@ -61,24 +75,24 @@ void MainWindow::buildMenuBar()
     QMenuBar *mb = menuBar();
 
     // ── Arquivo ────────────────────────────────────────────────────────────
-    QMenu *mArquivo = mb->addMenu(QStringLiteral("&Arquivo"));
+    QMenu *mArquivo = mb->addMenu(tr("&Arquivo"));
 
-    auto *aAbrir = mArquivo->addAction(QStringLiteral("&Abrir…"));
+    auto *aAbrir = mArquivo->addAction(tr("&Abrir…"));
     aAbrir->setShortcut(QKeySequence::Open);
     connect(aAbrir, &QAction::triggered, this, &MainWindow::onAbrir);
 
-    auto *aSalvar = mArquivo->addAction(QStringLiteral("&Salvar"));
+    auto *aSalvar = mArquivo->addAction(tr("&Salvar"));
     aSalvar->setShortcut(QKeySequence::Save);
     connect(aSalvar, &QAction::triggered, this, &MainWindow::onSalvar);
 
-    auto *aSalvarComo = mArquivo->addAction(QStringLiteral("Salvar &como…"));
+    auto *aSalvarComo = mArquivo->addAction(tr("Salvar &como…"));
     aSalvarComo->setShortcut(QKeySequence::SaveAs);
     connect(aSalvarComo, &QAction::triggered, this, &MainWindow::onSalvarComo);
 
     mArquivo->addSeparator();
 
     // Importar submenu
-    QMenu *mImportar = mArquivo->addMenu(QStringLiteral("&Importar de"));
+    QMenu *mImportar = mArquivo->addMenu(tr("&Importar de"));
     const QList<QPair<QString,QString>> importFormats = {
         { QStringLiteral("CSV (.csv)…"),        QStringLiteral("csv")  },
         { QStringLiteral("OFX / QFX (.ofx)…"),  QStringLiteral("ofx")  },
@@ -98,7 +112,7 @@ void MainWindow::buildMenuBar()
     }
 
     // Exportar submenu
-    QMenu *mExportar = mArquivo->addMenu(QStringLiteral("&Exportar"));
+    QMenu *mExportar = mArquivo->addMenu(tr("&Exportar"));
     const QList<QPair<QString,QString>> exportFormats = {
         { QStringLiteral("CSV (.csv)…"),        QStringLiteral("csv")  },
         { QStringLiteral("OFX (.ofx)…"),        QStringLiteral("ofx")  },
@@ -120,43 +134,43 @@ void MainWindow::buildMenuBar()
 
     mArquivo->addSeparator();
 
-    auto *aSair = mArquivo->addAction(QStringLiteral("&Sair"));
+    auto *aSair = mArquivo->addAction(tr("&Sair"));
     aSair->setShortcut(QKeySequence::Quit);
     connect(aSair, &QAction::triggered, qApp, &QApplication::quit);
 
     // ── Editar ─────────────────────────────────────────────────────────────
-    QMenu *mEditar = mb->addMenu(QStringLiteral("&Editar"));
+    QMenu *mEditar = mb->addMenu(tr("&Editar"));
 
-    auto *aCopiar = mEditar->addAction(QStringLiteral("&Copiar"));
+    auto *aCopiar = mEditar->addAction(tr("&Copiar"));
     aCopiar->setShortcut(QKeySequence::Copy);
     connect(aCopiar, &QAction::triggered, this, &MainWindow::onCopiar);
 
-    auto *aColar = mEditar->addAction(QStringLiteral("Co&lar"));
+    auto *aColar = mEditar->addAction(tr("Co&lar"));
     aColar->setShortcut(QKeySequence::Paste);
     connect(aColar, &QAction::triggered, this, &MainWindow::onColar);
 
     mEditar->addSeparator();
 
-    auto *aSelAll = mEditar->addAction(QStringLiteral("Selecionar &tudo"));
+    auto *aSelAll = mEditar->addAction(tr("Selecionar &tudo"));
     aSelAll->setShortcut(QKeySequence::SelectAll);
     connect(aSelAll, &QAction::triggered, this, &MainWindow::onSelecionarTudo);
 
     // ── Configurações ──────────────────────────────────────────────────────
-    QMenu *mConfig = mb->addMenu(QStringLiteral("&Configurações"));
+    QMenu *mConfig = mb->addMenu(tr("&Configurações"));
 
-    auto *aPrefs = mConfig->addAction(QStringLiteral("&Preferências…"));
+    auto *aPrefs = mConfig->addAction(tr("&Preferências…"));
     connect(aPrefs, &QAction::triggered, this, &MainWindow::onConfiguracoes);
 
     // ── Ajuda ──────────────────────────────────────────────────────────────
-    QMenu *mAjuda = mb->addMenu(QStringLiteral("A&juda"));
+    QMenu *mAjuda = mb->addMenu(tr("A&juda"));
 
-    auto *aAjuda = mAjuda->addAction(QStringLiteral("&Ajuda"));
+    auto *aAjuda = mAjuda->addAction(tr("&Ajuda"));
     aAjuda->setShortcut(QKeySequence::HelpContents);
     connect(aAjuda, &QAction::triggered, this, &MainWindow::onAjuda);
 
     mAjuda->addSeparator();
 
-    auto *aSobre = mAjuda->addAction(QStringLiteral("&Sobre PeuBud…"));
+    auto *aSobre = mAjuda->addAction(tr("&Sobre PeuBud…"));
     connect(aSobre, &QAction::triggered, this, &MainWindow::onSobre);
 }
 
@@ -198,9 +212,9 @@ void MainWindow::updateThemeButton()
 {
     struct Def { const char *themeIcon; QString fallback; QString tip; };
     static const Def defs[] = {
-        { "weather-partly-cloudy", QStringLiteral("◑"), QStringLiteral("Modo: automático  (clique → claro)") },
-        { "weather-clear",         QStringLiteral("☀"), QStringLiteral("Modo: claro  (clique → escuro)")      },
-        { "weather-clear-night",   QStringLiteral("☾"), QStringLiteral("Modo: escuro  (clique → automático)") },
+        { "weather-partly-cloudy", QStringLiteral("◑"), tr("Modo: automático  (clique → claro)") },
+        { "weather-clear",         QStringLiteral("☀"), tr("Modo: claro  (clique → escuro)")      },
+        { "weather-clear-night",   QStringLiteral("☾"), tr("Modo: escuro  (clique → automático)") },
     };
     // enum ThemeMode { Auto=0, Light=1, Dark=2 }
     const auto &d = defs[static_cast<int>(Theme::currentMode())];
@@ -216,46 +230,103 @@ void MainWindow::updateThemeButton()
     m_btnTheme->setToolTip(d.tip);
 }
 
+// ── Close event ───────────────────────────────────────────────────────────────
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    if (!m_dirty) { event->accept(); return; }
+
+    QMessageBox msg(this);
+    msg.setIcon(QMessageBox::Warning);
+    msg.setWindowTitle(tr("Alterações não salvas"));
+    msg.setText(tr("Há alterações não salvas."));
+    msg.setInformativeText(tr("Deseja salvar antes de fechar?"));
+    QAbstractButton *btnSalvar   = msg.addButton(tr("Salvar"),            QMessageBox::AcceptRole);
+    QAbstractButton *btnFechar   = msg.addButton(tr("Fechar sem salvar"), QMessageBox::DestructiveRole);
+    msg.addButton(tr("Cancelar"), QMessageBox::RejectRole);
+    msg.setDefaultButton(qobject_cast<QPushButton *>(btnSalvar));
+    msg.exec();
+
+    if (msg.clickedButton() == btnSalvar) {
+        DatabaseManager::instance().save();
+        m_dirty = false;
+        event->accept();
+    } else if (msg.clickedButton() == btnFechar) {
+        event->accept();
+    } else {
+        event->ignore();
+    }
+}
+
+// ── Auto-save ─────────────────────────────────────────────────────────────────
+
+void MainWindow::resetAutosaveTimer()
+{
+    m_autosaveTimer->stop();
+    if (AppSettings::instance().autosaveEnabled())
+        m_autosaveTimer->start(
+            AppSettings::instance().autosaveIntervalMinutes() * 60 * 1000);
+}
+
+void MainWindow::onAutosave()
+{
+    if (!m_dirty) return;
+    const QString folder = AppSettings::instance().autosavesFolder();
+    QDir().mkpath(folder);
+    const QString ts   = QDateTime::currentDateTime().toString(
+                           QStringLiteral("yyyyMMdd_HHmmss"));
+    const QString slug = UserSession::instance().slug();
+    const QString path = QStringLiteral("%1/%2_%3.pbd").arg(folder, slug, ts);
+    if (DatabaseManager::instance().exportToFile(path))
+        statusBar()->showMessage(tr("Auto-salvo: %1").arg(path), 3000);
+}
+
 // ── Arquivo slots ─────────────────────────────────────────────────────────────
 
 void MainWindow::onAbrir()
 {
     const QString path = QFileDialog::getOpenFileName(
-        this, QStringLiteral("Abrir arquivo PeuBud"),
+        this, tr("Abrir arquivo PeuBud"),
         QString(),
-        QStringLiteral("PeuBud (*.pbd);;Todos os arquivos (*.*)"));
+        tr("PeuBud (*.pbd);;Todos os arquivos (*.*)"));
     if (path.isEmpty()) return;
 
     if (!DatabaseManager::instance().importFromFile(path)) {
-        QMessageBox::warning(this, QStringLiteral("Erro ao abrir"),
-            QStringLiteral("Não foi possível carregar o arquivo.\n"
-                           "Verifique se o arquivo é válido e se a senha está correta."));
+        QMessageBox::warning(this, tr("Erro ao abrir"),
+            tr("Não foi possível carregar o arquivo.\n"
+               "Verifique se o arquivo é válido e se a senha está correta."));
         return;
     }
+    m_dirty = false;
     m_parcelas->recarregar();
 }
 
 void MainWindow::onSalvar()
 {
-    // Current session auto-saves on close; this is a no-op confirmation
-    QMessageBox::information(this, QStringLiteral("Salvo"),
-        QStringLiteral("Os dados são salvos automaticamente ao fechar o PeuBud.\n"
-                       "Use \"Salvar como…\" para exportar uma cópia."));
+    if (DatabaseManager::instance().save()) {
+        m_dirty = false;
+        statusBar()->showMessage(tr("Arquivo salvo."), 3000);
+    } else {
+        QMessageBox::warning(this, tr("Erro"), tr("Não foi possível salvar."));
+    }
 }
 
 void MainWindow::onSalvarComo()
 {
+    const QString startDir = AppSettings::instance().savesFolder();
+    QDir().mkpath(startDir);
+
     const QString path = QFileDialog::getSaveFileName(
-        this, QStringLiteral("Salvar cópia como"),
-        QString(),
-        QStringLiteral("PeuBud (*.pbd)"));
+        this, tr("Salvar cópia como"),
+        startDir,
+        tr("PeuBud (*.pbd)"));
     if (path.isEmpty()) return;
 
     const QString dest = path.endsWith(QStringLiteral(".pbd"), Qt::CaseInsensitive)
                        ? path : path + QStringLiteral(".pbd");
     if (!DatabaseManager::instance().exportToFile(dest)) {
-        QMessageBox::warning(this, QStringLiteral("Erro"),
-            QStringLiteral("Não foi possível salvar o arquivo."));
+        QMessageBox::warning(this, tr("Erro"),
+            tr("Não foi possível salvar o arquivo."));
     }
 }
 
@@ -264,21 +335,21 @@ void MainWindow::onSalvarComo()
 void MainWindow::onImportar(const QString &format)
 {
     static const QMap<QString,QString> filters = {
-        { QStringLiteral("csv"),  QStringLiteral("CSV (*.csv);;Todos (*.*)") },
-        { QStringLiteral("ofx"),  QStringLiteral("OFX/QFX (*.ofx *.qfx);;Todos (*.*)") },
-        { QStringLiteral("qif"),  QStringLiteral("QIF (*.qif);;Todos (*.*)") },
-        { QStringLiteral("xlsx"), QStringLiteral("Excel (*.xlsx *.xls);;Todos (*.*)") },
-        { QStringLiteral("ods"),  QStringLiteral("ODS (*.ods);;Todos (*.*)") },
-        { QStringLiteral("txt"),  QStringLiteral("Texto/CNAB (*.txt *.cnab);;Todos (*.*)") },
-        { QStringLiteral("json"), QStringLiteral("JSON (*.json);;Todos (*.*)") },
-        { QStringLiteral("md"),   QStringLiteral("Markdown (*.md);;Todos (*.*)") },
-        { QStringLiteral("html"), QStringLiteral("HTML (*.html *.htm);;Todos (*.*)") },
-        { QStringLiteral("pdf"),  QStringLiteral("PDF (*.pdf);;Todos (*.*)") },
+        { QStringLiteral("csv"),  tr("CSV (*.csv);;Todos (*.*)") },
+        { QStringLiteral("ofx"),  tr("OFX/QFX (*.ofx *.qfx);;Todos (*.*)") },
+        { QStringLiteral("qif"),  tr("QIF (*.qif);;Todos (*.*)") },
+        { QStringLiteral("xlsx"), tr("Excel (*.xlsx *.xls);;Todos (*.*)") },
+        { QStringLiteral("ods"),  tr("ODS (*.ods);;Todos (*.*)") },
+        { QStringLiteral("txt"),  tr("Texto/CNAB (*.txt *.cnab);;Todos (*.*)") },
+        { QStringLiteral("json"), tr("JSON (*.json);;Todos (*.*)") },
+        { QStringLiteral("md"),   tr("Markdown (*.md);;Todos (*.*)") },
+        { QStringLiteral("html"), tr("HTML (*.html *.htm);;Todos (*.*)") },
+        { QStringLiteral("pdf"),  tr("PDF (*.pdf);;Todos (*.*)") },
     };
 
     const QString path = QFileDialog::getOpenFileName(
-        this, QStringLiteral("Importar"),
-        QString(), filters.value(format, QStringLiteral("Todos (*.*)")));
+        this, tr("Importar"),
+        QString(), filters.value(format, tr("Todos (*.*)")));
     if (path.isEmpty()) return;
 
     ImportService::Result result;
@@ -294,13 +365,13 @@ void MainWindow::onImportar(const QString &format)
     else if (format == QStringLiteral("pdf"))  result = ImportService::fromPdf(path);
 
     if (!result.isValid()) {
-        QMessageBox::warning(this, QStringLiteral("Importar"), result.error);
+        QMessageBox::warning(this, tr("Importar"), result.error);
         return;
     }
 
     const auto reply = QMessageBox::question(
-        this, QStringLiteral("Confirmar importação"),
-        QStringLiteral("%1 transação(ões) encontradas. Deseja importar?")
+        this, tr("Confirmar importação"),
+        tr("%1 transação(ões) encontradas. Deseja importar?")
             .arg(result.compras.size()));
     if (reply != QMessageBox::Yes) return;
 
@@ -315,9 +386,10 @@ void MainWindow::onImportar(const QString &format)
         }
     }
 
+    m_dirty = true;
     m_parcelas->recarregar();
-    QMessageBox::information(this, QStringLiteral("Importar"),
-        QStringLiteral("%1 compra(s) importada(s) com sucesso.")
+    QMessageBox::information(this, tr("Importar"),
+        tr("%1 compra(s) importada(s) com sucesso.")
             .arg(result.compras.size()));
 }
 
@@ -326,30 +398,30 @@ void MainWindow::onImportar(const QString &format)
 void MainWindow::onExportar(const QString &format)
 {
     static const QMap<QString,QString> filters = {
-        { QStringLiteral("csv"),  QStringLiteral("CSV (*.csv)") },
-        { QStringLiteral("ofx"),  QStringLiteral("OFX (*.ofx)") },
-        { QStringLiteral("qif"),  QStringLiteral("QIF (*.qif)") },
-        { QStringLiteral("xlsx"), QStringLiteral("Excel (*.xlsx)") },
-        { QStringLiteral("xls"),  QStringLiteral("Excel 97-2003 (*.xls)") },
-        { QStringLiteral("ods"),  QStringLiteral("ODS (*.ods)") },
-        { QStringLiteral("txt"),  QStringLiteral("Texto (*.txt)") },
-        { QStringLiteral("json"), QStringLiteral("JSON (*.json)") },
-        { QStringLiteral("md"),   QStringLiteral("Markdown (*.md)") },
-        { QStringLiteral("html"), QStringLiteral("HTML (*.html)") },
-        { QStringLiteral("pdf"),  QStringLiteral("PDF (*.pdf)") },
+        { QStringLiteral("csv"),  tr("CSV (*.csv)") },
+        { QStringLiteral("ofx"),  tr("OFX (*.ofx)") },
+        { QStringLiteral("qif"),  tr("QIF (*.qif)") },
+        { QStringLiteral("xlsx"), tr("Excel (*.xlsx)") },
+        { QStringLiteral("xls"),  tr("Excel 97-2003 (*.xls)") },
+        { QStringLiteral("ods"),  tr("ODS (*.ods)") },
+        { QStringLiteral("txt"),  tr("Texto (*.txt)") },
+        { QStringLiteral("json"), tr("JSON (*.json)") },
+        { QStringLiteral("md"),   tr("Markdown (*.md)") },
+        { QStringLiteral("html"), tr("HTML (*.html)") },
+        { QStringLiteral("pdf"),  tr("PDF (*.pdf)") },
     };
 
     const QString path = QFileDialog::getSaveFileName(
-        this, QStringLiteral("Exportar"),
+        this, tr("Exportar"),
         QStringLiteral("parcelas.%1").arg(format),
         filters.value(format));
     if (path.isEmpty()) return;
 
     // ODS stub
     if (format == QStringLiteral("ods")) {
-        QMessageBox::information(this, QStringLiteral("Exportar ODS"),
-            QStringLiteral("Exportação ODS ainda não implementada.\n"
-                           "Use CSV ou XLSX para abrir no LibreOffice Calc."));
+        QMessageBox::information(this, tr("Exportar ODS"),
+            tr("Exportação ODS ainda não implementada.\n"
+               "Use CSV ou XLSX para abrir no LibreOffice Calc."));
         return;
     }
 
@@ -383,11 +455,11 @@ void MainWindow::onExportar(const QString &format)
     else if (format == QStringLiteral("pdf"))  ok = ExportService::toPdf(path, d);
 
     if (!ok)
-        QMessageBox::warning(this, QStringLiteral("Exportar"),
-            QStringLiteral("Não foi possível exportar o arquivo."));
+        QMessageBox::warning(this, tr("Exportar"),
+            tr("Não foi possível exportar o arquivo."));
     else
-        QMessageBox::information(this, QStringLiteral("Exportar"),
-            QStringLiteral("Arquivo exportado com sucesso:\n%1").arg(path));
+        QMessageBox::information(this, tr("Exportar"),
+            tr("Arquivo exportado com sucesso:\n%1").arg(path));
 }
 
 // ── Configurações slot ────────────────────────────────────────────────────────
@@ -395,7 +467,7 @@ void MainWindow::onExportar(const QString &format)
 void MainWindow::onConfiguracoes()
 {
     QDialog dlg(this);
-    dlg.setWindowTitle(QStringLiteral("Configurações"));
+    dlg.setWindowTitle(tr("Configurações"));
     dlg.setMinimumWidth(500);
     auto *lay   = new QVBoxLayout(&dlg);
     auto *prefs = new PrefsWidget(&dlg);

@@ -9,11 +9,16 @@ class QTabWidget;
 class QLabel;
 class QToolButton;
 class QAction;
+class QTimer;
+class QCloseEvent;
 
 class MainWindow final : public QMainWindow {
     Q_OBJECT
 public:
     explicit MainWindow(QWidget *parent = nullptr);
+
+protected:
+    void closeEvent(QCloseEvent *event) override;
 
 private:
     void buildUi();
@@ -21,6 +26,8 @@ private:
     void buildThemeBar();
     void applyThemeMode(Theme::ThemeMode mode);
     void updateThemeButton();
+    void resetAutosaveTimer();
+    void onAutosave();
 
     // Arquivo
     void onAbrir();
@@ -34,10 +41,8 @@ private:
     void onColar();
     void onSelecionarTudo();
 
-    // Ajuda
+    // Configurações / Ajuda
     void onConfiguracoes();
-
-    // Ajuda
     void onAjuda();
     void onSobre();
 
@@ -46,4 +51,7 @@ private:
 
     // Theme cycle button (Auto → Light → Dark → Auto)
     QToolButton *m_btnTheme = nullptr;
+
+    bool    m_dirty         = false;
+    QTimer *m_autosaveTimer = nullptr;
 };

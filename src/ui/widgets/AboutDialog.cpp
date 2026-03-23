@@ -10,7 +10,7 @@
 AboutDialog::AboutDialog(QWidget *parent)
     : QDialog(parent)
 {
-    setWindowTitle(QStringLiteral("Sobre PeuBud"));
+    setWindowTitle(tr("Sobre PeuBud"));
     setMinimumWidth(420);
     setModal(true);
 
@@ -27,14 +27,14 @@ AboutDialog::AboutDialog(QWidget *parent)
     lblNome->setAlignment(Qt::AlignCenter);
     layout->addWidget(lblNome);
 
-    auto *lblSub = new QLabel(QStringLiteral("Orçamento Pessoal"), this);
+    auto *lblSub = new QLabel(tr("Orçamento Pessoal"), this);
     lblSub->setObjectName(QStringLiteral("subtitle"));
     lblSub->setAlignment(Qt::AlignCenter);
     layout->addWidget(lblSub);
 
     layout->addSpacing(4);
 
-    auto *lblVer = new QLabel(QStringLiteral("Versão 0.1.0"), this);
+    auto *lblVer = new QLabel(tr("Versão 0.1.0"), this);
     lblVer->setObjectName(QStringLiteral("subtitle"));
     lblVer->setAlignment(Qt::AlignCenter);
     layout->addWidget(lblVer);
@@ -43,11 +43,9 @@ AboutDialog::AboutDialog(QWidget *parent)
 
     // ── Description ──────────────────────────────────────────────────────
     auto *lblDesc = new QLabel(
-        QStringLiteral(
-            "Desenvolvido por <b>Petrus Silva Costa</b> — © 2026<br><br>"
-            "Aplicativo de orçamento pessoal em C++20/Qt6.<br>"
-            "Banco de dados criptografado com AES-256-CBC."
-        ), this);
+        tr("Desenvolvido por <b>Petrus Silva Costa</b> — © 2026<br><br>"
+           "Aplicativo de orçamento pessoal em C++20/Qt6.<br>"
+           "Banco de dados criptografado com AES-256-CBC."), this);
     lblDesc->setWordWrap(true);
     lblDesc->setAlignment(Qt::AlignCenter);
     layout->addWidget(lblDesc);
@@ -55,7 +53,7 @@ AboutDialog::AboutDialog(QWidget *parent)
     layout->addSpacing(8);
 
     auto *lblRepo = new QLabel(
-        QStringLiteral("Repositório: codeberg.org/petrinhu/orcamento_pessoal"), this);
+        tr("Repositório: codeberg.org/petrinhu/orcamento_pessoal"), this);
     lblRepo->setObjectName(QStringLiteral("subtitle"));
     lblRepo->setAlignment(Qt::AlignCenter);
     layout->addWidget(lblRepo);
@@ -72,11 +70,9 @@ AboutDialog::AboutDialog(QWidget *parent)
 
     // ── License ───────────────────────────────────────────────────────────
     auto *lblLic = new QLabel(
-        QStringLiteral(
-            "<b>Licença: PolyForm Noncommercial License 1.0.0</b><br>"
-            "✓ Uso pessoal, distribuição e modificação: <b>permitidos</b>.<br>"
-            "✗ Uso comercial ou venda: <b>proibidos</b>."
-        ), this);
+        tr("<b>Licença: PolyForm Noncommercial License 1.0.0</b><br>"
+           "✓ Uso pessoal, distribuição e modificação: <b>permitidos</b>.<br>"
+           "✗ Uso comercial ou venda: <b>proibidos</b>."), this);
     lblLic->setWordWrap(true);
     lblLic->setAlignment(Qt::AlignCenter);
     layout->addWidget(lblLic);

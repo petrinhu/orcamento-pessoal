@@ -4,7 +4,7 @@
 #include <QSettings>
 #include <QString>
 
-// Singleton — persists language + default currency across sessions.
+// Singleton — persists language, currency and save settings across sessions.
 // Uses QSettings("petrinhu", "PeuBud").
 class AppSettings : public QObject {
     Q_OBJECT
@@ -23,9 +23,20 @@ public:
     // Convenience: display symbol for the current default currency
     QString currencySymbol() const;
 
+    // ── Save / autosave settings ──────────────────────────────────────────
+    bool    autosaveEnabled() const;               // default: true
+    void    setAutosaveEnabled(bool on);
+    int     autosaveIntervalMinutes() const;        // default: 5
+    void    setAutosaveIntervalMinutes(int minutes);
+    QString savesFolder() const;                    // default: Documents/PeuBud
+    void    setSavesFolder(const QString &path);
+    QString autosavesFolder() const;                // default: savesFolder()/autosaves
+    void    setAutosavesFolder(const QString &path);
+
 signals:
     void languageChanged(Language lang);
     void currencyChanged(const QString &code);
+    void autosaveSettingsChanged();
 
 private:
     explicit AppSettings();

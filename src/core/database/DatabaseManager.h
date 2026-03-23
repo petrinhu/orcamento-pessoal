@@ -15,6 +15,7 @@ public:
     // In release: decrypts data/<slug>.pbd using key.
     // In debug:   opens data/<slug>.db directly.
     bool open(const QString &slug, const QByteArray &key = {});
+    bool save();  // flush DB → .pbd sem fechar (release); no-op em debug
     void close();
     bool isOpen() const;
 

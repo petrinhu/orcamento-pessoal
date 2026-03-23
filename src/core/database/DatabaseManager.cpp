@@ -53,6 +53,17 @@ bool DatabaseManager::open(const QString &slug, const QByteArray &key)
     return true;
 }
 
+bool DatabaseManager::save()
+{
+#ifndef QT_DEBUG
+    if (!m_db.isOpen()) return false;
+    const QString pbdPath = QStringLiteral("data/%1.pbd").arg(m_slug);
+    return encryptAndSave(m_dbPath, m_key, pbdPath);
+#else
+    return true; // debug: SQLite persiste imediatamente
+#endif
+}
+
 void DatabaseManager::close()
 {
     if (!m_db.isOpen()) return;

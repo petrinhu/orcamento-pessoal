@@ -4,10 +4,12 @@
 #include "ui/IconGenerator.h"
 #include "core/database/DatabaseManager.h"
 #include "core/session/UserSession.h"
+#include "core/settings/AppSettings.h"
 
 #include <QApplication>
 #include <QDir>
 #include <QMessageBox>
+#include <QTranslator>
 
 int main(int argc, char *argv[])
 {
@@ -17,6 +19,13 @@ int main(int argc, char *argv[])
     app.setApplicationVersion(QStringLiteral("0.1.0"));
     app.setOrganizationName(QStringLiteral("petrinhu"));
     app.setWindowIcon(IconGenerator::generate());
+
+    // ── Translator ─────────────────────────────────────────────────────────
+    QTranslator translator;
+    if (AppSettings::instance().language() == AppSettings::Language::EnIntl
+        && translator.load(QStringLiteral(":/translations/peubud_en.qm"))) {
+        app.installTranslator(&translator);
+    }
 
     Theme::aplicar();
 

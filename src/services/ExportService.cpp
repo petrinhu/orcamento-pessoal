@@ -14,6 +14,7 @@
 #include <QPageSize>
 #include <QPageLayout>
 #include <QRegularExpression>
+#include <QCoreApplication>
 
 #ifdef QXLSX_LIBRARY
 #include <xlsxdocument.h>
@@ -61,9 +62,9 @@ ExportService::TableData ExportService::buildTable(const Dataset &d)
                           + (last.month() - first.month()) + 1;
 
     // Headers
-    td.headers << QStringLiteral("Descrição")
-               << QStringLiteral("Cartão")
-               << QStringLiteral("Total");
+    td.headers << QCoreApplication::translate("ExportService", "Descrição")
+               << QCoreApplication::translate("ExportService", "Cartão")
+               << QCoreApplication::translate("ExportService", "Total");
     for (int k = 0; k < totalMonths; ++k)
         td.headers << first.addMonths(k).toString(QStringLiteral("MMM/yy"));
 
@@ -95,7 +96,7 @@ ExportService::TableData ExportService::buildTable(const Dataset &d)
 
     // Total row
     QStringList totRow;
-    totRow << QStringLiteral("TOTAL") << QString() << QString();
+    totRow << QCoreApplication::translate("ExportService", "TOTAL") << QString() << QString();
     qint64 grandTotal = 0;
     for (int k = 0; k < totalMonths; ++k) {
         totRow << (monthTotals[k] > 0 ? fmtBrl(monthTotals[k]) : QString());

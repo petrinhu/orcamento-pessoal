@@ -13,13 +13,13 @@
 #include <QRegularExpression>
 #include <QMessageBox>
 
-static const QString APP_NAME = QStringLiteral("orcamento-pessoal");
+static const QString APP_NAME   = QStringLiteral("orcamento-pessoal");
 static const QString SALT_SUFFIX = QStringLiteral("/salt");
 
 LoginDialog::LoginDialog(QWidget *parent)
     : QDialog(parent)
 {
-    setWindowTitle(QStringLiteral("Orçamento Pessoal"));
+    setWindowTitle(tr("Orçamento Pessoal"));
     setWindowFlags(Qt::Dialog | Qt::FramelessWindowHint);
     setModal(true);
     buildUi();
@@ -40,7 +40,7 @@ void LoginDialog::buildUi()
     root->setSpacing(16);
 
     // Title
-    auto *title = new QLabel(QStringLiteral("Orçamento Pessoal"), this);
+    auto *title = new QLabel(tr("Orçamento Pessoal"), this);
     title->setObjectName(QStringLiteral("title"));
     title->setAlignment(Qt::AlignCenter);
     root->addWidget(title);
@@ -48,20 +48,20 @@ void LoginDialog::buildUi()
     root->addSpacing(8);
 
     // Nome
-    auto *lblNome = new QLabel(QStringLiteral("Nome"), this);
+    auto *lblNome = new QLabel(tr("Nome"), this);
     root->addWidget(lblNome);
     m_nome = new QLineEdit(this);
-    m_nome->setPlaceholderText(QStringLiteral("Seu nome"));
+    m_nome->setPlaceholderText(tr("Seu nome"));
     root->addWidget(m_nome);
     connect(m_nome, &QLineEdit::textChanged, this, &LoginDialog::onNomeChanged);
 
 #ifndef QT_DEBUG
     // Senha
-    auto *lblSenha = new QLabel(QStringLiteral("Senha"), this);
+    auto *lblSenha = new QLabel(tr("Senha"), this);
     root->addWidget(lblSenha);
     m_senha = new QLineEdit(this);
     m_senha->setEchoMode(QLineEdit::Password);
-    m_senha->setPlaceholderText(QStringLiteral("Mínimo 8 caracteres"));
+    m_senha->setPlaceholderText(tr("Mínimo 8 caracteres"));
     root->addWidget(m_senha);
     connect(m_senha, &QLineEdit::textChanged, this, &LoginDialog::onSenhaChanged);
 
@@ -71,9 +71,9 @@ void LoginDialog::buildUi()
     checkLayout->setContentsMargins(8, 8, 8, 8);
     checkLayout->setSpacing(4);
 
-    m_chkLen   = new QLabel(QStringLiteral("✗  Mínimo 8 caracteres"), this);
-    m_chkUpper = new QLabel(QStringLiteral("✗  Uma letra maiúscula"), this);
-    m_chkDigit = new QLabel(QStringLiteral("✗  Um número"), this);
+    m_chkLen   = new QLabel(tr("✗  Mínimo 8 caracteres"), this);
+    m_chkUpper = new QLabel(tr("✗  Uma letra maiúscula"), this);
+    m_chkDigit = new QLabel(tr("✗  Um número"), this);
     for (auto *lbl : {m_chkLen, m_chkUpper, m_chkDigit}) {
         lbl->setObjectName(QStringLiteral("subtitle"));
         checkLayout->addWidget(lbl);
@@ -84,7 +84,7 @@ void LoginDialog::buildUi()
     root->addSpacing(8);
 
     // Botão Entrar
-    m_btnEntrar = new QPushButton(QStringLiteral("Entrar"), this);
+    m_btnEntrar = new QPushButton(tr("Entrar"), this);
     m_btnEntrar->setObjectName(QStringLiteral("primary"));
     m_btnEntrar->setEnabled(false);
     root->addWidget(m_btnEntrar);
@@ -120,9 +120,9 @@ void LoginDialog::updateChecklist()
     const bool okDigit = s.contains(QRegularExpression(QStringLiteral("[0-9]")));
     const QString ok  = QStringLiteral("✓  ");
     const QString bad = QStringLiteral("✗  ");
-    m_chkLen->setText  ((okLen   ? ok : bad) + QStringLiteral("Mínimo 8 caracteres"));
-    m_chkUpper->setText((okUpper ? ok : bad) + QStringLiteral("Uma letra maiúscula"));
-    m_chkDigit->setText((okDigit ? ok : bad) + QStringLiteral("Um número"));
+    m_chkLen->setText  ((okLen   ? ok : bad) + tr("Mínimo 8 caracteres"));
+    m_chkUpper->setText((okUpper ? ok : bad) + tr("Uma letra maiúscula"));
+    m_chkDigit->setText((okDigit ? ok : bad) + tr("Um número"));
     const QString green = Theme::positivo();
     const QString red   = Theme::negativo();
     m_chkLen->setStyleSheet  (QStringLiteral("color: %1").arg(okLen   ? green : red));
@@ -165,9 +165,9 @@ void LoginDialog::onEntrar()
         // First time: generate and store salt
         salt = crypto.generateSalt();
         if (!store.store(saltKey, salt)) {
-            QMessageBox::warning(this, QStringLiteral("Erro"),
-                QStringLiteral("Não foi possível acessar o cofre de senhas do sistema.\n"
-                               "Verifique se o KWallet ou GNOME Keyring está disponível."));
+            QMessageBox::warning(this, tr("Erro"),
+                tr("Não foi possível acessar o cofre de senhas do sistema.\n"
+                   "Verifique se o KWallet ou GNOME Keyring está disponível."));
             return;
         }
     }

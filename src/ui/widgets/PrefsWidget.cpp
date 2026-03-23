@@ -10,6 +10,11 @@
 #include <QCompleter>
 #include <QScrollArea>
 #include <QLabel>
+#include <QCheckBox>
+#include <QSpinBox>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QFileDialog>
 
 // ── Currency list ─────────────────────────────────────────────────────────────
 
@@ -63,7 +68,6 @@ void PrefsWidget::buildUi()
     outer->setContentsMargins(16, 16, 16, 16);
     outer->setSpacing(16);
 
-    // ── Scroll area so the content scrolls if window is small ──────────────
     auto *scroll = new QScrollArea(this);
     scroll->setWidgetResizable(true);
     scroll->setFrameShape(QFrame::NoFrame);
@@ -76,7 +80,7 @@ void PrefsWidget::buildUi()
     layout->setSpacing(16);
 
     // ── Idioma ─────────────────────────────────────────────────────────────
-    auto *grpIdioma = new QGroupBox(QStringLiteral("Idioma"), content);
+    auto *grpIdioma = new QGroupBox(tr("Idioma"), content);
     auto *layIdioma = new QVBoxLayout(grpIdioma);
     layIdioma->setSpacing(6);
 
@@ -84,6 +88,12 @@ void PrefsWidget::buildUi()
     m_rEnIntl = new QRadioButton(QStringLiteral("English — en-intl"),  grpIdioma);
     layIdioma->addWidget(m_rPtBr);
     layIdioma->addWidget(m_rEnIntl);
+
+    m_lblRestartHint = new QLabel(
+        tr("Reinicie o aplicativo para aplicar o novo idioma."), grpIdioma);
+    m_lblRestartHint->setObjectName(QStringLiteral("subtitle"));
+    m_lblRestartHint->setVisible(false);
+    layIdioma->addWidget(m_lblRestartHint);
 
     const bool isPtBr = (AppSettings::instance().language() == AppSettings::Language::PtBr);
     m_rPtBr  ->setChecked( isPtBr);
@@ -95,11 +105,11 @@ void PrefsWidget::buildUi()
     layout->addWidget(grpIdioma);
 
     // ── Moeda padrão ───────────────────────────────────────────────────────
-    auto *grpMoeda = new QGroupBox(QStringLiteral("Moeda Padrão"), content);
+    auto *grpMoeda = new QGroupBox(tr("Moeda Padrão"), content);
     auto *layMoeda = new QVBoxLayout(grpMoeda);
 
     auto *lblHint = new QLabel(
-        QStringLiteral("Digite para filtrar — os totais da tabela usam o câmbio desta moeda."),
+        tr("Digite para filtrar — os totais da tabela usam o câmbio desta moeda."),
         grpMoeda);
     lblHint->setObjectName(QStringLiteral("subtitle"));
     lblHint->setWordWrap(true);
@@ -110,7 +120,6 @@ void PrefsWidget::buildUi()
     m_comboCurrency->setInsertPolicy(QComboBox::NoInsert);
     m_comboCurrency->addItems(buildCurrencyList());
 
-    // Configure completer for contains-search (type "euro" → finds EUR)
     auto *comp = m_comboCurrency->completer();
     comp->setFilterMode(Qt::MatchContains);
     comp->setCaseSensitivity(Qt::CaseInsensitive);
@@ -120,7 +129,6 @@ void PrefsWidget::buildUi()
     layMoeda->addWidget(m_comboCurrency);
     layout->addWidget(grpMoeda);
 
-    // Keep combo in sync when language change forces a currency reset
     connect(&AppSettings::instance(), &AppSettings::currencyChanged,
             this, [this](const QString &code) {
         m_loading = true;
@@ -131,8 +139,65 @@ void PrefsWidget::buildUi()
     connect(m_comboCurrency, QOverload<int>::of(&QComboBox::currentIndexChanged),
             this, &PrefsWidget::onCurrencyChanged);
 
+    // ── Salvamento ─────────────────────────────────────────────────────────
+    auto *grpSave = new QGroupBox(tr("Salvamento"), content);
+    auto *laySave = new QVBoxLayout(grpSave);
+    laySave->setSpacing(8);
+
+    // Auto-save toggle + interval
+    auto *rowAutosave = new QHBoxLayout;
+    m_chkAutosave = new QCheckBox(tr("Salvar automaticamente a cada"), grpSave);
+    m_chkAutosave->setChecked(AppSettings::instance().autosaveEnabled());
+    rowAutosave->addWidget(m_chkAutosave);
+
+    m_spnInterval = new QSpinBox(grpSave);
+    m_spnInterval->setRange(1, 60);
+    m_spnInterval->setSuffix(tr(" min"));
+    m_spnInterval->setValue(AppSettings::instance().autosaveIntervalMinutes());
+    m_spnInterval->setEnabled(m_chkAutosave->isChecked());
+    rowAutosave->addWidget(m_spnInterval);
+    rowAutosave->addStretch();
+    laySave->addLayout(rowAutosave);
+
+    connect(m_chkAutosave, &QCheckBox::toggled, this, &PrefsWidget::onAutosaveToggled);
+    connect(m_spnInterval, QOverload<int>::of(&QSpinBox::valueChanged),
+            this, &PrefsWidget::onIntervalChanged);
+
+    // Saves folder
+    auto *lblSavesFolder = new QLabel(tr("Pasta de salvamentos:"), grpSave);
+    laySave->addWidget(lblSavesFolder);
+    auto *rowSaves = new QHBoxLayout;
+    m_edtSavesFolder = new QLineEdit(AppSettings::instance().savesFolder(), grpSave);
+    auto *btnBrowseSaves = new QPushButton(QStringLiteral("…"), grpSave);
+    btnBrowseSaves->setFixedWidth(32);
+    rowSaves->addWidget(m_edtSavesFolder);
+    rowSaves->addWidget(btnBrowseSaves);
+    laySave->addLayout(rowSaves);
+    connect(btnBrowseSaves, &QPushButton::clicked, this, &PrefsWidget::onBrowseSavesFolder);
+    connect(m_edtSavesFolder, &QLineEdit::editingFinished, this, [this]() {
+        AppSettings::instance().setSavesFolder(m_edtSavesFolder->text().trimmed());
+    });
+
+    // Autosaves folder
+    auto *lblAutosavesFolder = new QLabel(tr("Pasta de auto-salvamentos:"), grpSave);
+    laySave->addWidget(lblAutosavesFolder);
+    auto *rowAutosaves = new QHBoxLayout;
+    m_edtAutosavesFolder = new QLineEdit(AppSettings::instance().autosavesFolder(), grpSave);
+    auto *btnBrowseAutosaves = new QPushButton(QStringLiteral("…"), grpSave);
+    btnBrowseAutosaves->setFixedWidth(32);
+    rowAutosaves->addWidget(m_edtAutosavesFolder);
+    rowAutosaves->addWidget(btnBrowseAutosaves);
+    laySave->addLayout(rowAutosaves);
+    connect(btnBrowseAutosaves, &QPushButton::clicked,
+            this, &PrefsWidget::onBrowseAutosavesFolder);
+    connect(m_edtAutosavesFolder, &QLineEdit::editingFinished, this, [this]() {
+        AppSettings::instance().setAutosavesFolder(m_edtAutosavesFolder->text().trimmed());
+    });
+
+    layout->addWidget(grpSave);
+
     // ── Cartões ────────────────────────────────────────────────────────────
-    auto *grpCartoes = new QGroupBox(QStringLiteral("Cartões"), content);
+    auto *grpCartoes = new QGroupBox(tr("Cartões"), content);
     auto *layCartoes = new QVBoxLayout(grpCartoes);
     layCartoes->setContentsMargins(0, 0, 0, 0);
 
@@ -155,7 +220,6 @@ void PrefsWidget::syncComboToCurrency(const QString &code)
             return;
         }
     }
-    // Unknown code: set text directly
     m_comboCurrency->setCurrentText(code);
 }
 
@@ -167,7 +231,7 @@ void PrefsWidget::onLanguageToggled()
                       ? AppSettings::Language::PtBr
                       : AppSettings::Language::EnIntl;
     AppSettings::instance().setLanguage(lang);
-    // currencyChanged signal from AppSettings will update combo via connection above
+    m_lblRestartHint->setVisible(true);
 }
 
 void PrefsWidget::onCurrencyChanged(int /*index*/)
@@ -178,4 +242,37 @@ void PrefsWidget::onCurrencyChanged(int /*index*/)
     const QString code = entry.left(3).toUpper();
     AppSettings::instance().setDefaultCurrency(code);
     emit moedaAlterada();
+}
+
+void PrefsWidget::onAutosaveToggled(bool checked)
+{
+    m_spnInterval->setEnabled(checked);
+    AppSettings::instance().setAutosaveEnabled(checked);
+}
+
+void PrefsWidget::onIntervalChanged(int minutes)
+{
+    AppSettings::instance().setAutosaveIntervalMinutes(minutes);
+}
+
+void PrefsWidget::onBrowseSavesFolder()
+{
+    const QString dir = QFileDialog::getExistingDirectory(
+        this, tr("Selecionar pasta de salvamentos"),
+        m_edtSavesFolder->text());
+    if (!dir.isEmpty()) {
+        m_edtSavesFolder->setText(dir);
+        AppSettings::instance().setSavesFolder(dir);
+    }
+}
+
+void PrefsWidget::onBrowseAutosavesFolder()
+{
+    const QString dir = QFileDialog::getExistingDirectory(
+        this, tr("Selecionar pasta de auto-salvamentos"),
+        m_edtAutosavesFolder->text());
+    if (!dir.isEmpty()) {
+        m_edtAutosavesFolder->setText(dir);
+        AppSettings::instance().setAutosavesFolder(dir);
+    }
 }

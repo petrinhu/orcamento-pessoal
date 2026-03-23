@@ -7,7 +7,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Core Gui GuiPrivate Widgets Charts Network Sql)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui GuiPrivate Widgets Charts Network Sql LinguistTools)
 find_package(OpenSSL REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBSECRET REQUIRED libsecret-1)
@@ -105,6 +105,19 @@ target_link_libraries(orcamento-pessoal PRIVATE
     OpenSSL::Crypto
     ${LIBSECRET_LIBRARIES}
     QXlsx::QXlsx
+)
+
+# ── Translations (Qt Linguist) ────────────────────────────────────────────────
+set(TS_FILES resources/translations/peubud_en.ts)
+qt_add_lupdate(orcamento-pessoal TS_FILES ${TS_FILES} SOURCES ${SOURCES})
+qt_add_lrelease(orcamento-pessoal
+    TS_FILES ${TS_FILES}
+    QM_FILES_OUTPUT_VARIABLE APP_QM_FILES
+)
+qt_add_resources(orcamento-pessoal "i18n"
+    PREFIX  "/translations"
+    BASE    "${CMAKE_CURRENT_BINARY_DIR}"
+    FILES   ${APP_QM_FILES}
 )
 
 # Hardening flags (release only)

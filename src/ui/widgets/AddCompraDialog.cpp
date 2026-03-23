@@ -24,7 +24,7 @@
 AddCompraDialog::AddCompraDialog(const QList<Cartao> &cartoes, QWidget *parent)
     : QDialog(parent), m_cartoes(cartoes)
 {
-    setWindowTitle(QStringLiteral("Nova Compra Parcelada"));
+    setWindowTitle(tr("Nova Compra Parcelada"));
     setMinimumWidth(600);
     buildUi();
 }
@@ -40,14 +40,14 @@ void AddCompraDialog::buildUi()
     headerForm->setSpacing(10);
 
     m_nome = new QLineEdit(this);
-    m_nome->setPlaceholderText(QStringLiteral("Ex: Notebook, Geladeira..."));
-    headerForm->addRow(QStringLiteral("Descrição *"), m_nome);
+    m_nome->setPlaceholderText(tr("Ex: Notebook, Geladeira..."));
+    headerForm->addRow(tr("Descrição *"), m_nome);
 
     m_cartao = new QComboBox(this);
-    m_cartao->addItem(QStringLiteral("— Sem cartão —"), 0);
+    m_cartao->addItem(tr("— Sem cartão —"), 0);
     for (const auto &c : m_cartoes)
         m_cartao->addItem(c.apelido, c.id);
-    headerForm->addRow(QStringLiteral("Cartão"), m_cartao);
+    headerForm->addRow(tr("Cartão"), m_cartao);
 
     m_moeda = new QComboBox(this);
     const QStringList moedas = {QStringLiteral("BRL"), QStringLiteral("USD"),
@@ -55,29 +55,29 @@ void AddCompraDialog::buildUi()
                                  QStringLiteral("JPY")};
     for (const auto &m : moedas)
         m_moeda->addItem(QStringLiteral("%1  %2").arg(ParcelaService::simboloMoeda(m), m), m);
-    headerForm->addRow(QStringLiteral("Moeda"), m_moeda);
+    headerForm->addRow(tr("Moeda"), m_moeda);
 
     auto *dataRow = new QHBoxLayout;
     m_dataInicio = new QDateEdit(QDate::currentDate(), this);
     m_dataInicio->setCalendarPopup(true);
     m_dataInicio->setDisplayFormat(QStringLiteral("MM/yyyy"));
-    m_dataInicio->setToolTip(QStringLiteral("Mês/ano desta parcela"));
+    m_dataInicio->setToolTip(tr("Mês/ano desta parcela"));
 
     m_parcelaIni = new QSpinBox(this);
     m_parcelaIni->setRange(1, 999);
     m_parcelaIni->setValue(1);
-    m_parcelaIni->setPrefix(QStringLiteral("Parcela "));
+    m_parcelaIni->setPrefix(tr("Parcela "));
     m_parcelaIni->setSuffix(QStringLiteral("ª"));
-    m_parcelaIni->setToolTip(QStringLiteral(
+    m_parcelaIni->setToolTip(tr(
         "Se esta já é a 3ª parcela, coloque 3.\n"
         "O app calculará as parcelas anteriores automaticamente."));
 
     dataRow->addWidget(m_dataInicio);
     dataRow->addSpacing(12);
-    dataRow->addWidget(new QLabel(QStringLiteral("é a"), this));
+    dataRow->addWidget(new QLabel(tr("é a"), this));
     dataRow->addWidget(m_parcelaIni);
     dataRow->addStretch();
-    headerForm->addRow(QStringLiteral("Data da fatura"), dataRow);
+    headerForm->addRow(tr("Data da fatura"), dataRow);
 
     root->addLayout(headerForm);
 
@@ -86,15 +86,15 @@ void AddCompraDialog::buildUi()
 
     auto *tabSimples = new QWidget;
     buildTabSimples(tabSimples);
-    m_tabs->addTab(tabSimples, QStringLiteral("Valor por parcela"));
+    m_tabs->addTab(tabSimples, tr("Valor por parcela"));
 
     auto *tabTotal = new QWidget;
     buildTabTotal(tabTotal);
-    m_tabs->addTab(tabTotal, QStringLiteral("Valor total"));
+    m_tabs->addTab(tabTotal, tr("Valor total"));
 
     auto *tabJuros = new QWidget;
     buildTabJuros(tabJuros);
-    m_tabs->addTab(tabJuros, QStringLiteral("Com juros / CET"));
+    m_tabs->addTab(tabJuros, tr("Com juros / CET"));
 
     connect(m_tabs, &QTabWidget::currentChanged, this, &AddCompraDialog::onTabChanged);
     root->addWidget(m_tabs);
@@ -102,7 +102,7 @@ void AddCompraDialog::buildUi()
     // ── Preview table ──────────────────────────────────────────────────────
     buildPreview();
 
-    auto *grpPreview = new QGroupBox(QStringLiteral("Pré-visualização das parcelas"), this);
+    auto *grpPreview = new QGroupBox(tr("Pré-visualização das parcelas"), this);
     grpPreview->setObjectName(QStringLiteral("surface"));
     auto *pvLayout = new QVBoxLayout(grpPreview);
     pvLayout->addWidget(m_preview);
@@ -111,7 +111,7 @@ void AddCompraDialog::buildUi()
     // ── Buttons ────────────────────────────────────────────────────────────
     auto *btnBox = new QDialogButtonBox(
         QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
-    btnBox->button(QDialogButtonBox::Ok)->setText(QStringLiteral("Adicionar"));
+    btnBox->button(QDialogButtonBox::Ok)->setText(tr("Adicionar"));
     btnBox->button(QDialogButtonBox::Ok)->setObjectName(QStringLiteral("primary"));
     connect(btnBox, &QDialogButtonBox::accepted, this, &AddCompraDialog::accept);
     connect(btnBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
@@ -126,13 +126,13 @@ void AddCompraDialog::buildTabSimples(QWidget *tab)
 
     m_valorParcela = new QLineEdit(tab);
     m_valorParcela->setPlaceholderText(QStringLiteral("0,00"));
-    form->addRow(QStringLiteral("Valor da parcela (R$)"), m_valorParcela);
+    form->addRow(tr("Valor da parcela (R$)"), m_valorParcela);
 
     m_numParcelas_s = new QSpinBox(tab);
     m_numParcelas_s->setRange(1, 999);
     m_numParcelas_s->setValue(12);
     m_numParcelas_s->setSuffix(QStringLiteral("x"));
-    form->addRow(QStringLiteral("Número de parcelas"), m_numParcelas_s);
+    form->addRow(tr("Número de parcelas"), m_numParcelas_s);
 
     connect(m_valorParcela,  &QLineEdit::textChanged, this, &AddCompraDialog::recalcular);
     connect(m_numParcelas_s, QOverload<int>::of(&QSpinBox::valueChanged),
@@ -147,16 +147,16 @@ void AddCompraDialog::buildTabTotal(QWidget *tab)
 
     m_valorTotal_t = new QLineEdit(tab);
     m_valorTotal_t->setPlaceholderText(QStringLiteral("0,00"));
-    form->addRow(QStringLiteral("Valor total (R$)"), m_valorTotal_t);
+    form->addRow(tr("Valor total (R$)"), m_valorTotal_t);
 
     m_numParcelas_t = new QSpinBox(tab);
     m_numParcelas_t->setRange(1, 999);
     m_numParcelas_t->setValue(12);
     m_numParcelas_t->setSuffix(QStringLiteral("x"));
-    form->addRow(QStringLiteral("Número de parcelas"), m_numParcelas_t);
+    form->addRow(tr("Número de parcelas"), m_numParcelas_t);
 
     auto *infoLbl = new QLabel(
-        QStringLiteral("Valor por parcela = Total ÷ N (sem juros)"), tab);
+        tr("Valor por parcela = Total ÷ N (sem juros)"), tab);
     infoLbl->setObjectName(QStringLiteral("subtitle"));
     form->addRow(QString(), infoLbl);
 
@@ -173,18 +173,18 @@ void AddCompraDialog::buildTabJuros(QWidget *tab)
 
     m_valorTotal_j = new QLineEdit(tab);
     m_valorTotal_j->setPlaceholderText(QStringLiteral("0,00"));
-    form->addRow(QStringLiteral("Valor total / financiado (R$)"), m_valorTotal_j);
+    form->addRow(tr("Valor total / financiado (R$)"), m_valorTotal_j);
 
     m_numParcelas_j = new QSpinBox(tab);
     m_numParcelas_j->setRange(1, 999);
     m_numParcelas_j->setValue(12);
     m_numParcelas_j->setSuffix(QStringLiteral("x"));
-    form->addRow(QStringLiteral("Número de parcelas"), m_numParcelas_j);
+    form->addRow(tr("Número de parcelas"), m_numParcelas_j);
 
     m_valorParcela_j = new QLineEdit(tab);
     m_valorParcela_j->setPlaceholderText(
-        QStringLiteral("Preencha para calcular juros, ou deixe em branco"));
-    form->addRow(QStringLiteral("Valor de cada parcela (R$)"), m_valorParcela_j);
+        tr("Preencha para calcular juros, ou deixe em branco"));
+    form->addRow(tr("Valor de cada parcela (R$)"), m_valorParcela_j);
 
     m_jurosMensais = new QDoubleSpinBox(tab);
     m_jurosMensais->setRange(0.0, 100.0);
@@ -192,15 +192,15 @@ void AddCompraDialog::buildTabJuros(QWidget *tab)
     m_jurosMensais->setDecimals(4);
     m_jurosMensais->setSuffix(QStringLiteral("% a.m."));
     m_jurosMensais->setToolTip(
-        QStringLiteral("Preencha a taxa para calcular as parcelas,\n"
-                        "ou deixe em 0 e preencha o valor da parcela\n"
-                        "para que o app calcule a taxa."));
-    form->addRow(QStringLiteral("Juros mensais"), m_jurosMensais);
+        tr("Preencha a taxa para calcular as parcelas,\n"
+           "ou deixe em 0 e preencha o valor da parcela\n"
+           "para que o app calcule a taxa."));
+    form->addRow(tr("Juros mensais"), m_jurosMensais);
 
     // Info labels
-    m_lblCET         = new QLabel(QStringLiteral("CET: —"), tab);
-    m_lblJurosMensais = new QLabel(QStringLiteral("Juros mensais: —"), tab);
-    m_lblJurosTotais  = new QLabel(QStringLiteral("Juros totais: —"), tab);
+    m_lblCET          = new QLabel(tr("CET: —"), tab);
+    m_lblJurosMensais = new QLabel(tr("Juros mensais: —"), tab);
+    m_lblJurosTotais  = new QLabel(tr("Juros totais: —"), tab);
     for (auto *lbl : {m_lblCET, m_lblJurosMensais, m_lblJurosTotais}) {
         lbl->setObjectName(QStringLiteral("subtitle"));
         form->addRow(QString(), lbl);
@@ -218,9 +218,9 @@ void AddCompraDialog::buildPreview()
 {
     m_preview = new QTableWidget(0, 3, this);
     m_preview->setHorizontalHeaderLabels({
-        QStringLiteral("Nº"),
-        QStringLiteral("Mês/Ano"),
-        QStringLiteral("Valor")
+        tr("Nº"),
+        tr("Mês/Ano"),
+        tr("Valor")
     });
     m_preview->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     m_preview->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -308,11 +308,11 @@ void AddCompraDialog::recalcular()
             }
 
             // Update info labels
-            m_lblCET->setText(QStringLiteral("CET: %1% a.a.")
+            m_lblCET->setText(tr("CET: %1% a.a.")
                 .arg(r.jurosAnuaisPct, 0, 'f', 2));
-            m_lblJurosMensais->setText(QStringLiteral("Juros mensais: %1% a.m.")
+            m_lblJurosMensais->setText(tr("Juros mensais: %1% a.m.")
                 .arg(r.jurosMensaisPct, 0, 'f', 4));
-            m_lblJurosTotais->setText(QStringLiteral("Juros totais: %1")
+            m_lblJurosTotais->setText(tr("Juros totais: %1")
                 .arg(ParcelaService::formatarValor(r.jurosTotais, moeda)));
         }
     } catch (...) {
