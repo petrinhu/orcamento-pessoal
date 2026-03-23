@@ -2,6 +2,7 @@
 
 #include "models/Compra.h"
 #include "models/Parcela.h"
+#include "services/ParcelaService.h"
 
 #include <QDialog>
 #include <QList>
@@ -14,6 +15,7 @@ class QLabel;
 class QDateEdit;
 class QTabWidget;
 class QTableWidget;
+class QPushButton;
 
 // Dialog to add a new purchase (compra) with installments.
 // Supports all input modes:
@@ -42,7 +44,7 @@ private:
     void buildTabJuros(QWidget *tab);
     void buildPreview();
     void atualizarPreview();
-    void atualizarInfoJuros();
+    void atualizarEstadoCamposJ(); // enable/disable/lock fields per m_solveForJ
     void accept() override;
 
     // Common fields (all tabs)
@@ -61,14 +63,21 @@ private:
     // Total tab
     QLineEdit    *m_valorTotal_t  = nullptr;
 
-    // Juros tab
-    QLineEdit    *m_valorTotal_j   = nullptr;
-    QLineEdit    *m_valorParcela_j = nullptr;
-    QDoubleSpinBox *m_jurosMensais = nullptr;
-    QDoubleSpinBox *m_cet_j        = nullptr;
-    QLabel       *m_lblCET         = nullptr;
-    QLabel       *m_lblJurosTotais = nullptr;
-    QLabel       *m_lblJurosMensais = nullptr;
+    // Juros tab — fields
+    QLineEdit      *m_valorTotal_j   = nullptr;
+    QLineEdit      *m_valorParcela_j = nullptr;
+    QDoubleSpinBox *m_jurosMensais   = nullptr;
+    QDoubleSpinBox *m_cet_j          = nullptr;
+    QLabel         *m_lblJurosTotais = nullptr;
+
+    // Juros tab — lock buttons (🔒 = input, 🔓 = output/calculated)
+    QPushButton *m_lockTotal   = nullptr;
+    QPushButton *m_lockN       = nullptr;
+    QPushButton *m_lockTaxa    = nullptr;
+    QPushButton *m_lockParcela = nullptr;
+
+    // Which field is auto-calculated in the Juros tab
+    SolveFor m_solveForJ = SolveFor::Parcela;
 
     // Preview table
     QTableWidget *m_preview    = nullptr;
