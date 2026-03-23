@@ -13,6 +13,7 @@
 #include <QClipboard>
 #include <QCheckBox>
 #include <QSettings>
+#include <QWindow>
 #include <QCloseEvent>
 #include <QKeyEvent>
 #include <cmath>
@@ -136,15 +137,10 @@ void CalculadoraDialog::buildTabComum(QWidget *tab)
         m_chkAlwaysOnTop = new QCheckBox(tr("Sempre visível"), tab);
         m_chkAlwaysOnTop->setToolTip(tr("Manter calculadora sobre todas as outras janelas"));
         connect(m_chkAlwaysOnTop, &QCheckBox::toggled, this, [this](bool on) {
-            const QRect savedGeo = geometry();
-            Qt::WindowFlags flags = windowFlags();
-            if (on) flags |= Qt::WindowStaysOnTopHint;
-            else    flags &= ~Qt::WindowStaysOnTopHint;
-            setWindowFlags(flags);   // rebuilds native window
-            setGeometry(savedGeo);   // restore position immediately
-            show();
-            raise();
-            activateWindow();
+            // Use QWindow::setFlag() directly — does NOT recreate the native
+            // window and works with Wayland xdg-toplevel-ext (KDE Plasma 6+).
+            if (QWindow *wh = windowHandle())
+                wh->setFlag(Qt::WindowStaysOnTopHint, on);
         });
 
         row->addWidget(m_exprLabel, 1);
