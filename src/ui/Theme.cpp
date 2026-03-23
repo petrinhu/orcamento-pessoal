@@ -290,6 +290,42 @@ static QString gerarQss()
     return qss;
 }
 
+// ── QPalette generation ───────────────────────────────────────────────────────
+// Fusion style draws selection/focus using QPalette::Highlight. Without a
+// custom palette, it inherits the system palette — which on KDE may be red or
+// any colour the user chose. Forcing Breeze colours here ensures consistent
+// rendering regardless of the system palette.
+static QPalette gerarPaleta()
+{
+    const bool dark = isDark();
+
+    const QColor bg   = dark ? QColor(QStringLiteral("#31363B")) : QColor(QStringLiteral("#EFF0F1"));
+    const QColor surf = dark ? QColor(QStringLiteral("#1B1E20")) : QColor(QStringLiteral("#FFFFFF"));
+    const QColor alt  = dark ? QColor(QStringLiteral("#232629")) : QColor(QStringLiteral("#F5F5F5"));
+    const QColor txt  = dark ? QColor(QStringLiteral("#EFF0F1")) : QColor(QStringLiteral("#232629"));
+    const QColor sub  = QColor(QStringLiteral("#7F8C8D"));
+    const QColor acc  = QColor(QStringLiteral("#3DAEE9"));   // Breeze Blue
+
+    QPalette pal;
+    pal.setColor(QPalette::Window,          bg);
+    pal.setColor(QPalette::WindowText,      txt);
+    pal.setColor(QPalette::Base,            surf);
+    pal.setColor(QPalette::AlternateBase,   alt);
+    pal.setColor(QPalette::Text,            txt);
+    pal.setColor(QPalette::Button,          bg);
+    pal.setColor(QPalette::ButtonText,      txt);
+    pal.setColor(QPalette::Highlight,       acc);
+    pal.setColor(QPalette::HighlightedText, Qt::white);
+    pal.setColor(QPalette::Link,            acc);
+    pal.setColor(QPalette::LinkVisited,     acc);
+    // Disabled
+    pal.setColor(QPalette::Disabled, QPalette::WindowText, sub);
+    pal.setColor(QPalette::Disabled, QPalette::Text,       sub);
+    pal.setColor(QPalette::Disabled, QPalette::ButtonText, sub);
+
+    return pal;
+}
+
 // ── NoFocusStyle ──────────────────────────────────────────────────────────────
 // Fusion draws PE_FrameFocusRect as a coloured dashed rectangle around the
 // focused widget. QSS `outline: none` only suppresses it on a few widget types;
@@ -312,6 +348,7 @@ public:
 void setMode(ThemeMode mode)
 {
     g_mode = mode;
+    QApplication::setPalette(gerarPaleta());
     qApp->setStyleSheet(gerarQss());
 }
 
@@ -321,6 +358,11 @@ void aplicar()
     // AND suppresses the PE_FrameFocusRect coloured border on all widgets.
     QApplication::setStyle(
         new NoFocusStyle(QStyleFactory::create(QStringLiteral("Fusion"))));
+
+    // Override the system QPalette so Fusion's Highlight colour (used for
+    // selection backgrounds and focus rings) uses Breeze Blue, not whatever
+    // the user has set in KDE System Settings.
+    QApplication::setPalette(gerarPaleta());
 
     carregarFontes();
 
@@ -333,8 +375,10 @@ void aplicar()
     QObject::connect(
         QGuiApplication::styleHints(), &QStyleHints::colorSchemeChanged,
         qApp, [](Qt::ColorScheme) {
-            if (g_mode == ThemeMode::Auto)
+            if (g_mode == ThemeMode::Auto) {
+                QApplication::setPalette(gerarPaleta());
                 qApp->setStyleSheet(gerarQss());
+            }
         }
     );
 }
