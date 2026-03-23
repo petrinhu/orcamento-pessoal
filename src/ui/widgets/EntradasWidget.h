@@ -29,6 +29,8 @@ public slots:
     void recarregar();
     void copiar();
     void selecionarTudo();
+    void scrollParaMesAtual();
+    void navegarMes(int delta); // delta = ±N meses
 
 private slots:
     void onCellActivated(int row, int col);

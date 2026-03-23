@@ -35,6 +35,8 @@ public:
 public slots:
     void copiar();
     void selecionarTudo();
+    void scrollParaMesAtual();
+    void navegarMes(int delta); // delta = ±N meses
 
 signals:
     void dadosAlterados();

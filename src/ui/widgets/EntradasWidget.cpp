@@ -17,6 +17,8 @@
 #include <QLocale>
 #include <QMenu>
 #include <QMessageBox>
+#include <QScrollBar>
+#include <QShortcut>
 #include <QDate>
 #include <QFont>
 #include <algorithm>
@@ -169,6 +171,17 @@ void EntradasWidget::buildUi()
             this, &EntradasWidget::onOrganizarPor);
     connect(m_table, &QTableWidget::cellClicked,
             this, &EntradasWidget::onCellActivated);
+
+    // ── Keyboard navigation (Ctrl+← / Ctrl+→) ─────────────────────────────
+    auto *scLeft = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_Left),
+                                 this, nullptr, nullptr,
+                                 Qt::WidgetWithChildrenShortcut);
+    connect(scLeft, &QShortcut::activated, this, [this]() { navegarMes(-1); });
+
+    auto *scRight = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_Right),
+                                  this, nullptr, nullptr,
+                                  Qt::WidgetWithChildrenShortcut);
+    connect(scRight, &QShortcut::activated, this, [this]() { navegarMes(+1); });
     connect(m_table->selectionModel(), &QItemSelectionModel::selectionChanged,
             this, [this]() {
                 m_btnDel->setEnabled(!m_table->selectedItems().isEmpty());
@@ -492,4 +505,37 @@ void EntradasWidget::copiar()
 void EntradasWidget::selecionarTudo()
 {
     m_table->selectAll();
+}
+
+// ── Navigation ────────────────────────────────────────────────────────────────
+
+void EntradasWidget::scrollParaMesAtual()
+{
+    if (!m_table || m_numMonths == 0) return;
+    // Find the month index for current date
+    const QDate cur(QDate::currentDate().year(), QDate::currentDate().month(), 1);
+    int k = (cur.year() - m_firstMonth.year()) * 12 + (cur.month() - m_firstMonth.month());
+    k = qBound(0, k, m_numMonths - 1);
+    const int col = k * COL_PER_MONTH;
+    m_table->horizontalScrollBar()->setValue(
+        m_table->horizontalHeader()->sectionPosition(col));
+}
+
+void EntradasWidget::navegarMes(int delta)
+{
+    if (!m_table || m_numMonths == 0) return;
+    const QHeaderView *hh = m_table->horizontalHeader();
+    const int currentX = m_table->horizontalScrollBar()->value();
+    // Determine currently leftmost visible month
+    int visibleMonth = 0;
+    for (int k = 0; k < m_numMonths; ++k) {
+        const int col = k * COL_PER_MONTH;
+        if (hh->sectionPosition(col) >= currentX) {
+            visibleMonth = k;
+            break;
+        }
+    }
+    const int targetMonth = qBound(0, visibleMonth + delta, m_numMonths - 1);
+    m_table->horizontalScrollBar()->setValue(
+        hh->sectionPosition(targetMonth * COL_PER_MONTH));
 }

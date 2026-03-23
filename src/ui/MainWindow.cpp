@@ -288,7 +288,13 @@ void MainWindow::buildThemeBar()
 
     // Funcionalidades (pendentes)
     makeBtn("edit-find",              QStringLiteral("🔍"), tr("Busca  (em breve)"),        false);
-    makeBtn("go-jump-today",          QStringLiteral("📅"), tr("Hoje  (em breve)"),         false);
+    auto *btnHoje = makeBtn("go-jump-today", QStringLiteral("📅"), tr("Hoje"));
+    connect(btnHoje, &QToolButton::clicked, this, [this]() {
+        if (m_tabs->currentWidget() == m_parcelas)
+            m_parcelas->scrollParaMesAtual();
+        else if (m_tabs->currentWidget() == m_entradas)
+            m_entradas->scrollParaMesAtual();
+    });
     auto *btnCalc = makeBtn("accessories-calculator", QStringLiteral("🧮"), tr("Calculadora"));
     connect(btnCalc, &QToolButton::clicked, this, [this]() {
         CalculadoraHub::instance().mostrarGlobal(this);

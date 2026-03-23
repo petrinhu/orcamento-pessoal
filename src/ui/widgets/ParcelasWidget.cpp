@@ -29,6 +29,8 @@
 #include <QApplication>
 #include <QClipboard>
 #include <QStackedWidget>
+#include <QScrollBar>
+#include <QShortcut>
 #include <algorithm>
 
 #include "core/settings/AppSettings.h"
@@ -141,6 +143,17 @@ void ParcelasWidget::buildUi()
 
     connect(m_detailPanel, &CompraDetailPanel::compraAlterada,
             this, &ParcelasWidget::onCompraAlterada);
+
+    // ── Keyboard navigation (Ctrl+← / Ctrl+→) ─────────────────────────────
+    auto *scLeft = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_Left),
+                                 this, nullptr, nullptr,
+                                 Qt::WidgetWithChildrenShortcut);
+    connect(scLeft, &QShortcut::activated, this, [this]() { navegarMes(-1); });
+
+    auto *scRight = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_Right),
+                                  this, nullptr, nullptr,
+                                  Qt::WidgetWithChildrenShortcut);
+    connect(scRight, &QShortcut::activated, this, [this]() { navegarMes(+1); });
 }
 
 void ParcelasWidget::selecionarTudo()
@@ -652,4 +665,34 @@ void ParcelasWidget::onCompraAlterada(const Compra &c)
 
     recarregar(); // restores selection via m_selectedCompraId
     emit dadosAlterados();
+}
+
+// ── Navigation ────────────────────────────────────────────────────────────────
+
+void ParcelasWidget::scrollParaMesAtual()
+{
+    const int col = columnForDate(m_currentMonth);
+    if (col < 0 || !m_table) return;
+    m_table->scrollTo(m_table->model()->index(0, col), QAbstractItemView::PositionAtTop);
+    m_table->horizontalScrollBar()->setValue(
+        m_table->horizontalHeader()->sectionPosition(col));
+}
+
+void ParcelasWidget::navegarMes(int delta)
+{
+    if (!m_table) return;
+    const int currentX = m_table->horizontalScrollBar()->value();
+    // Find the first fully visible month column and shift by delta months
+    const QHeaderView *hh = m_table->horizontalHeader();
+    int visibleCol = COL_FIRST_MONTH;
+    for (int c = COL_FIRST_MONTH; c < m_table->columnCount(); ++c) {
+        if (hh->sectionPosition(c) >= currentX) {
+            visibleCol = c;
+            break;
+        }
+    }
+    const int targetCol = qBound(COL_FIRST_MONTH,
+                                 visibleCol + delta,
+                                 m_table->columnCount() - 1);
+    m_table->horizontalScrollBar()->setValue(hh->sectionPosition(targetCol));
 }
