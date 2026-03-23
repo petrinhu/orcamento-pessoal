@@ -15,18 +15,18 @@
 | 11 | Export: exportar apenas aba ativa | 🟢 Baixa | Média | ❌ |
 | 12 | UX: estado vazio com msg "Clique para adicionar" | 🟢 Baixa | Baixa | ❌ |
 | 13 | Configurações: reorganizar UI/UX | 🟡 Média | Média | ❌ |
-| 14 | Aba gastos (a planejar) | 🔴 Alta | Alta | ❌ |
-| 15 | Conexões entre abas (a planejar) | 🟡 Média | Alta | ❌ |
-| 16 | Acrescentar botões no menu (a definir) | 🟢 Baixa | Baixa | ❌ |
+| 14 | Aba gastos: lançamentos avulsos PIX/débito/dinheiro/fixos (a planejar, futuro vínculo c/ outras abas) | 🔴 Alta | Alta | ❌ |
+| 15 | Conexões entre abas: vincular valores/cálculos entre Cartões, Entradas, Gastos (a planejar) | 🟡 Média | Alta | ❌ |
+| 16 | Barra de menu: ícones Abrir/Salvar/SalvarComo/Busca/Hoje/Calculadora/Configurações/Bloquear ao lado do tema | 🟡 Média | Baixa | ❌ |
 | 17 | Utilitário calculadora → clipboard | 🟢 Baixa | Baixa | ❌ |
 | 18 | Testes completos CLI automatizados | 🔴 Alta | Alta | ❌ |
 | 19 | Tradução i18n completa (pt-BR / en) | 🔴 Alta | Média | ❌ |
 | 20 | Aba investimentos | 🔴 Alta | Alta | ❌ |
-| 21 | Criar categorias (hierárquicas) | 🟡 Média | Média | ❌ |
+| 21 | Criar categorias hierárquicas (para gastos, entradas e investimentos) | 🟡 Média | Média | ❌ |
 | 22 | Aba planejamento e orçamento | 🔴 Alta | Alta | ❌ |
 | 23 | Aba tendências de gastos | 🟡 Média | Média | ❌ |
 | 24 | Gráficos (Qt Charts — barras, pizza, linha) | 🟡 Média | Média | ❌ |
-| 25 | Consultor financeiro IA (a definir) | 🟢 Baixa | Alta | ❌ |
+| 25 | Consultor financeiro IA: gerar prompt preenchido com dados das tabelas p/ colar no ChatGPT/Claude Web; secundário: integrar API direta | 🟢 Baixa | Alta | ❌ |
 | 26 | Transações recorrentes agendadas | 🔴 Alta | Média | ❌ |
 | 27 | Reconciliação bancária (extrato vs. app) | 🟡 Média | Alta | ❌ |
 | 28 | Metas financeiras (savings goals) | 🟡 Média | Média | ❌ |
