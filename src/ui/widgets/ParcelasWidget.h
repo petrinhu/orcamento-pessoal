@@ -13,6 +13,7 @@ class QPushButton;
 class QLabel;
 class QHeaderView;
 class QStackedWidget;
+class CompraDetailPanel;
 
 // Main view: matrix of compras (rows) × months (columns).
 // Current month is always the first visible column.
@@ -45,6 +46,7 @@ private slots:
     void onHeaderClicked(int coluna);
     void onOrganizarPor();
     void onCellChanged(int row, int col);
+    void onCompraAlterada(const Compra &c);
 
 private:
     void buildUi();
@@ -70,11 +72,14 @@ private:
     QList<Cartao>         m_cartoes;
 
     // UI
-    QStackedWidget *m_stack     = nullptr;
-    QTableWidget   *m_table     = nullptr;
-    QPushButton    *m_btnNova   = nullptr;
-    QPushButton    *m_btnExcluir = nullptr;
-    QLabel         *m_lblStatus  = nullptr;
+    QStackedWidget    *m_stack        = nullptr;
+    QTableWidget      *m_table        = nullptr;
+    QPushButton       *m_btnNova      = nullptr;
+    QPushButton       *m_btnExcluir   = nullptr;
+    QLabel            *m_lblStatus    = nullptr;
+    CompraDetailPanel *m_detailPanel  = nullptr;
+
+    int m_selectedCompraId = 0; // 0 = none selected
 
     bool m_loading = false; // guard against recursive itemChanged
 

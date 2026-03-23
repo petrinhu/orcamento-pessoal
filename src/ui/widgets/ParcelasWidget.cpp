@@ -1,5 +1,6 @@
 #include "ParcelasWidget.h"
 #include "AddCompraDialog.h"
+#include "CompraDetailPanel.h"
 #include "repositories/CompraRepository.h"
 #include "repositories/ParcelaRepository.h"
 #include "services/ParcelaService.h"
@@ -112,6 +113,10 @@ void ParcelasWidget::buildUi()
 
     root->addWidget(m_stack);
 
+    // ── Detail panel (hidden until a row is selected) ──────────────────────
+    m_detailPanel = new CompraDetailPanel(this);
+    root->addWidget(m_detailPanel);
+
     connect(m_btnNova,    &QPushButton::clicked, this, &ParcelasWidget::onNovaCompra);
     connect(m_btnExcluir, &QPushButton::clicked, this, &ParcelasWidget::onExcluir);
     connect(btnOrganizar, &QPushButton::clicked, this, &ParcelasWidget::onOrganizarPor);
@@ -120,10 +125,22 @@ void ParcelasWidget::buildUi()
             this, &ParcelasWidget::onHeaderClicked);
     connect(m_table->selectionModel(), &QItemSelectionModel::selectionChanged,
             this, [this]() {
-                m_btnExcluir->setEnabled(!m_table->selectedItems().isEmpty()
-                    && m_table->currentRow() < m_table->rowCount() - 1); // not Total row
+                const int row = m_table->currentRow();
+                const bool validRow = !m_table->selectedItems().isEmpty()
+                    && row >= 0 && row < m_compras.size();
+                m_btnExcluir->setEnabled(validRow);
+                if (validRow) {
+                    m_selectedCompraId = m_compras[row].id;
+                    m_detailPanel->carregarCompra(m_compras[row]);
+                } else {
+                    m_selectedCompraId = 0;
+                    m_detailPanel->limpar();
+                }
             });
     connect(m_table, &QTableWidget::cellChanged, this, &ParcelasWidget::onCellChanged);
+
+    connect(m_detailPanel, &CompraDetailPanel::compraAlterada,
+            this, &ParcelasWidget::onCompraAlterada);
 }
 
 void ParcelasWidget::selecionarTudo()
@@ -202,6 +219,18 @@ void ParcelasWidget::recarregar()
     populateTable();
     aplicarOrdenacao();
     m_loading = false;
+
+    // Restore selection (and detail panel) after reload
+    if (m_selectedCompraId > 0) {
+        for (int r = 0; r < m_compras.size(); ++r) {
+            if (m_compras[r].id == m_selectedCompraId) {
+                m_table->selectRow(r);
+                break;
+            }
+        }
+    } else {
+        m_detailPanel->limpar();
+    }
 
     // Status bar — total do mês atual
     qint64 totalMes = 0;
@@ -595,5 +624,32 @@ void ParcelasWidget::onCellChanged(int row, int col)
     }
 
     recarregar();
+    emit dadosAlterados();
+}
+
+// ─── Detail panel ─────────────────────────────────────────────────────────────
+
+void ParcelasWidget::onCompraAlterada(const Compra &c)
+{
+    // Persist updated compra fields
+    CompraRepository cr;
+    cr.update(c);
+
+    // Regenerate parcelas from the new parameters
+    ResultadoFinanceiro res;
+    const double juros = c.jurosMensais / 10000.0;
+    if (juros > 1e-9)
+        res = ParcelaService::comJurosMensais(c, juros);
+    else
+        res = ParcelaService::semJuros(c);
+
+    QList<Parcela> novas = res.parcelas;
+    for (auto &p : novas)
+        p.compraId = c.id;
+
+    ParcelaRepository pr;
+    pr.replaceAll(c.id, novas);
+
+    recarregar(); // restores selection via m_selectedCompraId
     emit dadosAlterados();
 }

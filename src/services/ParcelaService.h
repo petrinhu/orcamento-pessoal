@@ -14,6 +14,30 @@ struct ResultadoFinanceiro {
     qint64         totalPago        = 0;   // centavos (N × parcela)
 };
 
+// ── Financial detail panel data ───────────────────────────────────────────────
+
+enum class SolveFor { Parcela, Total, Taxa, NumParcelas };
+
+struct DadosFinanceiros {
+    qint64 valorTotal      = 0;
+    int    numParcelas     = 0;
+    double jurosMensaisPct = 0.0;  // % ao mês  (ex: 1.5 = 1,5%)
+    double cetPct          = 0.0;  // % ao ano
+    qint64 valorParcela    = 0;    // PMT em centavos
+    qint64 jurosTotais     = 0;    // centavos
+};
+
+// ── Amortization row ──────────────────────────────────────────────────────────
+
+struct AmortizacaoRow {
+    int    numero       = 0;
+    QDate  data;
+    qint64 saldoDevedor = 0;  // before this payment
+    qint64 juros        = 0;
+    qint64 amortizacao  = 0;
+    qint64 parcela      = 0;  // = juros + amortizacao
+};
+
 // All financial calculations: pure logic, no DB access.
 // Uses qint64 (centavos) throughout; floating-point only for rate solving (Newton-Raphson).
 class ParcelaService {
@@ -52,6 +76,24 @@ public:
         RecalcMode modo,
         qint64 valorTotal = 0
     );
+
+    // ── Detail panel helpers ─────────────────────────────────────────────────
+
+    // Build DadosFinanceiros from a Compra (computes PMT, CET, jurosTotais)
+    static DadosFinanceiros      dadosFromCompra(const Compra &c);
+
+    // Write back editable fields from DadosFinanceiros into a Compra
+    static void                  aplicarDadosACompra(Compra &c, const DadosFinanceiros &d);
+
+    // Recalculate the field indicated by solveFor; returns updated DadosFinanceiros
+    static DadosFinanceiros      recalcular(const DadosFinanceiros &d, SolveFor solveFor);
+
+    // Price (SAF) amortization schedule for a Compra
+    static QList<AmortizacaoRow> tabelaAmortizacao(const Compra &c);
+
+    // CET ↔ taxa mensal conversions
+    static double cetFromJurosMensais(double jurosMensaisPct);
+    static double jurosMensaisFromCet(double cetPct);
 
     // ── Utility ──────────────────────────────────────────────────────────────
 

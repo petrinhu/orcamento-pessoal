@@ -222,6 +222,152 @@ QList<Parcela> ParcelaService::recalcularAposEdicao(
     return result;
 }
 
+// ─── Detail panel helpers ─────────────────────────────────────────────────────
+
+double ParcelaService::cetFromJurosMensais(double jurosMensaisPct)
+{
+    const double i = jurosMensaisPct / 100.0;
+    return (std::pow(1.0 + i, 12.0) - 1.0) * 100.0;
+}
+
+double ParcelaService::jurosMensaisFromCet(double cetPct)
+{
+    const double cet = cetPct / 100.0;
+    return (std::pow(1.0 + cet, 1.0 / 12.0) - 1.0) * 100.0;
+}
+
+DadosFinanceiros ParcelaService::dadosFromCompra(const Compra &c)
+{
+    DadosFinanceiros d;
+    d.valorTotal      = c.valorTotal;
+    d.numParcelas     = c.numParcelas;
+    d.jurosMensaisPct = c.jurosMensais / 10000.0;
+    d.cetPct          = cetFromJurosMensais(d.jurosMensaisPct);
+
+    if (d.numParcelas > 0 && d.valorTotal > 0) {
+        const double i = d.jurosMensaisPct / 100.0;
+        if (i < 1e-9) {
+            d.valorParcela = d.valorTotal / d.numParcelas;
+        } else {
+            double pmt = static_cast<double>(d.valorTotal) * i
+                         / (1.0 - std::pow(1.0 + i, -d.numParcelas));
+            d.valorParcela = static_cast<qint64>(std::round(pmt));
+        }
+        d.jurosTotais = qMax(0LL, d.valorParcela * d.numParcelas - d.valorTotal);
+    }
+    return d;
+}
+
+void ParcelaService::aplicarDadosACompra(Compra &c, const DadosFinanceiros &d)
+{
+    c.valorTotal   = d.valorTotal;
+    c.numParcelas  = d.numParcelas;
+    c.jurosMensais = static_cast<qint64>(std::round(d.jurosMensaisPct * 10000.0));
+}
+
+DadosFinanceiros ParcelaService::recalcular(const DadosFinanceiros &in, SolveFor solveFor)
+{
+    DadosFinanceiros d = in;
+    const double i = d.jurosMensaisPct / 100.0;
+
+    switch (solveFor) {
+    case SolveFor::Parcela:
+        if (d.valorTotal > 0 && d.numParcelas > 0) {
+            if (i < 1e-9) {
+                d.valorParcela = d.valorTotal / d.numParcelas;
+            } else {
+                double pmt = static_cast<double>(d.valorTotal) * i
+                             / (1.0 - std::pow(1.0 + i, -d.numParcelas));
+                d.valorParcela = static_cast<qint64>(std::round(pmt));
+            }
+        }
+        break;
+
+    case SolveFor::Total:
+        if (d.valorParcela > 0 && d.numParcelas > 0) {
+            if (i < 1e-9) {
+                d.valorTotal = d.valorParcela * d.numParcelas;
+            } else {
+                double v = static_cast<double>(d.valorParcela)
+                           * (1.0 - std::pow(1.0 + i, -d.numParcelas)) / i;
+                d.valorTotal = static_cast<qint64>(std::round(v));
+            }
+        }
+        break;
+
+    case SolveFor::Taxa:
+        if (d.valorTotal > 0 && d.numParcelas > 0 && d.valorParcela > 0) {
+            const double taxa = resolverTaxa(d.valorTotal, d.valorParcela, d.numParcelas);
+            d.jurosMensaisPct = taxa * 100.0;
+            d.cetPct          = cetFromJurosMensais(d.jurosMensaisPct);
+        }
+        break;
+
+    case SolveFor::NumParcelas:
+        if (d.valorTotal > 0 && d.valorParcela > 0) {
+            if (i < 1e-9) {
+                d.numParcelas = static_cast<int>(std::ceil(
+                    static_cast<double>(d.valorTotal) / d.valorParcela));
+            } else {
+                const double V   = static_cast<double>(d.valorTotal);
+                const double PMT = static_cast<double>(d.valorParcela);
+                const double arg = 1.0 - V * i / PMT;
+                if (arg > 0)
+                    d.numParcelas = static_cast<int>(
+                        std::ceil(-std::log(arg) / std::log(1.0 + i)));
+            }
+        }
+        break;
+    }
+
+    // Always sync CET ↔ jurosMensais (unless Taxa was just solved above)
+    if (solveFor != SolveFor::Taxa)
+        d.cetPct = cetFromJurosMensais(d.jurosMensaisPct);
+
+    // Always derive jurosTotais
+    if (d.valorParcela > 0 && d.numParcelas > 0 && d.valorTotal > 0)
+        d.jurosTotais = qMax(0LL, d.valorParcela * d.numParcelas - d.valorTotal);
+
+    return d;
+}
+
+QList<AmortizacaoRow> ParcelaService::tabelaAmortizacao(const Compra &c)
+{
+    QList<AmortizacaoRow> rows;
+    if (c.numParcelas <= 0 || c.valorTotal <= 0) return rows;
+
+    const double i = (c.jurosMensais / 10000.0) / 100.0;
+
+    qint64 pmt = 0;
+    if (i < 1e-9) {
+        pmt = c.valorTotal / c.numParcelas;
+    } else {
+        double pmtD = static_cast<double>(c.valorTotal) * i
+                      / (1.0 - std::pow(1.0 + i, -c.numParcelas));
+        pmt = static_cast<qint64>(std::round(pmtD));
+    }
+
+    qint64 saldo = c.valorTotal;
+    for (int k = 1; k <= c.numParcelas; ++k) {
+        AmortizacaoRow row;
+        row.numero       = k;
+        row.data         = dataParaParcela(c, k);
+        row.saldoDevedor = saldo;
+
+        if (i < 1e-9) {
+            row.juros = 0;
+            row.amortizacao = (k < c.numParcelas) ? pmt : saldo;
+        } else {
+            row.juros = static_cast<qint64>(std::round(static_cast<double>(saldo) * i));
+            row.amortizacao = (k < c.numParcelas) ? (pmt - row.juros) : saldo;
+        }
+        row.parcela = row.juros + row.amortizacao;
+        saldo -= row.amortizacao;
+        rows.append(row);
+    }
+    return rows;
+}
+
 // ─── Formatting ──────────────────────────────────────────────────────────────
 
 QString ParcelaService::formatarValor(qint64 centavos, const QString &moeda)
