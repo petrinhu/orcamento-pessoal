@@ -17,7 +17,7 @@
 | 13 | Configurações: reorganizar UI/UX | 🟡 Média | Média | ✅ |
 | 6 | Dashboard: resumo mensal/anual (após Cartões + Entradas + Gastos prontos) | 🟡 Média | Alta | ❌ |
 | 35 | Cartões: painel inferior ao selecionar item — campos editáveis (Total, Parcelas, Juros a.m., CET, Valor parcela, Juros totais) com dropdown "Calcular:" que define o campo recalculado automaticamente; botão "Tabela de amortização" abre view com colunas Nº/Data/Saldo devedor/Juros/Amortização/Parcela e todos os cálculos derivados | 🟡 Média | Alta | ✅ |
-| 8 | Entradas: botão "Organizar por" | 🟡 Média | Média | ❌ |
+| 8 | Entradas: botão "Organizar por" | 🟡 Média | Média | ✅ |
 | 9 | Navegação: botão "Hoje" + atalhos teclado | 🟡 Média | Média | ❌ |
 | 15 | Conexões entre abas: vincular valores/cálculos entre Cartões, Entradas, Gastos (a planejar) | 🟡 Média | Alta | ❌ |
 | 16 | Barra de menu: ícones ⏮◀▶⏭ navegação abas + Abrir/Salvar/SalvarComo + Busca/Hoje/Calc + Config/Tema/Bloquear | 🟡 Média | Baixa | ✅ |
@@ -32,7 +32,7 @@
 | 33 | Controle de dívidas e empréstimos | 🟡 Média | Alta | ❌ |
 | 11 | Export: exportar apenas aba ativa | 🟢 Baixa | Média | ❌ |
 | 12 | UX: estado vazio com msg "Clique para adicionar" | 🟢 Baixa | Baixa | ✅ |
-| 17 | Calculadora v1: aba Comum (teclado + histórico + clipboard) + CalculadoraEdit em campos monetários + CalculadoraHub + botão 🧮 na toolbar | 🟡 Média | Média | ❌ |
+| 17 | Calculadora v1: aba Comum (teclado + histórico + clipboard) + CalculadoraEdit em campos monetários + CalculadoraHub + botão 🧮 na toolbar | 🟡 Média | Média | ✅ |
 | 36 | Calculadora v2: aba Financeira HP-style (RPN/ALG, TVM N/i/PV/PMT/FV, tabela amortização inline, BEGIN/END, "Enviar para Cartões") | 🟡 Média | Alta | ❌ |
 | 37 | Calculadora v3: aba Wizards (CET, juros mensais/anuais, parcelas Price/SAC, equivalência de taxas, valor futuro, renda passiva, ROI, comprometimento de renda, quitação antecipada, meta financeira) | 🟢 Baixa | Alta | ❌ |
 | 25 | Consultor financeiro IA: gerar prompt preenchido com dados das tabelas p/ colar no ChatGPT/Claude Web; secundário: integrar API direta | 🟢 Baixa | Alta | ❌ |

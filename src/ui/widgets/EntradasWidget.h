@@ -11,6 +11,8 @@ class QTableWidget;
 class QPushButton;
 class QStackedWidget;
 
+enum class SortFieldEntradas { None, Fonte, Valor, Data };
+
 // Income tab widget — mirrors ParcelasWidget layout.
 // Each month = 4 sub-columns: Fonte | Valor líquido | Data | Obs
 // Row 0 = month header (merged 4 cols). Last row = TOTAL.
@@ -30,6 +32,7 @@ public slots:
 
 private slots:
     void onCellActivated(int row, int col);
+    void onOrganizarPor();
 
 private:
     void buildUi();
@@ -45,6 +48,10 @@ private:
     QStackedWidget *m_stack  = nullptr;
     QTableWidget   *m_table  = nullptr;
     QPushButton    *m_btnDel = nullptr;
+    QPushButton    *m_btnOrg = nullptr; // "Organizar por ▾"
+
+    SortFieldEntradas m_sortField = SortFieldEntradas::None;
+    bool              m_sortAsc   = true;
 
     // Data indexed by month: m_data[k] = list of lançamentos for month k
     QList<QList<LancamentoEntrada>> m_data;

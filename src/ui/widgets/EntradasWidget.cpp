@@ -15,9 +15,11 @@
 #include <QApplication>
 #include <QClipboard>
 #include <QLocale>
+#include <QMenu>
 #include <QMessageBox>
 #include <QDate>
 #include <QFont>
+#include <algorithm>
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -75,8 +77,12 @@ void EntradasWidget::buildUi()
     m_btnDel = new QPushButton(tr("Excluir"), this);
     m_btnDel->setEnabled(false);
 
+    m_btnOrg = new QPushButton(tr("Organizar por ▾"), this);
+    m_btnOrg->setToolTip(tr("Ordenar lançamentos dentro de cada mês"));
+
     toolbar->addWidget(btnNova);
     toolbar->addWidget(m_btnDel);
+    toolbar->addWidget(m_btnOrg);
     toolbar->addStretch();
     root->addLayout(toolbar);
 
@@ -159,6 +165,8 @@ void EntradasWidget::buildUi()
         emit dadosAlterados();
     });
 
+    connect(m_btnOrg, &QPushButton::clicked,
+            this, &EntradasWidget::onOrganizarPor);
     connect(m_table, &QTableWidget::cellClicked,
             this, &EntradasWidget::onCellActivated);
     connect(m_table->selectionModel(), &QItemSelectionModel::selectionChanged,
@@ -194,6 +202,30 @@ void EntradasWidget::recarregar()
         const int k = (l.ano - first.year()) * 12 + (l.mes - first.month());
         if (k >= 0 && k < m_numMonths)
             m_data[k].append(l);
+    }
+
+    // Sort within each month if requested
+    if (m_sortField != SortFieldEntradas::None) {
+        for (auto &list : m_data) {
+            std::sort(list.begin(), list.end(),
+                [this](const LancamentoEntrada &a, const LancamentoEntrada &b) {
+                    bool less = false;
+                    switch (m_sortField) {
+                    case SortFieldEntradas::Fonte:
+                        less = a.fonte.compare(b.fonte, Qt::CaseInsensitive) < 0;
+                        break;
+                    case SortFieldEntradas::Valor:
+                        less = (a.valorBruto - a.irpf - a.inss) < (b.valorBruto - b.irpf - b.inss);
+                        break;
+                    case SortFieldEntradas::Data:
+                        less = QDate(a.ano, a.mes, a.dia) < QDate(b.ano, b.mes, b.dia);
+                        break;
+                    default:
+                        break;
+                    }
+                    return m_sortAsc ? less : !less;
+                });
+        }
     }
 
     // Determine max rows needed
@@ -387,6 +419,46 @@ LancamentoEntrada EntradasWidget::lancamentoDaLinha(int dataRow, int monthIndex)
 QList<FonteRenda> EntradasWidget::fontesDisponiveis() const
 {
     return FonteRendaRepository().findAll();
+}
+
+// ── Sort ──────────────────────────────────────────────────────────────────────
+
+void EntradasWidget::onOrganizarPor()
+{
+    QMenu menu(this);
+
+    // Helper: add a checkable action that sets sort field + direction
+    auto addOpt = [&](const QString &label, SortFieldEntradas field, bool asc) {
+        auto *act = menu.addAction(label);
+        act->setCheckable(true);
+        act->setChecked(m_sortField == field && m_sortAsc == asc);
+        connect(act, &QAction::triggered, this, [this, field, asc]() {
+            m_sortField = field;
+            m_sortAsc   = asc;
+            recarregar();
+        });
+    };
+
+    addOpt(tr("Fonte A → Z"),  SortFieldEntradas::Fonte, true);
+    addOpt(tr("Fonte Z → A"),  SortFieldEntradas::Fonte, false);
+    menu.addSeparator();
+    addOpt(tr("Valor ↑"),      SortFieldEntradas::Valor, true);
+    addOpt(tr("Valor ↓"),      SortFieldEntradas::Valor, false);
+    menu.addSeparator();
+    addOpt(tr("Data ↑"),       SortFieldEntradas::Data, true);
+    addOpt(tr("Data ↓"),       SortFieldEntradas::Data, false);
+    menu.addSeparator();
+
+    auto *actNenhum = menu.addAction(tr("Sem ordenação"));
+    actNenhum->setCheckable(true);
+    actNenhum->setChecked(m_sortField == SortFieldEntradas::None);
+    connect(actNenhum, &QAction::triggered, this, [this]() {
+        m_sortField = SortFieldEntradas::None;
+        recarregar();
+    });
+
+    // Show menu below the button
+    menu.exec(m_btnOrg->mapToGlobal(QPoint(0, m_btnOrg->height())));
 }
 
 // ── Public slots ──────────────────────────────────────────────────────────────
