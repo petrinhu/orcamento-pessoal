@@ -194,7 +194,8 @@ void AddCompraDialog::buildTabJuros(QWidget *tab)
     // ── Fields ────────────────────────────────────────────────────────────
     m_valorTotal_j = new QLineEdit(tab);
     m_valorTotal_j->setPlaceholderText(QStringLiteral("0,00"));
-    form->addRow(tr("Valor total / financiado (R$)"),
+    m_valorTotal_j->setToolTip(tr("Valor financiado / principal (PV) — o que você está comprando a prazo."));
+    form->addRow(tr("Valor à vista (R$)"),
                  makeLockRow(m_valorTotal_j, m_lockTotal, /*locked=*/true));
 
     m_numParcelas_j = new QSpinBox(tab);
@@ -245,6 +246,14 @@ void AddCompraDialog::buildTabJuros(QWidget *tab)
         taxaH->addWidget(m_lockTaxa);
         form->addRow(tr("Juros mensais / CET a.a."), taxaWidget);
     }
+
+    // ── Valor total pago (PMT × N) ─────────────────────────────────────────
+    m_valorTotalPago_j = new QLineEdit(tab);
+    m_valorTotalPago_j->setPlaceholderText(QStringLiteral("0,00"));
+    m_valorTotalPago_j->setReadOnly(true); // default: output
+    m_valorTotalPago_j->setToolTip(tr("Total efetivamente pago = Valor parcela × Nº parcelas (inclui juros)."));
+    form->addRow(tr("Valor total pago (R$)"),
+                 makeLockRow(m_valorTotalPago_j, m_lockTotalPago, /*locked=*/false));
 
     m_lblJurosTotais = new QLabel(tr("Juros totais: —"), tab);
     m_lblJurosTotais->setObjectName(QStringLiteral("subtitle"));
@@ -298,6 +307,14 @@ void AddCompraDialog::buildTabJuros(QWidget *tab)
         atualizarEstadoCamposJ();
         recalcular();
     });
+    connect(m_lockTotalPago, &QPushButton::clicked, this, [this]() {
+        m_totalPagoIsInput = !m_totalPagoIsInput;
+        atualizarEstadoCamposJ();
+        recalcular();
+    });
+    connect(m_valorTotalPago_j, &QLineEdit::textChanged, this, [this]() {
+        if (m_totalPagoIsInput) recalcular();
+    });
 }
 
 void AddCompraDialog::atualizarEstadoCamposJ()
@@ -331,6 +348,12 @@ void AddCompraDialog::atualizarEstadoCamposJ()
     m_lockParcela->setChecked(!parcelaOut);
     m_lockParcela->setText(parcelaOut ? QStringLiteral("🚫") : QStringLiteral("✏️"));
     m_lockParcela->setToolTip(parcelaOut ? ttCalculado : ttEditable);
+
+    // TotalPago: independent lock (not part of SolveFor)
+    m_valorTotalPago_j->setReadOnly(!m_totalPagoIsInput);
+    m_lockTotalPago->setChecked(m_totalPagoIsInput);
+    m_lockTotalPago->setText(m_totalPagoIsInput ? QStringLiteral("✏️") : QStringLiteral("🚫"));
+    m_lockTotalPago->setToolTip(m_totalPagoIsInput ? ttEditable : ttCalculado);
 }
 
 void AddCompraDialog::buildPreview()
@@ -415,10 +438,22 @@ void AddCompraDialog::recalcular()
             d.jurosMensaisPct = m_jurosMensais->value();
             d.cetPct          = m_cet_j->value();
 
-            d = ParcelaService::recalcular(d, m_solveForJ);
+            // If TotalPago is input: derive PMT = TotalPago / N
+            const bool tpInput = m_totalPagoIsInput;
+            if (tpInput && d.numParcelas > 0) {
+                const qint64 tp = ParcelaService::parsearValor(m_valorTotalPago_j->text());
+                if (tp > 0) d.valorParcela = tp / d.numParcelas;
+            }
+
+            // When TotalPago drives PMT and SolveFor==Parcela, solve for Total instead
+            const SolveFor effectiveSolve = (tpInput && m_solveForJ == SolveFor::Parcela)
+                                            ? SolveFor::Total
+                                            : m_solveForJ;
+
+            d = ParcelaService::recalcular(d, effectiveSolve);
 
             // Write the computed field back to the output widget (signals blocked)
-            switch (m_solveForJ) {
+            switch (effectiveSolve) {
             case SolveFor::Total:
                 m_valorTotal_j->blockSignals(true);
                 m_valorTotal_j->setText(formatFieldValue(d.valorTotal, moeda));
@@ -442,6 +477,14 @@ void AddCompraDialog::recalcular()
                 m_valorParcela_j->setText(formatFieldValue(d.valorParcela, moeda));
                 m_valorParcela_j->blockSignals(false);
                 break;
+            }
+
+            // Update TotalPago output (when it's not the input)
+            if (!tpInput) {
+                const qint64 tpCalc = d.valorParcela * static_cast<qint64>(d.numParcelas);
+                m_valorTotalPago_j->blockSignals(true);
+                m_valorTotalPago_j->setText(formatFieldValue(tpCalc, moeda));
+                m_valorTotalPago_j->blockSignals(false);
             }
 
             m_lblJurosTotais->setText(tr("Juros totais: %1")

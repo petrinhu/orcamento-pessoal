@@ -64,20 +64,24 @@ private:
     QLineEdit    *m_valorTotal_t  = nullptr;
 
     // Juros tab — fields
-    QLineEdit      *m_valorTotal_j   = nullptr;
-    QLineEdit      *m_valorParcela_j = nullptr;
-    QDoubleSpinBox *m_jurosMensais   = nullptr;
-    QDoubleSpinBox *m_cet_j          = nullptr;
-    QLabel         *m_lblJurosTotais = nullptr;
+    QLineEdit      *m_valorTotal_j    = nullptr;  // Valor à vista (PV)
+    QLineEdit      *m_valorParcela_j  = nullptr;  // PMT
+    QLineEdit      *m_valorTotalPago_j = nullptr; // Total pago = PMT × N
+    QDoubleSpinBox *m_jurosMensais    = nullptr;
+    QDoubleSpinBox *m_cet_j           = nullptr;
+    QLabel         *m_lblJurosTotais  = nullptr;
 
-    // Juros tab — lock buttons (🔒 = input, 🔓 = output/calculated)
-    QPushButton *m_lockTotal   = nullptr;
-    QPushButton *m_lockN       = nullptr;
-    QPushButton *m_lockTaxa    = nullptr;
-    QPushButton *m_lockParcela = nullptr;
+    // Juros tab — lock buttons (✏️ = input, 🚫 = output/calculated)
+    QPushButton *m_lockTotal      = nullptr;
+    QPushButton *m_lockN          = nullptr;
+    QPushButton *m_lockTaxa       = nullptr;
+    QPushButton *m_lockParcela    = nullptr;
+    QPushButton *m_lockTotalPago  = nullptr;
 
-    // Which field is auto-calculated in the Juros tab
-    SolveFor m_solveForJ = SolveFor::Parcela;
+    // Which of the 4 Price-formula fields is auto-calculated
+    SolveFor m_solveForJ       = SolveFor::Parcela;
+    // TotalPago has its own independent lock (not part of SolveFor)
+    bool     m_totalPagoIsInput = false;
 
     // Preview table
     QTableWidget *m_preview    = nullptr;
