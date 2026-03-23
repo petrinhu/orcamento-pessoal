@@ -19,6 +19,9 @@ public:
     // Open calculator standalone (from toolbar / menu) — no field injection.
     void mostrarGlobal(QWidget *parent = nullptr);
 
+    // Close and hide the calculator (called when main window closes).
+    void fechar();
+
 signals:
     void resultadoDisponivel(double valor);
 

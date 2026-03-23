@@ -13,6 +13,7 @@
 #include <QClipboard>
 #include <QSettings>
 #include <QCloseEvent>
+#include <QKeyEvent>
 #include <cmath>
 
 // ─── construction ────────────────────────────────────────────────────────────
@@ -37,6 +38,52 @@ void CalculadoraDialog::closeEvent(QCloseEvent *e)
     QSettings s;
     s.setValue(QStringLiteral("calculadora/geometry"), saveGeometry());
     QDialog::closeEvent(e);
+}
+
+void CalculadoraDialog::keyPressEvent(QKeyEvent *e)
+{
+    switch (e->key()) {
+    case Qt::Key_0: case Qt::Key_1: case Qt::Key_2: case Qt::Key_3: case Qt::Key_4:
+    case Qt::Key_5: case Qt::Key_6: case Qt::Key_7: case Qt::Key_8: case Qt::Key_9:
+        pressDigito(e->key() - Qt::Key_0);
+        return;
+    case Qt::Key_Period:
+    case Qt::Key_Comma:
+        pressDecimal();
+        return;
+    case Qt::Key_Plus:
+        pressOperador(QLatin1Char('+'));
+        return;
+    case Qt::Key_Minus:
+        pressOperador(QLatin1Char('-'));
+        return;
+    case Qt::Key_Asterisk:
+        pressOperador(QLatin1Char('*'));
+        return;
+    case Qt::Key_Slash:
+        pressOperador(QLatin1Char('/'));
+        return;
+    case Qt::Key_Return:
+    case Qt::Key_Enter:
+    case Qt::Key_Equal:
+        pressIgual();
+        return;
+    case Qt::Key_Backspace:
+        pressBackspace();
+        return;
+    case Qt::Key_Delete:
+        pressCE();
+        return;
+    case Qt::Key_Escape:
+        pressC();
+        return;
+    case Qt::Key_Percent:
+        pressPorcentagem();
+        return;
+    default:
+        break;
+    }
+    QDialog::keyPressEvent(e);
 }
 
 // ─── UI build ────────────────────────────────────────────────────────────────
@@ -105,8 +152,23 @@ void CalculadoraDialog::buildTabComum(QWidget *tab)
             QApplication::clipboard()->setText(m_display->text());
         });
 
+        m_btnPin = new QPushButton(QStringLiteral("📌"), tab);
+        m_btnPin->setToolTip(tr("Sempre visível (manter sobre outras janelas)"));
+        m_btnPin->setCheckable(true);
+        m_btnPin->setFixedSize(32, 32);
+        m_btnPin->setFlat(true);
+        connect(m_btnPin, &QPushButton::toggled, this, [this](bool on) {
+            setWindowFlag(Qt::WindowStaysOnTopHint, on);
+            show(); // required to apply the flag change
+        });
+
+        auto *pinCol = new QVBoxLayout;
+        pinCol->setSpacing(2);
+        pinCol->addWidget(btnCopy);
+        pinCol->addWidget(m_btnPin);
+
         row->addWidget(m_display, 1);
-        row->addWidget(btnCopy);
+        row->addLayout(pinCol);
         vbox->addLayout(row);
     }
 

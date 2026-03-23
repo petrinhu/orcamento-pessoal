@@ -38,6 +38,12 @@ void CalculadoraHub::mostrarGlobal(QWidget *parent)
     mostrar(nullptr, parent);
 }
 
+void CalculadoraHub::fechar()
+{
+    if (m_dialog)
+        m_dialog->hide();
+}
+
 void CalculadoraHub::onResultado(double valor)
 {
     if (m_invoker)

@@ -2,6 +2,7 @@
 #include <QDialog>
 #include <QStringList>
 
+class QKeyEvent;
 class QLineEdit;
 class QLabel;
 class QListWidget;
@@ -27,6 +28,7 @@ signals:
 
 protected:
     void closeEvent(QCloseEvent *e) override;
+    void keyPressEvent(QKeyEvent *e) override;
 
 private:
     void buildUi();
@@ -53,6 +55,7 @@ private:
     QLineEdit   *m_display   = nullptr;
     QLabel      *m_exprLabel = nullptr;
     QListWidget *m_historico = nullptr;
+    QPushButton *m_btnPin    = nullptr; // "Sempre visível" toggle
 
     // ── State machine ─────────────────────────────────────────────────────
     double  m_reg      = 0.0;   // stored operand (left side)

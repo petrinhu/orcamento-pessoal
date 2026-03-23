@@ -357,7 +357,11 @@ void MainWindow::updateThemeButton()
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    if (!m_dirty) { event->accept(); return; }
+    if (!m_dirty) {
+        CalculadoraHub::instance().fechar();
+        event->accept();
+        return;
+    }
 
     QMessageBox msg(this);
     msg.setIcon(QMessageBox::Warning);
@@ -373,8 +377,10 @@ void MainWindow::closeEvent(QCloseEvent *event)
     if (msg.clickedButton() == btnSalvar) {
         DatabaseManager::instance().save();
         m_dirty = false;
+        CalculadoraHub::instance().fechar();
         event->accept();
     } else if (msg.clickedButton() == btnFechar) {
+        CalculadoraHub::instance().fechar();
         event->accept();
     } else {
         event->ignore();
