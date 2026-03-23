@@ -172,19 +172,19 @@ void AddCompraDialog::buildTabJuros(QWidget *tab)
     form->setContentsMargins(16, 16, 16, 16);
     form->setSpacing(10);
 
-    // Helper: wraps a field widget with a 🔒/🔓 toggle button.
-    // locked=true → field is an input; locked=false → field is the calculated output.
+    // Helper: wraps a field widget with a ✏️/🚫 toggle button.
+    // locked=true → field is an input (✏️ editable); locked=false → field is calculated (🚫).
     auto makeLockRow = [this, tab](QWidget *field, QPushButton *&lockBtn, bool locked) -> QWidget* {
         auto *w = new QWidget(tab);
         auto *h = new QHBoxLayout(w);
         h->setContentsMargins(0, 0, 0, 0);
         h->setSpacing(4);
         h->addWidget(field, 1);
-        lockBtn = new QPushButton(locked ? QStringLiteral("🔒") : QStringLiteral("🔓"), w);
+        lockBtn = new QPushButton(locked ? QStringLiteral("✏️") : QStringLiteral("🚫"), w);
         lockBtn->setCheckable(true);
         lockBtn->setChecked(locked);
         lockBtn->setFixedWidth(32);
-        lockBtn->setToolTip(tr("🔒 campo fixo (entrada)   🔓 campo calculado automaticamente\n"
+        lockBtn->setToolTip(tr("✏️ campo editável (entrada)   🚫 campo calculado automaticamente\n"
                                "Clique para alternar"));
         h->addWidget(lockBtn);
         return w;
@@ -293,16 +293,16 @@ void AddCompraDialog::atualizarEstadoCamposJ()
     m_valorParcela_j->setReadOnly(parcelaOut);
 
     m_lockTotal->setChecked(!totalOut);
-    m_lockTotal->setText(totalOut ? QStringLiteral("🔓") : QStringLiteral("🔒"));
+    m_lockTotal->setText(totalOut ? QStringLiteral("🚫") : QStringLiteral("✏️"));
 
     m_lockN->setChecked(!nOut);
-    m_lockN->setText(nOut ? QStringLiteral("🔓") : QStringLiteral("🔒"));
+    m_lockN->setText(nOut ? QStringLiteral("🚫") : QStringLiteral("✏️"));
 
     m_lockTaxa->setChecked(!taxaOut);
-    m_lockTaxa->setText(taxaOut ? QStringLiteral("🔓") : QStringLiteral("🔒"));
+    m_lockTaxa->setText(taxaOut ? QStringLiteral("🚫") : QStringLiteral("✏️"));
 
     m_lockParcela->setChecked(!parcelaOut);
-    m_lockParcela->setText(parcelaOut ? QStringLiteral("🔓") : QStringLiteral("🔒"));
+    m_lockParcela->setText(parcelaOut ? QStringLiteral("🚫") : QStringLiteral("✏️"));
 }
 
 void AddCompraDialog::buildPreview()
