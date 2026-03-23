@@ -136,8 +136,15 @@ void CalculadoraDialog::buildTabComum(QWidget *tab)
         m_chkAlwaysOnTop = new QCheckBox(tr("Sempre visível"), tab);
         m_chkAlwaysOnTop->setToolTip(tr("Manter calculadora sobre todas as outras janelas"));
         connect(m_chkAlwaysOnTop, &QCheckBox::toggled, this, [this](bool on) {
-            setWindowFlag(Qt::WindowStaysOnTopHint, on);
-            show(); // required to apply the flag change
+            const QRect savedGeo = geometry();
+            Qt::WindowFlags flags = windowFlags();
+            if (on) flags |= Qt::WindowStaysOnTopHint;
+            else    flags &= ~Qt::WindowStaysOnTopHint;
+            setWindowFlags(flags);   // rebuilds native window
+            setGeometry(savedGeo);   // restore position immediately
+            show();
+            raise();
+            activateWindow();
         });
 
         row->addWidget(m_exprLabel, 1);
