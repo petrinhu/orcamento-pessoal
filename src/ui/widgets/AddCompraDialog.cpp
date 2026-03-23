@@ -136,7 +136,7 @@ void AddCompraDialog::buildTabSimples(QWidget *tab)
     m_numParcelas_s->setSuffix(QStringLiteral("x"));
     form->addRow(tr("Número de parcelas"), m_numParcelas_s);
 
-    connect(m_valorParcela,  &QLineEdit::textChanged, this, &AddCompraDialog::recalcular);
+    connect(m_valorParcela->lineEdit(),  &QLineEdit::textChanged, this, &AddCompraDialog::recalcular);
     connect(m_numParcelas_s, QOverload<int>::of(&QSpinBox::valueChanged),
             this, &AddCompraDialog::recalcular);
 }
@@ -162,7 +162,7 @@ void AddCompraDialog::buildTabTotal(QWidget *tab)
     infoLbl->setObjectName(QStringLiteral("subtitle"));
     form->addRow(QString(), infoLbl);
 
-    connect(m_valorTotal_t,  &QLineEdit::textChanged, this, &AddCompraDialog::recalcular);
+    connect(m_valorTotal_t->lineEdit(),  &QLineEdit::textChanged, this, &AddCompraDialog::recalcular);
     connect(m_numParcelas_t, QOverload<int>::of(&QSpinBox::valueChanged),
             this, &AddCompraDialog::recalcular);
 }
@@ -263,11 +263,11 @@ void AddCompraDialog::buildTabJuros(QWidget *tab)
     // ── Connections ───────────────────────────────────────────────────────
 
     // Input fields changing → recalculate
-    connect(m_valorTotal_j,  &QLineEdit::textChanged,
+    connect(m_valorTotal_j->lineEdit(),  &QLineEdit::textChanged,
             this, &AddCompraDialog::recalcular);
     connect(m_numParcelas_j, QOverload<int>::of(&QSpinBox::valueChanged),
             this, &AddCompraDialog::recalcular);
-    connect(m_valorParcela_j, &QLineEdit::textChanged,
+    connect(m_valorParcela_j->lineEdit(), &QLineEdit::textChanged,
             this, &AddCompraDialog::recalcular);
 
     // Juros mensais ↔ CET cross-sync (edit either one, the other follows)
@@ -313,7 +313,7 @@ void AddCompraDialog::buildTabJuros(QWidget *tab)
         atualizarEstadoCamposJ();
         recalcular();
     });
-    connect(m_valorTotalPago_j, &QLineEdit::textChanged, this, [this]() {
+    connect(m_valorTotalPago_j->lineEdit(), &QLineEdit::textChanged, this, [this]() {
         if (m_totalPagoIsInput) recalcular();
     });
 }

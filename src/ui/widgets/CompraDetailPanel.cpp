@@ -130,11 +130,11 @@ void CompraDetailPanel::buildUi()
     connect(m_cmbSolveFor, QOverload<int>::of(&QComboBox::currentIndexChanged),
             this, &CompraDetailPanel::onSolveForChanged);
 
-    connect(m_edtTotal,        &QLineEdit::editingFinished, this, &CompraDetailPanel::onValorTotalEdited);
-    connect(m_edtNumParcelas,  &QLineEdit::editingFinished, this, &CompraDetailPanel::onNumParcelasEdited);
-    connect(m_edtJurosMensais, &QLineEdit::editingFinished, this, &CompraDetailPanel::onJurosMensaisEdited);
-    connect(m_edtCet,          &QLineEdit::editingFinished, this, &CompraDetailPanel::onCetEdited);
-    connect(m_edtValorParcela, &QLineEdit::editingFinished, this, &CompraDetailPanel::onValorParcelaEdited);
+    connect(m_edtTotal->lineEdit(),        &QLineEdit::editingFinished, this, &CompraDetailPanel::onValorTotalEdited);
+    connect(m_edtNumParcelas,              &QLineEdit::editingFinished, this, &CompraDetailPanel::onNumParcelasEdited);
+    connect(m_edtJurosMensais,             &QLineEdit::editingFinished, this, &CompraDetailPanel::onJurosMensaisEdited);
+    connect(m_edtCet,                      &QLineEdit::editingFinished, this, &CompraDetailPanel::onCetEdited);
+    connect(m_edtValorParcela->lineEdit(), &QLineEdit::editingFinished, this, &CompraDetailPanel::onValorParcelaEdited);
 
     connect(m_btnAmortizacao, &QPushButton::clicked, this, &CompraDetailPanel::onAbrirAmortizacao);
 }

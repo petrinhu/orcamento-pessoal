@@ -121,14 +121,17 @@ void GastosWidget::buildUi()
         const QDate targetMonth = m_numMonths > 0
             ? m_firstMonth : QDate::currentDate();
         GastoAvulso empty;
-        GastoDialog dlg(empty, targetMonth.month(), targetMonth.year(),
-                        GastoAvulsoRepository().categorias(), this);
-        if (dlg.exec() != QDialog::Accepted) return;
-        GastoAvulsoRepository repo;
-        for (auto g : dlg.gastos())
-            repo.insert(g);
-        recarregar();
-        emit dadosAlterados();
+        auto *dlg = new GastoDialog(empty, targetMonth.month(), targetMonth.year(),
+                                    GastoAvulsoRepository().categorias(), this);
+        dlg->setAttribute(Qt::WA_DeleteOnClose);
+        connect(dlg, &QDialog::accepted, this, [this, dlg]() {
+            GastoAvulsoRepository repo;
+            for (auto g : dlg->gastos())
+                repo.insert(g);
+            recarregar();
+            emit dadosAlterados();
+        });
+        dlg->open();
     });
 
     connect(m_btnDel, &QPushButton::clicked, this, [this]() {
@@ -378,17 +381,19 @@ void GastosWidget::onCellClicked(int row, int col)
     const QDate monthDate = m_firstMonth.addMonths(k);
     GastoAvulso existing  = gastoDaLinha(dataRow, k);
 
-    GastoDialog dlg(existing, monthDate.month(), monthDate.year(),
-                    GastoAvulsoRepository().categorias(), this);
-    if (dlg.exec() != QDialog::Accepted) return;
-
-    GastoAvulsoRepository repo;
-    for (auto g : dlg.gastos()) {
-        if (g.id > 0) repo.update(g);
-        else          repo.insert(g);
-    }
-    recarregar();
-    emit dadosAlterados();
+    auto *dlg = new GastoDialog(existing, monthDate.month(), monthDate.year(),
+                                GastoAvulsoRepository().categorias(), this);
+    dlg->setAttribute(Qt::WA_DeleteOnClose);
+    connect(dlg, &QDialog::accepted, this, [this, dlg]() {
+        GastoAvulsoRepository repo;
+        for (auto g : dlg->gastos()) {
+            if (g.id > 0) repo.update(g);
+            else          repo.insert(g);
+        }
+        recarregar();
+        emit dadosAlterados();
+    });
+    dlg->open();
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

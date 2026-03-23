@@ -18,6 +18,15 @@ void CalculadoraHub::ensureDialog()
         m_dialog = new CalculadoraDialog(nullptr); // top-level, non-modal
         connect(m_dialog, &CalculadoraDialog::resultadoDisponivel,
                 this, &CalculadoraHub::onResultado);
+        connect(m_dialog, &CalculadoraDialog::transferirSolicitado,
+                this, [this](double valor) {
+            if (m_invoker)
+                m_invoker->setText(CalculadoraService::formatarDisplay(valor, 2));
+            m_invoker = nullptr;
+            m_dialog->setTemInvoker(false);
+            m_dialog->hide();
+            emit resultadoDisponivel(valor);
+        });
     }
 }
 
@@ -26,7 +35,8 @@ void CalculadoraHub::mostrar(QLineEdit *invoker, QWidget *parent)
     Q_UNUSED(parent)
     ensureDialog();
     m_invoker = invoker;
-    if (invoker && !invoker->text().trimmed().isEmpty())
+    m_dialog->setTemInvoker(invoker != nullptr);
+    if (invoker)
         m_dialog->setValorInicial(CalculadoraService::parsearDisplay(invoker->text()));
     m_dialog->show();
     m_dialog->raise();

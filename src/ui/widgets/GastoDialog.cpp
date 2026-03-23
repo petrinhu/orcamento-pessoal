@@ -66,7 +66,6 @@ GastoDialog::GastoDialog(const GastoAvulso &gasto,
     , m_ano(ano)
 {
     setWindowTitle(gasto.id > 0 ? tr("Editar gasto") : tr("Novo gasto"));
-    setModal(true);
     buildUi(categorias);
 }
 

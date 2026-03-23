@@ -1,26 +1,29 @@
 #pragma once
-#include <QLineEdit>
+#include <QWidget>
 
+class QLineEdit;
 class QToolButton;
 
-// QLineEdit subclass that embeds a small ⊞ button on the trailing edge.
-// Clicking the button opens CalculadoraHub's calculator pre-filled with the
-// current field value; accepting the result writes it back to the field.
-// The button is hidden automatically when the field is read-only.
-class CalculadoraEdit final : public QLineEdit {
+// Composite widget: QLineEdit + calculator button side by side.
+// The button opens CalculadoraHub pre-filled with the current value;
+// the result is injected back into the internal QLineEdit.
+// The button is hidden when the field is set read-only.
+class CalculadoraEdit final : public QWidget {
     Q_OBJECT
 public:
     explicit CalculadoraEdit(QWidget *parent = nullptr);
 
-    // Override to show/hide the embedded button.
-    // (setReadOnly is not virtual in QLineEdit, but since we store as
-    //  CalculadoraEdit* everywhere it compiles to the right override.)
+    QString text() const;
+    void setText(const QString &text);
+    void setPlaceholderText(const QString &text);
     void setReadOnly(bool ro);
+    bool isReadOnly() const;
+    void clear();
+    void setMaxLength(int max);
 
-protected:
-    void resizeEvent(QResizeEvent *e) override;
+    QLineEdit *lineEdit() const { return m_edit; }
 
 private:
-    void ajustarBotao();
-    QToolButton *m_btn = nullptr;
+    QLineEdit   *m_edit = nullptr;
+    QToolButton *m_btn  = nullptr;
 };

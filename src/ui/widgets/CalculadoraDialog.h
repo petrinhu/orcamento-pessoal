@@ -23,8 +23,12 @@ public:
     // Pre-fill the display with a value (called when invoked from a field).
     void setValorInicial(double valor);
 
+    // Show/hide the "send to field" button based on whether a field invoked us.
+    void setTemInvoker(bool has);
+
 signals:
     void resultadoDisponivel(double valor);
+    void transferirSolicitado(double valor);
 
 protected:
     void closeEvent(QCloseEvent *e) override;
@@ -52,9 +56,10 @@ private:
     [[nodiscard]] double  aplicarOp(double a, double b, QChar op) const;
 
     // ── UI ────────────────────────────────────────────────────────────────
-    QLineEdit   *m_display   = nullptr;
-    QLabel      *m_exprLabel = nullptr;
-    QListWidget *m_historico = nullptr;
+    QLineEdit   *m_display        = nullptr;
+    QLabel      *m_exprLabel      = nullptr;
+    QListWidget *m_historico      = nullptr;
+    QPushButton *m_btnTransferir  = nullptr;
 
     // ── State machine ─────────────────────────────────────────────────────
     double  m_reg      = 0.0;   // stored operand (left side)

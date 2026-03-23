@@ -14,6 +14,7 @@
 #include <QSettings>
 #include <QCloseEvent>
 #include <QKeyEvent>
+#include <QMessageBox>
 #include <cmath>
 
 // ─── construction ────────────────────────────────────────────────────────────
@@ -22,7 +23,10 @@ CalculadoraDialog::CalculadoraDialog(QWidget *parent)
     : QDialog(parent)
 {
     setWindowTitle(tr("Calculadora"));
-    setWindowFlags(Qt::Window | Qt::WindowCloseButtonHint);
+    setWindowFlags(Qt::Window | Qt::CustomizeWindowHint
+                   | Qt::WindowTitleHint
+                   | Qt::WindowCloseButtonHint
+                   | Qt::WindowMinimizeButtonHint);
     setAttribute(Qt::WA_DeleteOnClose, false); // reuse across open/close cycles
 
     buildUi();
@@ -217,6 +221,22 @@ void CalculadoraDialog::buildTabComum(QWidget *tab)
     }
     vbox->addLayout(grid);
 
+    // ── send-to-field button ───────────────────────────────────────────────
+    m_btnTransferir = new QPushButton(tr("Enviar ao campo"), tab);
+    m_btnTransferir->setObjectName(QStringLiteral("primaryBtn"));
+    m_btnTransferir->setVisible(false);
+    connect(m_btnTransferir, &QPushButton::clicked, this, [this]() {
+        if (!m_op.isNull()) pressIgual();
+        const auto resp = QMessageBox::question(
+            this, tr("Transferir"),
+            tr("Enviar %1 para o campo?").arg(m_display->text()),
+            QMessageBox::Ok | QMessageBox::Cancel,
+            QMessageBox::Ok);
+        if (resp != QMessageBox::Ok) return;
+        emit transferirSolicitado(m_cur);
+    });
+    vbox->addWidget(m_btnTransferir);
+
     // ── history ────────────────────────────────────────────────────────────
     auto *histLabel = new QLabel(tr("Histórico"), tab);
     histLabel->setObjectName(QStringLiteral("subtitle"));
@@ -256,6 +276,11 @@ QPushButton *CalculadoraDialog::makeBtnCalc(const QString &label, QWidget *paren
 }
 
 // ─── public API ──────────────────────────────────────────────────────────────
+
+void CalculadoraDialog::setTemInvoker(bool has)
+{
+    m_btnTransferir->setVisible(has);
+}
 
 void CalculadoraDialog::setValorInicial(double valor)
 {

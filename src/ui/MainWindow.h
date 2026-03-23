@@ -48,6 +48,7 @@ private:
     void onAjuda();
     void onSobre();
 
+    QWidget        *m_dashboard  = nullptr;
     ParcelasWidget *m_parcelas   = nullptr;
     EntradasWidget *m_entradas   = nullptr;
     GastosWidget   *m_gastos     = nullptr;

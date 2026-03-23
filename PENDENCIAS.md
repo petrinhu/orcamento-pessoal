@@ -39,6 +39,7 @@
 | 39 | Calculadora: fechar junto com a janela principal (destruir/esconder ao fechar o app) | 🟡 Média | Baixa | ✅ |
 | 40 | Calculadora: botão "Sempre visível" (toggle Qt::WindowStaysOnTopHint) | 🟡 Média | Baixa | ✅ |
 | 25 | Consultor financeiro IA: gerar prompt preenchido com dados das tabelas p/ colar no ChatGPT/Claude Web; secundário: integrar API direta | 🟢 Baixa | Alta | ❌ |
+| 41 | Configurações: aba inicial ao abrir o app (padrão: Dashboard; opções: Dashboard, Entradas, Gastos, Cartões) | 🟢 Baixa | Baixa | ❌ |
 | 29 | Gestão de pagadores/recebedores | 🟢 Baixa | Baixa | ❌ |
 | 18 | Testes completos CLI automatizados (após features estáveis) | 🟢 Baixa | Alta | ❌ |
 | 19 | Tradução i18n completa (pt-BR / en) (após features estáveis) | 🟢 Baixa | Média | ❌ |

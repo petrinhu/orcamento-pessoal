@@ -47,13 +47,33 @@ MainWindow::MainWindow(QWidget *parent)
 
 void MainWindow::buildUi()
 {
+    // ── Dashboard stub ─────────────────────────────────────────────────────
+    m_dashboard = new QWidget(this);
+    {
+        auto *lay = new QVBoxLayout(m_dashboard);
+        lay->setAlignment(Qt::AlignCenter);
+        auto *lbl = new QLabel(tr("🚧  Em desenvolvimento"), m_dashboard);
+        lbl->setAlignment(Qt::AlignCenter);
+        QFont f = lbl->font();
+        f.setPointSize(18);
+        lbl->setFont(f);
+        auto *sub = new QLabel(tr("O Dashboard será implementado em breve."), m_dashboard);
+        sub->setAlignment(Qt::AlignCenter);
+        sub->setObjectName(QStringLiteral("subtitle"));
+        lay->addWidget(lbl);
+        lay->addSpacing(8);
+        lay->addWidget(sub);
+    }
+
     m_parcelas = new ParcelasWidget(this);
     m_entradas = new EntradasWidget(this);
     m_gastos   = new GastosWidget(this);
     m_tabs     = new QTabWidget(this);
-    m_tabs->addTab(m_parcelas, tr("Cartões"));
-    m_tabs->addTab(m_entradas, tr("Entradas"));
-    m_tabs->addTab(m_gastos,   tr("Gastos"));
+    m_tabs->addTab(m_dashboard, tr("Dashboard"));
+    m_tabs->addTab(m_entradas,  tr("Entradas"));
+    m_tabs->addTab(m_gastos,    tr("Gastos"));
+    m_tabs->addTab(m_parcelas,  tr("Cartões"));
+    m_tabs->setCurrentIndex(0);
     setCentralWidget(m_tabs);
 
     buildMenuBar();
@@ -100,9 +120,9 @@ void MainWindow::buildUi()
                     m_statusTotal->setText(msg + QStringLiteral("  "));
             });
     connect(m_tabs, &QTabWidget::currentChanged, this, [this]() {
-        if      (m_tabs->currentWidget() == m_parcelas) m_parcelas->recarregar();
-        else if (m_tabs->currentWidget() == m_entradas) m_entradas->recarregar();
+        if      (m_tabs->currentWidget() == m_entradas) m_entradas->recarregar();
         else if (m_tabs->currentWidget() == m_gastos)   m_gastos->recarregar();
+        else if (m_tabs->currentWidget() == m_parcelas) m_parcelas->recarregar();
     });
 
     // ── Auto-save timer ────────────────────────────────────────────────────
@@ -377,11 +397,11 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
     QMessageBox msg(this);
     msg.setIcon(QMessageBox::Warning);
-    msg.setWindowTitle(tr("Alterações não salvas"));
+    msg.setWindowTitle(tr("Fechar"));
     msg.setText(tr("Há alterações não salvas."));
     msg.setInformativeText(tr("Deseja salvar antes de fechar?"));
-    QAbstractButton *btnSalvar   = msg.addButton(tr("Salvar"),            QMessageBox::AcceptRole);
-    QAbstractButton *btnFechar   = msg.addButton(tr("Fechar sem salvar"), QMessageBox::DestructiveRole);
+    QAbstractButton *btnSalvar   = msg.addButton(tr("Salvar"),      QMessageBox::AcceptRole);
+    QAbstractButton *btnFechar   = msg.addButton(tr("Não salvar"),  QMessageBox::DestructiveRole);
     msg.addButton(tr("Cancelar"), QMessageBox::RejectRole);
     msg.setDefaultButton(qobject_cast<QPushButton *>(btnSalvar));
     msg.exec();
