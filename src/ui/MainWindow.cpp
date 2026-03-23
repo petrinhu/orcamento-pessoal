@@ -10,8 +10,9 @@
 #include "repositories/CompraRepository.h"
 #include "repositories/ParcelaRepository.h"
 
-#include <QTabWidget>
 #include <QLabel>
+#include <QVBoxLayout>
+#include <QDialogButtonBox>
 #include <QStatusBar>
 #include <QToolButton>
 #include <QHBoxLayout>
@@ -35,14 +36,8 @@ MainWindow::MainWindow(QWidget *parent)
 
 void MainWindow::buildUi()
 {
-    m_tabs = new QTabWidget(this);
-    setCentralWidget(m_tabs);
-
     m_parcelas = new ParcelasWidget(this);
-    m_tabs->addTab(m_parcelas, QStringLiteral("Parcelas"));
-
-    m_prefs = new PrefsWidget(this);
-    m_tabs->addTab(m_prefs, QStringLiteral("Configurações"));
+    setCentralWidget(m_parcelas);
 
     buildMenuBar();
     buildThemeBar();
@@ -54,10 +49,6 @@ void MainWindow::buildUi()
     statusBar()->addWidget(m_statusUser);
 
     // ── Connections ────────────────────────────────────────────────────────
-    connect(m_prefs, &PrefsWidget::cartoesAlterados,
-            m_parcelas, &ParcelasWidget::recarregar);
-    connect(m_prefs, &PrefsWidget::moedaAlterada,
-            m_parcelas, &ParcelasWidget::recarregar);
     connect(m_parcelas, &ParcelasWidget::dadosAlterados,
             m_parcelas, &ParcelasWidget::recarregar);
 }
@@ -150,7 +141,10 @@ void MainWindow::buildMenuBar()
     connect(aSelAll, &QAction::triggered, this, &MainWindow::onSelecionarTudo);
 
     // ── Configurações ──────────────────────────────────────────────────────
-    // (Cartões, idioma e moeda agora estão na aba Configurações — sem menu separado)
+    QMenu *mConfig = mb->addMenu(QStringLiteral("&Configurações"));
+
+    auto *aPrefs = mConfig->addAction(QStringLiteral("&Preferências…"));
+    connect(aPrefs, &QAction::triggered, this, &MainWindow::onConfiguracoes);
 
     // ── Ajuda ──────────────────────────────────────────────────────────────
     QMenu *mAjuda = mb->addMenu(QStringLiteral("A&juda"));
@@ -190,7 +184,7 @@ void MainWindow::buildThemeBar()
     });
 
     updateThemeButton();
-    m_tabs->setCornerWidget(corner, Qt::TopRightCorner);
+    menuBar()->setCornerWidget(corner, Qt::TopRightCorner);
 }
 
 void MainWindow::applyThemeMode(Theme::ThemeMode mode)
@@ -393,6 +387,24 @@ void MainWindow::onExportar(const QString &format)
     else
         QMessageBox::information(this, QStringLiteral("Exportar"),
             QStringLiteral("Arquivo exportado com sucesso:\n%1").arg(path));
+}
+
+// ── Configurações slot ────────────────────────────────────────────────────────
+
+void MainWindow::onConfiguracoes()
+{
+    QDialog dlg(this);
+    dlg.setWindowTitle(QStringLiteral("Configurações"));
+    dlg.setMinimumWidth(500);
+    auto *lay   = new QVBoxLayout(&dlg);
+    auto *prefs = new PrefsWidget(&dlg);
+    lay->addWidget(prefs);
+    auto *btns = new QDialogButtonBox(QDialogButtonBox::Close, &dlg);
+    lay->addWidget(btns);
+    connect(btns,  &QDialogButtonBox::rejected,    &dlg,       &QDialog::accept);
+    connect(prefs, &PrefsWidget::cartoesAlterados, m_parcelas, &ParcelasWidget::recarregar);
+    connect(prefs, &PrefsWidget::moedaAlterada,    m_parcelas, &ParcelasWidget::recarregar);
+    dlg.exec();
 }
 
 // ── Editar slots ──────────────────────────────────────────────────────────────

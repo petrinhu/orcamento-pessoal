@@ -92,6 +92,7 @@ static QString gerarQss()
             font-size: 13px;
             color: %1;
             background-color: %2;
+            outline: 0;
         }
         QMainWindow, QDialog {
             background-color: %2;

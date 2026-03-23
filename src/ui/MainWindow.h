@@ -35,12 +35,13 @@ private:
     void onSelecionarTudo();
 
     // Ajuda
+    void onConfiguracoes();
+
+    // Ajuda
     void onAjuda();
     void onSobre();
 
-    QTabWidget     *m_tabs       = nullptr;
     ParcelasWidget *m_parcelas   = nullptr;
-    PrefsWidget    *m_prefs      = nullptr;
     QLabel         *m_statusUser = nullptr;
 
     // Theme cycle button (Auto → Light → Dark → Auto)
