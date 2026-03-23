@@ -18,7 +18,7 @@
 | 10 | UX: totais na status bar | 🟡 Média | Baixa | ✅ |
 | 8 | Entradas: botão "Organizar por" | 🟡 Média | Média | ❌ |
 | 9 | Navegação: botão "Hoje" + atalhos teclado | 🟡 Média | Média | ❌ |
-| 13 | Configurações: reorganizar UI/UX | 🟡 Média | Média | ❌ |
+| 13 | Configurações: reorganizar UI/UX | 🟡 Média | Média | ✅ |
 | 15 | Conexões entre abas: vincular valores/cálculos entre Cartões, Entradas, Gastos (a planejar) | 🟡 Média | Alta | ❌ |
 | 16 | Barra de menu: ícones Abrir/Salvar/SalvarComo/Busca/Hoje/Calculadora/Configurações/Bloquear ao lado do tema | 🟡 Média | Baixa | ❌ |
 | 21 | Criar categorias hierárquicas (para gastos, entradas e investimentos) | 🟡 Média | Média | ❌ |
