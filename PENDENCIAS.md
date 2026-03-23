@@ -16,6 +16,7 @@
 | 10 | UX: totais na status bar | 🟡 Média | Baixa | ✅ |
 | 13 | Configurações: reorganizar UI/UX | 🟡 Média | Média | ✅ |
 | 6 | Dashboard: resumo mensal/anual (após Cartões + Entradas + Gastos prontos) | 🟡 Média | Alta | ❌ |
+| 35 | Cartões: exibir preço de compra, juros mensais, CET e juros totais por item (opções: painel inferior, colunas extras, tooltip rico ou botão ℹ — a definir) | 🟡 Média | Média | ❌ |
 | 8 | Entradas: botão "Organizar por" | 🟡 Média | Média | ❌ |
 | 9 | Navegação: botão "Hoje" + atalhos teclado | 🟡 Média | Média | ❌ |
 | 15 | Conexões entre abas: vincular valores/cálculos entre Cartões, Entradas, Gastos (a planejar) | 🟡 Média | Alta | ❌ |
