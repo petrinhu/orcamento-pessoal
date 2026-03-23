@@ -10,27 +10,27 @@
 
 namespace Theme {
 
-// ── Palette: Forest Neutral — soft, friendly, low-fatigue ─────────────────────
+// ── Palette: KDE Breeze Light / Breeze Dark ───────────────────────────────────
 namespace Color {
-    // Light
-    const QString BgLight       = QStringLiteral("#F5F4F0");
+    // Light — Breeze Light
+    const QString BgLight       = QStringLiteral("#EFF0F1");
     const QString SurfaceLight  = QStringLiteral("#FFFFFF");
-    const QString BorderLight   = QStringLiteral("#D8E0D9");
-    const QString TextLight     = QStringLiteral("#1A2E22");
-    const QString SubtextLight  = QStringLiteral("#667A6E");
-    const QString AccentLight   = QStringLiteral("#166F4A");
-    const QString PositiveLight = QStringLiteral("#166F4A");
-    const QString NegativeLight = QStringLiteral("#C0392B");
+    const QString BorderLight   = QStringLiteral("#BDC3C7");
+    const QString TextLight     = QStringLiteral("#232629");
+    const QString SubtextLight  = QStringLiteral("#7F8C8D");
+    const QString AccentLight   = QStringLiteral("#3DAEE9");
+    const QString PositiveLight = QStringLiteral("#27AE60");
+    const QString NegativeLight = QStringLiteral("#DA4453");
 
-    // Dark
-    const QString BgDark        = QStringLiteral("#181A17");
-    const QString SurfaceDark   = QStringLiteral("#1E2420");
-    const QString BorderDark    = QStringLiteral("#2B3830");
-    const QString TextDark      = QStringLiteral("#D8E0D8");
-    const QString SubtextDark   = QStringLiteral("#7A9485");
-    const QString AccentDark    = QStringLiteral("#22A367");
-    const QString PositiveDark  = QStringLiteral("#22A367");
-    const QString NegativeDark  = QStringLiteral("#E05555");
+    // Dark — Breeze Dark
+    const QString BgDark        = QStringLiteral("#31363B");
+    const QString SurfaceDark   = QStringLiteral("#1B1E20");
+    const QString BorderDark    = QStringLiteral("#575B5F");
+    const QString TextDark      = QStringLiteral("#EFF0F1");
+    const QString SubtextDark   = QStringLiteral("#7F8C8D");
+    const QString AccentDark    = QStringLiteral("#3DAEE9");
+    const QString PositiveDark  = QStringLiteral("#27AE60");
+    const QString NegativeDark  = QStringLiteral("#DA4453");
 }
 
 // ── ThemeMode state ───────────────────────────────────────────────────────────
@@ -79,10 +79,10 @@ static QString gerarQss()
     const QString txt  = dark ? Color::TextDark     : Color::TextLight;
     const QString sub  = dark ? Color::SubtextDark  : Color::SubtextLight;
     const QString neg  = dark ? Color::NegativeDark : Color::NegativeLight;
-    // Alternating row — very subtle
-    const QString alt  = dark ? QStringLiteral("#1B2118") : QStringLiteral("#F0F4F0");
-    // Hover background — slightly lighter than bg, used for subtle hover states
-    const QString hov  = dark ? QStringLiteral("#252C22") : QStringLiteral("#ECEEE9");
+    // Alternating row
+    const QString alt  = dark ? QStringLiteral("#232629") : QStringLiteral("#F5F5F5");
+    // Hover background
+    const QString hov  = dark ? QStringLiteral("#3B4045") : QStringLiteral("#D0E9F6");
 
     // %1=txt  %2=bg  %3=surf  %4=acc  %5=sub  %6=neg  %7=brd  %8=alt  %9=hov
     QString qss = QStringLiteral(R"(
