@@ -19,7 +19,7 @@
 | 8 | Entradas: botão "Organizar por" | 🟡 Média | Média | ❌ |
 | 9 | Navegação: botão "Hoje" + atalhos teclado | 🟡 Média | Média | ❌ |
 | 15 | Conexões entre abas: vincular valores/cálculos entre Cartões, Entradas, Gastos (a planejar) | 🟡 Média | Alta | ❌ |
-| 16 | Barra de menu: ícones Abrir/Salvar/SalvarComo/Busca/Hoje/Calculadora/Configurações/Bloquear ao lado do tema | 🟡 Média | Baixa | ❌ |
+| 16 | Barra de menu: ícones ⏮◀▶⏭ navegação abas + Abrir/Salvar/SalvarComo + Busca/Hoje/Calc + Config/Tema/Bloquear | 🟡 Média | Baixa | ❌ |
 | 21 | Criar categorias hierárquicas (para gastos, entradas e investimentos) | 🟡 Média | Média | ❌ |
 | 23 | Aba tendências de gastos | 🟡 Média | Média | ❌ |
 | 24 | Gráficos (Qt Charts — barras, pizza, linha) | 🟡 Média | Média | ❌ |
