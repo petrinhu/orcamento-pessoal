@@ -69,6 +69,7 @@ set(SOURCES
     src/core/currency/FrankfurterProvider.cpp
 
     # Repositories
+    src/repositories/PriceRepository.cpp
     src/repositories/CompraRepository.cpp
     src/repositories/ParcelaRepository.cpp
     src/repositories/FonteRendaRepository.cpp

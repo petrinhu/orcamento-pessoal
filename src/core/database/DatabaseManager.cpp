@@ -330,6 +330,34 @@ void DatabaseManager::createSchema()
         )
     )"));
 
+    q.exec(QStringLiteral(R"(
+        CREATE TABLE IF NOT EXISTS precos_ativos (
+            ticker      TEXT    NOT NULL,
+            data        TEXT    NOT NULL,
+            abertura    INTEGER NOT NULL DEFAULT 0,
+            maxima      INTEGER NOT NULL DEFAULT 0,
+            minima      INTEGER NOT NULL DEFAULT 0,
+            fechamento  INTEGER NOT NULL DEFAULT 0,
+            volume      INTEGER NOT NULL DEFAULT 0,
+            fonte       TEXT    NOT NULL DEFAULT '',
+            atualizado  TEXT    NOT NULL DEFAULT '',
+            PRIMARY KEY (ticker, data)
+        )
+    )"));
+
+    q.exec(QStringLiteral(R"(
+        CREATE TABLE IF NOT EXISTS cotacoes_tempo_real (
+            ticker          TEXT    PRIMARY KEY,
+            preco           INTEGER NOT NULL DEFAULT 0,
+            variacao_pct    INTEGER NOT NULL DEFAULT 0,
+            abertura        INTEGER NOT NULL DEFAULT 0,
+            minima          INTEGER NOT NULL DEFAULT 0,
+            maxima          INTEGER NOT NULL DEFAULT 0,
+            volume          INTEGER NOT NULL DEFAULT 0,
+            timestamp       TEXT    NOT NULL DEFAULT ''
+        )
+    )"));
+
     // Migration: add pagador columns to lancamentos_gastos (guard via PRAGMA).
     {
         QSqlQuery pq(m_db);
