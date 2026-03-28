@@ -25,6 +25,9 @@ public:
 signals:
     void resultadoDisponivel(double valor);
 
+    // Re-emitted from CalculadoraDialog::tvmParaCartoes.
+    void tvmParaCartoes(double pv, int n, double iMensal, double pmt);
+
 private:
     explicit CalculadoraHub();
     void ensureDialog();

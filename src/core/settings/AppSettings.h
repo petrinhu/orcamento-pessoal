@@ -33,6 +33,10 @@ public:
     QString autosavesFolder() const;                // default: savesFolder()/autosaves
     void    setAutosavesFolder(const QString &path);
 
+    // ── Startup tab ───────────────────────────────────────────────────────
+    int  initialTab() const;          // default: 0 (Dashboard)
+    void setInitialTab(int index);
+
 signals:
     void languageChanged(Language lang);
     void currencyChanged(const QString &code);

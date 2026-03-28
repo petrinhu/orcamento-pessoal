@@ -1,6 +1,8 @@
 #include "PrefsWidget.h"
-#include "ConfigWidget.h"
+#include "ConfigCategoriasWidget.h"
 #include "ConfigFontesWidget.h"
+#include "ConfigPagadoresWidget.h"
+#include "ConfigWidget.h"
 #include "core/settings/AppSettings.h"
 
 #include <QVBoxLayout>
@@ -196,6 +198,35 @@ void PrefsWidget::buildUi()
     });
 
     layGeral->addWidget(grpSave);
+
+    // ── Grupo: Comportamento ───────────────────────────────────────────────
+    auto *grpComport  = new QGroupBox(tr("Comportamento"), scrollGeral);
+    auto *layComport  = new QVBoxLayout(grpComport);
+    auto *rowInitTab  = new QHBoxLayout;
+    auto *lblInitTab  = new QLabel(tr("Aba inicial:"), grpComport);
+    m_comboInitialTab = new QComboBox(grpComport);
+    m_comboInitialTab->addItem(tr("Dashboard"),      0);
+    m_comboInitialTab->addItem(tr("Entradas"),       1);
+    m_comboInitialTab->addItem(tr("Gastos"),         2);
+    m_comboInitialTab->addItem(tr("Tendências"),     3);
+    m_comboInitialTab->addItem(tr("Investimentos"),  4);
+    m_comboInitialTab->addItem(tr("Planejamento"),   5);
+    m_comboInitialTab->addItem(tr("Recorrências"),   6);
+    m_comboInitialTab->addItem(tr("Dívidas"),        7);
+    m_comboInitialTab->addItem(tr("Metas"),          8);
+    m_comboInitialTab->addItem(tr("Lembretes"),      9);
+    m_comboInitialTab->addItem(tr("Cartões"),        10);
+    m_comboInitialTab->setCurrentIndex(AppSettings::instance().initialTab());
+    rowInitTab->addWidget(lblInitTab);
+    rowInitTab->addWidget(m_comboInitialTab);
+    rowInitTab->addStretch();
+    layComport->addLayout(rowInitTab);
+    connect(m_comboInitialTab, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, [](int index) {
+        AppSettings::instance().setInitialTab(index);
+    });
+
+    layGeral->addWidget(grpComport);
     layGeral->addStretch();
 
     tabs->addTab(scrollGeral, tr("Geral"));
@@ -211,6 +242,40 @@ void PrefsWidget::buildUi()
     connect(m_fontes, &ConfigFontesWidget::fontesAlteradas,
             this,     &PrefsWidget::fontesAlteradas);
     tabs->addTab(m_fontes, tr("Fontes de Renda"));
+
+    // ── Aba: Beneficiários ─────────────────────────────────────────────────
+    auto *pagPage    = new QWidget(tabs);
+    auto *pagScroll  = new QScrollArea(tabs);
+    pagScroll->setWidgetResizable(true);
+    pagScroll->setFrameShape(QFrame::NoFrame);
+    pagScroll->setWidget(pagPage);
+
+    auto *pagLay = new QVBoxLayout(pagPage);
+    pagLay->setContentsMargins(16, 16, 16, 16);
+    m_pagadores = new ConfigPagadoresWidget(pagPage);
+    connect(m_pagadores, &ConfigPagadoresWidget::pagadoresAlterados,
+            this,        &PrefsWidget::pagadoresAlterados);
+    pagLay->addWidget(m_pagadores);
+    pagLay->addStretch();
+
+    tabs->addTab(pagScroll, tr("Beneficiários"));
+
+    // ── Aba: Categorias ────────────────────────────────────────────────────
+    auto *catPage   = new QWidget(tabs);
+    auto *catScroll = new QScrollArea(tabs);
+    catScroll->setWidgetResizable(true);
+    catScroll->setFrameShape(QFrame::NoFrame);
+    catScroll->setWidget(catPage);
+
+    auto *catLay = new QVBoxLayout(catPage);
+    catLay->setContentsMargins(16, 16, 16, 16);
+    m_categorias = new ConfigCategoriasWidget(catPage);
+    connect(m_categorias, &ConfigCategoriasWidget::categoriasAlteradas,
+            this,         &PrefsWidget::categoriasAlteradas);
+    catLay->addWidget(m_categorias);
+    catLay->addStretch();
+
+    tabs->addTab(catScroll, tr("Categorias"));
 }
 
 void PrefsWidget::syncComboToCurrency(const QString &code)

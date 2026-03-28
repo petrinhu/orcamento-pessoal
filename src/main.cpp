@@ -34,14 +34,15 @@ int main(int argc, char *argv[])
     if (login.exec() != QDialog::Accepted)
         return 0;
 
-    const QString    nome  = login.nome();
-    const QByteArray chave = login.chave();
+    const QString    nome     = login.nome();
+    const QByteArray chave    = login.chave();
+    const QByteArray chaveOld = login.chaveOld(); // PBKDF2 — for legacy file migration
 
     // ── Open database ──────────────────────────────────────────────────────
     QDir().mkpath(QStringLiteral("data"));
 
     const QString slug = UserSession::instance().slug();
-    if (!DatabaseManager::instance().open(slug, chave)) {
+    if (!DatabaseManager::instance().open(slug, chave, chaveOld)) {
         QMessageBox::critical(nullptr,
             QStringLiteral("Erro ao abrir banco de dados"),
             QStringLiteral("Não foi possível abrir o banco de dados.\n"

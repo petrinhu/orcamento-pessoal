@@ -1,7 +1,13 @@
 #include "GastosWidget.h"
 #include "GastoDialog.h"
+#include "repositories/CategoriaRepository.h"
 #include "repositories/GastoAvulsoRepository.h"
+#include "repositories/PagadorRepository.h"
 #include "core/settings/AppSettings.h"
+#include "core/commands/UndoCommands.h"
+
+#include <QUndoStack>
+#include <memory>
 
 #include <QLabel>
 #include <QStackedWidget>
@@ -122,12 +128,31 @@ void GastosWidget::buildUi()
             ? m_firstMonth : QDate::currentDate();
         GastoAvulso empty;
         auto *dlg = new GastoDialog(empty, targetMonth.month(), targetMonth.year(),
-                                    GastoAvulsoRepository().categorias(), this);
+                                    CategoriaRepository().findByTipo(QStringLiteral("gasto")),
+                                    PagadorRepository().findAll(), this);
         dlg->setAttribute(Qt::WA_DeleteOnClose);
         connect(dlg, &QDialog::accepted, this, [this, dlg]() {
+            auto items = std::make_shared<QList<GastoAvulso>>();
             GastoAvulsoRepository repo;
-            for (auto g : dlg->gastos())
+            for (auto g : dlg->gastos()) {
                 repo.insert(g);
+                items->append(g);
+            }
+            if (m_undoStack)
+                m_undoStack->push(new LambdaCommand(
+                    tr("Adicionar gasto(s)"),
+                    [items]() {
+                        for (auto &g : *items) {
+                            g.id = 0;
+                            GastoAvulsoRepository().insert(g);
+                        }
+                    },
+                    [items]() {
+                        for (const auto &g : std::as_const(*items))
+                            GastoAvulsoRepository().remove(g.id);
+                    },
+                    [this]() { recarregar(); emit dadosAlterados(); }
+                ));
             recarregar();
             emit dadosAlterados();
         });
@@ -151,9 +176,32 @@ void GastosWidget::buildUi()
         if (QMessageBox::question(this, tr("Excluir"),
                 tr("Excluir %1 gasto(s)?").arg(ids.size()))
             != QMessageBox::Yes) return;
+        // Collect items before removal (for undo)
+        auto toRemove = std::make_shared<QList<GastoAvulso>>();
+        for (const auto &monthList : std::as_const(m_data))
+            for (const auto &g : monthList)
+                if (ids.contains(g.id)) toRemove->append(g);
+
         GastoAvulsoRepository repo;
         for (int id : std::as_const(ids))
             repo.remove(id);
+
+        if (m_undoStack)
+            m_undoStack->push(new LambdaCommand(
+                tr("Excluir %1 gasto(s)").arg(ids.size()),
+                [toRemove]() {
+                    for (const auto &g : std::as_const(*toRemove))
+                        GastoAvulsoRepository().remove(g.id);
+                },
+                [toRemove]() {
+                    for (auto &g : *toRemove) {
+                        g.id = 0;
+                        GastoAvulsoRepository().insert(g);
+                    }
+                },
+                [this]() { recarregar(); emit dadosAlterados(); }
+            ));
+
         recarregar();
         emit dadosAlterados();
     });
@@ -274,7 +322,8 @@ void GastosWidget::populateTable()
     static const char* const kSubLabels[COL_PER_MONTH] = {
         QT_TR_NOOP("Descrição"), QT_TR_NOOP("Categoria"),
         QT_TR_NOOP("Tipo"),      QT_TR_NOOP("Valor"),
-        QT_TR_NOOP("Data"),      QT_TR_NOOP("Obs")
+        QT_TR_NOOP("Data"),      QT_TR_NOOP("Obs"),
+        QT_TR_NOOP("Beneficiário")
     };
     for (int k = 0; k < m_numMonths; ++k) {
         for (int c = 0; c < COL_PER_MONTH; ++c) {
@@ -325,6 +374,11 @@ void GastosWidget::populateTable()
                 itObs->setToolTip(g.obs);
                 m_table->setItem(tableRow, baseCol + 5, itObs);
 
+                // Col 6: Beneficiário
+                auto *itBenef = readOnlyItem(g.pagador);
+                itBenef->setToolTip(g.pagador);
+                m_table->setItem(tableRow, baseCol + 6, itBenef);
+
             } else {
                 for (int c = 0; c < COL_PER_MONTH; ++c)
                     m_table->setItem(tableRow, baseCol + c, readOnlyItem({}));
@@ -352,7 +406,7 @@ void GastosWidget::populateTable()
         itSum->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
         m_table->setItem(totalRow, baseCol + 3, itSum); // col Valor
 
-        for (int c : {1, 2, 4, 5})
+        for (int c : {1, 2, 4, 5, 6})
             m_table->setItem(totalRow, baseCol + c, readOnlyItem({}));
     }
 
@@ -382,14 +436,47 @@ void GastosWidget::onCellClicked(int row, int col)
     GastoAvulso existing  = gastoDaLinha(dataRow, k);
 
     auto *dlg = new GastoDialog(existing, monthDate.month(), monthDate.year(),
-                                GastoAvulsoRepository().categorias(), this);
+                                CategoriaRepository().findByTipo(QStringLiteral("gasto")),
+                                PagadorRepository().findAll(), this);
     dlg->setAttribute(Qt::WA_DeleteOnClose);
     connect(dlg, &QDialog::accepted, this, [this, dlg]() {
+        auto beforeItems  = std::make_shared<QList<GastoAvulso>>();
+        auto updatedItems = std::make_shared<QList<GastoAvulso>>();
+        auto insertedItems= std::make_shared<QList<GastoAvulso>>();
+
         GastoAvulsoRepository repo;
         for (auto g : dlg->gastos()) {
-            if (g.id > 0) repo.update(g);
-            else          repo.insert(g);
+            if (g.id > 0) {
+                auto opt = GastoAvulsoRepository().findById(g.id);
+                if (opt) beforeItems->append(*opt);
+                updatedItems->append(g);
+                repo.update(g);
+            } else {
+                repo.insert(g);
+                insertedItems->append(g);
+            }
         }
+
+        if (m_undoStack)
+            m_undoStack->push(new LambdaCommand(
+                tr("Editar gasto"),
+                [updatedItems, insertedItems]() {
+                    for (const auto &g : std::as_const(*updatedItems))
+                        GastoAvulsoRepository().update(g);
+                    for (auto &g : *insertedItems) {
+                        g.id = 0;
+                        GastoAvulsoRepository().insert(g);
+                    }
+                },
+                [beforeItems, insertedItems]() {
+                    for (const auto &g : std::as_const(*beforeItems))
+                        GastoAvulsoRepository().update(g);
+                    for (const auto &g : std::as_const(*insertedItems))
+                        GastoAvulsoRepository().remove(g.id);
+                },
+                [this]() { recarregar(); emit dadosAlterados(); }
+            ));
+
         recarregar();
         emit dadosAlterados();
     });

@@ -559,3 +559,29 @@ void AddCompraDialog::accept()
 
     QDialog::accept();
 }
+
+void AddCompraDialog::preencherJuros(double pv, int n, double iMensal)
+{
+    // Switch to the Juros tab (index 2).
+    m_tabs->setCurrentIndex(2);
+
+    // Set PV (valor à vista) — format as BRL string with 2 decimal places.
+    if (pv != 0.0) {
+        const qint64 pvCentavos = static_cast<qint64>(std::round(std::abs(pv) * 100.0));
+        m_valorTotal_j->lineEdit()->setText(
+            ParcelaService::formatarValor(pvCentavos));
+    }
+
+    // Set N (number of parcelas).
+    if (n > 0)
+        m_numParcelas_j->setValue(n);
+
+    // Set monthly interest rate.
+    if (iMensal > 0.0)
+        m_jurosMensais->setValue(iMensal);
+
+    // Solve for PMT (parcela) — the most common use case.
+    m_solveForJ = SolveFor::Parcela;
+    atualizarEstadoCamposJ();
+    recalcular();
+}

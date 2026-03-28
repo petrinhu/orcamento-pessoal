@@ -110,3 +110,16 @@ void AppSettings::setAutosavesFolder(const QString &path)
     m_s.setValue(QStringLiteral("autosaves_folder"), path);
     emit autosaveSettingsChanged();
 }
+
+// ── Startup tab ───────────────────────────────────────────────────────────────
+
+int AppSettings::initialTab() const
+{
+    return m_s.value(QStringLiteral("initial_tab"), 0).toInt();
+}
+
+void AppSettings::setInitialTab(int index)
+{
+    if (m_s.value(QStringLiteral("initial_tab"), 0).toInt() == index) return;
+    m_s.setValue(QStringLiteral("initial_tab"), index);
+}

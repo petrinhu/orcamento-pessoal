@@ -9,6 +9,7 @@
 class QTableWidget;
 class QPushButton;
 class QStackedWidget;
+class QUndoStack;
 
 enum class SortFieldGastos { None, Descricao, Categoria, Tipo, Valor, Data };
 
@@ -19,6 +20,7 @@ class GastosWidget final : public QWidget {
     Q_OBJECT
 public:
     explicit GastosWidget(QWidget *parent = nullptr);
+    void setUndoStack(QUndoStack *stack) { m_undoStack = stack; }
 
 signals:
     void dadosAlterados();
@@ -41,7 +43,7 @@ private:
 
     GastoAvulso gastoDaLinha(int dataRow, int monthIndex) const;
 
-    static const int COL_PER_MONTH = 6; // Descrição | Categoria | Tipo | Valor | Data | Obs
+    static const int COL_PER_MONTH = 7; // Descrição | Categoria | Tipo | Valor | Data | Obs | Beneficiário
     static const int HEADER_ROWS   = 2; // row 0 = mês, row 1 = sub-labels
 
     QStackedWidget *m_stack  = nullptr;
@@ -56,4 +58,6 @@ private:
     QDate m_firstMonth;
     int   m_numMonths = 0;
     int   m_maxRows   = 0;
+
+    QUndoStack *m_undoStack = nullptr;
 };

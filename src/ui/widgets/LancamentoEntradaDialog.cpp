@@ -1,6 +1,8 @@
 #include "LancamentoEntradaDialog.h"
 
 #include <QVBoxLayout>
+#include <QStandardItemModel>
+#include <QStandardItem>
 #include <QHBoxLayout>
 #include <QFormLayout>
 #include <QComboBox>
@@ -17,6 +19,51 @@
 #include <QLocale>
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
+
+static QStandardItemModel *buildGroupedCatModel(const QList<Categoria> &cats,
+                                                 QObject *parent)
+{
+    auto *model = new QStandardItemModel(parent);
+    auto *noneItem = new QStandardItem(QObject::tr("— sem categoria —"));
+    noneItem->setData(0,        Qt::UserRole);
+    noneItem->setData(QString(), Qt::UserRole + 1);
+    model->appendRow(noneItem);
+
+    QList<Categoria> roots, children;
+    for (const auto &c : cats) {
+        if (c.paiId == 0) roots.append(c);
+        else              children.append(c);
+    }
+    for (const auto &root : roots) {
+        bool hasChild = false;
+        for (const auto &ch : children)
+            if (ch.paiId == root.id) { hasChild = true; break; }
+
+        if (hasChild) {
+            auto *header = new QStandardItem(root.nome);
+            QFont f = header->font(); f.setBold(true); header->setFont(f);
+            header->setFlags(Qt::ItemIsEnabled);
+            header->setData(-root.id, Qt::UserRole);
+            header->setData(QString(),  Qt::UserRole + 1);
+            model->appendRow(header);
+            for (const auto &ch : children) {
+                if (ch.paiId != root.id) continue;
+                auto *child = new QStandardItem(
+                    QStringLiteral("  \u2514\u2500 ") + ch.nome);
+                child->setData(ch.id,   Qt::UserRole);
+                child->setData(ch.nome, Qt::UserRole + 1);
+                model->appendRow(child);
+            }
+        } else {
+            auto *item = new QStandardItem(root.nome);
+            QFont f = item->font(); f.setBold(true); item->setFont(f);
+            item->setData(root.id,   Qt::UserRole);
+            item->setData(root.nome, Qt::UserRole + 1);
+            model->appendRow(item);
+        }
+    }
+    return model;
+}
 
 static qint64 parseCentavos(const QString &txt)
 {
@@ -49,6 +96,7 @@ static QString formatCentavos(qint64 c)
 LancamentoEntradaDialog::LancamentoEntradaDialog(const LancamentoEntrada &lancamento,
                                                  int mes, int ano,
                                                  const QList<FonteRenda> &fontes,
+                                                 const QList<Categoria> &categorias,
                                                  QWidget *parent)
     : QDialog(parent)
     , m_original(lancamento)
@@ -57,10 +105,11 @@ LancamentoEntradaDialog::LancamentoEntradaDialog(const LancamentoEntrada &lancam
 {
     setWindowTitle(lancamento.id > 0 ? tr("Editar lançamento") : tr("Novo lançamento"));
     setModal(true);
-    buildUi(fontes);
+    buildUi(fontes, categorias);
 }
 
-void LancamentoEntradaDialog::buildUi(const QList<FonteRenda> &fontes)
+void LancamentoEntradaDialog::buildUi(const QList<FonteRenda> &fontes,
+                                       const QList<Categoria> &categorias)
 {
     auto *root = new QVBoxLayout(this);
     root->setContentsMargins(24, 24, 24, 24);
@@ -85,6 +134,30 @@ void LancamentoEntradaDialog::buildUi(const QList<FonteRenda> &fontes)
         else          m_cbFonte->setCurrentText(m_original.fonte);
     }
     form->addRow(tr("Fonte:"), m_cbFonte);
+
+    // ── Categoria ──────────────────────────────────────────────────────────
+    m_cbCategoria = new QComboBox(this);
+    m_cbCategoria->setModel(buildGroupedCatModel(categorias, this));
+
+    int catSelectIdx = 0;
+    if (m_original.categoriaId > 0) {
+        for (int i = 0; i < m_cbCategoria->model()->rowCount(); ++i) {
+            if (m_cbCategoria->model()->index(i, 0)
+                    .data(Qt::UserRole).toInt() == m_original.categoriaId) {
+                catSelectIdx = i; break;
+            }
+        }
+    } else if (!m_original.categoria.isEmpty()) {
+        for (int i = 1; i < m_cbCategoria->model()->rowCount(); ++i) {
+            if (m_cbCategoria->model()->index(i, 0)
+                    .data(Qt::UserRole + 1).toString()
+                    .compare(m_original.categoria, Qt::CaseInsensitive) == 0) {
+                catSelectIdx = i; break;
+            }
+        }
+    }
+    m_cbCategoria->setCurrentIndex(catSelectIdx);
+    form->addRow(tr("Categoria:"), m_cbCategoria);
 
     // ── Valor ──────────────────────────────────────────────────────────────
     m_edtValor = new QLineEdit(this);
@@ -207,6 +280,13 @@ QList<LancamentoEntrada> LancamentoEntradaDialog::lancamentos() const
 {
     const QString fonte = m_cbFonte->currentText().trimmed();
     const int fonteId   = m_cbFonte->currentData().toInt();
+
+    const int catIdx = m_cbCategoria->currentIndex();
+    const QModelIndex mi = m_cbCategoria->model()->index(catIdx, 0);
+    int     catId   = mi.data(Qt::UserRole).toInt();
+    QString catNome = mi.data(Qt::UserRole + 1).toString();
+    if (catId < 0) { catId = 0; catNome.clear(); } // group header guard
+
     const qint64 bruto  = parseCentavos(m_edtValor->text());
     const bool impAtivo = m_grpImpostos->isChecked();
     const qint64 irpf   = impAtivo ? parseCentavos(m_edtIrpf->text()) : 0LL;
@@ -220,16 +300,18 @@ QList<LancamentoEntrada> LancamentoEntradaDialog::lancamentos() const
     for (int i = 0; i < nMeses; ++i) {
         const QDate d = baseDate.addMonths(i);
         LancamentoEntrada l;
-        l.id         = (i == 0 && m_original.id > 0) ? m_original.id : 0;
-        l.mes        = d.month();
-        l.ano        = d.year();
-        l.dia        = d.day();
-        l.fonte      = fonte;
-        l.fonteId    = fonteId;
-        l.valorBruto = bruto;
-        l.irpf       = irpf;
-        l.inss       = inss;
-        l.obs        = obs;
+        l.id          = (i == 0 && m_original.id > 0) ? m_original.id : 0;
+        l.mes         = d.month();
+        l.ano         = d.year();
+        l.dia         = d.day();
+        l.fonte       = fonte;
+        l.fonteId     = fonteId;
+        l.categoria   = catNome;
+        l.categoriaId = catId;
+        l.valorBruto  = bruto;
+        l.irpf        = irpf;
+        l.inss        = inss;
+        l.obs         = obs;
         result.append(l);
     }
     return result;

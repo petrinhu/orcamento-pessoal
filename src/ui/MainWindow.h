@@ -3,9 +3,18 @@
 #include "Theme.h"
 #include <QMainWindow>
 
+class DashboardWidget;
+class TendenciasWidget;
 class ParcelasWidget;
 class EntradasWidget;
 class GastosWidget;
+class InvestimentosWidget;
+class PlanejamentoWidget;
+class RecorrenciaWidget;
+class DividasWidget;
+class MetasWidget;
+class LembretesWidget;
+class BuscaGlobalDialog;
 class PrefsWidget;
 class QTabWidget;
 class QLabel;
@@ -13,6 +22,7 @@ class QToolButton;
 class QAction;
 class QTimer;
 class QCloseEvent;
+class QUndoStack;
 
 class MainWindow final : public QMainWindow {
     Q_OBJECT
@@ -48,10 +58,24 @@ private:
     void onAjuda();
     void onSobre();
 
-    QWidget        *m_dashboard  = nullptr;
-    ParcelasWidget *m_parcelas   = nullptr;
-    EntradasWidget *m_entradas   = nullptr;
-    GastosWidget   *m_gastos     = nullptr;
+    void onReconciliar();
+    void onBuscaGlobal();
+
+    // Recebe dados TVM do CalculadoraHub e abre AddCompraDialog na aba Cartões.
+    void onTvmParaCartoes(double pv, int n, double iMensal, double pmt);
+
+    DashboardWidget      *m_dashboard     = nullptr;
+    TendenciasWidget     *m_tendencias    = nullptr;
+    ParcelasWidget       *m_parcelas      = nullptr;
+    EntradasWidget       *m_entradas      = nullptr;
+    GastosWidget         *m_gastos        = nullptr;
+    InvestimentosWidget  *m_investimentos  = nullptr;
+    PlanejamentoWidget   *m_planejamento   = nullptr;
+    RecorrenciaWidget    *m_recorrencias   = nullptr;
+    DividasWidget        *m_dividas        = nullptr;
+    MetasWidget          *m_metas          = nullptr;
+    LembretesWidget      *m_lembretes      = nullptr;
+    BuscaGlobalDialog    *m_buscaGlobal    = nullptr;
     QTabWidget     *m_tabs       = nullptr;
     QLabel         *m_statusUser  = nullptr;
     QLabel         *m_statusTotal = nullptr;
@@ -59,6 +83,7 @@ private:
     // Theme cycle button (Auto → Light → Dark → Auto)
     QToolButton *m_btnTheme = nullptr;
 
-    bool    m_dirty         = false;
-    QTimer *m_autosaveTimer = nullptr;
+    bool         m_dirty         = false;
+    QTimer      *m_autosaveTimer = nullptr;
+    QUndoStack  *m_undoStack     = nullptr;
 };

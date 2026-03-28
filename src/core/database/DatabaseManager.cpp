@@ -1,5 +1,6 @@
 #include "DatabaseManager.h"
 #include "core/crypto/AesCryptoService.h"
+#include "core/crypto/SodiumCryptoService.h"
 
 #include <QSqlQuery>
 #include <QSqlError>
@@ -20,18 +21,22 @@ DatabaseManager::~DatabaseManager()
     close();
 }
 
-bool DatabaseManager::open(const QString &slug, const QByteArray &key)
+bool DatabaseManager::open(const QString &slug,
+                           const QByteArray &keyNew,
+                           const QByteArray &keyLegacy)
 {
     QDir().mkpath(QStringLiteral("data"));
 
-    m_slug   = slug;
-    m_key    = key;
-    m_dbPath = QStringLiteral("data/.%1.db").arg(slug);
+    m_slug        = slug;
+    m_key         = keyNew;
+    m_keyLegacy   = keyLegacy;
+    m_needsReencrypt = false;
+    m_dbPath      = QStringLiteral("data/.%1.db").arg(slug);
 
 #ifndef QT_DEBUG
     const QString pbdPath = QStringLiteral("data/%1.pbd").arg(slug);
     if (QFile::exists(pbdPath)) {
-        if (!decryptAndLoad(pbdPath, m_dbPath, key))
+        if (!decryptAndLoad(pbdPath, m_dbPath, keyNew, keyLegacy))
             return false;
     }
 #endif
@@ -214,6 +219,195 @@ void DatabaseManager::createSchema()
             criado_em   TEXT    NOT NULL
         )
     )"));
+
+    q.exec(QStringLiteral(R"(
+        CREATE TABLE IF NOT EXISTS orcamento_itens (
+            id             INTEGER PRIMARY KEY AUTOINCREMENT,
+            nome           TEXT    NOT NULL,
+            tipo           TEXT    NOT NULL DEFAULT 'despesa',
+            valor_mensal   INTEGER NOT NULL DEFAULT 0,
+            categoria_ref  TEXT    NOT NULL DEFAULT '',
+            criado_em      TEXT    NOT NULL
+        )
+    )"));
+
+    q.exec(QStringLiteral(R"(
+        CREATE TABLE IF NOT EXISTS lancamentos_investimentos (
+            id             INTEGER PRIMARY KEY AUTOINCREMENT,
+            mes            INTEGER NOT NULL,
+            ano            INTEGER NOT NULL,
+            dia            INTEGER NOT NULL DEFAULT 1,
+            nome           TEXT    NOT NULL DEFAULT '',
+            tipo_ativo     TEXT    NOT NULL DEFAULT 'outro',
+            tipo_operacao  TEXT    NOT NULL DEFAULT 'aporte',
+            valor          INTEGER NOT NULL DEFAULT 0,
+            obs            TEXT    NOT NULL DEFAULT '',
+            criado_em      TEXT    NOT NULL
+        )
+    )"));
+
+    q.exec(QStringLiteral(R"(
+        CREATE TABLE IF NOT EXISTS transacoes_recorrentes (
+            id                INTEGER PRIMARY KEY AUTOINCREMENT,
+            descricao         TEXT    NOT NULL DEFAULT '',
+            tipo              TEXT    NOT NULL DEFAULT 'gasto',
+            valor             INTEGER NOT NULL DEFAULT 0,
+            fonte_id          INTEGER REFERENCES fontes_renda(id) ON DELETE SET NULL,
+            fonte             TEXT    NOT NULL DEFAULT '',
+            categoria         TEXT    NOT NULL DEFAULT '',
+            tipo_pgto         TEXT    NOT NULL DEFAULT '',
+            obs               TEXT    NOT NULL DEFAULT '',
+            frequencia        TEXT    NOT NULL DEFAULT 'mensal',
+            data_inicio       TEXT    NOT NULL DEFAULT '',
+            data_fim          TEXT,
+            ativo             INTEGER NOT NULL DEFAULT 1,
+            ultimo_lancamento TEXT,
+            criado_em         TEXT    NOT NULL
+        )
+    )"));
+
+    q.exec(QStringLiteral(R"(
+        CREATE TABLE IF NOT EXISTS categorias (
+            id      INTEGER PRIMARY KEY AUTOINCREMENT,
+            nome    TEXT    NOT NULL,
+            tipo    TEXT    NOT NULL DEFAULT 'gasto',
+            pai_id  INTEGER REFERENCES categorias(id) ON DELETE SET NULL
+        )
+    )"));
+
+    q.exec(QStringLiteral(R"(
+        CREATE TABLE IF NOT EXISTS pagadores (
+            id   INTEGER PRIMARY KEY AUTOINCREMENT,
+            nome TEXT    NOT NULL UNIQUE,
+            tipo TEXT    NOT NULL DEFAULT 'ambos',
+            obs  TEXT    NOT NULL DEFAULT ''
+        )
+    )"));
+
+    q.exec(QStringLiteral(R"(
+        CREATE TABLE IF NOT EXISTS dividas (
+            id            INTEGER PRIMARY KEY AUTOINCREMENT,
+            tipo          TEXT    NOT NULL DEFAULT 'divida',
+            contraparte   TEXT    NOT NULL DEFAULT '',
+            descricao     TEXT    NOT NULL DEFAULT '',
+            valor_total   INTEGER NOT NULL DEFAULT 0,
+            valor_pago    INTEGER NOT NULL DEFAULT 0,
+            juros_mensal  INTEGER NOT NULL DEFAULT 0,
+            data_inicio   TEXT    NOT NULL DEFAULT '',
+            data_venc     TEXT    NOT NULL DEFAULT '',
+            status        TEXT    NOT NULL DEFAULT 'em_andamento',
+            obs           TEXT    NOT NULL DEFAULT '',
+            criado_em     TEXT    NOT NULL DEFAULT ''
+        )
+    )"));
+
+    q.exec(QStringLiteral(R"(
+        CREATE TABLE IF NOT EXISTS metas (
+            id          INTEGER PRIMARY KEY AUTOINCREMENT,
+            nome        TEXT    NOT NULL DEFAULT '',
+            categoria   TEXT    NOT NULL DEFAULT 'outro',
+            valor_meta  INTEGER NOT NULL DEFAULT 0,
+            valor_atual INTEGER NOT NULL DEFAULT 0,
+            data_inicio TEXT    NOT NULL DEFAULT '',
+            data_prazo  TEXT    NOT NULL DEFAULT '',
+            status      TEXT    NOT NULL DEFAULT 'em_andamento',
+            obs         TEXT    NOT NULL DEFAULT '',
+            criado_em   TEXT    NOT NULL DEFAULT ''
+        )
+    )"));
+
+    q.exec(QStringLiteral(R"(
+        CREATE TABLE IF NOT EXISTS lembretes (
+            id                INTEGER PRIMARY KEY AUTOINCREMENT,
+            descricao         TEXT    NOT NULL DEFAULT '',
+            valor             INTEGER NOT NULL DEFAULT 0,
+            data_venc         TEXT    NOT NULL DEFAULT '',
+            frequencia        TEXT    NOT NULL DEFAULT 'unico',
+            debito_automatico INTEGER NOT NULL DEFAULT 0,
+            status            TEXT    NOT NULL DEFAULT 'pendente',
+            obs               TEXT    NOT NULL DEFAULT '',
+            criado_em         TEXT    NOT NULL DEFAULT ''
+        )
+    )"));
+
+    // Migration: add pagador columns to lancamentos_gastos (guard via PRAGMA).
+    {
+        QSqlQuery pq(m_db);
+        pq.exec(QStringLiteral("PRAGMA table_info(lancamentos_gastos)"));
+        bool hasPagador = false, hasPagadorId = false;
+        while (pq.next()) {
+            const QString col = pq.value(1).toString();
+            if (col == QLatin1String("pagador"))    hasPagador   = true;
+            if (col == QLatin1String("pagador_id")) hasPagadorId = true;
+        }
+        if (!hasPagador)
+            q.exec(QStringLiteral(
+                "ALTER TABLE lancamentos_gastos "
+                "ADD COLUMN pagador TEXT NOT NULL DEFAULT ''"));
+        if (!hasPagadorId)
+            q.exec(QStringLiteral(
+                "ALTER TABLE lancamentos_gastos "
+                "ADD COLUMN pagador_id INTEGER "
+                "REFERENCES pagadores(id) ON DELETE SET NULL"));
+    }
+
+    // Migration: add categoria_id to lancamentos_gastos
+    {
+        QSqlQuery pq(m_db);
+        pq.exec(QStringLiteral("PRAGMA table_info(lancamentos_gastos)"));
+        bool hasCatId = false;
+        while (pq.next()) {
+            if (pq.value(1).toString() == QLatin1String("categoria_id"))
+                hasCatId = true;
+        }
+        if (!hasCatId)
+            q.exec(QStringLiteral(
+                "ALTER TABLE lancamentos_gastos "
+                "ADD COLUMN categoria_id INTEGER "
+                "REFERENCES categorias(id) ON DELETE SET NULL"));
+    }
+
+    // Migration: add categoria + categoria_id to lancamentos_entradas
+    {
+        QSqlQuery pq(m_db);
+        pq.exec(QStringLiteral("PRAGMA table_info(lancamentos_entradas)"));
+        bool hasCat = false, hasCatId = false;
+        while (pq.next()) {
+            const QString col = pq.value(1).toString();
+            if (col == QLatin1String("categoria"))    hasCat   = true;
+            if (col == QLatin1String("categoria_id")) hasCatId = true;
+        }
+        if (!hasCat)
+            q.exec(QStringLiteral(
+                "ALTER TABLE lancamentos_entradas "
+                "ADD COLUMN categoria TEXT NOT NULL DEFAULT ''"));
+        if (!hasCatId)
+            q.exec(QStringLiteral(
+                "ALTER TABLE lancamentos_entradas "
+                "ADD COLUMN categoria_id INTEGER "
+                "REFERENCES categorias(id) ON DELETE SET NULL"));
+    }
+
+    // Migration: add categoria + categoria_id to lancamentos_investimentos
+    {
+        QSqlQuery pq(m_db);
+        pq.exec(QStringLiteral("PRAGMA table_info(lancamentos_investimentos)"));
+        bool hasCat = false, hasCatId = false;
+        while (pq.next()) {
+            const QString col = pq.value(1).toString();
+            if (col == QLatin1String("categoria"))    hasCat   = true;
+            if (col == QLatin1String("categoria_id")) hasCatId = true;
+        }
+        if (!hasCat)
+            q.exec(QStringLiteral(
+                "ALTER TABLE lancamentos_investimentos "
+                "ADD COLUMN categoria TEXT NOT NULL DEFAULT ''"));
+        if (!hasCatId)
+            q.exec(QStringLiteral(
+                "ALTER TABLE lancamentos_investimentos "
+                "ADD COLUMN categoria_id INTEGER "
+                "REFERENCES categorias(id) ON DELETE SET NULL"));
+    }
 }
 
 bool DatabaseManager::encryptAndSave(const QString &srcDbPath,
@@ -225,7 +419,8 @@ bool DatabaseManager::encryptAndSave(const QString &srcDbPath,
     const QByteArray plain = f.readAll();
     f.close();
 
-    AesCryptoService crypto;
+    // Always write with the new format (AES-GCM / XChaCha20 + Argon2id key).
+    SodiumCryptoService crypto;
     const QByteArray cipher = crypto.encrypt(plain, key);
 
     const QString tmpPath = destPath + QStringLiteral(".new");
@@ -240,17 +435,32 @@ bool DatabaseManager::encryptAndSave(const QString &srcDbPath,
 
 bool DatabaseManager::decryptAndLoad(const QString &encPath,
                                      const QString &dbPath,
-                                     const QByteArray &key)
+                                     const QByteArray &keyNew,
+                                     const QByteArray &keyLegacy)
 {
     QFile f(encPath);
     if (!f.open(QIODevice::ReadOnly)) return false;
     const QByteArray cipher = f.readAll();
     f.close();
 
-    AesCryptoService crypto;
     QByteArray plain;
     try {
-        plain = crypto.decrypt(cipher, key);
+        if (SodiumCryptoService::isNewFormat(cipher)) {
+            // New format: AES-GCM or XChaCha20 + Argon2id key.
+            SodiumCryptoService crypto;
+            plain = crypto.decrypt(cipher, keyNew);
+        } else {
+            // Legacy format: AES-256-CBC + PBKDF2 key.
+            // Will be transparently re-encrypted on next save/close.
+            if (keyLegacy.isEmpty()) {
+                qWarning() << "DatabaseManager: legacy file detected but no legacy key provided";
+                return false;
+            }
+            AesCryptoService legacyCrypto;
+            plain = legacyCrypto.decrypt(cipher, keyLegacy);
+            m_needsReencrypt = true;
+            qDebug() << "DatabaseManager: legacy file detected — will migrate to new format on close";
+        }
     } catch (const std::exception &e) {
         qWarning() << "Decrypt failed:" << e.what();
         return false;

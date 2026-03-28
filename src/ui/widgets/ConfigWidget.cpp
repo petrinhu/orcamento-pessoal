@@ -1,5 +1,5 @@
 #include "ConfigWidget.h"
-#include "core/database/DatabaseManager.h"
+#include "repositories/CartaoRepository.h"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -9,8 +9,6 @@
 #include <QLineEdit>
 #include <QPushButton>
 #include <QLabel>
-#include <QSqlQuery>
-#include <QSqlError>
 #include <QMessageBox>
 #include <QDebug>
 
@@ -77,15 +75,7 @@ void ConfigWidget::buildUi()
 
 void ConfigWidget::recarregar()
 {
-    m_cartoes.clear();
-    QSqlQuery q(QStringLiteral("SELECT id, apelido FROM cartoes ORDER BY apelido"),
-                DatabaseManager::instance().db());
-    while (q.next()) {
-        Cartao c;
-        c.id      = q.value(0).toInt();
-        c.apelido = q.value(1).toString();
-        m_cartoes.append(c);
-    }
+    m_cartoes = CartaoRepository().findAll();
 
     m_table->setRowCount(0);
     for (const auto &c : m_cartoes) {
@@ -102,17 +92,11 @@ void ConfigWidget::onAdicionar()
     const QString apelido = m_edtNome->text().trimmed();
     if (apelido.isEmpty()) return;
 
-    QSqlQuery q(DatabaseManager::instance().db());
-    q.prepare(QStringLiteral(
-        "INSERT INTO cartoes (apelido) VALUES (:ap)"));
-    q.bindValue(QStringLiteral(":ap"), apelido);
-
-    if (!q.exec()) {
-        if (q.lastError().text().contains(QStringLiteral("UNIQUE")))
-            QMessageBox::warning(this, tr("Duplicado"),
-                tr("Já existe um cartão com esse apelido."));
-        else
-            qWarning() << "ConfigWidget::onAdicionar:" << q.lastError().text();
+    Cartao c;
+    c.apelido = apelido;
+    if (!CartaoRepository().insert(c)) {
+        QMessageBox::warning(this, tr("Duplicado"),
+            tr("Já existe um cartão com esse apelido."));
         return;
     }
 
@@ -134,10 +118,7 @@ void ConfigWidget::onRemover()
                "As compras vinculadas ficarão sem cartão.").arg(apelido))
         != QMessageBox::Yes) return;
 
-    QSqlQuery q(DatabaseManager::instance().db());
-    q.prepare(QStringLiteral("DELETE FROM cartoes WHERE id = :id"));
-    q.bindValue(QStringLiteral(":id"), id);
-    q.exec();
+    CartaoRepository().remove(id);
 
     recarregar();
     emit cartoesAlterados();

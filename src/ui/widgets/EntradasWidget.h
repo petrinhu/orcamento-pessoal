@@ -10,6 +10,7 @@
 class QTableWidget;
 class QPushButton;
 class QStackedWidget;
+class QUndoStack;
 
 enum class SortFieldEntradas { None, Fonte, Valor, Data };
 
@@ -20,6 +21,7 @@ class EntradasWidget final : public QWidget {
     Q_OBJECT
 public:
     explicit EntradasWidget(QWidget *parent = nullptr);
+    void setUndoStack(QUndoStack *stack) { m_undoStack = stack; }
 
 signals:
     void dadosAlterados();
@@ -44,7 +46,7 @@ private:
     LancamentoEntrada lancamentoDaLinha(int dataRow, int monthIndex) const;
     QList<FonteRenda> fontesDisponiveis() const;
 
-    static const int COL_PER_MONTH = 4; // Fonte | Valor | Data | Obs
+    static const int COL_PER_MONTH = 5; // Fonte | Categoria | Valor | Data | Obs
     static const int HEADER_ROWS   = 2; // row 0 = mês, row 1 = sub-labels
 
     QStackedWidget *m_stack  = nullptr;
@@ -60,4 +62,6 @@ private:
     QDate m_firstMonth;
     int   m_numMonths = 0;
     int   m_maxRows   = 0; // data rows (excl. header row 0 and total row)
+
+    QUndoStack *m_undoStack = nullptr;
 };

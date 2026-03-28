@@ -1,5 +1,5 @@
 #include "ConfigFontesWidget.h"
-#include "repositories/FonteRendaRepository.h"
+#include "services/EntradaService.h"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -70,8 +70,7 @@ void ConfigFontesWidget::buildUi()
 
 void ConfigFontesWidget::recarregar()
 {
-    FonteRendaRepository repo;
-    const auto fontes = repo.findAll();
+    const auto fontes = EntradaService().fontes();
 
     m_table->setRowCount(0);
     for (const auto &f : fontes) {
@@ -88,10 +87,9 @@ void ConfigFontesWidget::onAdicionar()
     const QString nome = m_edtNome->text().trimmed();
     if (nome.isEmpty()) return;
 
-    FonteRendaRepository repo;
     FonteRenda f;
     f.nome = nome;
-    if (!repo.insert(f)) {
+    if (!EntradaService().inserirFonte(f)) {
         QMessageBox::warning(this, tr("Duplicado"),
             tr("Já existe uma fonte com esse nome."));
         return;
@@ -115,8 +113,7 @@ void ConfigFontesWidget::onRemover()
                "Os lançamentos existentes mantêm o nome registrado.").arg(nome))
         != QMessageBox::Yes) return;
 
-    FonteRendaRepository repo;
-    repo.remove(id);
+    EntradaService().removerFonte(id);
     recarregar();
     emit fontesAlteradas();
 }

@@ -1,0 +1,56 @@
+#pragma once
+
+#include <QWidget>
+#include <QList>
+#include <QMap>
+#include <QPair>
+#include <QtTypes>
+
+class QChartView;
+class QDateEdit;
+class QComboBox;
+class QLabel;
+class QTabWidget;
+
+// Spending-trends tab — three charts (monthly bar, by-category donut,
+// by-payment-type donut) plus a summary strip.
+// Read-only: no undo/redo needed.
+class TendenciasWidget final : public QWidget {
+    Q_OBJECT
+public:
+    explicit TendenciasWidget(QWidget *parent = nullptr);
+    void recarregar();
+
+private:
+    void buildUi();
+    void reconstruirComboCategorias(const QStringList &cats, const QString &sel);
+    void buildGraficoMensal();
+    void buildGraficoCategoria();
+    void buildGraficoTipo();
+    void atualizarResumo(qint64 total, int numMeses,
+                         int picoAno, int picoMes, qint64 picoVal,
+                         const QString &catPrincipal);
+
+    // ── Controls ──────────────────────────────────────────────────────────────
+    QDateEdit  *m_dtInicio    = nullptr;
+    QDateEdit  *m_dtFim       = nullptr;
+    QComboBox  *m_cbCategoria = nullptr;
+
+    // ── Charts ────────────────────────────────────────────────────────────────
+    QTabWidget *m_chartTabs  = nullptr;
+    QChartView *m_viewMensal = nullptr;
+    QChartView *m_viewCat    = nullptr;
+    QChartView *m_viewTipo   = nullptr;
+
+    // ── Summary labels ────────────────────────────────────────────────────────
+    QLabel *m_lblTotal    = nullptr;
+    QLabel *m_lblMedia    = nullptr;
+    QLabel *m_lblPico     = nullptr;
+    QLabel *m_lblCatPrinc = nullptr;
+
+    // ── Aggregated data (rebuilt on each recarregar) ──────────────────────────
+    QList<QPair<int,int>>        m_meses;   // ordered (ano, mes) in range
+    QMap<QPair<int,int>, qint64> m_porMes;  // total centavos per month
+    QMap<QString, qint64>        m_porCat;  // total centavos per category
+    QMap<QString, qint64>        m_porTipo; // total centavos per payment type
+};

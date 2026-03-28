@@ -23,7 +23,10 @@ static GastoAvulso fromQuery(const QSqlQuery &q)
     g.tipoPgto  = q.value(QStringLiteral("tipo_pgto")).toString();
     g.valor     = q.value(QStringLiteral("valor")).toLongLong();
     g.obs       = q.value(QStringLiteral("obs")).toString();
-    g.criadoEm  = q.value(QStringLiteral("criado_em")).toString();
+    g.pagador     = q.value(QStringLiteral("pagador")).toString();
+    g.pagadorId   = q.value(QStringLiteral("pagador_id")).toInt();
+    g.categoriaId = q.value(QStringLiteral("categoria_id")).toInt();
+    g.criadoEm    = q.value(QStringLiteral("criado_em")).toString();
     return g;
 }
 
@@ -32,18 +35,25 @@ bool GastoAvulsoRepository::insert(GastoAvulso &g)
     QSqlQuery q(db());
     q.prepare(QStringLiteral(R"(
         INSERT INTO lancamentos_gastos
-            (mes, ano, dia, descricao, categoria, tipo_pgto, valor, obs, criado_em)
+            (mes, ano, dia, descricao, categoria, categoria_id, tipo_pgto, valor, obs,
+             pagador, pagador_id, criado_em)
         VALUES
-            (:mes, :ano, :dia, :descricao, :categoria, :tipo_pgto, :valor, :obs, :criado_em)
+            (:mes, :ano, :dia, :descricao, :categoria, :categoria_id, :tipo_pgto, :valor, :obs,
+             :pagador, :pagador_id, :criado_em)
     )"));
-    q.bindValue(QStringLiteral(":mes"),       g.mes);
-    q.bindValue(QStringLiteral(":ano"),       g.ano);
-    q.bindValue(QStringLiteral(":dia"),       g.dia);
-    q.bindValue(QStringLiteral(":descricao"), g.descricao);
-    q.bindValue(QStringLiteral(":categoria"), g.categoria);
-    q.bindValue(QStringLiteral(":tipo_pgto"), g.tipoPgto);
-    q.bindValue(QStringLiteral(":valor"),     g.valor);
-    q.bindValue(QStringLiteral(":obs"),       g.obs);
+    q.bindValue(QStringLiteral(":mes"),        g.mes);
+    q.bindValue(QStringLiteral(":ano"),        g.ano);
+    q.bindValue(QStringLiteral(":dia"),        g.dia);
+    q.bindValue(QStringLiteral(":descricao"),  g.descricao);
+    q.bindValue(QStringLiteral(":categoria"),    g.categoria);
+    q.bindValue(QStringLiteral(":categoria_id"),
+                g.categoriaId > 0 ? QVariant(g.categoriaId) : QVariant(QMetaType::fromType<int>()));
+    q.bindValue(QStringLiteral(":tipo_pgto"),  g.tipoPgto);
+    q.bindValue(QStringLiteral(":valor"),      g.valor);
+    q.bindValue(QStringLiteral(":obs"),        g.obs);
+    q.bindValue(QStringLiteral(":pagador"),    g.pagador);
+    q.bindValue(QStringLiteral(":pagador_id"),
+                g.pagadorId > 0 ? QVariant(g.pagadorId) : QVariant(QMetaType::fromType<int>()));
     q.bindValue(QStringLiteral(":criado_em"),
                 QDateTime::currentDateTime().toString(Qt::ISODate));
     if (!q.exec()) {
@@ -59,25 +69,33 @@ bool GastoAvulsoRepository::update(const GastoAvulso &g)
     QSqlQuery q(db());
     q.prepare(QStringLiteral(R"(
         UPDATE lancamentos_gastos SET
-            mes       = :mes,
-            ano       = :ano,
-            dia       = :dia,
-            descricao = :descricao,
-            categoria = :categoria,
-            tipo_pgto = :tipo_pgto,
-            valor     = :valor,
-            obs       = :obs
+            mes          = :mes,
+            ano          = :ano,
+            dia          = :dia,
+            descricao    = :descricao,
+            categoria    = :categoria,
+            categoria_id = :categoria_id,
+            tipo_pgto    = :tipo_pgto,
+            valor        = :valor,
+            obs          = :obs,
+            pagador      = :pagador,
+            pagador_id   = :pagador_id
         WHERE id = :id
     )"));
-    q.bindValue(QStringLiteral(":mes"),       g.mes);
-    q.bindValue(QStringLiteral(":ano"),       g.ano);
-    q.bindValue(QStringLiteral(":dia"),       g.dia);
-    q.bindValue(QStringLiteral(":descricao"), g.descricao);
-    q.bindValue(QStringLiteral(":categoria"), g.categoria);
-    q.bindValue(QStringLiteral(":tipo_pgto"), g.tipoPgto);
-    q.bindValue(QStringLiteral(":valor"),     g.valor);
-    q.bindValue(QStringLiteral(":obs"),       g.obs);
-    q.bindValue(QStringLiteral(":id"),        g.id);
+    q.bindValue(QStringLiteral(":mes"),        g.mes);
+    q.bindValue(QStringLiteral(":ano"),        g.ano);
+    q.bindValue(QStringLiteral(":dia"),        g.dia);
+    q.bindValue(QStringLiteral(":descricao"),  g.descricao);
+    q.bindValue(QStringLiteral(":categoria"),    g.categoria);
+    q.bindValue(QStringLiteral(":categoria_id"),
+                g.categoriaId > 0 ? QVariant(g.categoriaId) : QVariant(QMetaType::fromType<int>()));
+    q.bindValue(QStringLiteral(":tipo_pgto"),  g.tipoPgto);
+    q.bindValue(QStringLiteral(":valor"),      g.valor);
+    q.bindValue(QStringLiteral(":obs"),        g.obs);
+    q.bindValue(QStringLiteral(":pagador"),    g.pagador);
+    q.bindValue(QStringLiteral(":pagador_id"),
+                g.pagadorId > 0 ? QVariant(g.pagadorId) : QVariant(QMetaType::fromType<int>()));
+    q.bindValue(QStringLiteral(":id"),         g.id);
     if (!q.exec()) {
         qWarning() << "GastoAvulsoRepository::update:" << q.lastError().text();
         return false;

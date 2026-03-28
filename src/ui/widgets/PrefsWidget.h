@@ -8,19 +8,23 @@ class QLabel;
 class QCheckBox;
 class QSpinBox;
 class QLineEdit;
-class ConfigWidget;
+class ConfigCategoriasWidget;
 class ConfigFontesWidget;
+class ConfigPagadoresWidget;
+class ConfigWidget;
 
-// Settings panel: Language, Default Currency, Save/Autosave, Cards, Income Sources.
+// Settings panel: Language, Default Currency, Save/Autosave, Cards, Income Sources, Beneficiários.
 class PrefsWidget final : public QWidget {
     Q_OBJECT
 public:
     explicit PrefsWidget(QWidget *parent = nullptr);
 
 signals:
-    void cartoesAlterados();   // forwarded from ConfigWidget
-    void moedaAlterada();      // triggers ParcelasWidget::recarregar
-    void fontesAlteradas();    // forwarded from ConfigFontesWidget
+    void cartoesAlterados();     // forwarded from ConfigWidget
+    void moedaAlterada();        // triggers ParcelasWidget::recarregar
+    void fontesAlteradas();      // forwarded from ConfigFontesWidget
+    void pagadoresAlterados();   // forwarded from ConfigPagadoresWidget
+    void categoriasAlteradas();  // forwarded from ConfigCategoriasWidget
 
 private slots:
     void onLanguageToggled();
@@ -43,7 +47,10 @@ private:
     QSpinBox     *m_spnInterval        = nullptr;
     QLineEdit    *m_edtSavesFolder     = nullptr;
     QLineEdit    *m_edtAutosavesFolder = nullptr;
-    ConfigWidget       *m_cards   = nullptr;
-    ConfigFontesWidget *m_fontes  = nullptr;
-    bool                m_loading = false;
+    QComboBox    *m_comboInitialTab    = nullptr;
+    ConfigCategoriasWidget*m_categorias= nullptr;
+    ConfigFontesWidget   *m_fontes    = nullptr;
+    ConfigPagadoresWidget*m_pagadores = nullptr;
+    ConfigWidget         *m_cards     = nullptr;
+    bool                  m_loading  = false;
 };

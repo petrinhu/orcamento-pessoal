@@ -1,7 +1,8 @@
 #pragma once
 
-#include "models/LancamentoEntrada.h"
+#include "models/Categoria.h"
 #include "models/FonteRenda.h"
+#include "models/LancamentoEntrada.h"
 
 #include <QDialog>
 #include <QList>
@@ -23,6 +24,7 @@ public:
     explicit LancamentoEntradaDialog(const LancamentoEntrada &lancamento,
                                      int mes, int ano,
                                      const QList<FonteRenda> &fontes,
+                                     const QList<Categoria> &categorias,
                                      QWidget *parent = nullptr);
 
     // Returns 1 entry normally; N entries if recurrence selected.
@@ -33,7 +35,7 @@ private slots:
     void onRecorrenciaToggled(bool recorrente);
 
 private:
-    void buildUi(const QList<FonteRenda> &fontes);
+    void buildUi(const QList<FonteRenda> &fontes, const QList<Categoria> &categorias);
     qint64 parseValor(const QString &txt) const;
     QString formatValor(qint64 centavos) const;
 
@@ -42,6 +44,7 @@ private:
     int m_ano;
 
     QComboBox    *m_cbFonte      = nullptr;
+    QComboBox    *m_cbCategoria  = nullptr;
     QLineEdit    *m_edtValor     = nullptr;
     QDateEdit    *m_dateEdit     = nullptr;
     QGroupBox    *m_grpImpostos  = nullptr;

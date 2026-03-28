@@ -16,8 +16,9 @@ class LoginDialog final : public QDialog {
 public:
     explicit LoginDialog(QWidget *parent = nullptr);
 
-    QString    nome()  const;
-    QByteArray chave() const; // derived key (empty in debug)
+    QString    nome()     const;
+    QByteArray chave()    const; // Argon2id-derived key (empty in debug)
+    QByteArray chaveOld() const; // PBKDF2-derived key for legacy file migration (empty in debug)
 
 private slots:
     void onNomeChanged(const QString &text);
@@ -38,5 +39,6 @@ private:
     QLabel *m_chkUpper  = nullptr;
     QLabel *m_chkDigit  = nullptr;
 
-    QByteArray m_chave;
+    QByteArray m_chave;     // Argon2id key
+    QByteArray m_chaveOld;  // PBKDF2 key (for legacy file backward compat)
 };

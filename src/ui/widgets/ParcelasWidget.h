@@ -14,6 +14,7 @@ class QLabel;
 class QHeaderView;
 class QStackedWidget;
 class CompraDetailPanel;
+class QUndoStack;
 
 // Main view: matrix of compras (rows) × months (columns).
 // Current month is always the first visible column.
@@ -31,12 +32,16 @@ public:
     explicit ParcelasWidget(QWidget *parent = nullptr);
 
     void recarregar();
+    void setUndoStack(QUndoStack *stack) { m_undoStack = stack; }
 
 public slots:
     void copiar();
     void selecionarTudo();
     void scrollParaMesAtual();
     void navegarMes(int delta); // delta = ±N meses
+
+    // Open AddCompraDialog pre-filled with TVM data from the Financeira calculator.
+    void novaCompraDeCalculadora(double pv, int n, double iMensal, double pmt);
 
 signals:
     void dadosAlterados();
@@ -84,6 +89,8 @@ private:
     int m_selectedCompraId = 0; // 0 = none selected
 
     bool m_loading = false; // guard against recursive itemChanged
+
+    QUndoStack *m_undoStack = nullptr;
 
     // Month range shown: from m_firstMonth to m_lastMonth
     QDate m_firstMonth; // earliest parcela date among all compras

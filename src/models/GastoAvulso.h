@@ -58,9 +58,12 @@ struct GastoAvulso {
     int     ano       = 2025;
     int     dia       = 1;
     QString descricao;
-    QString categoria;        // snapshot; FK via ALTER TABLE quando #21 chegar
+    QString categoria;        // snapshot do nome da categoria
+    int     categoriaId = 0; // FK → categorias(id); 0 = sem vínculo
     QString tipoPgto;         // raw text: "pix"|"debito"|…
     qint64  valor     = 0;    // centavos
     QString obs;
+    QString pagador;          // snapshot do nome do beneficiário/pagador
+    int     pagadorId = 0;    // FK → pagadores(id); 0 = sem vínculo
     QString criadoEm;         // ISO 8601
 };

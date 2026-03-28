@@ -2,6 +2,7 @@
 #include "Theme.h"
 #include "core/crypto/AesCryptoService.h"
 #include "core/crypto/KeyDerivation.h"
+#include "core/crypto/SodiumCryptoService.h"
 #include "core/secret/SecretStoreService.h"
 #include "core/session/UserSession.h"
 
@@ -30,8 +31,9 @@ LoginDialog::LoginDialog(QWidget *parent)
         m_nome->setText(last);
 }
 
-QString    LoginDialog::nome()  const { return m_nome->text().trimmed(); }
-QByteArray LoginDialog::chave() const { return m_chave; }
+QString    LoginDialog::nome()     const { return m_nome->text().trimmed(); }
+QByteArray LoginDialog::chave()    const { return m_chave; }
+QByteArray LoginDialog::chaveOld() const { return m_chaveOld; }
 
 void LoginDialog::buildUi()
 {
@@ -150,29 +152,40 @@ void LoginDialog::onEntrar()
     if (n.isEmpty()) return;
 
 #ifdef QT_DEBUG
-    m_chave = QByteArray(); // no encryption in debug
+    m_chave    = QByteArray();
+    m_chaveOld = QByteArray();
     UserSession::instance().login(n, m_chave);
     accept();
     return;
 #else
-    // Retrieve or create salt from system keychain
+    // Retrieve or create salt from system keychain.
+    // The salt is 16 bytes — compatible with both Argon2id and PBKDF2.
     SecretStoreService store(APP_NAME);
     const QString saltKey = n.toLower() + SALT_SUFFIX;
     QByteArray salt = store.retrieve(saltKey);
 
-    AesCryptoService crypto;
     if (salt.isEmpty()) {
-        // First time: generate and store salt
-        salt = crypto.generateSalt();
+        // New user: generate salt with SodiumCryptoService (uses randombytes_buf).
+        SodiumCryptoService sodium;
+        salt = sodium.generateSalt();
         if (!store.store(saltKey, salt)) {
             QMessageBox::warning(this, tr("Erro"),
                 tr("Não foi possível acessar o cofre de senhas do sistema.\n"
                    "Verifique se o KWallet ou GNOME Keyring está disponível."));
             return;
         }
+        // New user: no legacy file exists, skip legacy derivation.
+        m_chave    = sodium.deriveKey(m_senha->text(), salt);
+        m_chaveOld = QByteArray();
+    } else {
+        // Existing user: derive with Argon2id (new format) and PBKDF2 (legacy compat).
+        // Both use the same stored salt (same size: 16 bytes).
+        SodiumCryptoService sodium;
+        m_chave    = sodium.deriveKey(m_senha->text(), salt);
+        AesCryptoService legacy;
+        m_chaveOld = legacy.deriveKey(m_senha->text(), salt);
     }
 
-    m_chave = crypto.deriveKey(m_senha->text(), salt);
     UserSession::instance().login(n, m_chave);
     accept();
 #endif

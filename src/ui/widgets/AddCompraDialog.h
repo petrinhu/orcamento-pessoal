@@ -34,6 +34,10 @@ public:
     Compra         compra()   const { return m_compra; }
     QList<Parcela> parcelas() const { return m_parcelas; }
 
+    // Pre-fill from the TVM calculator (Financeira tab → "Enviar para Cartões").
+    // Switches to the Juros tab and populates PV, N, i%mês; recalculates PMT.
+    void preencherJuros(double pv, int n, double iMensal);
+
 private slots:
     void recalcular();
     void onTabChanged(int idx);

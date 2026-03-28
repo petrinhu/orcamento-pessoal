@@ -1,11 +1,13 @@
 #include "ParcelasWidget.h"
 #include "AddCompraDialog.h"
 #include "CompraDetailPanel.h"
-#include "repositories/CompraRepository.h"
-#include "repositories/ParcelaRepository.h"
+#include "services/CompraService.h"
 #include "services/ParcelaService.h"
-#include "core/database/DatabaseManager.h"
+#include "core/commands/UndoCommands.h"
 #include "ui/Theme.h"
+
+#include <QUndoStack>
+#include <memory>
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -24,7 +26,6 @@
 #include <QFormLayout>
 #include <QMessageBox>
 #include <QMenu>
-#include <QSqlQuery>
 #include <QDebug>
 #include <QApplication>
 #include <QClipboard>
@@ -193,25 +194,15 @@ void ParcelasWidget::recarregar()
 {
     m_loading = true;
 
-    CompraRepository  cr;
-    ParcelaRepository pr;
+    CompraService svc;
 
     // Load cartoes for display
-    m_cartoes.clear();
-    QSqlQuery qc(QStringLiteral(
-        "SELECT id, apelido FROM cartoes ORDER BY apelido"),
-        DatabaseManager::instance().db());
-    while (qc.next()) {
-        Cartao c;
-        c.id      = qc.value(0).toInt();
-        c.apelido = qc.value(1).toString();
-        m_cartoes.append(c);
-    }
+    m_cartoes = svc.cartoes();
 
-    m_compras           = cr.findAll();
+    m_compras           = svc.compras();
     m_parcelasPorCompra.clear();
     for (const auto &c : m_compras)
-        m_parcelasPorCompra.append(pr.findByCompra(c.id));
+        m_parcelasPorCompra.append(svc.parcelasDeCompra(c.id));
 
     // Compute month range
     m_firstMonth  = m_currentMonth;
@@ -459,18 +450,56 @@ void ParcelasWidget::onNovaCompra()
     Compra compra = dlg.compra();
     QList<Parcela> parcelas = dlg.parcelas();
 
-    CompraRepository  cr;
-    ParcelaRepository pr;
+    auto compraPtr   = std::make_shared<Compra>(compra);
+    auto parcelasPtr = std::make_shared<QList<Parcela>>(parcelas);
 
-    if (!cr.insert(compra)) {
+    if (!CompraService().inserir(*compraPtr, *parcelasPtr)) {
         QMessageBox::warning(this, tr("Erro"),
                              tr("Não foi possível salvar a compra."));
         return;
     }
-    for (auto &p : parcelas) {
-        p.compraId = compra.id;
-        pr.insert(p);
+
+    if (m_undoStack)
+        m_undoStack->push(new LambdaCommand(
+            tr("Adicionar compra"),
+            [compraPtr, parcelasPtr]() {
+                compraPtr->id = 0;
+                CompraService().inserir(*compraPtr, *parcelasPtr);
+            },
+            [compraPtr]() { CompraService().remover(compraPtr->id); },
+            [this]() { recarregar(); emit dadosAlterados(); }
+        ));
+
+    recarregar();
+    emit dadosAlterados();
+}
+
+void ParcelasWidget::novaCompraDeCalculadora(double pv, int n, double iMensal, double pmt)
+{
+    Q_UNUSED(pmt) // PMT is recalculated by AddCompraDialog from PV/N/i
+    AddCompraDialog dlg(m_cartoes, this);
+    dlg.preencherJuros(pv, n, iMensal);
+    if (dlg.exec() != QDialog::Accepted) return;
+
+    auto compraPtr2   = std::make_shared<Compra>(dlg.compra());
+    auto parcelasPtr2 = std::make_shared<QList<Parcela>>(dlg.parcelas());
+
+    if (!CompraService().inserir(*compraPtr2, *parcelasPtr2)) {
+        QMessageBox::warning(this, tr("Erro"),
+                             tr("Não foi possível salvar a compra."));
+        return;
     }
+
+    if (m_undoStack)
+        m_undoStack->push(new LambdaCommand(
+            tr("Adicionar compra"),
+            [compraPtr2, parcelasPtr2]() {
+                compraPtr2->id = 0;
+                CompraService().inserir(*compraPtr2, *parcelasPtr2);
+            },
+            [compraPtr2]() { CompraService().remover(compraPtr2->id); },
+            [this]() { recarregar(); emit dadosAlterados(); }
+        ));
 
     recarregar();
     emit dadosAlterados();
@@ -489,8 +518,21 @@ void ParcelasWidget::onExcluir()
             tr("Excluir \"%1\" e todas as suas parcelas?").arg(nome))
         != QMessageBox::Yes) return;
 
-    CompraRepository cr;
-    cr.remove(id); // CASCADE removes parcelas
+    auto compraSnap   = std::make_shared<Compra>(m_compras[row]);
+    auto parcelasSnap = std::make_shared<QList<Parcela>>(m_parcelasPorCompra[row]);
+
+    CompraService().remover(id); // CASCADE removes parcelas
+
+    if (m_undoStack)
+        m_undoStack->push(new LambdaCommand(
+            tr("Remover compra"),
+            [compraSnap]() { CompraService().remover(compraSnap->id); },
+            [compraSnap, parcelasSnap]() {
+                compraSnap->id = 0;
+                CompraService().inserir(*compraSnap, *parcelasSnap);
+            },
+            [this]() { recarregar(); emit dadosAlterados(); }
+        ));
 
     recarregar();
     emit dadosAlterados();
@@ -625,15 +667,40 @@ void ParcelasWidget::onCellChanged(int row, int col)
     const QList<Parcela> novas = ParcelaService::recalcularAposEdicao(
         parcelas, parcelaIndex, novoValor, modo, compra.valorTotal);
 
-    ParcelaRepository pr;
-    pr.replaceAll(compra.id, novas);
+    auto parcelasAntes = std::make_shared<QList<Parcela>>(parcelas);
+    auto parcelasDepois = std::make_shared<QList<Parcela>>(novas);
+    auto compraAntes  = std::make_shared<Compra>(compra);
 
+    CompraService svc;
     if (modo == ParcelaService::RecalcMode::IgualarTodas) {
-        // Persist new valorTotal = N × novoValor
-        Compra updCompra   = compra;
+        Compra updCompra = compra;
         updCompra.valorTotal = novoValor * static_cast<qint64>(novas.size());
-        CompraRepository cr;
-        cr.update(updCompra);
+        auto compraDepois = std::make_shared<Compra>(updCompra);
+        svc.atualizarComParcelas(updCompra, novas);
+        if (m_undoStack)
+            m_undoStack->push(new LambdaCommand(
+                tr("Editar parcelas"),
+                [compraDepois, parcelasDepois]() {
+                    CompraService().atualizarComParcelas(*compraDepois, *parcelasDepois);
+                },
+                [compraAntes, parcelasAntes]() {
+                    CompraService().atualizarComParcelas(*compraAntes, *parcelasAntes);
+                },
+                [this]() { recarregar(); emit dadosAlterados(); }
+            ));
+    } else {
+        svc.substituirParcelas(compra.id, novas);
+        if (m_undoStack)
+            m_undoStack->push(new LambdaCommand(
+                tr("Editar parcelas"),
+                [compraAntes, parcelasDepois]() {
+                    CompraService().substituirParcelas(compraAntes->id, *parcelasDepois);
+                },
+                [compraAntes, parcelasAntes]() {
+                    CompraService().substituirParcelas(compraAntes->id, *parcelasAntes);
+                },
+                [this]() { recarregar(); emit dadosAlterados(); }
+            ));
     }
 
     recarregar();
@@ -644,10 +711,6 @@ void ParcelasWidget::onCellChanged(int row, int col)
 
 void ParcelasWidget::onCompraAlterada(const Compra &c)
 {
-    // Persist updated compra fields
-    CompraRepository cr;
-    cr.update(c);
-
     // Regenerate parcelas from the new parameters
     ResultadoFinanceiro res;
     const double juros = c.jurosMensais / 10000.0;
@@ -660,8 +723,29 @@ void ParcelasWidget::onCompraAlterada(const Compra &c)
     for (auto &p : novas)
         p.compraId = c.id;
 
-    ParcelaRepository pr;
-    pr.replaceAll(c.id, novas);
+    // Save before state for undo
+    const Compra *origPtr = nullptr;
+    for (const auto &comp : std::as_const(m_compras))
+        if (comp.id == c.id) { origPtr = &comp; break; }
+    auto compraAntes   = std::make_shared<Compra>(origPtr ? *origPtr : c);
+    auto parcelasAntes = std::make_shared<QList<Parcela>>(
+        CompraService().parcelasDeCompra(c.id));
+    auto compraDepois   = std::make_shared<Compra>(c);
+    auto parcelasDepois = std::make_shared<QList<Parcela>>(novas);
+
+    CompraService().atualizarComParcelas(c, novas);
+
+    if (m_undoStack)
+        m_undoStack->push(new LambdaCommand(
+            tr("Editar compra"),
+            [compraDepois, parcelasDepois]() {
+                CompraService().atualizarComParcelas(*compraDepois, *parcelasDepois);
+            },
+            [compraAntes, parcelasAntes]() {
+                CompraService().atualizarComParcelas(*compraAntes, *parcelasAntes);
+            },
+            [this]() { recarregar(); emit dadosAlterados(); }
+        ));
 
     recarregar(); // restores selection via m_selectedCompraId
     emit dadosAlterados();

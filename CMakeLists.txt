@@ -11,6 +11,7 @@ find_package(Qt6 REQUIRED COMPONENTS Core Gui GuiPrivate Widgets Charts Network 
 find_package(OpenSSL REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBSECRET REQUIRED libsecret-1)
+pkg_check_modules(LIBSODIUM REQUIRED libsodium)
 
 # ── QXlsx (MIT, pure Qt — XLSX read/write) ────────────────────────────────────
 include(FetchContent)
@@ -41,6 +42,10 @@ set(SOURCES
     # Core — crypto
     src/core/crypto/AesCryptoService.cpp
     src/core/crypto/KeyDerivation.cpp
+    src/core/crypto/SodiumCryptoService.cpp
+
+    # Services — TVM
+    src/services/TvmService.cpp
 
     # Core — secret store
     src/core/secret/SecretStoreService.cpp
@@ -53,6 +58,9 @@ set(SOURCES
 
     # Core — calculator hub
     src/core/CalculadoraHub.cpp
+
+    # Core — undo/redo commands
+    src/core/commands/UndoCommands.cpp
 
     # Core — settings
     src/core/settings/AppSettings.cpp
@@ -94,6 +102,52 @@ set(SOURCES
     src/ui/widgets/AmortizacaoDialog.cpp
     src/ui/widgets/CalculadoraEdit.cpp
     src/ui/widgets/CalculadoraDialog.cpp
+    src/repositories/LancamentoInvestimentoRepository.cpp
+    src/ui/widgets/InvestimentosWidget.cpp
+    src/ui/widgets/InvestimentoDialog.cpp
+    src/repositories/OrcamentoRepository.cpp
+    src/ui/widgets/PlanejamentoWidget.cpp
+    src/ui/widgets/ItemOrcamentoDialog.cpp
+    src/repositories/CartaoRepository.cpp
+    src/services/EntradaService.cpp
+    src/services/CompraService.cpp
+    src/ui/widgets/DashboardWidget.cpp
+    src/ui/widgets/TendenciasWidget.cpp
+    src/repositories/TransacaoRecorrenteRepository.cpp
+    src/services/RecorrenciaService.cpp
+    src/ui/widgets/RecorrenciaWidget.cpp
+    src/ui/widgets/RecorrenciaDialog.cpp
+
+    # Pagadores/Beneficiários (#29)
+    src/repositories/PagadorRepository.cpp
+    src/ui/widgets/PagadorDialog.cpp
+    src/ui/widgets/ConfigPagadoresWidget.cpp
+
+    # Categorias hierárquicas (#21)
+    src/repositories/CategoriaRepository.cpp
+    src/ui/widgets/CategoriaDialog.cpp
+    src/ui/widgets/ConfigCategoriasWidget.cpp
+
+    # Dívidas e empréstimos (#33)
+    src/repositories/DividaRepository.cpp
+    src/ui/widgets/DividaDialog.cpp
+    src/ui/widgets/DividasWidget.cpp
+
+    # Metas financeiras (#28)
+    src/repositories/MetaRepository.cpp
+    src/ui/widgets/MetaDialog.cpp
+    src/ui/widgets/MetasWidget.cpp
+
+    # Lembretes e alertas (#31)
+    src/repositories/LembreteRepository.cpp
+    src/ui/widgets/LembreteDialog.cpp
+    src/ui/widgets/LembretesWidget.cpp
+
+    # Busca global (#32)
+    src/ui/widgets/BuscaGlobalDialog.cpp
+
+    # Reconciliação bancária (#27)
+    src/ui/widgets/ReconciliacaoDialog.cpp
 )
 
 set(RESOURCES
@@ -108,6 +162,7 @@ target_compile_definitions(orcamento-pessoal PRIVATE QXLSX_LIBRARY)
 target_include_directories(orcamento-pessoal PRIVATE
     src
     ${LIBSECRET_INCLUDE_DIRS}
+    ${LIBSODIUM_INCLUDE_DIRS}
 )
 
 target_link_libraries(orcamento-pessoal PRIVATE
@@ -120,6 +175,7 @@ target_link_libraries(orcamento-pessoal PRIVATE
     OpenSSL::SSL
     OpenSSL::Crypto
     ${LIBSECRET_LIBRARIES}
+    ${LIBSODIUM_LIBRARIES}
     QXlsx::QXlsx
 )
 

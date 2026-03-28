@@ -1,8 +1,12 @@
 #include "EntradasWidget.h"
 #include "LancamentoEntradaDialog.h"
-#include "repositories/FonteRendaRepository.h"
-#include "repositories/LancamentoEntradaRepository.h"
+#include "repositories/CategoriaRepository.h"
+#include "services/EntradaService.h"
 #include "core/settings/AppSettings.h"
+#include "core/commands/UndoCommands.h"
+
+#include <QUndoStack>
+#include <memory>
 
 #include <QLabel>
 #include <QStackedWidget>
@@ -124,17 +128,31 @@ void EntradasWidget::buildUi()
         const QDate targetMonth = m_numMonths > 0 ? m_firstMonth : QDate::currentDate();
         LancamentoEntrada empty;
         LancamentoEntradaDialog dlg(empty, targetMonth.month(), targetMonth.year(),
-                                    fontesDisponiveis(), this);
+                                    fontesDisponiveis(),
+                                    CategoriaRepository().findByTipo(QStringLiteral("entrada")),
+                                    this);
         if (dlg.exec() != QDialog::Accepted) return;
-        LancamentoEntradaRepository repo;
+        auto items = std::make_shared<QList<LancamentoEntrada>>();
+        EntradaService svc;
         for (auto l : dlg.lancamentos()) {
-            if (l.id > 0) repo.update(l);
-            else          repo.insert(l);
+            svc.salvarComFonte(l);
+            items->append(l);
         }
-        // Save new fontes if typed inline
-        const auto lancados = dlg.lancamentos();
-        if (!lancados.isEmpty() && !lancados.first().fonte.isEmpty())
-            FonteRendaRepository().findOrCreate(lancados.first().fonte);
+        if (m_undoStack)
+            m_undoStack->push(new LambdaCommand(
+                tr("Adicionar lançamento(s)"),
+                [items]() {
+                    for (auto &l : *items) {
+                        l.id = 0;
+                        EntradaService().salvarComFonte(l);
+                    }
+                },
+                [items]() {
+                    for (const auto &l : std::as_const(*items))
+                        EntradaService().remover(l.id);
+                },
+                [this]() { recarregar(); emit dadosAlterados(); }
+            ));
         recarregar();
         emit dadosAlterados();
     });
@@ -160,9 +178,32 @@ void EntradasWidget::buildUi()
                 tr("Excluir %1 lançamento(s)?").arg(ids.size()))
             != QMessageBox::Yes) return;
 
-        LancamentoEntradaRepository repo;
+        // Collect items to remove from cached data (for undo)
+        auto toRemove = std::make_shared<QList<LancamentoEntrada>>();
+        for (const auto &monthList : std::as_const(m_data))
+            for (const auto &l : monthList)
+                if (ids.contains(l.id)) toRemove->append(l);
+
+        EntradaService svc;
         for (int id : std::as_const(ids))
-            repo.remove(id);
+            svc.remover(id);
+
+        if (m_undoStack)
+            m_undoStack->push(new LambdaCommand(
+                tr("Excluir lançamento(s)"),
+                [toRemove]() {
+                    for (const auto &l : std::as_const(*toRemove))
+                        EntradaService().remover(l.id);
+                },
+                [toRemove]() {
+                    for (auto &l : *toRemove) {
+                        l.id = 0;
+                        EntradaService().salvarComFonte(l);
+                    }
+                },
+                [this]() { recarregar(); emit dadosAlterados(); }
+            ));
+
         recarregar();
         emit dadosAlterados();
     });
@@ -192,7 +233,7 @@ void EntradasWidget::buildUi()
 
 void EntradasWidget::recarregar()
 {
-    const auto all = LancamentoEntradaRepository().findAll();
+    const auto all = EntradaService().lancamentos();
     m_stack->setCurrentIndex(all.isEmpty() ? 0 : 1);
 
     // Determine month range
@@ -288,7 +329,7 @@ void EntradasWidget::populateTable()
 
     // ── Row 1: Sub-column labels ────────────────────────────────────────────
     static const char* const kSubLabels[COL_PER_MONTH] =
-        { QT_TR_NOOP("Fonte"), QT_TR_NOOP("Valor"), QT_TR_NOOP("Data"), QT_TR_NOOP("Obs") };
+        { QT_TR_NOOP("Fonte"), QT_TR_NOOP("Categoria"), QT_TR_NOOP("Valor"), QT_TR_NOOP("Data"), QT_TR_NOOP("Obs") };
     for (int k = 0; k < m_numMonths; ++k) {
         for (int c = 0; c < COL_PER_MONTH; ++c) {
             auto *it = readOnlyItem(tr(kSubLabels[c]));
@@ -320,19 +361,23 @@ void EntradasWidget::populateTable()
                 itFonte->setData(Qt::UserRole, l.id);
                 m_table->setItem(tableRow, baseCol + 0, itFonte);
 
-                // Col 1: Valor líquido
+                // Col 1: Categoria
+                m_table->setItem(tableRow, baseCol + 1,
+                    readOnlyItem(l.categoria));
+
+                // Col 2: Valor líquido
                 auto *itValor = readOnlyItem(formatCentavos(liq));
                 itValor->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
-                m_table->setItem(tableRow, baseCol + 1, itValor);
+                m_table->setItem(tableRow, baseCol + 2, itValor);
 
-                // Col 2: Data
-                m_table->setItem(tableRow, baseCol + 2,
+                // Col 3: Data
+                m_table->setItem(tableRow, baseCol + 3,
                     readOnlyItem(d.toString(QStringLiteral("dd/MM/yy"))));
 
-                // Col 3: Obs
+                // Col 4: Obs
                 auto *itObs = readOnlyItem(l.obs);
                 itObs->setToolTip(l.obs);
-                m_table->setItem(tableRow, baseCol + 3, itObs);
+                m_table->setItem(tableRow, baseCol + 4, itObs);
 
             } else {
                 // Empty cells
@@ -356,7 +401,10 @@ void EntradasWidget::populateTable()
         itLabel->setFont(f);
         m_table->setItem(totalRow, baseCol + 0, itLabel);
 
-        // Col 1: sum of líquidos for this month
+        // Col 1: empty (categoria col)
+        m_table->setItem(totalRow, baseCol + 1, readOnlyItem({}));
+
+        // Col 2: sum of líquidos for this month
         qint64 sum = 0;
         for (const auto &l : m_data[k])
             sum += l.valorBruto - l.irpf - l.inss;
@@ -365,11 +413,11 @@ void EntradasWidget::populateTable()
         fs.setBold(true);
         itSum->setFont(fs);
         itSum->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
-        m_table->setItem(totalRow, baseCol + 1, itSum);
+        m_table->setItem(totalRow, baseCol + 2, itSum);
 
-        // Cols 2-3: empty
-        m_table->setItem(totalRow, baseCol + 2, readOnlyItem({}));
+        // Cols 3-4: empty
         m_table->setItem(totalRow, baseCol + 3, readOnlyItem({}));
+        m_table->setItem(totalRow, baseCol + 4, readOnlyItem({}));
     }
 
     // Expande colunas ao conteúdo; nunca encolhe (preserva ajuste manual)
@@ -400,20 +448,39 @@ void EntradasWidget::onCellActivated(int row, int col)
     LancamentoEntrada existing = lancamentoDaLinha(dataRow, k);
 
     LancamentoEntradaDialog dlg(existing, monthDate.month(), monthDate.year(),
-                                fontesDisponiveis(), this);
+                                fontesDisponiveis(),
+                                CategoriaRepository().findByTipo(QStringLiteral("entrada")),
+                                this);
     if (dlg.exec() != QDialog::Accepted) return;
 
-    LancamentoEntradaRepository repo;
-    FonteRendaRepository fonteRepo;
+    const bool isUpdate = (existing.id > 0);
+    auto beforeItem = std::make_shared<LancamentoEntrada>(existing);
+    auto afterItems = std::make_shared<QList<LancamentoEntrada>>();
+
+    EntradaService svc;
     for (auto l : dlg.lancamentos()) {
-        // Ensure fonte exists
-        if (!l.fonte.isEmpty()) {
-            const auto f = fonteRepo.findOrCreate(l.fonte);
-            l.fonteId = f.id;
-        }
-        if (l.id > 0) repo.update(l);
-        else          repo.insert(l);
+        svc.salvarComFonte(l);
+        afterItems->append(l);
     }
+
+    if (m_undoStack)
+        m_undoStack->push(new LambdaCommand(
+            isUpdate ? tr("Editar lançamento") : tr("Adicionar lançamento(s)"),
+            [afterItems, isUpdate]() {
+                for (auto &l : *afterItems) {
+                    if (!isUpdate) l.id = 0;
+                    EntradaService().salvarComFonte(l);
+                }
+            },
+            [beforeItem, afterItems, isUpdate]() {
+                if (isUpdate)
+                    EntradaService().salvarComFonte(*beforeItem);
+                else
+                    for (const auto &l : std::as_const(*afterItems))
+                        EntradaService().remover(l.id);
+            },
+            [this]() { recarregar(); emit dadosAlterados(); }
+        ));
 
     recarregar();
     emit dadosAlterados();
@@ -431,7 +498,7 @@ LancamentoEntrada EntradasWidget::lancamentoDaLinha(int dataRow, int monthIndex)
 
 QList<FonteRenda> EntradasWidget::fontesDisponiveis() const
 {
-    return FonteRendaRepository().findAll();
+    return EntradaService().fontes();
 }
 
 // ── Sort ──────────────────────────────────────────────────────────────────────

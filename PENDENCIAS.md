@@ -1,45 +1,106 @@
 # Pendências — PeuBud
 
+> **Legenda de prioridade:** 🔴 Alta · 🟡 Média · 🟢 Baixa
+> **Numeração hierárquica:** itens no mesmo nível são paralelos (qualquer ordem entre si). Itens filhos só começam após o pai estar ✅.
+> **Depende de** lista apenas o pré-requisito direto imediato; dependências transitivas estão implícitas na hierarquia.
+
+---
+
+## Concluídos
+
 | # | Descrição | Prioridade | Dificuldade | Status |
 |---|-----------|:----------:|:-----------:|:------:|
-| 1 | Tema: aba ativa mesma cor do conteúdo | 🔴 Alta | Baixa | ✅ |
-| 2 | Entradas: clique simples abre dialog | 🔴 Alta | Baixa | ✅ |
-| 3 | Cartões: renomear aba "Parcelas" → "Cartões" | 🔴 Alta | Baixa | ✅ |
-| 4 | Cartões: renomear "Nova compra" → "Novo item" | 🔴 Alta | Baixa | ✅ |
-| 5 | Entradas: labels sub-colunas (linha 1) | 🔴 Alta | Média | ✅ |
-| 14 | Aba gastos: lançamentos avulsos PIX/débito/dinheiro/fixos (a planejar, futuro vínculo c/ outras abas) | 🔴 Alta | Alta | ✅ |
-| 20 | Aba investimentos | 🔴 Alta | Alta | ❌ |
-| 22 | Aba planejamento e orçamento | 🔴 Alta | Alta | ❌ |
-| 34 | Refactor: extrair acesso a Repository/SQL dos widgets para Services (ParcelasWidget, EntradasWidget, ConfigWidget, ConfigFontesWidget, Dialogs) | 🔴 Alta | Alta | ❌ |
-| 26 | Transações recorrentes agendadas | 🔴 Alta | Média | ❌ |
-| 7 | Colunas: auto-ajuste expand-only | 🟡 Média | Média | ✅ |
-| 10 | UX: totais na status bar | 🟡 Média | Baixa | ✅ |
-| 13 | Configurações: reorganizar UI/UX | 🟡 Média | Média | ✅ |
-| 6 | Dashboard: resumo mensal/anual (após Cartões + Entradas + Gastos prontos) | 🟡 Média | Alta | ❌ |
-| 35 | Cartões: painel inferior ao selecionar item — campos editáveis (Total, Parcelas, Juros a.m., CET, Valor parcela, Juros totais) com dropdown "Calcular:" que define o campo recalculado automaticamente; botão "Tabela de amortização" abre view com colunas Nº/Data/Saldo devedor/Juros/Amortização/Parcela e todos os cálculos derivados | 🟡 Média | Alta | ✅ |
-| 8 | Entradas: botão "Organizar por" | 🟡 Média | Média | ✅ |
-| 9 | Navegação: botão "Hoje" + atalhos teclado | 🟡 Média | Média | ✅ |
-| 15 | Conexões entre abas: vincular valores/cálculos entre Cartões, Entradas, Gastos (a planejar) | 🟡 Média | Alta | ❌ |
-| 16 | Barra de menu: ícones ⏮◀▶⏭ navegação abas + Abrir/Salvar/SalvarComo + Busca/Hoje/Calc + Config/Tema/Bloquear | 🟡 Média | Baixa | ✅ |
-| 21 | Criar categorias hierárquicas (para gastos, entradas e investimentos) | 🟡 Média | Média | ❌ |
-| 23 | Aba tendências de gastos | 🟡 Média | Média | ❌ |
-| 24 | Gráficos (Qt Charts — barras, pizza, linha) | 🟡 Média | Média | ❌ |
-| 27 | Reconciliação bancária (extrato vs. app) | 🟡 Média | Alta | ❌ |
-| 28 | Metas financeiras (savings goals) | 🟡 Média | Média | ❌ |
-| 30 | Undo/Redo (desfazer/refazer ações) | 🟡 Média | Alta | ❌ |
-| 31 | Lembretes/alertas de contas a pagar | 🟡 Média | Média | ❌ |
-| 32 | Busca/filtro global de transações | 🟡 Média | Baixa | ❌ |
-| 33 | Controle de dívidas e empréstimos | 🟡 Média | Alta | ❌ |
-| 11 | Export: exportar apenas aba ativa | 🟢 Baixa | Média | ❌ |
-| 12 | UX: estado vazio com msg "Clique para adicionar" | 🟢 Baixa | Baixa | ✅ |
-| 17 | Calculadora v1: aba Comum (teclado + histórico + clipboard) + CalculadoraEdit em campos monetários + CalculadoraHub + botão 🧮 na toolbar | 🟡 Média | Média | ✅ |
-| 36 | Calculadora v2: aba Financeira HP-style (RPN/ALG, TVM N/i/PV/PMT/FV, tabela amortização inline, BEGIN/END, "Enviar para Cartões") | 🟡 Média | Alta | ❌ |
-| 37 | Calculadora v3: aba Wizards (CET, juros mensais/anuais, parcelas Price/SAC, equivalência de taxas, valor futuro, renda passiva, ROI, comprometimento de renda, quitação antecipada, meta financeira) | 🟢 Baixa | Alta | ❌ |
-| 38 | Calculadora: entrada por teclado (dígitos + operadores + Enter/= via teclado físico) | 🟡 Média | Baixa | ✅ |
-| 39 | Calculadora: fechar junto com a janela principal (destruir/esconder ao fechar o app) | 🟡 Média | Baixa | ✅ |
-| 40 | Calculadora: botão "Sempre visível" (toggle Qt::WindowStaysOnTopHint) | 🟡 Média | Baixa | ✅ |
-| 25 | Consultor financeiro IA: gerar prompt preenchido com dados das tabelas p/ colar no ChatGPT/Claude Web; secundário: integrar API direta | 🟢 Baixa | Alta | ❌ |
-| 41 | Configurações: aba inicial ao abrir o app (padrão: Dashboard; opções: Dashboard, Entradas, Gastos, Cartões) | 🟢 Baixa | Baixa | ❌ |
-| 29 | Gestão de pagadores/recebedores | 🟢 Baixa | Baixa | ❌ |
-| 18 | Testes completos CLI automatizados (após features estáveis) | 🟢 Baixa | Alta | ❌ |
-| 19 | Tradução i18n completa (pt-BR / en) (após features estáveis) | 🟢 Baixa | Média | ❌ |
+| 1 | Tema: aba ativa mesma cor do conteúdo | 🔴 | Baixa | ✅ |
+| 2 | Entradas: clique simples abre dialog | 🔴 | Baixa | ✅ |
+| 3 | Cartões: renomear aba "Parcelas" → "Cartões" | 🔴 | Baixa | ✅ |
+| 4 | Cartões: renomear "Nova compra" → "Novo item" | 🔴 | Baixa | ✅ |
+| 5 | Entradas: labels sub-colunas (linha 1) | 🔴 | Média | ✅ |
+| 6 | Dashboard: resumo mensal/anual | 🟡 | Alta | ✅ |
+| 7 | Colunas: auto-ajuste expand-only | 🟡 | Média | ✅ |
+| 8 | Entradas: botão "Organizar por" | 🟡 | Média | ✅ |
+| 9 | Navegação: botão "Hoje" + atalhos teclado | 🟡 | Média | ✅ |
+| 10 | UX: totais na status bar | 🟡 | Baixa | ✅ |
+| 12 | UX: estado vazio com msg "Clique para adicionar" | 🟢 | Baixa | ✅ |
+| 13 | Configurações: reorganizar UI/UX | 🟡 | Média | ✅ |
+| 14 | Aba gastos: lançamentos avulsos PIX/débito/dinheiro/fixos | 🔴 | Alta | ✅ |
+| 15 | Conexões entre abas: vincular valores/cálculos entre Cartões, Entradas, Gastos | 🟡 | Alta | ✅ |
+| 16 | Barra de menu: ícones ⏮◀▶⏭ + Abrir/Salvar/Calc/Config/Bloquear | 🟡 | Baixa | ✅ |
+| 17 | Calculadora v1: aba Comum + CalculadoraEdit + CalculadoraHub + botão 🧮 | 🟡 | Média | ✅ |
+| 20 | Aba investimentos | 🔴 | Alta | ✅ |
+| 21 | Criar categorias hierárquicas (gastos, entradas e investimentos) | 🟡 | Média | ✅ |
+| 22 | Aba planejamento e orçamento | 🔴 | Alta | ✅ |
+| 23 | Aba tendências de gastos | 🟡 | Média | ✅ |
+| 24 | Gráficos (Qt Charts — barras, pizza, linha) | 🟡 | Média | ✅ |
+| 26 | Transações recorrentes agendadas | 🔴 | Média | ✅ |
+| 27 | Reconciliação bancária (extrato vs. app) | 🟡 | Alta | ✅ |
+| 28 | Metas financeiras (savings goals) | 🟡 | Média | ✅ |
+| 29 | Gestão de pagadores/recebedores | 🟢 | Baixa | ✅ |
+| 30 | Undo/Redo (desfazer/refazer ações) | 🟡 | Alta | ✅ |
+| 31 | Lembretes/alertas de contas a pagar | 🟡 | Média | ✅ |
+| 32 | Busca/filtro global de transações | 🟡 | Baixa | ✅ |
+| 33 | Controle de dívidas e empréstimos | 🟡 | Alta | ✅ |
+| 34 | Refactor: extrair acesso a Repository/SQL dos widgets para Services | 🔴 | Alta | ✅ |
+| 35 | Cartões: painel inferior com campos editáveis + tabela de amortização Price | 🟡 | Alta | ✅ |
+| 36 | Calculadora v2: aba Financeira HP-style (TVM, amortização, BEGIN/END, "Enviar para Cartões") | 🟡 | Alta | ✅ |
+| 37 | Calculadora v3: aba Wizards (CET, juros, parcelas Price/SAC, FV, renda passiva, ROI, comprometimento, saldo devedor, meta, amortização parcial) | 🟢 | Alta | ✅ |
+| 38 | Calculadora: entrada por teclado físico | 🟡 | Baixa | ✅ |
+| 39 | Calculadora: fechar junto com janela principal | 🟡 | Baixa | ✅ |
+| 40 | Calculadora: botão "Sempre visível" | 🟡 | Baixa | ✅ |
+| 41 | Configurações: aba inicial ao abrir o app | 🟢 | Baixa | ✅ |
+| 42 | Segurança: migrar criptografia para modelo híbrido AES-256-GCM + XChaCha20-Poly1305 via libsodium; Argon2id; formato versionado; backward-compat CBC. Ver SECURITY.md — antes da v1.0 | 🔴 | Alta | ✅ |
+
+---
+
+## Pendentes — ordem de implementação
+
+> Itens filhos **só podem começar** após o pai estar ✅. Itens irmãos (mesmo prefixo numérico, ex: 1.2.1 e 1.2.2) são paralelos.
+
+---
+
+### Bloco 1 — Infraestrutura de Mercado & Dados em Tempo Real
+
+| Nº | ID | Descrição | Prior. | Dific. | Status | Depende de |
+|----|----|-----------|:------:|:------:|:------:|:----------:|
+| **1** | #44 | **Infraestrutura: PrecoAtivo + PriceRepository + cache histórico local**. Struct `PrecoAtivo` {ticker, date ISO, abertura_cents, maxima_cents, minima_cents, fechamento_cents, volume, fonte, atualizado_em}. Tabela `precos_ativos (ticker TEXT, data TEXT, abertura INTEGER, maxima INTEGER, minima INTEGER, fechamento INTEGER, volume INTEGER, fonte TEXT, atualizado TEXT, PRIMARY KEY(ticker, data))` — OHLCV histórico completo no banco local para uso offline. Tabela auxiliar `cotacoes_tempo_real (ticker TEXT PRIMARY KEY, preco INTEGER, variacao_pct INTEGER×10000, abertura INTEGER, minima INTEGER, maxima INTEGER, volume INTEGER, timestamp TEXT)` — snapshot da última cotação em tempo real. `PriceRepository`: `upsert`, `upsertBatch`, `findLatest`, `findByTickerAndDate`, `findByTickerRange`, `tickersComHistorico`. **Lógica de cache**: data passada → verifica banco primeiro, só busca internet se ausente; data de hoje durante pregão (10h–18h BRT) → cotacao.b3.com.br e salva em cotacoes_tempo_real; fora do pregão → fechamento COTAHIST local. | 🔴 | Baixa | ❌ | — |
+| 1.1 | #59 | **B3CotahistProvider: download e cache histórico completo da B3 (gratuito, sem auth)**. Implementa `IMarketDataProvider`, alimenta `PriceRepository`. **(1) COTAHIST anual** `https://bvmf.bmfbovespa.com.br/InstDados/SerHist/COTAHIST_A{YYYY}.ZIP` — ~10–20 MB/ano, todos os ativos B3 desde 1994; diálogo "Baixar histórico dos últimos N anos" com QProgressBar; cada ZIP descomprimido em memória (zlib Qt), parseado linha a linha (layout fixo B3: pos 0–2 tipo, 12–23 ticker, 56–69 abertura, 70–82 máx, 83–95 mín, 96–108 fechamento, 170–187 volume); linhas tipo "01" inseridas via `upsertBatch`. **(2) COTAHIST diário** `COTAHIST_D{DDMMAAAA}.ZIP` — ~500 KB, baixado silenciosamente ao abrir o app se pregão de ontem não estiver no banco. **(3) Cotação real-time** `https://cotacao.b3.com.br/mds/api/v1/instrumentQuotation/{TICKER}` — GET sem auth, JSON com `curPrc/opngPric/minPric/maxPric`; poll a cada N segundos; fora do pregão retorna NOK → fallback COTAHIST local. **(4) Composição de índices** `sistemaswebb3-listados.b3.com.br/.../GetPortfolioDay/{BASE64}` — JSON→Base64, retorna IBOV/IFIX/SMLL com ticker, nome, participação%. **(5) Hub de Dados Públicos B3**: eventos corporativos, listagem empresas, renda fixa (CRA/CRI/debêntures); CSV histórico sem auth. **Efeito prático**: após download inicial, gráficos e P&L funcionam offline sem consumir quota de API paga. | 🔴 | Alta | ❌ | 1 |
+| 1.2 | #45 | **MarketDataService: fetch assíncrono, 4 providers selecionáveis pelo usuário**. Interface `IMarketDataProvider` {fetchQuote(ticker, cb), fetchOHLCV(ticker, inicio, fim, intervalo, cb), search(query, cb)}. **Providers selecionáveis** (via Settings #46 e dropdown na aba Bolsa #50): **(A) B3DirectQuoteProvider** — cotacao.b3.com.br, gratuito, sem auth, real-time durante pregão; **(B) YahooFinanceProvider** — query1.finance.yahoo.com/v8/finance/chart/{TICKER}.SA, sufixo .SA p/ B3, ~15min delay, sem chave; **(C) B3OfficialProvider** — api.b3.com.br, KeyId B2B; **campo desabilitado nas configs com aviso "Exige cadastro B2B corporativo — pessoa física não tem acesso"**; **(D) BrapiProvider** — ver 1.2.2.2. **Providers internos** (não expostos ao usuário): B3PortfolioProvider (sistemaswebb3, composição IBOV), B3CotahistProvider (1.1), FintzProvider (chave-de-testes-api-fintz, histórico/fundamentos), CoinGeckoProvider (cripto), ExchangeRateProvider (câmbio fiat). `MarketDataService` singleton: `setActiveProvider()` troca provider em runtime; QThread para fetch; signal `pricesUpdated(ticker, PrecoAtivo)`; cache via #44. | 🔴 | Alta | ❌ | 1 |
+| 1.2.1 | #48 | **InvestimentosWidget: migração + preços de mercado em tempo real**. Migrar `LancamentoInvestimento`: novos campos `ticker` (TEXT), `quantidade` (INTEGER, unidades×1000), `preco_unitario` (INTEGER centavos) via PRAGMA table_info + ALTER TABLE. InvestimentoDialog: campo "Ticker/Código" com autocomplete. InvestimentosWidget: coluna "Valor atual" = quantidade × preço_do_dia via MarketDataService; indicadores ↑↓→ por linha; P&L: Σ(qtd × (preço_atual − PM_ponderado)). Dashboard: card "Investimentos (net)" usa preço_do_dia para ativos com ticker. Botão "Repetir no mês seguinte" no dialog: copia lançamento com data +1 mês. | 🔴 | Alta | ❌ | 1.2 |
+| 1.2.2 | #46 | **Configurações: seção "Mercado"**. **Provider padrão** (QComboBox): "B3 Direto (tempo real, gratuito)" / "Yahoo Finance (~15min, gratuito)" / "brapi.dev (configurar token)" / "B3 API Oficial (B2B — requer KeyId corporativo)" — cada opção com descrição inline de delay e custo. **Credenciais**: brapi.dev → Bearer token + plano (Free 15k/Startup 150k/Pro 500k) + calculadora de quota `N_ativos × (60/intervalo_min) × 24 × 30` → label "~X req/mês (Y%)" com ⚠ vermelho se > 90%. B3 Oficial → campo KeyId desabilitado, aviso B2B. Yahoo / B3 Direto → sem campos, só aviso de delay. **Histórico COTAHIST**: botão "Baixar histórico B3" com QSpinBox "Últimos N anos" (1–10) e QProgressBar; label "X ativos, Y datas"; botão "Limpar histórico". **Polling durante pregão**: 5s / 15s / 30s / 1min / 5min. **Moeda slots 1 e 2**: 50 fiat + 30 cripto. AppSettings: `marketDefaultProvider`, `brapiToken`, `brapiPlan`, `b3OfficialKeyId`, `marketPollingInterval`, `cotahistAnosHistorico`, `currencySlot1Code`, `currencySlot2Code`. | 🔴 | Baixa | ❌ | 1.2 |
+| 1.2.2.1 | #47 | **Painel de câmbio LED (CurrencyPanelWidget, sempre visível acima das abas)**. 2 slots lado a lado em `MainWindow`. Fonte DSEG7Classic-Bold embutida no .qrc (github.com/keshikan/DSEG, licença OFL). Cada slot: dropdown com busca (código 3 letras + nome) + display LED estilo aeroporto (valor, seta ↑↓→, variação%, timestamp). Cores: verde #22A367 / vermelho #E85555 / cinza neutro. 50 fiat + 30 cripto hardcoded. QTimer por intervalo de 1.2.2. Dados: FrankfurterProvider (fiat ECB) + CoinGeckoProvider (cripto) via MarketDataService. | 🔴 | Alta | ❌ | 1.2.2 |
+| 1.2.2.2 | #58 | **BrapiProvider: provider brapi.dev (gratuito e pago)**. Implementa `IMarketDataProvider`. Free: 15k req/mês, ~30min delay; Startup: R$59,99/mês, 150k req, 15min; Pro: R$99,99/mês, 500k req, 5min. Endpoints: `GET /api/quote/{ticker}` (cotação + dividendos), `/api/crypto`, `/api/currency`, `/api/inflation` (IPCA/IGP-M), `/api/interest-rate` (Selic). Auth: `Authorization: Bearer TOKEN` (vazio = sem auth, delay 30min). Calculadora de quota integrada à seção Mercado das Configurações (ver 1.2.2). | 🔴 | Média | ❌ | 1.2.2 |
+| 1.2.2.2.1 | #63 | **Simulador de Rentabilidade e Dividendos**. Busca ativo por ticker, carrega preço atual + histórico de preços + histórico de dividendos via MarketDataService (BrapiProvider ou COTAHIST). Inputs: ticker, quantidade, preço médio de compra, data de início. Outputs: rentabilidade total %, rentabilidade anualizada, dividendos recebidos por evento e total, DY médio, comparativo com CDI/IPCA/IBOVESPA no mesmo período. Gráfico de linha: evolução do patrimônio vs. benchmark. | 🟢 | Alta | ❌ | 1.2.2.2 + 1.1 |
+| 1.2.2.3 | #50 | **Aba Bolsa: infraestrutura + busca + seletor de provider em runtime**. Nova aba "Bolsa" no final do QTabWidget. **Toolbar**: QLineEdit de busca + QComboBox "Fonte de dados:" com 4 opções (B3 Direto / Yahoo / brapi / B3 Oficial) — valor inicial = `AppSettings::marketDefaultProvider`; mudança persiste em AppSettings e chama `MarketDataService::setActiveProvider()` sem reiniciar. Autocomplete via provider ativo. Resultado: nome + bolsa + moeda. Abas dinâmicas por ativo (QTabBar com botão ×). Header: ticker, nome, preço, var% desde abertura, volume, OHLC do dia, timestamp, badge dinâmico: "● Tempo real" (verde) / "⚠ ~15min" (amarelo) / "⚠ Fora do pregão" (cinza). Abas abertas persistidas em QSettings (ticker + timeframe). | 🔴 | Média | ❌ | 1.2.2 |
+| 1.2.2.3.1 | #51 | **Aba Bolsa: gráfico de candles fluido sem piscar (QCustomPlot v2.1)**. Copiar qcustomplot.h + qcustomplot.cpp em src/ui/widgets/. QCPFinancial: 3 modos via radio buttons — Candles / Barras OHLC / Linha. Timeframes: 1min, 5min, 15min, 30min, 1h, 1d, 1sem, 1mês. **Estratégia sem piscar**: histórico carregado uma vez via QThread e nunca replotado; candle atual (em formação) em layer separado `"liveCandle"` com `lmBuffered` → a cada tick, só `plot->layer("liveCandle")->replot()` — apenas esse layer é redrawado; `rpQueuedReplot` para coalescer replots do mesmo frame; `QCPFinancial::setData()` no layer de histórico só ao trocar timeframe ou pan. Zoom: scroll do mouse; Pan: click+drag. Viewport culling via QCPRange do eixo X (performance com anos de histórico). Eixo de tempo com QCPAxisTickerDateTime. Painel de volume: QCPBars separado, eixos X sincronizados, barras verde/vermelho conforme close vs. open, em layer próprio. | 🔴 | Alta | ❌ | 1.2.2.3 |
+| 1.2.2.3.1.1 | #52 | **Aba Bolsa: indicadores técnicos (TA-Lib)**. `dnf install ta-lib-devel` / `apt install libta-lib-dev` / `pacman -S ta-lib`. Indicadores (calculados em QThread): **Médias** MA20/MA50/MA200/EMA9; **Osciladores** RSI(14), MACD(12,26,9), Estocástico(5,3); **Volatilidade** Bollinger Bands (20, 2σ); **Volume** OBV, ATR(14). Painel lateral direito com checkboxes em seções colapsáveis. Osciladores (RSI/MACD/Estocástico) abrem sub-panel abaixo do volume, altura redimensionável. Signal do QThread → replot apenas das layers dos indicadores. | 🔴 | Alta | ❌ | 1.2.2.3.1 |
+| 1.2.2.3.1.2 | #53 | **Aba Bolsa: suporte/resistência automático + traçado manual**. **Automático**: radio buttons — Nenhum / Pivot Clássico (S1,S2,R1,R2) / Pivot Fibonacci (38,2%/61,8%/100%) / Pivot Camarilla (8 níveis) / Swing High/Low (lookback 3–10 via QSpinBox); calculados em QThread; resultado → QCPItemLine no chart. **Manual**: botão "✏ Linha" → dois cliques definem A e B → QCPItemLine com estilo configurável (suporte=verde, resistência=vermelho, tendência=azul). Double-click em linha existente → dialog de edição (cor, tipo, label, excluir). Linhas manuais persistidas por ticker + timeframe em QSettings. | 🟡 | Alta | ❌ | 1.2.2.3.1 |
+
+---
+
+### Bloco 2 — Calculadoras
+
+> Todas dependem de #37 ✅. Itens 2.2–2.8 são independentes entre si e de 2/2.1.
+
+| Nº | ID | Descrição | Prior. | Dific. | Status | Depende de |
+|----|----|-----------|:------:|:------:|:------:|:----------:|
+| **2** | #49 | **Calculadora v3: adições — Comparador RF + FIRE number**. 2 novos wizards na aba Wizards existente. **(1) Comparador Renda Fixa**: CDB bruto% e prazo → IR regressivo automático (22,5→20→17,5→15%) → i_líquido; vs. LCI/LCA isentos; break-even `i_LCI ≥ i_CDB × (1−IR)`. **(2) FIRE number**: despesas mensais, inflação estimada, anos até aposentadoria, taxa de retorno → patrimônio necessário (× 25), renda passiva mensal, projeção com IPCA. | 🟢 | Baixa | ❌ | #37 ✅ |
+| 2.1 | #60 | **Calculadora v3+: FIRE variants** (expande 2/#49). 5 variações adicionais: **(1) Lean FIRE** (despesas reduzidas × 25); **(2) Fat FIRE** (lifestyle premium × 33–40); **(3) Coast FIRE** (`FV_objetivo / (1+i)^anos` — aporte inicial para crescer sem novos aportes); **(4) Barista FIRE** (`(despesas_totais − renda_parcial) × 25`); **(5) Geographic Arbitrage** (FIRE ajustado por índice de custo de vida Brasil vs. destino). Todos estáticos, sem API. | 🟢 | Média | ❌ | 2 |
+| **2.2** | #43 | **Calculadora v4: Bolsa de Valores** (19 wizards, 3 grupos). **Grupo A — Operacional** (7): preço médio ponderado, custo de operação (corretagem + emolumentos B3 0,0325% + liquidação 0,0275% + ISS), posição consolidada, breakeven de venda (com e sem IR), gain/loss realizado, IR renda variável (swing 15%/isenção ≤R$20k, day trade 20%, ETF/BDR 15%, compensação de prejuízo), gestão de risco (posição máx = capital × risco% ÷ (PM − stop)). **Grupo B — Fundamentalista** (7): P/L, P/VP, DY, ROE/ROIC/ROA, Graham (√22,5×LPA×VPA), Bazin (DPA/0,06), PEG ratio. **Grupo C — FIIs** (5): DY mensal/anualizado, P/VP, FFO e P/FFO, cap rate, vacância financeira. UX: QListWidget com 3 grupos colapsáveis + QStackedWidget. | 🟢 | Alta | ❌ | #37 ✅ |
+| **2.3** | #54 | **Calculadora v5: Imóveis**. Wizards: SAC vs Price (VP/n/taxa/comparativo de juros totais), FGTS na amortização (reduz PV ou PMT), CET imobiliário (TIR + MIP por faixa etária + DFI + tarifas), amortização extra (recalcula n ou PMT), comprometimento de renda CEF (≤30%), comparativo aluguel vs. financiamento. | 🟢 | Alta | ❌ | #37 ✅ |
+| **2.4** | #55 | **Calculadora v6: Renda Fixa**. Wizards: % CDI → bruto e líquido (IR regressivo automático), IPCA+ projeção (capital + spread + IPCA estimado), prefixado FV = PV×(1+i)^n com IR, comparador CDB vs LCI/LCA (break-even), Tesouro Selic vs CDB (incluindo custódia B3 0,20%a.a.), IOF primeiros 30 dias (tabela regressiva automática). | 🟢 | Alta | ❌ | #37 ✅ |
+| **2.5** | #56 | **Calculadora v7: IR & Tributos**. Wizards: IRPF mensal (tabela progressiva 2025 + INSS escalonado + dependentes + pensão → IR e alíquota efetiva), benefício fiscal PGBL (aporte, renda tributável → economia, limite 12%), PGBL vs VGBL (projeção + comparativo progressiva vs regressiva), carnê-leão (rendimentos PF/exterior, alíquota, DARF), simplificada vs completa (20%, máx R$16.754,34, vs. deduções reais). | 🟢 | Alta | ❌ | #37 ✅ |
+| **2.6** | #57 | **Calculadora v8: Inflação & Câmbio**. Wizards: correção monetária IPCA/IGP-M/TR/INPC (valor + período + índice → atualizado), poder de compra perdido `(1 − 1/(1+inflação)) × 100`, taxa real de retorno Fisher `(1+nominal)/(1+inflação) − 1`, conversão de moeda (valor + taxa + spread% + IOF: 0% físico / 1,1% remessa / 6,38% cartão → líquido e VET), meta financeira corrigida pela inflação projetada. | 🟢 | Média | ❌ | #37 ✅ |
+| **2.7** | #61 | **Calculadora Reserva de Emergência**. Inputs: despesas mensais fixas, meses desejados (3/6/9/12), taxa de rendimento atual (% a.m.), CDI estimado (%). Outputs: valor necessário, valor atual vs meta, gap R$ e %, tempo para completar dado aporte mensal, rendimento mensal/anual da reserva. Comparativo: Poupança vs CDB 100% CDI vs Tesouro Selic (i líquido após IR). Sem API — cálculos estáticos. | 🟢 | Baixa | ❌ | #37 ✅ |
+| **2.8** | #62 | **Calculadora CLT vs PJ**. **CLT**: bruto → INSS escalonado 2025 → IR progressivo → líquido; benefícios opcionais (FGTS 8%, férias 1/3, 13º, VT/VA). **PJ Simples Nacional**: faturamento → alíquota por anexo (I–V) e faixa → pró-labore → INSS (20%, mín R$1.412) → IR → distribuição de lucros isenta → líquido. **PJ Lucro Presumido**: IRPJ 15%+10% + CSLL 9% + PIS/COFINS + ISS/ICMS. Outputs: líquido CLT vs PJ lado a lado, diferença %, break-even de faturamento. Sem API. | 🟢 | Alta | ❌ | #37 ✅ |
+
+---
+
+### Bloco 3 — Melhorias Gerais
+
+> Baixa prioridade. Sem bloqueadores técnicos. Recomendado iniciar após features estáveis.
+
+| Nº | ID | Descrição | Prior. | Dific. | Status | Depende de |
+|----|----|-----------|:------:|:------:|:------:|:----------:|
+| **3** | #11 | **Export: exportar apenas aba ativa**. Botão/menu "Exportar" exporta somente os dados da aba em foco (CSV, OFX, XLSX via QXlsx), em vez de exportar tudo. | 🟢 | Média | ❌ | — |
+| **3.1** | #25 | **Consultor financeiro IA: gerar prompt com dados das tabelas para colar no ChatGPT/Claude**. Modo primário: monta texto estruturado com resumo de entradas, gastos, investimentos e metas do mês/ano atual → usuário copia e cola no LLM de preferência. Modo secundário (opcional): integração direta via API (chave configurável). | 🟢 | Alta | ❌ | — |
+| **3.2** | #18 | **Testes automatizados CLI (após features estáveis)**. ctest + QTest para Services e Repositories críticos: ParcelaService (CET, Newton-Raphson), CurrencyService, ImportService (CSV/OFX/XLSX), ExportService. Mocks para DatabaseManager. | 🟢 | Alta | ❌ | — |
+| **3.3** | #19 | **Tradução i18n completa pt-BR / en (após features estáveis)**. Completar peubud_en.ts (Qt Linguist). Todas as strings via tr(). Formato de data/moeda sensível ao locale. | 🟢 | Média | ❌ | — |

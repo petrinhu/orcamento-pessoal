@@ -27,6 +27,8 @@ void CalculadoraHub::ensureDialog()
             m_dialog->hide();
             emit resultadoDisponivel(valor);
         });
+        connect(m_dialog, &CalculadoraDialog::tvmParaCartoes,
+                this, &CalculadoraHub::tvmParaCartoes);
     }
 }
 
