@@ -50,6 +50,9 @@ set(SOURCES
     # Services — FinanceEngine (#81)
     src/services/FinanceEngine.cpp
 
+    # Services — OAuth Device Flow RFC 8628 (#83)
+    src/services/OAuthDeviceFlow.cpp
+
     # Core — secret store
     src/core/secret/SecretStoreService.cpp
 
@@ -155,6 +158,9 @@ set(SOURCES
 
     # Reconciliação bancária (#27)
     src/ui/widgets/ReconciliacaoDialog.cpp
+
+    # Base wizard reutilizavel (#87)
+    src/ui/widgets/BaseWizardDialog.cpp
 )
 
 set(RESOURCES
