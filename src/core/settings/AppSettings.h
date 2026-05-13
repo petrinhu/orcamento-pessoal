@@ -23,6 +23,20 @@ public:
     // Convenience: display symbol for the current default currency
     QString currencySymbol() const;
 
+    // ── Market Data Settings ──────────────────────────────────────────────
+    QString marketDefaultProvider() const;
+    void    setMarketDefaultProvider(const QString &providerName);
+    QString brapiToken() const;
+    void    setBrapiToken(const QString &token);
+    QString brapiPlan() const;  // "Free", "Startup", "Pro"
+    void    setBrapiPlan(const QString &plan);
+    QString b3OfficialKeyId() const;
+    void    setB3OfficialKeyId(const QString &keyId);
+    int     marketPollingInterval() const;  // seconds
+    void    setMarketPollingInterval(int seconds);
+    int     cotahistAnosHistorico() const;  // years of historical data to download
+    void    setCotahistAnosHistorico(int anos);
+
     // ── Save / autosave settings ──────────────────────────────────────────
     bool    autosaveEnabled() const;               // default: true
     void    setAutosaveEnabled(bool on);
@@ -41,6 +55,7 @@ signals:
     void languageChanged(Language lang);
     void currencyChanged(const QString &code);
     void autosaveSettingsChanged();
+    void marketSettingsChanged();
 
 private:
     explicit AppSettings();
