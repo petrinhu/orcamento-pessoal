@@ -91,11 +91,11 @@ Arquivo canônico de pendências, auditoria técnica e conformidade com o contra
 
 | ID | Grupo | Descrição Técnica | Prioridade | Pré-requisito | Dificuldade | Status | Estado Auditado |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| #43 | FUNC | Calculadora v4: Bolsa de Valores (19 wizards — Operacional 7 + Fundamentalista 7 + FIIs 5; dados via Fintz `/v1/financials` quando ticker preenchido) | Baixa | #37 | Alta | ⏳ Pendente | — |
-| #54 | FUNC | Calculadora v5: Imóveis (SAC vs Price, FGTS, CET imobiliário com MIP/DFI, amortização extra, comprometimento CEF, aluguel vs financiamento) | Baixa | #37 | Alta | ⏳ Pendente | — |
-| #55 | FUNC | Calculadora v6: Renda Fixa (%CDI bruto/líquido, IPCA+, prefixado, CDB vs LCI/LCA, Tesouro Selic vs CDB, IOF 30d, **Wizard Tesouro Direto J1–J4** com série histórica `tesouro_yields`) | Baixa | #37 | Alta | ⏳ Pendente | — |
-| #56 | FUNC | Calculadora v7: IR & Tributos (IRPF mensal, PGBL benefício fiscal, PGBL vs VGBL, carnê-leão, simplificada vs completa) | Baixa | #37 | Alta | ⏳ Pendente | — |
-| #57 | FUNC | Calculadora v8: Inflação & Câmbio (IPCA/IGP-M/TR/INPC, poder de compra, Fisher real, conversão com IOF, meta corrigida) | Baixa | #37 | Média | ⏳ Pendente | — |
+| #43 | FUNC | Calculadora v4: Bolsa de Valores (19 wizards — Operacional 7 + Fundamentalista 7 + FIIs 5; dados via Fintz `/v1/financials` quando ticker preenchido) | Baixa | #37 | Alta | 🔄 Em andamento | — |
+| #54 | FUNC | Calculadora v5: Imóveis (SAC vs Price, FGTS, CET imobiliário com MIP/DFI, amortização extra, comprometimento CEF, aluguel vs financiamento) | Baixa | #37 | Alta | 🔄 Em andamento | — |
+| #55 | FUNC | Calculadora v6: Renda Fixa (%CDI bruto/líquido, IPCA+, prefixado, CDB vs LCI/LCA, Tesouro Selic vs CDB, IOF 30d, **Wizard Tesouro Direto J1–J4** com série histórica `tesouro_yields`) | Baixa | #37 | Alta | 🔄 Em andamento | — |
+| #56 | FUNC | Calculadora v7: IR & Tributos (IRPF mensal, PGBL benefício fiscal, PGBL vs VGBL, carnê-leão, simplificada vs completa) | Baixa | #37 | Alta | 🔄 Em andamento | — |
+| #57 | FUNC | Calculadora v8: Inflação & Câmbio (IPCA/IGP-M/TR/INPC, poder de compra, Fisher real, conversão com IOF, meta corrigida) | Baixa | #37 | Média | 🔄 Em andamento | — |
 | #61 | FUNC | Calculadora Reserva de Emergência (despesas × meses, gap, comparativo Poupança/CDB/Tesouro Selic líquidos) | Baixa | #37 | Baixa | ⏳ Pendente | — |
 | #62 | FUNC | Calculadora CLT vs PJ (Simples Nacional anexos I–V + Lucro Presumido, break-even faturamento) | Baixa | #37 | Alta | ⏳ Pendente | — |
 
