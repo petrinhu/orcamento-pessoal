@@ -33,6 +33,12 @@ private slots:
     // RATE (Newton-Raphson)
     void rateCdb();
     void rateGuessExtremo();
+
+    // Conversao de taxa (#82)
+    void taxaActuarielAnualParaMensal();
+    void taxaProporcionalAnualParaMensal();
+    void taxaActuarielMensalParaAnual();
+    void taxaConversaoZero();
 };
 
 // Tolerancia: 0.01 (centavo de Real) para valores monetarios; 1e-6 para taxa.
@@ -112,6 +118,40 @@ void TestFinanceEngine::rateGuessExtremo()
     const double i = FinanceEngine::rate(1500.0, -100.0, 0.0, 24, false);
     QVERIFY2(qAbs(i - 0.0416) < 1e-3,
              qPrintable(QStringLiteral("i = %1, esperado ~0.0416").arg(i, 0, 'g', 10)));
+}
+
+void TestFinanceEngine::taxaActuarielAnualParaMensal()
+{
+    // 12% a.a. composto -> a.m. = (1.12)^(1/12) - 1 = 0.94888...%
+    const double iAnual  = 0.12;
+    const double iMensal = FinanceEngine::taxaEquivalente(iAnual, 1, 12);
+    QVERIFY2(qAbs(iMensal - 0.0094888) < 1e-6,
+             qPrintable(QStringLiteral("iMensal = %1, esperado 0.0094888").arg(iMensal, 0, 'g', 10)));
+}
+
+void TestFinanceEngine::taxaProporcionalAnualParaMensal()
+{
+    // 12% a.a. linear -> a.m. = 12% / 12 = 1%
+    const double iAnual  = 0.12;
+    const double iMensal = FinanceEngine::taxaProporcional(iAnual, 1, 12);
+    QVERIFY2(qAbs(iMensal - 0.01) < 1e-9,
+             qPrintable(QStringLiteral("iMensal = %1, esperado 0.01").arg(iMensal, 0, 'g', 10)));
+}
+
+void TestFinanceEngine::taxaActuarielMensalParaAnual()
+{
+    // 1% a.m. composto -> a.a. = (1.01)^12 - 1 = 12.6825...%
+    const double iMensal = 0.01;
+    const double iAnual  = FinanceEngine::taxaEquivalente(iMensal, 12, 1);
+    QVERIFY2(qAbs(iAnual - 0.126825) < 1e-5,
+             qPrintable(QStringLiteral("iAnual = %1, esperado 0.126825").arg(iAnual, 0, 'g', 10)));
+}
+
+void TestFinanceEngine::taxaConversaoZero()
+{
+    // i=0 deve sempre retornar 0 (sem juros)
+    QCOMPARE(FinanceEngine::taxaEquivalente(0.0, 1, 12), 0.0);
+    QCOMPARE(FinanceEngine::taxaProporcional(0.0, 1, 12), 0.0);
 }
 
 QTEST_GUILESS_MAIN(TestFinanceEngine)

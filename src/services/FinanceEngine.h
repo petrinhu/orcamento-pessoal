@@ -43,4 +43,23 @@ public:
     // Algoritmo: gnucash/libgnucash/app-utils/calculation/fin.c:1304-1366.
     [[nodiscard]] static double rate(double pv, double pmt, double fv, int n,
                                      bool begin = false);
+
+    // ── Conversao de taxa entre periodicidades (#82) ─────────────────────────
+    //
+    // periodosDe / periodosPara: numero de periodos por unidade comum (ano).
+    // Ex.: anual->mensal usa de=1, para=12. Mensal->anual usa de=12, para=1.
+
+    // Actuariel (regime composto): preserva equivalencia financeira.
+    // Formula: (1 + i)^(periodosDe / periodosPara) - 1
+    // Ex.: 12% a.a. -> a.m. = (1.12)^(1/12) - 1 = 0.9489%
+    // Padrao BR para: Tesouro Direto, financiamento Price/SAC, CDB.
+    [[nodiscard]] static double taxaEquivalente(double i, int periodosDe,
+                                                int periodosPara);
+
+    // Proporcional (regime linear/simples): divisao direta.
+    // Formula: i * (periodosDe / periodosPara)
+    // Ex.: 12% a.a. -> a.m. = 12% / 12 = 1%
+    // Padrao BR para: cartao de credito, juros de mora, multas.
+    [[nodiscard]] static double taxaProporcional(double i, int periodosDe,
+                                                 int periodosPara);
 };

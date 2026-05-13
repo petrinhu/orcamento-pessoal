@@ -156,3 +156,30 @@ double FinanceEngine::rate(double pv, double pmt, double fv, int n, bool begin)
     }
     throw std::domain_error("rate: Newton-Raphson nao convergiu em 50 iteracoes");
 }
+
+// ── Conversao de taxa (#82) ──────────────────────────────────────────────────
+double FinanceEngine::taxaEquivalente(double i, int periodosDe, int periodosPara)
+{
+    if (periodosPara <= 0) {
+        throw std::domain_error("taxaEquivalente: periodosPara deve ser > 0");
+    }
+    if (periodosDe <= 0) {
+        throw std::domain_error("taxaEquivalente: periodosDe deve ser > 0");
+    }
+    if (i == 0.0) return 0.0;
+    const double expoente = static_cast<double>(periodosDe)
+                          / static_cast<double>(periodosPara);
+    return std::pow(1.0 + i, expoente) - 1.0;
+}
+
+double FinanceEngine::taxaProporcional(double i, int periodosDe, int periodosPara)
+{
+    if (periodosPara <= 0) {
+        throw std::domain_error("taxaProporcional: periodosPara deve ser > 0");
+    }
+    if (periodosDe <= 0) {
+        throw std::domain_error("taxaProporcional: periodosDe deve ser > 0");
+    }
+    return i * static_cast<double>(periodosDe)
+             / static_cast<double>(periodosPara);
+}
