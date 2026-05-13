@@ -13,6 +13,15 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBSECRET REQUIRED libsecret-1)
 pkg_check_modules(LIBSODIUM REQUIRED libsodium)
 
+# Poppler-qt6 opcional (#93). Sem ele, ImportService::fromPdf retorna erro
+# orientando o usuario a instalar poppler-qt6-devel.
+pkg_check_modules(POPPLER_QT6 IMPORTED_TARGET poppler-qt6)
+if(POPPLER_QT6_FOUND)
+    message(STATUS "Poppler-qt6 encontrado: import PDF habilitado")
+else()
+    message(STATUS "Poppler-qt6 nao encontrado: import PDF retornara erro orientativo")
+endif()
+
 # ── QXlsx (MIT, pure Qt — XLSX read/write) ────────────────────────────────────
 include(FetchContent)
 FetchContent_Declare(
@@ -98,6 +107,7 @@ set(SOURCES
     src/services/CurrencyService.cpp
     src/services/ImportService.cpp
     src/services/import/IMatchFinder.cpp
+    src/services/import/BankPDFParsers.cpp
     src/services/ExportService.cpp
 
     # UI
@@ -187,6 +197,11 @@ add_executable(orcamento-pessoal ${SOURCES} ${RESOURCES})
 # QXlsx exposes QXLSX_LIBRARY definition for conditional compilation
 target_compile_definitions(orcamento-pessoal PRIVATE QXLSX_LIBRARY)
 
+# Habilita import PDF se poppler-qt6-devel disponivel (#93)
+if(POPPLER_QT6_FOUND)
+    target_compile_definitions(orcamento-pessoal PRIVATE PEUBUD_HAS_POPPLER)
+endif()
+
 target_include_directories(orcamento-pessoal PRIVATE
     src
     ${LIBSECRET_INCLUDE_DIRS}
@@ -207,6 +222,10 @@ target_link_libraries(orcamento-pessoal PRIVATE
     ${LIBSODIUM_LIBRARIES}
     QXlsx::QXlsx
 )
+
+if(POPPLER_QT6_FOUND)
+    target_link_libraries(orcamento-pessoal PRIVATE PkgConfig::POPPLER_QT6)
+endif()
 
 # ── Translations (Qt Linguist) ────────────────────────────────────────────────
 set(TS_FILES resources/translations/peubud_en.ts)

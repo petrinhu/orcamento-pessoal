@@ -1,6 +1,12 @@
 #include "ImportService.h"
 #include "ParcelaService.h"
 #include "services/import/ExistingTransactionMatchFinder.h"
+#include "services/import/BankPDFParsers.h"
+
+#ifdef PEUBUD_HAS_POPPLER
+#include <poppler-qt6.h>
+#include <memory>
+#endif
 
 #include <QFile>
 #include <QTextStream>
@@ -419,11 +425,43 @@ ImportService::Result ImportService::fromOds  (const QString &) { return stub(QS
 ImportService::Result ImportService::fromTxt  (const QString &) { return stub(QStringLiteral("TXT/CNAB")); }
 ImportService::Result ImportService::fromMd   (const QString &) { return stub(QStringLiteral("Markdown")); }
 ImportService::Result ImportService::fromHtml (const QString &) { return stub(QStringLiteral("HTML"));     }
-ImportService::Result ImportService::fromPdf  (const QString &)
+ImportService::Result ImportService::fromPdf(const QString &path)
 {
     Result r;
+
+#ifdef PEUBUD_HAS_POPPLER
+    // Extracao de texto via Poppler-qt6
+    std::unique_ptr<Poppler::Document> doc(Poppler::Document::load(path));
+    if (!doc || doc->isLocked()) {
+        r.error = QStringLiteral("Não foi possível abrir o PDF: %1").arg(path);
+        return r;
+    }
+    QString texto;
+    for (int i = 0; i < doc->numPages(); ++i) {
+        std::unique_ptr<Poppler::Page> page(doc->page(i));
+        if (page) texto += page->text(QRectF()) + QLatin1Char('\n');
+    }
+    if (texto.trimmed().isEmpty()) {
+        r.error = QStringLiteral("PDF sem texto extraível (possivelmente escaneado).");
+        return r;
+    }
+
+    // Pipeline de parsers em ordem de prioridade
+    NubankPDFParser nu;   if (nu.detectar(texto))  return nu.parse(texto);
+    ItauPDFParser   it;   if (it.detectar(texto))  return it.parse(texto);
+    BradescoPDFParser br; if (br.detectar(texto))  return br.parse(texto);
+    BBPDFParser     bb;   if (bb.detectar(texto))  return bb.parse(texto);
+    CaixaPDFParser  cx;   if (cx.detectar(texto))  return cx.parse(texto);
+    InterPDFParser  in;   if (in.detectar(texto))  return in.parse(texto);
+
+    GenericoPDFParser ge;
+    return ge.parse(texto);
+#else
+    Q_UNUSED(path)
     r.error = QStringLiteral(
-        "Importação de PDF não é suportada automaticamente.\n"
-        "Exporte seu extrato do banco em formato OFX ou CSV e importe novamente.");
+        "Importação de PDF requer Poppler-qt6 (pacote poppler-qt6-devel).\n"
+        "Esta build foi compilada sem suporte.\n"
+        "Alternativa: exporte o extrato em OFX ou CSV.");
     return r;
+#endif
 }

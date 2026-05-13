@@ -25,3 +25,5 @@ peubud_add_test(test_finance_engine ${CMAKE_SOURCE_DIR}/src/services/FinanceEngi
 peubud_add_test(test_match_finder ${CMAKE_SOURCE_DIR}/src/services/import/IMatchFinder.cpp)
 peubud_add_test(test_fiscal ${CMAKE_SOURCE_DIR}/src/services/FiscalService.cpp)
 peubud_add_test(test_backup ${CMAKE_SOURCE_DIR}/src/services/BackupService.cpp)
+peubud_add_test(test_pdf_parsers
+    ${CMAKE_SOURCE_DIR}/src/services/import/BankPDFParsers.cpp)
