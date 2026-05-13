@@ -26,6 +26,7 @@
 #include <QFormLayout>
 #include <QRadioButton>
 #include <QStackedWidget>
+#include <QTimer>
 #include <cmath>
 #include <memory>
 #include <stdexcept>
@@ -41,6 +42,12 @@ CalculadoraDialog::CalculadoraDialog(QWidget *parent)
                    | Qt::WindowCloseButtonHint
                    | Qt::WindowMinimizeButtonHint);
     setAttribute(Qt::WA_DeleteOnClose, false); // reuse across open/close cycles
+
+    // Debounce 300ms para recalculos pesados disparados por textChanged (#95)
+    m_debounceCet = new QTimer(this);
+    m_debounceCet->setSingleShot(true);
+    m_debounceCet->setInterval(300);
+    connect(m_debounceCet, &QTimer::timeout, this, &CalculadoraDialog::atualizarCet);
 
     buildUi();
 
@@ -423,7 +430,10 @@ void CalculadoraDialog::buildTabFinanceira(QWidget *tab)
         row->addWidget(unitLbl);
         vbox->addLayout(row);
     }
-    connect(m_tvmI, &QLineEdit::textChanged, this, &CalculadoraDialog::atualizarCet);
+    // Debounce 300ms: cada keystroke reinicia o timer; atualizarCet so dispara
+    // depois de 300ms de inatividade. Evita recalculo a cada tecla (#95).
+    connect(m_tvmI, &QLineEdit::textChanged,
+            this, [this]() { m_debounceCet->start(); });
 
     // ── Data de início (for amortization table) ────────────────────────────
     {
@@ -2082,3 +2092,28 @@ void CalculadoraDialog::buildTabWizards(QWidget *tab)
         m_wizStack->addWidget(panel);
     }
 }
+
+// ── Stubs das abas novas (#43 #54 #55 #56 #57) ────────────────────────────────
+// Esqueletos vazios para destravar o build enquanto os wizards internos não
+// estão implementados. Cada aba recebe um placeholder explicativo.
+namespace {
+void placeholderTab(QWidget *tab, const QString &titulo, const QString &itemId)
+{
+    auto *v = new QVBoxLayout(tab);
+    v->setContentsMargins(20, 20, 20, 20);
+    auto *lbl = new QLabel(tab);
+    lbl->setText(QStringLiteral("<h3>%1</h3><p>Wizards em implementação (%2). Ver <code>TODO.md</code>.</p>")
+                     .arg(titulo, itemId));
+    lbl->setTextFormat(Qt::RichText);
+    lbl->setAlignment(Qt::AlignCenter);
+    lbl->setWordWrap(true);
+    v->addWidget(lbl);
+    v->addStretch();
+}
+} // anonymous
+
+void CalculadoraDialog::buildTabBolsa(QWidget *tab)          { placeholderTab(tab, tr("Bolsa de Valores"),    QStringLiteral("#43")); }
+void CalculadoraDialog::buildTabImoveis(QWidget *tab)        { placeholderTab(tab, tr("Imóveis"),             QStringLiteral("#54")); }
+void CalculadoraDialog::buildTabRendaFixa(QWidget *tab)      { placeholderTab(tab, tr("Renda Fixa"),          QStringLiteral("#55")); }
+void CalculadoraDialog::buildTabIrTributos(QWidget *tab)     { placeholderTab(tab, tr("IR & Tributos"),       QStringLiteral("#56")); }
+void CalculadoraDialog::buildTabInflacaoCambio(QWidget *tab) { placeholderTab(tab, tr("Inflação & Câmbio"),   QStringLiteral("#57")); }
