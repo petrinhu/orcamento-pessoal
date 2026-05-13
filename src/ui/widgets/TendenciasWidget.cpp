@@ -69,7 +69,7 @@ void TendenciasWidget::buildUi()
     m_cbCategoria->setMinimumWidth(160);
 
     auto *btnAplicar = new QPushButton(tr("Aplicar"), this);
-    btnAplicar->setObjectName(QStringLiteral("primaryBtn"));
+    btnAplicar->setObjectName(QStringLiteral("primary"));
 
     ctrlBar->addWidget(lblDe);
     ctrlBar->addWidget(m_dtInicio);

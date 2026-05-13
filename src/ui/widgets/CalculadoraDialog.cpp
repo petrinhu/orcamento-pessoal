@@ -125,6 +125,26 @@ void CalculadoraDialog::buildUi()
     buildTabWizards(tabWiz);
     m_tabs->addTab(tabWiz, tr("Wizards"));
 
+    auto *tabBolsa = new QWidget;
+    buildTabBolsa(tabBolsa);
+    m_tabs->addTab(tabBolsa, tr("Bolsa"));
+
+    auto *tabImoveis = new QWidget;
+    buildTabImoveis(tabImoveis);
+    m_tabs->addTab(tabImoveis, tr("Imóveis"));
+
+    auto *tabRF = new QWidget;
+    buildTabRendaFixa(tabRF);
+    m_tabs->addTab(tabRF, tr("Renda Fixa"));
+
+    auto *tabIR = new QWidget;
+    buildTabIrTributos(tabIR);
+    m_tabs->addTab(tabIR, tr("IR & Tributos"));
+
+    auto *tabIC = new QWidget;
+    buildTabInflacaoCambio(tabIC);
+    m_tabs->addTab(tabIC, tr("Inflação"));
+
     root->addWidget(m_tabs);
     setMinimumWidth(300);
     adjustSize();
@@ -203,7 +223,7 @@ void CalculadoraDialog::buildTabComum(QWidget *tab)
         {QStringLiteral("0"),    4, 0, 1, 1, {}},
         {QStringLiteral(","),    4, 1, 1, 1, {}},
         {QStringLiteral("⌫"),    4, 2, 1, 1, QStringLiteral("utilityBtn")},
-        {QStringLiteral("="),    4, 3, 1, 1, QStringLiteral("primaryBtn")},
+        {QStringLiteral("="),    4, 3, 1, 1, QStringLiteral("primary")},
         {QStringLiteral("%"),    5, 0, 1, 1, QStringLiteral("utilityBtn")},
     };
 
@@ -233,7 +253,7 @@ void CalculadoraDialog::buildTabComum(QWidget *tab)
 
     // ── send-to-field button ───────────────────────────────────────────────
     m_btnTransferir = new QPushButton(tr("Enviar ao campo"), tab);
-    m_btnTransferir->setObjectName(QStringLiteral("primaryBtn"));
+    m_btnTransferir->setObjectName(QStringLiteral("primary"));
     m_btnTransferir->setVisible(false);
     connect(m_btnTransferir, &QPushButton::clicked, this, [this]() {
         if (!m_op.isNull()) pressIgual();
@@ -464,7 +484,7 @@ void CalculadoraDialog::buildTabFinanceira(QWidget *tab)
     vbox->addWidget(btnLimpar);
 
     auto *btnCartoes = new QPushButton(tr("Enviar para Cartões"), tab);
-    btnCartoes->setObjectName(QStringLiteral("primaryBtn"));
+    btnCartoes->setObjectName(QStringLiteral("primary"));
     connect(btnCartoes, &QPushButton::clicked, this, [this]() {
         const double pv  = parseTvmField(m_tvmPV);
         const int    n   = static_cast<int>(parseTvmField(m_tvmN));
@@ -794,6 +814,15 @@ void CalculadoraDialog::buildTabWizards(QWidget *tab)
         tr("9. Saldo devedor (quitação)"),
         tr("10. Meta financeira"),
         tr("11. Recálculo com amort. parcial"),
+        tr("12. Comparador RF — CDB vs LCI/LCA"),
+        tr("13. FIRE Number (Regra dos 25)"),
+        tr("14. Lean FIRE"),
+        tr("15. Fat FIRE"),
+        tr("16. Coast FIRE"),
+        tr("17. Barista FIRE"),
+        tr("18. Geographic Arbitrage"),
+        tr("19. Reserva de Emergência"),
+        tr("20. CLT vs PJ"),
     });
     vbox->addWidget(combo);
 
@@ -878,7 +907,7 @@ void CalculadoraDialog::buildTabWizards(QWidget *tab)
         lay->addLayout(form);
 
         auto *btnCalc = new QPushButton(tr("Calcular"), panel);
-        btnCalc->setObjectName(QStringLiteral("primaryBtn"));
+        btnCalc->setObjectName(QStringLiteral("primary"));
         lay->addWidget(btnCalc);
 
         auto *lblRes  = makeResLbl(panel);
@@ -937,7 +966,7 @@ void CalculadoraDialog::buildTabWizards(QWidget *tab)
         lay->addLayout(form);
 
         auto *btnCalc = new QPushButton(tr("Calcular"), panel);
-        btnCalc->setObjectName(QStringLiteral("primaryBtn"));
+        btnCalc->setObjectName(QStringLiteral("primary"));
         lay->addWidget(btnCalc);
 
         auto *lblRes  = makeResLbl(panel);
@@ -980,7 +1009,7 @@ void CalculadoraDialog::buildTabWizards(QWidget *tab)
         lay->addLayout(form);
 
         auto *btnCalc = new QPushButton(tr("Calcular"), panel);
-        btnCalc->setObjectName(QStringLiteral("primaryBtn"));
+        btnCalc->setObjectName(QStringLiteral("primary"));
         lay->addWidget(btnCalc);
 
         auto *lblRes  = makeResLbl(panel);
@@ -1031,7 +1060,7 @@ void CalculadoraDialog::buildTabWizards(QWidget *tab)
         lay->addLayout(form);
 
         auto *btnCalc = new QPushButton(tr("Calcular"), panel);
-        btnCalc->setObjectName(QStringLiteral("primaryBtn"));
+        btnCalc->setObjectName(QStringLiteral("primary"));
         lay->addWidget(btnCalc);
 
         auto *lblRes  = makeResLbl(panel);
@@ -1085,7 +1114,7 @@ void CalculadoraDialog::buildTabWizards(QWidget *tab)
         lay->addLayout(form);
 
         auto *btnCalc = new QPushButton(tr("Calcular"), panel);
-        btnCalc->setObjectName(QStringLiteral("primaryBtn"));
+        btnCalc->setObjectName(QStringLiteral("primary"));
         lay->addWidget(btnCalc);
 
         auto *lblRes  = makeResLbl(panel);
@@ -1131,7 +1160,7 @@ void CalculadoraDialog::buildTabWizards(QWidget *tab)
         lay->addLayout(form);
 
         auto *btnCalc = new QPushButton(tr("Calcular"), panel);
-        btnCalc->setObjectName(QStringLiteral("primaryBtn"));
+        btnCalc->setObjectName(QStringLiteral("primary"));
         lay->addWidget(btnCalc);
 
         auto *lblRes  = makeResLbl(panel);
@@ -1179,7 +1208,7 @@ void CalculadoraDialog::buildTabWizards(QWidget *tab)
         lay->addLayout(form);
 
         auto *btnCalc = new QPushButton(tr("Calcular"), panel);
-        btnCalc->setObjectName(QStringLiteral("primaryBtn"));
+        btnCalc->setObjectName(QStringLiteral("primary"));
         lay->addWidget(btnCalc);
 
         auto *lblRes  = makeResLbl(panel);
@@ -1228,7 +1257,7 @@ void CalculadoraDialog::buildTabWizards(QWidget *tab)
         lay->addLayout(form);
 
         auto *btnCalc = new QPushButton(tr("Calcular"), panel);
-        btnCalc->setObjectName(QStringLiteral("primaryBtn"));
+        btnCalc->setObjectName(QStringLiteral("primary"));
         lay->addWidget(btnCalc);
 
         auto *lblRes  = makeResLbl(panel);
@@ -1278,7 +1307,7 @@ void CalculadoraDialog::buildTabWizards(QWidget *tab)
         lay->addLayout(form);
 
         auto *btnCalc = new QPushButton(tr("Calcular"), panel);
-        btnCalc->setObjectName(QStringLiteral("primaryBtn"));
+        btnCalc->setObjectName(QStringLiteral("primary"));
         lay->addWidget(btnCalc);
 
         auto *lblRes  = makeResLbl(panel);
@@ -1337,7 +1366,7 @@ void CalculadoraDialog::buildTabWizards(QWidget *tab)
         lay->addLayout(form);
 
         auto *btnCalc = new QPushButton(tr("Calcular"), panel);
-        btnCalc->setObjectName(QStringLiteral("primaryBtn"));
+        btnCalc->setObjectName(QStringLiteral("primary"));
         lay->addWidget(btnCalc);
 
         auto *lblRes  = makeResLbl(panel);
@@ -1394,7 +1423,7 @@ void CalculadoraDialog::buildTabWizards(QWidget *tab)
         lay->addWidget(rbRedPMT);
 
         auto *btnCalc = new QPushButton(tr("Calcular"), panel);
-        btnCalc->setObjectName(QStringLiteral("primaryBtn"));
+        btnCalc->setObjectName(QStringLiteral("primary"));
         lay->addWidget(btnCalc);
 
         auto *lblRes  = makeResLbl(panel);
@@ -1450,6 +1479,602 @@ void CalculadoraDialog::buildTabWizards(QWidget *tab)
                          QString::number(static_cast<qint64>(nr)),
                          fmtF(economia, 2)));
             }
+            lblRes->show();
+            btnUsar->show();
+        });
+
+        m_wizStack->addWidget(panel);
+    }
+
+    // ── Wizard 12: Comparador RF — CDB vs LCI/LCA ────────────────────────────
+    {
+        auto *panel = new QWidget(m_wizStack);
+        auto *lay   = new QVBoxLayout(panel);
+        lay->setContentsMargins(4, 8, 4, 4);
+        lay->setSpacing(8);
+
+        auto *form      = new QFormLayout;
+        auto *edtValor  = makeLE(panel);
+        auto *edtMeses  = makeLE(panel);
+        auto *edtCDB    = makeLE(panel);
+        auto *edtLCI    = makeLE(panel);
+        edtValor->setPlaceholderText(tr("ex: 10000"));
+        edtMeses->setPlaceholderText(tr("ex: 24"));
+        edtCDB->setPlaceholderText(tr("ex: 13,5"));
+        edtLCI->setPlaceholderText(tr("ex: 10,0"));
+        form->addRow(tr("Valor inicial (R$):"),      edtValor);
+        form->addRow(tr("Prazo (meses):"),            edtMeses);
+        form->addRow(tr("Taxa CDB (% a.a.):"),        edtCDB);
+        form->addRow(tr("Taxa LCI/LCA (% a.a.):"),   edtLCI);
+        lay->addLayout(form);
+
+        auto *btnCalc = new QPushButton(tr("Calcular"), panel);
+        btnCalc->setObjectName(QStringLiteral("primary"));
+        lay->addWidget(btnCalc);
+
+        auto *lblRes = makeResLbl(panel);
+        auto  resVal = std::make_shared<double>(0.0);
+        auto *btnUsar = makeUsarBtn(panel, resVal);
+        lay->addWidget(lblRes);
+        lay->addWidget(btnUsar);
+        lay->addStretch();
+
+        connect(btnCalc, &QPushButton::clicked, this, [=]() {
+            const double valor = parseF(edtValor);
+            const double meses = parseF(edtMeses);
+            const double taxaCDB = parseF(edtCDB);
+            const double taxaLCI = parseF(edtLCI);
+            if (valor <= 0.0 || meses <= 0.0 || taxaCDB <= 0.0) {
+                lblRes->setText(tr("Verifique os valores."));
+                lblRes->show(); return;
+            }
+            // IR regressivo CDB
+            double ir = 0.225;
+            if (meses > 24.0)       ir = 0.15;
+            else if (meses > 12.0)  ir = 0.175;
+            else if (meses > 6.0)   ir = 0.20;
+
+            const double taxaCDBm = std::pow(1.0 + taxaCDB / 100.0, 1.0 / 12.0) - 1.0;
+            const double taxaLCIm = std::pow(1.0 + taxaLCI / 100.0, 1.0 / 12.0) - 1.0;
+            const int    n        = static_cast<int>(std::round(meses));
+
+            const double brutosCDB  = valor * (std::pow(1.0 + taxaCDBm, n) - 1.0);
+            const double liquidoCDB = brutosCDB * (1.0 - ir);
+            const double liquidoLCI = valor * (std::pow(1.0 + taxaLCIm, n) - 1.0);
+
+            // Break-even: taxa LCI/LCA que iguala CDB líquido
+            const double breakEvenAA = (std::pow(1.0 + taxaCDB / 100.0, 1.0 - ir) - 1.0) * 100.0;
+
+            const bool cdbMelhor = liquidoCDB >= liquidoLCI;
+            *resVal = cdbMelhor ? liquidoCDB : liquidoLCI;
+
+            lblRes->setText(
+                tr("CDB bruto: R$ %1 | IR (%2%): R$ %3<br>"
+                   "CDB <b>líquido: R$ %4</b><br>"
+                   "LCI/LCA líquido: R$ %5<br>"
+                   "Vencedor: <b>%6</b><br>"
+                   "Break-even LCI/LCA: %7% a.a.")
+                .arg(fmtF(brutosCDB, 2),
+                     fmtF(ir * 100.0, 1),
+                     fmtF(brutosCDB * ir, 2),
+                     fmtF(liquidoCDB, 2),
+                     fmtF(liquidoLCI, 2),
+                     cdbMelhor ? tr("CDB") : tr("LCI/LCA"),
+                     fmtF(breakEvenAA, 2)));
+            lblRes->show();
+            btnUsar->show();
+        });
+
+        m_wizStack->addWidget(panel);
+    }
+
+    // ── Wizard 13: FIRE Number (Regra dos 25) ────────────────────────────────
+    {
+        auto *panel = new QWidget(m_wizStack);
+        auto *lay   = new QVBoxLayout(panel);
+        lay->setContentsMargins(4, 8, 4, 4);
+        lay->setSpacing(8);
+
+        auto *form       = new QFormLayout;
+        auto *edtDesp    = makeLE(panel);
+        auto *edtTaxa    = makeLE(panel);
+        auto *edtInfla   = makeLE(panel);
+        auto *edtAnos    = makeLE(panel);
+        edtDesp->setPlaceholderText(tr("ex: 5000"));
+        edtTaxa->setPlaceholderText(tr("ex: 7,0"));
+        edtInfla->setPlaceholderText(tr("ex: 4,5"));
+        edtAnos->setPlaceholderText(tr("ex: 20"));
+        form->addRow(tr("Despesas mensais (R$):"),    edtDesp);
+        form->addRow(tr("Retorno nominal (% a.a.):"), edtTaxa);
+        form->addRow(tr("Inflação (% a.a.):"),        edtInfla);
+        form->addRow(tr("Anos até FIRE:"),             edtAnos);
+        lay->addLayout(form);
+
+        auto *btnCalc = new QPushButton(tr("Calcular"), panel);
+        btnCalc->setObjectName(QStringLiteral("primary"));
+        lay->addWidget(btnCalc);
+
+        auto *lblRes = makeResLbl(panel);
+        auto  resVal = std::make_shared<double>(0.0);
+        auto *btnUsar = makeUsarBtn(panel, resVal);
+        lay->addWidget(lblRes);
+        lay->addWidget(btnUsar);
+        lay->addStretch();
+
+        connect(btnCalc, &QPushButton::clicked, this, [=]() {
+            const double desp   = parseF(edtDesp);
+            const double taxa   = parseF(edtTaxa);
+            const double infla  = parseF(edtInfla);
+            const double anos   = parseF(edtAnos);
+            if (desp <= 0.0) {
+                lblRes->setText(tr("Informe as despesas mensais."));
+                lblRes->show(); return;
+            }
+            const double fireHoje    = desp * 12.0 * 25.0;
+            const double taxaReal    = taxa > 0.0 && infla > 0.0
+                                     ? ((1.0 + taxa / 100.0) / (1.0 + infla / 100.0) - 1.0) * 100.0
+                                     : 0.0;
+            // FIRE em valores futuros (corrigido pela inflação)
+            const double fireFuturo  = anos > 0.0 && infla > 0.0
+                                     ? fireHoje * std::pow(1.0 + infla / 100.0, anos)
+                                     : fireHoje;
+            *resVal = fireHoje;
+
+            QString extra;
+            if (taxaReal > 0.0)
+                extra = tr("<br>Taxa real: %1% a.a.").arg(fmtF(taxaReal, 2));
+            if (anos > 0.0)
+                extra += tr("<br>FIRE em %1 anos (inflação): <b>R$ %2</b>")
+                         .arg(fmtF(anos, 0), fmtF(fireFuturo, 2));
+
+            lblRes->setText(
+                tr("FIRE Number (hoje): <b>R$ %1</b><br>"
+                   "= R$ %2 × 12 × 25%3")
+                .arg(fmtF(fireHoje, 2), fmtF(desp, 2), extra));
+            lblRes->show();
+            btnUsar->show();
+        });
+
+        m_wizStack->addWidget(panel);
+    }
+
+    // ── Wizard 14: Lean FIRE ─────────────────────────────────────────────────
+    {
+        auto *panel = new QWidget(m_wizStack);
+        auto *lay   = new QVBoxLayout(panel);
+        lay->setContentsMargins(4, 8, 4, 4);
+        lay->setSpacing(8);
+
+        auto *form     = new QFormLayout;
+        auto *edtDesp  = makeLE(panel);
+        auto *edtLean  = makeLE(panel);
+        edtDesp->setPlaceholderText(tr("ex: 5000"));
+        edtLean->setPlaceholderText(tr("ex: 3000"));
+        form->addRow(tr("Despesas atuais (R$/mês):"), edtDesp);
+        form->addRow(tr("Despesas enxutas (R$/mês):"), edtLean);
+        lay->addLayout(form);
+
+        auto *btnCalc = new QPushButton(tr("Calcular"), panel);
+        btnCalc->setObjectName(QStringLiteral("primary"));
+        lay->addWidget(btnCalc);
+
+        auto *lblRes = makeResLbl(panel);
+        auto  resVal = std::make_shared<double>(0.0);
+        auto *btnUsar = makeUsarBtn(panel, resVal);
+        lay->addWidget(lblRes);
+        lay->addWidget(btnUsar);
+        lay->addStretch();
+
+        connect(btnCalc, &QPushButton::clicked, this, [=]() {
+            const double desp = parseF(edtDesp);
+            const double lean = parseF(edtLean);
+            if (lean <= 0.0) {
+                lblRes->setText(tr("Informe as despesas enxutas."));
+                lblRes->show(); return;
+            }
+            const double leanFire = lean * 12.0 * 25.0;
+            const double fireNorm = desp > 0.0 ? desp * 12.0 * 25.0 : 0.0;
+            const double economia = fireNorm > 0.0 ? fireNorm - leanFire : 0.0;
+            *resVal = leanFire;
+
+            lblRes->setText(
+                tr("Lean FIRE: <b>R$ %1</b><br>"
+                   "= R$ %2 × 12 × 25%3")
+                .arg(fmtF(leanFire, 2),
+                     fmtF(lean, 2),
+                     fireNorm > 0.0
+                         ? tr("<br>Redução vs FIRE normal: <b>R$ %1</b>").arg(fmtF(economia, 2))
+                         : QString()));
+            lblRes->show();
+            btnUsar->show();
+        });
+
+        m_wizStack->addWidget(panel);
+    }
+
+    // ── Wizard 15: Fat FIRE ───────────────────────────────────────────────────
+    {
+        auto *panel = new QWidget(m_wizStack);
+        auto *lay   = new QVBoxLayout(panel);
+        lay->setContentsMargins(4, 8, 4, 4);
+        lay->setSpacing(8);
+
+        auto *form     = new QFormLayout;
+        auto *edtDesp  = makeLE(panel);
+        auto *edtMult  = makeLE(panel);
+        edtDesp->setPlaceholderText(tr("ex: 15000"));
+        edtMult->setPlaceholderText(tr("33 a 40 (padrão: 33)"));
+        form->addRow(tr("Despesas mensais (R$):"), edtDesp);
+        form->addRow(tr("Multiplicador:"),          edtMult);
+        lay->addLayout(form);
+
+        auto *btnCalc = new QPushButton(tr("Calcular"), panel);
+        btnCalc->setObjectName(QStringLiteral("primary"));
+        lay->addWidget(btnCalc);
+
+        auto *lblRes = makeResLbl(panel);
+        auto  resVal = std::make_shared<double>(0.0);
+        auto *btnUsar = makeUsarBtn(panel, resVal);
+        lay->addWidget(lblRes);
+        lay->addWidget(btnUsar);
+        lay->addStretch();
+
+        connect(btnCalc, &QPushButton::clicked, this, [=]() {
+            const double desp = parseF(edtDesp);
+            double mult = parseF(edtMult);
+            if (desp <= 0.0) {
+                lblRes->setText(tr("Informe as despesas mensais."));
+                lblRes->show(); return;
+            }
+            if (mult < 25.0) mult = 33.0;  // padrão Fat FIRE
+            const double fatFire = desp * 12.0 * mult;
+            const double fireNorm = desp * 12.0 * 25.0;
+            const double extra   = fatFire - fireNorm;
+            *resVal = fatFire;
+
+            lblRes->setText(
+                tr("Fat FIRE: <b>R$ %1</b><br>"
+                   "= R$ %2 × 12 × %3<br>"
+                   "Acima do FIRE padrão: R$ %4 (+%5%)")
+                .arg(fmtF(fatFire, 2),
+                     fmtF(desp, 2),
+                     fmtF(mult, 0),
+                     fmtF(extra, 2),
+                     fmtF((mult / 25.0 - 1.0) * 100.0, 1)));
+            lblRes->show();
+            btnUsar->show();
+        });
+
+        m_wizStack->addWidget(panel);
+    }
+
+    // ── Wizard 16: Coast FIRE ─────────────────────────────────────────────────
+    {
+        auto *panel = new QWidget(m_wizStack);
+        auto *lay   = new QVBoxLayout(panel);
+        lay->setContentsMargins(4, 8, 4, 4);
+        lay->setSpacing(8);
+
+        auto *form      = new QFormLayout;
+        auto *edtFire   = makeLE(panel);
+        auto *edtTaxa   = makeLE(panel);
+        auto *edtAnos   = makeLE(panel);
+        edtFire->setPlaceholderText(tr("ex: 2500000"));
+        edtTaxa->setPlaceholderText(tr("ex: 7,0"));
+        edtAnos->setPlaceholderText(tr("ex: 25"));
+        form->addRow(tr("FIRE objetivo (R$):"),      edtFire);
+        form->addRow(tr("Taxa real (% a.a.):"),       edtTaxa);
+        form->addRow(tr("Anos até aposentadoria:"),   edtAnos);
+        lay->addLayout(form);
+
+        auto *btnCalc = new QPushButton(tr("Calcular"), panel);
+        btnCalc->setObjectName(QStringLiteral("primary"));
+        lay->addWidget(btnCalc);
+
+        auto *lblRes = makeResLbl(panel);
+        auto  resVal = std::make_shared<double>(0.0);
+        auto *btnUsar = makeUsarBtn(panel, resVal);
+        lay->addWidget(lblRes);
+        lay->addWidget(btnUsar);
+        lay->addStretch();
+
+        connect(btnCalc, &QPushButton::clicked, this, [=]() {
+            const double fire = parseF(edtFire);
+            const double taxa = parseF(edtTaxa);
+            const double anos = parseF(edtAnos);
+            if (fire <= 0.0 || taxa <= 0.0 || anos <= 0.0) {
+                lblRes->setText(tr("Verifique os valores."));
+                lblRes->show(); return;
+            }
+            const double r         = taxa / 100.0;
+            const double coastFire = fire / std::pow(1.0 + r, anos);
+            *resVal = coastFire;
+
+            lblRes->setText(
+                tr("Coast FIRE: <b>R$ %1</b><br>"
+                   "Com esse patrimônio hoje, sem aportes,<br>"
+                   "em %2 anos a %3% a.a. real você atinge R$ %4.")
+                .arg(fmtF(coastFire, 2),
+                     fmtF(anos, 0),
+                     fmtF(taxa, 2),
+                     fmtF(fire, 2)));
+            lblRes->show();
+            btnUsar->show();
+        });
+
+        m_wizStack->addWidget(panel);
+    }
+
+    // ── Wizard 17: Barista FIRE ───────────────────────────────────────────────
+    {
+        auto *panel = new QWidget(m_wizStack);
+        auto *lay   = new QVBoxLayout(panel);
+        lay->setContentsMargins(4, 8, 4, 4);
+        lay->setSpacing(8);
+
+        auto *form       = new QFormLayout;
+        auto *edtDesp    = makeLE(panel);
+        auto *edtParcial = makeLE(panel);
+        edtDesp->setPlaceholderText(tr("ex: 8000"));
+        edtParcial->setPlaceholderText(tr("ex: 2000"));
+        form->addRow(tr("Despesas mensais totais (R$):"),   edtDesp);
+        form->addRow(tr("Renda parcial futura (R$/mês):"),  edtParcial);
+        lay->addLayout(form);
+
+        auto *btnCalc = new QPushButton(tr("Calcular"), panel);
+        btnCalc->setObjectName(QStringLiteral("primary"));
+        lay->addWidget(btnCalc);
+
+        auto *lblRes = makeResLbl(panel);
+        auto  resVal = std::make_shared<double>(0.0);
+        auto *btnUsar = makeUsarBtn(panel, resVal);
+        lay->addWidget(lblRes);
+        lay->addWidget(btnUsar);
+        lay->addStretch();
+
+        connect(btnCalc, &QPushButton::clicked, this, [=]() {
+            const double desp    = parseF(edtDesp);
+            const double parcial = parseF(edtParcial);
+            if (desp <= 0.0) {
+                lblRes->setText(tr("Informe as despesas mensais."));
+                lblRes->show(); return;
+            }
+            const double gap        = std::max(0.0, desp - parcial);
+            const double baristaFire = gap * 12.0 * 25.0;
+            const double fireNorm    = desp * 12.0 * 25.0;
+            const double reducao     = fireNorm - baristaFire;
+            *resVal = baristaFire;
+
+            lblRes->setText(
+                tr("Barista FIRE: <b>R$ %1</b><br>"
+                   "Gap mensal a cobrir: R$ %2 (R$ %3 − R$ %4)<br>"
+                   "Redução vs FIRE padrão: R$ %5 (-%6%)")
+                .arg(fmtF(baristaFire, 2),
+                     fmtF(gap, 2),
+                     fmtF(desp, 2),
+                     fmtF(parcial, 2),
+                     fmtF(reducao, 2),
+                     fmtF(fireNorm > 0.0 ? reducao / fireNorm * 100.0 : 0.0, 1)));
+            lblRes->show();
+            btnUsar->show();
+        });
+
+        m_wizStack->addWidget(panel);
+    }
+
+    // ── Wizard 18: Geographic Arbitrage ──────────────────────────────────────
+    {
+        auto *panel = new QWidget(m_wizStack);
+        auto *lay   = new QVBoxLayout(panel);
+        lay->setContentsMargins(4, 8, 4, 4);
+        lay->setSpacing(8);
+
+        auto *form       = new QFormLayout;
+        auto *edtRenda   = makeLE(panel);
+        auto *edtOrigem  = makeLE(panel);
+        auto *edtDestino = makeLE(panel);
+        edtRenda->setPlaceholderText(tr("ex: 15000"));
+        edtOrigem->setPlaceholderText(tr("ex: 100 (São Paulo = 100)"));
+        edtDestino->setPlaceholderText(tr("ex: 45 (Florianópolis = 45)"));
+        form->addRow(tr("Renda mensal (R$):"),          edtRenda);
+        form->addRow(tr("Índice COL origem:"),           edtOrigem);
+        form->addRow(tr("Índice COL destino:"),          edtDestino);
+        lay->addLayout(form);
+
+        auto *lblInfo = new QLabel(
+            tr("COL = Custo de Vida relativo. Defina SP=100 como base e estime outros."),
+            panel);
+        lblInfo->setWordWrap(true);
+        lblInfo->setStyleSheet(QStringLiteral("color: gray; font-size: 11px;"));
+        lay->addWidget(lblInfo);
+
+        auto *btnCalc = new QPushButton(tr("Calcular"), panel);
+        btnCalc->setObjectName(QStringLiteral("primary"));
+        lay->addWidget(btnCalc);
+
+        auto *lblRes = makeResLbl(panel);
+        auto  resVal = std::make_shared<double>(0.0);
+        auto *btnUsar = makeUsarBtn(panel, resVal);
+        lay->addWidget(lblRes);
+        lay->addWidget(btnUsar);
+        lay->addStretch();
+
+        connect(btnCalc, &QPushButton::clicked, this, [=]() {
+            const double renda   = parseF(edtRenda);
+            const double origem  = parseF(edtOrigem);
+            const double destino = parseF(edtDestino);
+            if (renda <= 0.0 || origem <= 0.0 || destino <= 0.0) {
+                lblRes->setText(tr("Verifique os valores."));
+                lblRes->show(); return;
+            }
+            const double fator         = origem / destino;
+            const double poderCompra   = renda * fator;
+            const double equivalenteLD = renda / fator;  // renda equivalente no destino
+            *resVal = poderCompra;
+
+            lblRes->setText(
+                tr("Fator de arbitragem: <b>%1×</b><br>"
+                   "Poder de compra no destino: <b>R$ %2</b><br>"
+                   "Equivale a ganhar R$ %3 na origem<br>"
+                   "Economia mensal potencial: R$ %4")
+                .arg(fmtF(fator, 2),
+                     fmtF(poderCompra, 2),
+                     fmtF(equivalenteLD, 2),
+                     fmtF(poderCompra - renda, 2)));
+            lblRes->show();
+            btnUsar->show();
+        });
+
+        m_wizStack->addWidget(panel);
+    }
+
+    // ── Wizard 19 — Reserva de Emergência ────────────────────────────────────
+    {
+        auto *panel  = new QWidget;
+        auto *lay    = new QVBoxLayout(panel);
+        lay->setContentsMargins(8, 8, 8, 4);
+        lay->setSpacing(6);
+
+        lay->addWidget(new QLabel(tr("<b>Reserva de Emergência</b>"), panel));
+
+        auto *form      = new QFormLayout;
+        auto *edtDesp   = makeLE(panel);
+        auto *edtMeses  = makeLE(panel);
+        auto *edtRend   = makeLE(panel);
+        auto *edtGuarda = makeLE(panel);
+        edtDesp->setPlaceholderText(tr("ex: 3500"));
+        edtMeses->setPlaceholderText(tr("6"));
+        edtRend->setPlaceholderText(tr("ex: 0,85 (%/mês CDB 100% CDI)"));
+        edtGuarda->setPlaceholderText(tr("ex: 500"));
+        form->addRow(tr("Despesas mensais (R$):"),  edtDesp);
+        form->addRow(tr("Meses de reserva:"),        edtMeses);
+        form->addRow(tr("Rendimento mensal (%):"),   edtRend);
+        form->addRow(tr("Poupança mensal (R$):"),    edtGuarda);
+        lay->addLayout(form);
+
+        auto *btnCalc = new QPushButton(tr("Calcular"), panel);
+        btnCalc->setObjectName(QStringLiteral("primary"));
+        lay->addWidget(btnCalc);
+
+        auto *lblRes  = makeResLbl(panel);
+        auto  resVal  = std::make_shared<double>(0.0);
+        auto *btnUsar = makeUsarBtn(panel, resVal);
+        lay->addWidget(lblRes);
+        lay->addWidget(btnUsar);
+        lay->addStretch();
+
+        connect(btnCalc, &QPushButton::clicked, this, [=]() {
+            const double desp   = parseF(edtDesp);
+            double       meses  = parseF(edtMeses);
+            const double rend   = parseF(edtRend) / 100.0;
+            const double guarda = parseF(edtGuarda);
+            if (meses <= 0.0) meses = 6.0;
+            if (desp <= 0.0) { lblRes->setText(tr("Informe as despesas.")); lblRes->show(); return; }
+
+            const double meta = desp * meses;
+            *resVal = meta;
+
+            QString txt = tr("Meta: <b>R$ %1</b> (%2× despesas mensais)<br>")
+                              .arg(fmtF(meta, 2), fmtF(meses, 0));
+            if (rend > 0.0 && guarda > 0.0) {
+                // n = log(1 + meta·i/PMT) / log(1+i)
+                const double n = std::log(1.0 + meta * rend / guarda) / std::log(1.0 + rend);
+                txt += tr("Tempo p/ acumular (R$ %1/mês @ %2%/mês): <b>%3 meses</b><br>")
+                           .arg(fmtF(guarda, 2), fmtF(rend * 100.0, 4), fmtF(std::ceil(n), 0));
+            }
+            if (rend > 0.0) {
+                txt += tr("Rendimento mensal da reserva plena: <b>R$ %1</b>")
+                           .arg(fmtF(meta * rend, 2));
+            }
+            lblRes->setText(txt);
+            lblRes->show();
+            btnUsar->show();
+        });
+
+        m_wizStack->addWidget(panel);
+    }
+
+    // ── Wizard 20 — CLT vs PJ ─────────────────────────────────────────────────
+    {
+        auto *panel  = new QWidget;
+        auto *lay    = new QVBoxLayout(panel);
+        lay->setContentsMargins(8, 8, 8, 4);
+        lay->setSpacing(6);
+
+        lay->addWidget(new QLabel(tr("<b>CLT vs PJ</b>"), panel));
+
+        auto *form      = new QFormLayout;
+        auto *edtCLT    = makeLE(panel);
+        auto *edtPJ     = makeLE(panel);
+        auto *edtImpPJ  = makeLE(panel);
+        edtCLT->setPlaceholderText(tr("ex: 8000"));
+        edtPJ->setPlaceholderText(tr("ex: 12000"));
+        edtImpPJ->setPlaceholderText(tr("ex: 11 (Simples Anexo III)"));
+        form->addRow(tr("Salário CLT bruto (R$):"), edtCLT);
+        form->addRow(tr("Faturamento PJ (R$):"),     edtPJ);
+        form->addRow(tr("Impostos PJ (%):"),          edtImpPJ);
+        lay->addLayout(form);
+
+        auto *lblInfo = new QLabel(
+            tr("INSS escalonado 2024: 7,5–14% (teto R$ 908,85). "
+               "IRPF: tabela progressiva mensal."), panel);
+        lblInfo->setWordWrap(true);
+        lblInfo->setStyleSheet(QStringLiteral("color: gray; font-size: 11px;"));
+        lay->addWidget(lblInfo);
+
+        auto *btnCalc = new QPushButton(tr("Calcular"), panel);
+        btnCalc->setObjectName(QStringLiteral("primary"));
+        lay->addWidget(btnCalc);
+
+        auto *lblRes  = makeResLbl(panel);
+        auto  resVal  = std::make_shared<double>(0.0);
+        auto *btnUsar = makeUsarBtn(panel, resVal);
+        lay->addWidget(lblRes);
+        lay->addWidget(btnUsar);
+        lay->addStretch();
+
+        connect(btnCalc, &QPushButton::clicked, this, [=]() {
+            const double bruto  = parseF(edtCLT);
+            const double pjFat  = parseF(edtPJ);
+            const double pjTax  = parseF(edtImpPJ) / 100.0;
+            if (bruto <= 0.0 || pjFat <= 0.0 || pjTax < 0.0) {
+                lblRes->setText(tr("Verifique os valores.")); lblRes->show(); return;
+            }
+
+            // INSS 2024 — escalonado
+            double inss = 0.0;
+            if (bruto > 0.0)      inss += std::min(bruto, 1412.0)                         * 0.075;
+            if (bruto > 1412.0)   inss += (std::min(bruto, 2666.68)  - 1412.0)            * 0.090;
+            if (bruto > 2666.68)  inss += (std::min(bruto, 4000.03)  - 2666.68)           * 0.120;
+            if (bruto > 4000.03)  inss += (std::min(bruto, 7786.02)  - 4000.03)           * 0.140;
+            inss = std::min(inss, 908.85);
+
+            // IRPF mensal 2024
+            const double base = bruto - inss;
+            double irpf = 0.0;
+            if      (base > 4664.68) irpf = base * 0.275 - 896.00;
+            else if (base > 3751.05) irpf = base * 0.225 - 662.77;
+            else if (base > 2826.65) irpf = base * 0.150 - 381.44;
+            else if (base > 2259.20) irpf = base * 0.075 - 169.44;
+            if (irpf < 0.0) irpf = 0.0;
+
+            const double liqCLT  = bruto - inss - irpf;
+            const double liqPJ   = pjFat * (1.0 - pjTax);
+            const double diff     = liqPJ - liqCLT;
+            *resVal = diff;
+
+            const QString sinal = diff >= 0.0 ? QStringLiteral("+") : QString();
+            lblRes->setText(
+                tr("CLT — INSS: R$ %1 | IRPF: R$ %2 | <b>Líquido: R$ %3</b><br>"
+                   "PJ  — Impostos: R$ %4 | <b>Líquido: R$ %5</b><br>"
+                   "Diferença PJ − CLT: <b>%6R$ %7</b>")
+                .arg(fmtF(inss, 2),
+                     fmtF(irpf, 2),
+                     fmtF(liqCLT, 2),
+                     fmtF(pjFat * pjTax, 2),
+                     fmtF(liqPJ, 2),
+                     sinal,
+                     fmtF(std::abs(diff), 2)));
             lblRes->show();
             btnUsar->show();
         });

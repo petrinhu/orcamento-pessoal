@@ -44,9 +44,14 @@ protected:
 
 private:
     void buildUi();
-    void buildTabComum(QWidget *tab);
-    void buildTabFinanceira(QWidget *tab);
-    void buildTabWizards(QWidget *tab);
+    void buildTabComum         (QWidget *tab);
+    void buildTabFinanceira    (QWidget *tab);
+    void buildTabWizards       (QWidget *tab);
+    void buildTabBolsa         (QWidget *tab);  // #43
+    void buildTabImoveis       (QWidget *tab);  // #54
+    void buildTabRendaFixa     (QWidget *tab);  // #55
+    void buildTabIrTributos    (QWidget *tab);  // #56
+    void buildTabInflacaoCambio(QWidget *tab);  // #57
     QPushButton *makeBtnCalc(const QString &label, QWidget *parent);
 
     // ── Calculator logic (tab Comum) ──────────────────────────────────────
