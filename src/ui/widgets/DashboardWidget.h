@@ -15,6 +15,10 @@ public:
 
     void recarregar();
 
+    // Print/Preview (#94) - renderiza o widget via QPrintPreviewDialog.
+    // Acessível pelo botão 🖨 na navBar; pode ser chamado externamente.
+    void imprimir();
+
 signals:
     void statusAtualizado(const QString &msg);
     // Emitted when the user clicks a card; index matches QTabWidget tab order.

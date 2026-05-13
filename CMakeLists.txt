@@ -7,7 +7,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Core Gui GuiPrivate Widgets Charts Network Sql LinguistTools)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui GuiPrivate Widgets Charts Network Sql LinguistTools PrintSupport)
 find_package(OpenSSL REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBSECRET REQUIRED libsecret-1)
@@ -176,6 +176,7 @@ target_link_libraries(orcamento-pessoal PRIVATE
     Qt6::Charts
     Qt6::Network
     Qt6::Sql
+    Qt6::PrintSupport
     OpenSSL::SSL
     OpenSSL::Crypto
     ${LIBSECRET_LIBRARIES}

@@ -29,6 +29,9 @@
 #include <QBarCategoryAxis>
 #include <QValueAxis>
 
+#include <QPrinter>
+#include <QPrintPreviewDialog>
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 static QString fmtCentavos(qint64 c)
@@ -149,13 +152,20 @@ void DashboardWidget::buildUi()
     m_lblMes->setFont(fmes);
     m_lblMes->setAlignment(Qt::AlignCenter);
 
+    // Botão Imprimir (#94)
+    auto *btnPrint = new QPushButton(QStringLiteral("🖨"), this);
+    btnPrint->setFixedWidth(32);
+    btnPrint->setToolTip(tr("Imprimir Dashboard (visualização prévia)"));
+
     navBar->addWidget(btnPrev);
     navBar->addWidget(m_lblMes, 1);
     navBar->addWidget(btnNext);
+    navBar->addWidget(btnPrint);
     root->addLayout(navBar);
 
-    connect(btnPrev, &QPushButton::clicked, this, [this]() { navegarMes(-1); });
-    connect(btnNext, &QPushButton::clicked, this, [this]() { navegarMes(+1); });
+    connect(btnPrev,  &QPushButton::clicked, this, [this]() { navegarMes(-1); });
+    connect(btnNext,  &QPushButton::clicked, this, [this]() { navegarMes(+1); });
+    connect(btnPrint, &QPushButton::clicked, this, &DashboardWidget::imprimir);
 
     // ── Scroll area ────────────────────────────────────────────────────────
     auto *scroll = new QScrollArea(this);
@@ -457,6 +467,33 @@ void DashboardWidget::atualizarGrafico()
 void DashboardWidget::recarregar()
 {
     atualizarDados();
+}
+
+// Print/Preview (#94)
+// Abre QPrintPreviewDialog que renderiza este widget via QWidget::render.
+// Usuario escolhe impressora ou exporta PDF na propria janela de preview.
+void DashboardWidget::imprimir()
+{
+    QPrinter printer(QPrinter::HighResolution);
+    printer.setPageOrientation(QPageLayout::Portrait);
+    printer.setDocName(QStringLiteral("PeuBud - Dashboard %1").arg(nomeMes(m_mes)));
+
+    QPrintPreviewDialog preview(&printer, this);
+    preview.setWindowTitle(tr("Imprimir Dashboard"));
+    preview.resize(900, 700);
+    connect(&preview, &QPrintPreviewDialog::paintRequested,
+            this, [this](QPrinter *p) {
+                QPainter painter(p);
+                const QRect pageRect = p->pageLayout().paintRectPixels(p->resolution());
+                const QSize widgetSize = this->size();
+                const qreal sx = qreal(pageRect.width())  / qreal(widgetSize.width());
+                const qreal sy = qreal(pageRect.height()) / qreal(widgetSize.height());
+                const qreal s  = qMin(sx, sy);
+                painter.scale(s, s);
+                this->render(&painter, QPoint(), QRegion(),
+                             QWidget::DrawWindowBackground | QWidget::DrawChildren);
+            });
+    preview.exec();
 }
 
 bool DashboardWidget::eventFilter(QObject *obj, QEvent *ev)
