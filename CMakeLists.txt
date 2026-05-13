@@ -47,6 +47,9 @@ set(SOURCES
     # Services — TVM
     src/services/TvmService.cpp
 
+    # Services — FinanceEngine (#81)
+    src/services/FinanceEngine.cpp
+
     # Core — secret store
     src/core/secret/SecretStoreService.cpp
 
