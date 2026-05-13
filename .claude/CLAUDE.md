@@ -133,23 +133,26 @@ data/                        # runtime — NÃO versionar
 - Release: nome + senha + checklist (≥8 chars, maiúscula, número)
 - Chave AES armazenada via libsecret (KWallet/GNOME Keyring)
 
-## Paleta de cores (Forest Neutral)
+## Paleta de cores (KDE Breeze)
 
 | Token      | Light   | Dark    |
 |------------|---------|---------|
-| Background | #F5F4F0 | #18181A |
-| Surface    | #FFFFFF | #222225 |
-| Acento     | #166F4A | #22A367 |
-| Positivo   | #166F4A | #22A367 |
-| Negativo   | #C94040 | #E85555 |
+| Background | #EFF0F1 | #31363B |
+| Surface    | #FFFFFF | #1B1E20 |
+| Border     | #BDC3C7 | #575B5F |
+| Text       | #232629 | #EFF0F1 |
+| Subtext    | #7F8C8D | #7F8C8D |
+| Acento     | #3DAEE9 | #3DAEE9 |
+| Positivo   | #27AE60 | #27AE60 |
+| Negativo   | #DA4453 | #DA4453 |
 
 ## Ferramentas permitidas
 
 - **APENAS** ferramentas gratuitas, open-source, disponíveis via dnf/apt/pacman
-- NÃO sugerir: PVS-Studio, Coverity, SonarCloud pago, Squish, ou qualquer tool com login/chave paga
+NÃO sugerir: PVS-Studio, Coverity, SonarCloud pago, Squish, ou qualquer tool com login/chave paga
 - Ao recomendar tools, sempre fornecer equivalentes para as 3 distros (dnf/apt/pacman)
 
-## Metodologia pré-distribuição
+Metodologia pré-distribuição
 
 Antes de qualquer release, checklist cobrindo:
 1. Análise estática: `clang-tidy`, `cppcheck`
