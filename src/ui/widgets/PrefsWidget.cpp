@@ -1,4 +1,5 @@
 #include "PrefsWidget.h"
+#include "AuditLogViewer.h"
 #include "ConfigCategoriasWidget.h"
 #include "ConfigFontesWidget.h"
 #include "ConfigPagadoresWidget.h"
@@ -276,6 +277,10 @@ void PrefsWidget::buildUi()
     catLay->addStretch();
 
     tabs->addTab(catScroll, tr("Categorias"));
+
+    // ── Auditoria (#92) ────────────────────────────────────────────────────
+    auto *auditViewer = new AuditLogViewer(tabs);
+    tabs->addTab(auditViewer, tr("Auditoria"));
 }
 
 void PrefsWidget::syncComboToCurrency(const QString &code)

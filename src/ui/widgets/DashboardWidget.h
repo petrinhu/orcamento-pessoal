@@ -19,6 +19,10 @@ public:
     // Acessível pelo botão 🖨 na navBar; pode ser chamado externamente.
     void imprimir();
 
+    // Fechamento mensal (#88) - simula -> confirma -> close().
+    // Se mes ja fechado: oferece reopen().
+    void onFecharMes();
+
 signals:
     void statusAtualizado(const QString &msg);
     // Emitted when the user clicks a card; index matches QTabWidget tab order.

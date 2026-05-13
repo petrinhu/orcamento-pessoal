@@ -105,6 +105,7 @@ set(SOURCES
     src/ui/IconGenerator.cpp
     src/ui/widgets/ParcelasWidget.cpp
     src/ui/widgets/ReceiptAttachmentWidget.cpp
+    src/ui/widgets/AuditLogViewer.cpp
     src/ui/widgets/AddCompraDialog.cpp
     src/ui/widgets/ConfigWidget.cpp
     src/ui/widgets/PrefsWidget.cpp

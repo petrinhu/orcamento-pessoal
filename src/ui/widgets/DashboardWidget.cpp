@@ -2,14 +2,18 @@
 #include "services/EntradaService.h"
 #include "services/CompraService.h"
 #include "services/ParcelaService.h"
+#include "services/FechamentoMensalService.h"
 #include "repositories/GastoAvulsoRepository.h"
 #include "repositories/LancamentoInvestimentoRepository.h"
 #include "models/LancamentoInvestimento.h"
+#include "core/database/DatabaseManager.h"
+#include "core/session/UserSession.h"
 #include "core/settings/AppSettings.h"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QMessageBox>
 #include <QPushButton>
 #include <QFrame>
 #include <QScrollArea>
@@ -157,15 +161,22 @@ void DashboardWidget::buildUi()
     btnPrint->setFixedWidth(32);
     btnPrint->setToolTip(tr("Imprimir Dashboard (visualização prévia)"));
 
+    // Botão Fechar mês (#88)
+    auto *btnFechar = new QPushButton(QStringLiteral("🔒"), this);
+    btnFechar->setFixedWidth(32);
+    btnFechar->setToolTip(tr("Fechar mês contábil (snapshot imutável)"));
+
     navBar->addWidget(btnPrev);
     navBar->addWidget(m_lblMes, 1);
     navBar->addWidget(btnNext);
+    navBar->addWidget(btnFechar);
     navBar->addWidget(btnPrint);
     root->addLayout(navBar);
 
-    connect(btnPrev,  &QPushButton::clicked, this, [this]() { navegarMes(-1); });
-    connect(btnNext,  &QPushButton::clicked, this, [this]() { navegarMes(+1); });
-    connect(btnPrint, &QPushButton::clicked, this, &DashboardWidget::imprimir);
+    connect(btnPrev,   &QPushButton::clicked, this, [this]() { navegarMes(-1); });
+    connect(btnNext,   &QPushButton::clicked, this, [this]() { navegarMes(+1); });
+    connect(btnPrint,  &QPushButton::clicked, this, &DashboardWidget::imprimir);
+    connect(btnFechar, &QPushButton::clicked, this, &DashboardWidget::onFecharMes);
 
     // ── Scroll area ────────────────────────────────────────────────────────
     auto *scroll = new QScrollArea(this);
@@ -513,4 +524,81 @@ void DashboardWidget::navegarMes(int delta)
 {
     m_mes = m_mes.addMonths(delta);
     atualizarDados();
+}
+
+// ── Fechamento mensal (#88) ───────────────────────────────────────────────────
+
+void DashboardWidget::onFecharMes()
+{
+    auto db = DatabaseManager::instance().db();
+    const QDate periodo(m_mes.year(), m_mes.month(), 1);
+
+    // Ja fechado? Oferecer reabrir.
+    const auto existente = FechamentoMensalService::findByPeriod(db, periodo);
+    if (existente.has_value()) {
+        const auto resposta = QMessageBox::question(
+            this, tr("Mês já fechado"),
+            tr("O mês %1 já foi fechado em %2 por %3.\n\n"
+               "Deseja reabri-lo? O snapshot será descartado;\n"
+               "os lançamentos originais permanecem intactos.")
+                .arg(m_lblMes->text(),
+                     existente->criadoEm.toString(QStringLiteral("dd/MM/yyyy HH:mm")),
+                     existente->fechadoPor.isEmpty() ? tr("desconhecido") : existente->fechadoPor),
+            QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+        if (resposta != QMessageBox::Yes) return;
+
+        if (FechamentoMensalService::reopen(db, periodo)) {
+            QMessageBox::information(this, tr("Reaberto"),
+                tr("Mês %1 reaberto. Edições nos lançamentos voltam a refletir aqui.")
+                    .arg(m_lblMes->text()));
+            emit statusAtualizado(tr("Mês %1 reaberto").arg(m_lblMes->text()));
+        } else {
+            QMessageBox::warning(this, tr("Reabrir"),
+                tr("Falha ao reabrir o mês."));
+        }
+        return;
+    }
+
+    // Preview via simulate (nao persiste)
+    const auto resumo = FechamentoMensalService::simulate(db, periodo);
+    auto centavos = [](qint64 c) {
+        return QLocale(QLocale::Portuguese, QLocale::Brazil)
+            .toString(c / 100.0, 'f', 2);
+    };
+    const QString detalhes = tr(
+        "Resumo do mês %1:\n\n"
+        "  • Entradas:        R$ %2\n"
+        "  • Gastos:          R$ %3\n"
+        "  • Parcelas:        R$ %4\n"
+        "  • Investimentos:   R$ %5\n"
+        "  • Saldo líquido:   R$ %6\n"
+        "  • Lançamentos:     %7\n\n"
+        "Após o fechamento, edições nos lançamentos deste mês\n"
+        "NÃO alterarão estes valores. Para refazer, reabra o mês.\n\n"
+        "Confirmar fechamento?")
+        .arg(m_lblMes->text(),
+             centavos(resumo.entradasCentavos),
+             centavos(resumo.gastosCentavos),
+             centavos(resumo.parcelasCentavos),
+             centavos(resumo.investimentosCentavos),
+             centavos(resumo.saldoLiquidoCentavos),
+             QString::number(resumo.numLancamentos));
+
+    const auto resposta = QMessageBox::question(
+        this, tr("Fechar mês"), detalhes,
+        QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+    if (resposta != QMessageBox::Yes) return;
+
+    const QString usuario = UserSession::instance().name();
+    const auto snap = FechamentoMensalService::close(db, periodo, usuario);
+    if (snap.has_value()) {
+        QMessageBox::information(this, tr("Mês fechado"),
+            tr("Mês %1 fechado com sucesso.\nSaldo líquido consolidado: R$ %2")
+                .arg(m_lblMes->text(),
+                     centavos(resumo.saldoLiquidoCentavos)));
+        emit statusAtualizado(tr("Mês %1 fechado").arg(m_lblMes->text()));
+    } else {
+        QMessageBox::warning(this, tr("Fechar mês"),
+            tr("Não foi possível fechar o mês (verifique se já existe um snapshot)."));
+    }
 }

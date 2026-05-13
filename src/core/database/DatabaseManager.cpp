@@ -1,6 +1,8 @@
 #include "DatabaseManager.h"
 #include "core/crypto/AesCryptoService.h"
 #include "core/crypto/SodiumCryptoService.h"
+#include "services/FechamentoMensalService.h"
+#include "services/AuditLogService.h"
 
 #include <QSqlQuery>
 #include <QSqlError>
@@ -457,6 +459,16 @@ void DatabaseManager::createSchema()
         if (!hasReceipt)
             q.exec(QStringLiteral("ALTER TABLE %1 ADD COLUMN receipt BLOB")
                        .arg(table));
+    }
+
+    // #88: tabela fechamentos_mensais (snapshot imutavel mes contabil)
+    if (!FechamentoMensalService::ensureSchema(m_db)) {
+        qWarning() << "DatabaseManager: falha ao criar schema de fechamentos_mensais";
+    }
+
+    // #92: audit_log + triggers AFTER INSERT/UPDATE/DELETE em 7 tabelas
+    if (!AuditLogService::ensureSchema(m_db)) {
+        qWarning() << "DatabaseManager: falha ao criar schema de audit_log";
     }
 }
 
