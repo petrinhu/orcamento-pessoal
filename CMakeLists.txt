@@ -49,6 +49,7 @@ set(SOURCES
 
     # Services — FinanceEngine (#81)
     src/services/FinanceEngine.cpp
+    src/services/FiscalService.cpp
 
     # Services — OAuth Device Flow RFC 8628 (#83)
     src/services/OAuthDeviceFlow.cpp

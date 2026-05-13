@@ -2,6 +2,7 @@
 #include "services/TvmService.h"
 #include "services/ParcelaService.h"
 #include "services/FinanceEngine.h"
+#include "services/FiscalService.h"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -1950,7 +1951,9 @@ void CalculadoraDialog::buildTabWizards(QWidget *tab)
         m_wizStack->addWidget(panel);
     }
 
-    // ── Wizard 19 — Reserva de Emergência ────────────────────────────────────
+    // ── Wizard 19 — Reserva de Emergência (#61) ──────────────────────────────
+    // Compara 3 aplicacoes para acumulo: Poupanca, CDB 100% CDI (IR
+    // regressivo) e Tesouro Selic (IR + IOF). Usa FiscalService.
     {
         auto *panel  = new QWidget;
         auto *lay    = new QVBoxLayout(panel);
@@ -1962,16 +1965,19 @@ void CalculadoraDialog::buildTabWizards(QWidget *tab)
         auto *form      = new QFormLayout;
         auto *edtDesp   = makeLE(panel);
         auto *edtMeses  = makeLE(panel);
-        auto *edtRend   = makeLE(panel);
+        auto *edtSelic  = makeLE(panel);
         auto *edtGuarda = makeLE(panel);
+        auto *edtAtual  = makeLE(panel);
         edtDesp->setPlaceholderText(tr("ex: 3500"));
         edtMeses->setPlaceholderText(tr("6"));
-        edtRend->setPlaceholderText(tr("ex: 0,85 (%/mês CDB 100% CDI)"));
+        edtSelic->setPlaceholderText(tr("ex: 11,75 (% a.a.)"));
         edtGuarda->setPlaceholderText(tr("ex: 500"));
-        form->addRow(tr("Despesas mensais (R$):"),  edtDesp);
-        form->addRow(tr("Meses de reserva:"),        edtMeses);
-        form->addRow(tr("Rendimento mensal (%):"),   edtRend);
-        form->addRow(tr("Poupança mensal (R$):"),    edtGuarda);
+        edtAtual->setPlaceholderText(tr("0"));
+        form->addRow(tr("Despesas mensais (R$):"), edtDesp);
+        form->addRow(tr("Meses de reserva:"),       edtMeses);
+        form->addRow(tr("Selic anual (%):"),        edtSelic);
+        form->addRow(tr("Aporte mensal (R$):"),     edtGuarda);
+        form->addRow(tr("Reserva atual (R$):"),     edtAtual);
         lay->addLayout(form);
 
         auto *btnCalc = new QPushButton(tr("Calcular"), panel);
@@ -1988,26 +1994,61 @@ void CalculadoraDialog::buildTabWizards(QWidget *tab)
         connect(btnCalc, &QPushButton::clicked, this, [=]() {
             const double desp   = parseF(edtDesp);
             double       meses  = parseF(edtMeses);
-            const double rend   = parseF(edtRend) / 100.0;
+            const double selic  = parseF(edtSelic) / 100.0;
             const double guarda = parseF(edtGuarda);
+            const double atual  = parseF(edtAtual);
             if (meses <= 0.0) meses = 6.0;
-            if (desp <= 0.0) { lblRes->setText(tr("Informe as despesas.")); lblRes->show(); return; }
+            if (desp <= 0.0) {
+                lblRes->setText(tr("Informe as despesas."));
+                lblRes->show(); return;
+            }
 
             const double meta = desp * meses;
+            const double gap  = std::max(0.0, meta - atual);
             *resVal = meta;
 
-            QString txt = tr("Meta: <b>R$ %1</b> (%2× despesas mensais)<br>")
-                              .arg(fmtF(meta, 2), fmtF(meses, 0));
-            if (rend > 0.0 && guarda > 0.0) {
-                // n = log(1 + meta·i/PMT) / log(1+i)
-                const double n = std::log(1.0 + meta * rend / guarda) / std::log(1.0 + rend);
-                txt += tr("Tempo p/ acumular (R$ %1/mês @ %2%/mês): <b>%3 meses</b><br>")
-                           .arg(fmtF(guarda, 2), fmtF(rend * 100.0, 4), fmtF(std::ceil(n), 0));
+            QString txt = tr("Meta: <b>R$ %1</b> (%2× despesas mensais)<br>"
+                             "Gap atual: <b>R$ %3</b><br><br>")
+                              .arg(fmtF(meta, 2), fmtF(meses, 0), fmtF(gap, 2));
+
+            if (selic <= 0.0 || guarda <= 0.0) {
+                txt += tr("<i>Informe Selic e aporte para comparativo de aplicações.</i>");
+                lblRes->setText(txt); lblRes->show(); btnUsar->show(); return;
             }
-            if (rend > 0.0) {
-                txt += tr("Rendimento mensal da reserva plena: <b>R$ %1</b>")
-                           .arg(fmtF(meta * rend, 2));
-            }
+
+            // Taxas mensais liquidas (assumindo >720d -> IR 15% em CDB/Tesouro)
+            const double mPoup     = FiscalService::poupancaMensal(selic);
+            const double cdiAnual  = selic; // CDB 100% CDI ~ Selic
+            const double mBruta    = FinanceEngine::taxaEquivalente(cdiAnual, 1, 12);
+            const double irRF      = FiscalService::irRendaFixaPorDias(721); // 15%
+            const double mCDB      = mBruta * (1.0 - irRF);
+            const double mTesouro  = mCDB; // mesma aliquota, custodia 0,2% a.a.
+                                          // simplificada como 0 aqui
+
+            auto tempoAcumular = [&](double i) -> double {
+                if (i <= 0.0) return std::ceil(gap / guarda);
+                return std::ceil(std::log(1.0 + gap * i / guarda) / std::log(1.0 + i));
+            };
+            auto rendaMensal = [&](double i) { return meta * i; };
+
+            txt += tr("<table cellspacing='4'>"
+                      "<tr><th align='left'>Aplicação</th>"
+                      "<th align='right'>Taxa líq./mês</th>"
+                      "<th align='right'>Meses p/ meta</th>"
+                      "<th align='right'>Renda plena</th></tr>");
+            auto linha = [&](const QString &nome, double m) {
+                txt += tr("<tr><td>%1</td><td align='right'>%2%</td>"
+                          "<td align='right'>%3</td>"
+                          "<td align='right'>R$ %4</td></tr>")
+                          .arg(nome, fmtF(m * 100.0, 4),
+                               fmtF(tempoAcumular(m), 0),
+                               fmtF(rendaMensal(m), 2));
+            };
+            linha(tr("Poupança"),      mPoup);
+            linha(tr("CDB 100% CDI"),  mCDB);
+            linha(tr("Tesouro Selic"), mTesouro);
+            txt += QStringLiteral("</table>");
+
             lblRes->setText(txt);
             lblRes->show();
             btnUsar->show();
@@ -2016,7 +2057,11 @@ void CalculadoraDialog::buildTabWizards(QWidget *tab)
         m_wizStack->addWidget(panel);
     }
 
-    // ── Wizard 20 — CLT vs PJ ─────────────────────────────────────────────────
+    // ── Wizard 20 — CLT vs PJ (#62) ──────────────────────────────────────────
+    // CLT: INSS + IRPF mensais via FiscalService (tabelas 2024).
+    // PJ : Simples Nacional anexos I-V (calculado por RBT12) ou Lucro
+    //      Presumido (~16,33% efetivo para servicos).
+    // Bonus: estima break-even — faturamento PJ que iguala liquido CLT.
     {
         auto *panel  = new QWidget;
         auto *lay    = new QVBoxLayout(panel);
@@ -2025,21 +2070,26 @@ void CalculadoraDialog::buildTabWizards(QWidget *tab)
 
         lay->addWidget(new QLabel(tr("<b>CLT vs PJ</b>"), panel));
 
-        auto *form      = new QFormLayout;
-        auto *edtCLT    = makeLE(panel);
-        auto *edtPJ     = makeLE(panel);
-        auto *edtImpPJ  = makeLE(panel);
+        auto *form    = new QFormLayout;
+        auto *edtCLT  = makeLE(panel);
+        auto *edtPJ   = makeLE(panel);
+        auto *cbReg   = new QComboBox(panel);
+        cbReg->addItem(tr("Simples — Anexo I (comércio)"),                       1);
+        cbReg->addItem(tr("Simples — Anexo II (indústria)"),                     2);
+        cbReg->addItem(tr("Simples — Anexo III (serviços em geral)"),            3);
+        cbReg->addItem(tr("Simples — Anexo IV (construção/limpeza/advocacia)"),  4);
+        cbReg->addItem(tr("Simples — Anexo V (serviços intelectuais)"),          5);
+        cbReg->addItem(tr("Lucro Presumido (serviços)"),                         0);
         edtCLT->setPlaceholderText(tr("ex: 8000"));
         edtPJ->setPlaceholderText(tr("ex: 12000"));
-        edtImpPJ->setPlaceholderText(tr("ex: 11 (Simples Anexo III)"));
-        form->addRow(tr("Salário CLT bruto (R$):"), edtCLT);
-        form->addRow(tr("Faturamento PJ (R$):"),     edtPJ);
-        form->addRow(tr("Impostos PJ (%):"),          edtImpPJ);
+        form->addRow(tr("Salário CLT bruto (R$):"),  edtCLT);
+        form->addRow(tr("Faturamento PJ (R$/mês):"), edtPJ);
+        form->addRow(tr("Regime PJ:"),                cbReg);
         lay->addLayout(form);
 
         auto *lblInfo = new QLabel(
-            tr("INSS escalonado 2024: 7,5–14% (teto R$ 908,85). "
-               "IRPF: tabela progressiva mensal."), panel);
+            tr("INSS escalonado 7,5–14% (teto R$ 908,85). IRPF tabela 2024. "
+               "Simples calcula RBT12 = faturamento × 12."), panel);
         lblInfo->setWordWrap(true);
         lblInfo->setStyleSheet(QStringLiteral("color: gray; font-size: 11px;"));
         lay->addWidget(lblInfo);
@@ -2056,47 +2106,63 @@ void CalculadoraDialog::buildTabWizards(QWidget *tab)
         lay->addStretch();
 
         connect(btnCalc, &QPushButton::clicked, this, [=]() {
-            const double bruto  = parseF(edtCLT);
-            const double pjFat  = parseF(edtPJ);
-            const double pjTax  = parseF(edtImpPJ) / 100.0;
-            if (bruto <= 0.0 || pjFat <= 0.0 || pjTax < 0.0) {
+            const double bruto = parseF(edtCLT);
+            const double pjFat = parseF(edtPJ);
+            const int    reg   = cbReg->currentData().toInt();
+            if (bruto <= 0.0 || pjFat <= 0.0) {
                 lblRes->setText(tr("Verifique os valores.")); lblRes->show(); return;
             }
 
-            // INSS 2024 — escalonado
-            double inss = 0.0;
-            if (bruto > 0.0)      inss += std::min(bruto, 1412.0)                         * 0.075;
-            if (bruto > 1412.0)   inss += (std::min(bruto, 2666.68)  - 1412.0)            * 0.090;
-            if (bruto > 2666.68)  inss += (std::min(bruto, 4000.03)  - 2666.68)           * 0.120;
-            if (bruto > 4000.03)  inss += (std::min(bruto, 7786.02)  - 4000.03)           * 0.140;
-            inss = std::min(inss, 908.85);
+            // CLT via FiscalService
+            const qint64 brutoCent = static_cast<qint64>(std::round(bruto * 100.0));
+            const qint64 inssCent  = FiscalService::inssMensal2024(brutoCent);
+            const qint64 baseCent  = brutoCent - inssCent;
+            const qint64 irpfCent  = FiscalService::irpfMensal2024(baseCent);
+            const double inss      = inssCent / 100.0;
+            const double irpf      = irpfCent / 100.0;
+            const double liqCLT    = bruto - inss - irpf;
 
-            // IRPF mensal 2024
-            const double base = bruto - inss;
-            double irpf = 0.0;
-            if      (base > 4664.68) irpf = base * 0.275 - 896.00;
-            else if (base > 3751.05) irpf = base * 0.225 - 662.77;
-            else if (base > 2826.65) irpf = base * 0.150 - 381.44;
-            else if (base > 2259.20) irpf = base * 0.075 - 169.44;
-            if (irpf < 0.0) irpf = 0.0;
-
-            const double liqCLT  = bruto - inss - irpf;
-            const double liqPJ   = pjFat * (1.0 - pjTax);
-            const double diff     = liqPJ - liqCLT;
+            // PJ via Simples (RBT12 = faturamento * 12) ou Lucro Presumido
+            double aliqPJ = 0.0;
+            QString regNome;
+            if (reg == 0) {
+                aliqPJ = FiscalService::lucroPresumidoServicosAliquota();
+                regNome = tr("Lucro Presumido (serviços)");
+            } else {
+                const qint64 rbt12 = static_cast<qint64>(std::round(pjFat * 12.0 * 100.0));
+                aliqPJ = FiscalService::simplesAliquotaEfetiva(reg, rbt12);
+                regNome = cbReg->currentText();
+            }
+            const double impPJ = pjFat * aliqPJ;
+            const double liqPJ = pjFat - impPJ;
+            const double diff  = liqPJ - liqCLT;
             *resVal = diff;
+
+            // Break-even: faturamento PJ que iguala liqCLT
+            // pjFat * (1 - aliq) = liqCLT  ->  pjFat = liqCLT / (1 - aliq)
+            // (aproximacao: aliq constante; no Simples, RBT12 cresce com pjFat,
+            // entao o resultado real e maior; suficiente para orientacao)
+            const double breakEven = aliqPJ < 1.0 ? liqCLT / (1.0 - aliqPJ) : 0.0;
 
             const QString sinal = diff >= 0.0 ? QStringLiteral("+") : QString();
             lblRes->setText(
-                tr("CLT — INSS: R$ %1 | IRPF: R$ %2 | <b>Líquido: R$ %3</b><br>"
-                   "PJ  — Impostos: R$ %4 | <b>Líquido: R$ %5</b><br>"
-                   "Diferença PJ − CLT: <b>%6R$ %7</b>")
+                tr("<b>CLT</b><br>"
+                   "&nbsp;&nbsp;INSS: R$ %1 · IRPF: R$ %2 · <b>Líquido: R$ %3</b><br><br>"
+                   "<b>PJ — %4</b><br>"
+                   "&nbsp;&nbsp;Alíquota efetiva: %5%<br>"
+                   "&nbsp;&nbsp;Impostos: R$ %6 · <b>Líquido: R$ %7</b><br><br>"
+                   "Diferença PJ − CLT: <b>%8R$ %9</b><br>"
+                   "Break-even PJ (≈ liq. CLT): <b>R$ %10/mês</b>")
                 .arg(fmtF(inss, 2),
                      fmtF(irpf, 2),
                      fmtF(liqCLT, 2),
-                     fmtF(pjFat * pjTax, 2),
+                     regNome,
+                     fmtF(aliqPJ * 100.0, 4),
+                     fmtF(impPJ, 2),
                      fmtF(liqPJ, 2),
                      sinal,
-                     fmtF(std::abs(diff), 2)));
+                     fmtF(std::abs(diff), 2),
+                     fmtF(breakEven, 2)));
             lblRes->show();
             btnUsar->show();
         });

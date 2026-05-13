@@ -96,8 +96,8 @@ Arquivo canônico de pendências, auditoria técnica e conformidade com o contra
 | #55 | FUNC | Calculadora v6: Renda Fixa (%CDI bruto/líquido, IPCA+, prefixado, CDB vs LCI/LCA, Tesouro Selic vs CDB, IOF 30d, **Wizard Tesouro Direto J1–J4** com série histórica `tesouro_yields`) | Baixa | #37 | Alta | 🔄 Em andamento | — |
 | #56 | FUNC | Calculadora v7: IR & Tributos (IRPF mensal, PGBL benefício fiscal, PGBL vs VGBL, carnê-leão, simplificada vs completa) | Baixa | #37 | Alta | 🔄 Em andamento | — |
 | #57 | FUNC | Calculadora v8: Inflação & Câmbio (IPCA/IGP-M/TR/INPC, poder de compra, Fisher real, conversão com IOF, meta corrigida) | Baixa | #37 | Média | 🔄 Em andamento | — |
-| #61 | FUNC | Calculadora Reserva de Emergência (despesas × meses, gap, comparativo Poupança/CDB/Tesouro Selic líquidos) | Baixa | #37 | Baixa | ⏳ Pendente | — |
-| #62 | FUNC | Calculadora CLT vs PJ (Simples Nacional anexos I–V + Lucro Presumido, break-even faturamento) | Baixa | #37 | Alta | ⏳ Pendente | — |
+| #61 | FUNC | Calculadora Reserva de Emergência (despesas × meses, gap, comparativo Poupança/CDB/Tesouro Selic líquidos). **Entregue:** Wizard 19 da Calculadora reescrito; usa `FiscalService::poupancaMensal` (regra 70% Selic), `FinanceEngine::taxaEquivalente` para mensal composto, `irRendaFixaPorDias(721)` para IR 15% (>720d). Tabela HTML com taxa líq/mês + meses para meta + renda mensal plena para 3 aplicações. Inputs: despesas, meses, Selic, aporte, reserva atual. | Baixa | #37 | Baixa | ✅ Concluído | ✓ |
+| #62 | FUNC | Calculadora CLT vs PJ (Simples Nacional anexos I–V + Lucro Presumido, break-even faturamento). **Entregue:** Wizard 20 reescrito; CLT via `FiscalService::inssMensal2024`/`irpfMensal2024`; PJ via `simplesAliquotaEfetiva(anexo, RBT12)` para anexos I-V (tabela LC123) ou `lucroPresumidoServicosAliquota` (16,33%). RBT12 estimado como faturamento × 12. Break-even calculado como `liqCLT / (1 - aliq)`. Combo seleciona regime. | Baixa | #37 | Alta | ✅ Concluído | ✓ |
 
 ---
 
