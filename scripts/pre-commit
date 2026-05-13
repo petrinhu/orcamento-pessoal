@@ -47,4 +47,22 @@ if command -v gitleaks >/dev/null 2>&1; then
   gitleaks protect --staged --no-banner --redact || { echo "✗ secrets detectados - abortando"; exit 1; }
 fi
 
+# ctest - sempre rodar testes antes do commit (TDD discipline)
+# Detecta primeiro build-dir com tests/ habilitado. Se nenhum, avisa e segue
+# (não bloqueia: usuário pode estar trabalhando em ambiente sem cmake configurado).
+TEST_BUILD_DIR="$(find . -maxdepth 2 -type d -name 'tests' -path './build*' 2>/dev/null | head -1 | xargs -r dirname)"
+if [ -n "${TEST_BUILD_DIR:-}" ] && [ -f "${TEST_BUILD_DIR}/CTestTestfile.cmake" ]; then
+  echo "  ▸ ctest (build-dir: ${TEST_BUILD_DIR}) …"
+  # Rebuild incremental dos targets de teste (rápido se nada mudou)
+  cmake --build "${TEST_BUILD_DIR}" --target all -j"$(nproc)" >/dev/null 2>&1 || true
+  ctest --test-dir "${TEST_BUILD_DIR}" --output-on-failure --no-tests=ignore || {
+    echo "✗ ctest falhou - corrija os testes antes de commitar"
+    exit 1
+  }
+else
+  echo "  ⚠ Nenhum build-dir com BUILD_TESTING habilitado encontrado."
+  echo "    Configure com: cmake -B build -DBUILD_TESTING=ON -DCMAKE_BUILD_TYPE=Debug"
+  echo "    (commit prosseguindo, mas TDD exige ctest verde)"
+fi
+
 echo "✓ pre-commit aprovado"

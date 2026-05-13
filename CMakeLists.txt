@@ -210,3 +210,14 @@ endif()
 target_compile_options(orcamento-pessoal PRIVATE
     -Wall -Wextra -Wpedantic -Wshadow -Wnon-virtual-dtor
 )
+
+# ── Testes (#102) ─────────────────────────────────────────────────────────────
+# Bootstrap mínimo para TDD. Default OFF: build normal não é afetado.
+# Habilitar com:  cmake -B build -DBUILD_TESTING=ON
+# Rodar:          ctest --test-dir build --output-on-failure
+option(BUILD_TESTING "Compilar testes (ctest + QTest)" OFF)
+if(BUILD_TESTING)
+    find_package(Qt6 REQUIRED COMPONENTS Test)
+    enable_testing()
+    add_subdirectory(tests)
+endif()
