@@ -1,5 +1,6 @@
 #include "PrefsWidget.h"
 #include "AuditLogViewer.h"
+#include "BackupConfigWidget.h"
 #include "ConfigCategoriasWidget.h"
 #include "ConfigFontesWidget.h"
 #include "ConfigPagadoresWidget.h"
@@ -277,6 +278,10 @@ void PrefsWidget::buildUi()
     catLay->addStretch();
 
     tabs->addTab(catScroll, tr("Categorias"));
+
+    // ── Backup (#79) ────────────────────────────────────────────────────────
+    auto *backupConf = new BackupConfigWidget(tabs);
+    tabs->addTab(backupConf, tr("Backup"));
 
     // ── Auditoria (#92) ────────────────────────────────────────────────────
     auto *auditViewer = new AuditLogViewer(tabs);

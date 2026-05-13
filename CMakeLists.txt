@@ -50,6 +50,7 @@ set(SOURCES
     # Services — FinanceEngine (#81)
     src/services/FinanceEngine.cpp
     src/services/FiscalService.cpp
+    src/services/BackupService.cpp
 
     # Services — OAuth Device Flow RFC 8628 (#83)
     src/services/OAuthDeviceFlow.cpp
@@ -107,6 +108,7 @@ set(SOURCES
     src/ui/widgets/ParcelasWidget.cpp
     src/ui/widgets/ReceiptAttachmentWidget.cpp
     src/ui/widgets/AuditLogViewer.cpp
+    src/ui/widgets/BackupConfigWidget.cpp
     src/ui/widgets/AddCompraDialog.cpp
     src/ui/widgets/ConfigWidget.cpp
     src/ui/widgets/PrefsWidget.cpp

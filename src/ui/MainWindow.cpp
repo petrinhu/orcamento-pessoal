@@ -18,6 +18,7 @@
 #include "widgets/HelpDialog.h"
 #include "core/session/UserSession.h"
 #include "core/database/DatabaseManager.h"
+#include "services/BackupService.h"
 #include "core/settings/AppSettings.h"
 #include "services/ImportService.h"
 #include "services/ExportService.h"
@@ -384,6 +385,30 @@ void MainWindow::buildUi()
     connect(&AppSettings::instance(), &AppSettings::autosaveSettingsChanged,
             this, &MainWindow::resetAutosaveTimer);
     resetAutosaveTimer();
+
+    // ── Backup automatico (#79): tick a cada hora; verifica shouldRunNow ─
+    auto *backupTimer = new QTimer(this);
+    backupTimer->setInterval(60 * 60 * 1000); // 1h
+    connect(backupTimer, &QTimer::timeout, this, []() {
+        const auto cfg  = BackupService::load();
+        if (!BackupService::shouldRunNow(cfg)) return;
+        const QString slug = UserSession::instance().slug();
+        if (slug.isEmpty()) return;
+        BackupService::runBackup(cfg, slug, [](const QString &dest) {
+            return DatabaseManager::instance().exportToFile(dest);
+        });
+    });
+    backupTimer->start();
+    // Tick imediato no startup (faz backup se passou janela enquanto app fechado)
+    QTimer::singleShot(5000, this, []() {
+        const auto cfg = BackupService::load();
+        if (!BackupService::shouldRunNow(cfg)) return;
+        const QString slug = UserSession::instance().slug();
+        if (slug.isEmpty()) return;
+        BackupService::runBackup(cfg, slug, [](const QString &dest) {
+            return DatabaseManager::instance().exportToFile(dest);
+        });
+    });
 }
 
 // ── Menu bar ──────────────────────────────────────────────────────────────────
