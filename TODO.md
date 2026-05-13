@@ -119,15 +119,15 @@ Arquivo canônico de pendências, auditoria técnica e conformidade com o contra
 
 | ID | Grupo | Descrição Técnica | Prioridade | Pré-requisito | Dificuldade | Status | Estado Auditado |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| #70 | CONTRATO | Sincronizar `CONTRACT.md` local (fork, 1048 linhas) com `[[CONTRACT]]` canônico do vault (945 linhas) — gerar diff, classificar adições C++/Qt como upstream-candidates ou local-only, documentar política de sync | Média | — | Média | ⏳ Pendente | — |
-| #71 | DOC | Criar `TESTES.md` local apontando para suítes T1–T15 / A1–A13 do `[[TESTES]]` canônico — `CONTRACT.md §11` referencia arquivo que não existe no repo (link quebrado) | Alta | — | Baixa | ⏳ Pendente | — |
-| #72 | INFRA | Codeberg Actions workflow `.forgejo/workflows/build.yml` — CMake build matrix Fedora/Debian/Arch, instala dependências via dnf/apt/pacman, executa `cmake --build` (badge no README já aponta para essa URL — workflow ainda não existe) | Alta | — | Média | ⏳ Pendente | — |
+| #70 | CONTRATO | Sincronizar `CONTRACT.md` local (fork, 1048 linhas) com `[[CONTRACT]]` canônico do vault (945 linhas) — gerar diff, classificar adições C++/Qt como upstream-candidates ou local-only, documentar política de sync | Média | — | Média | 🟡 Parcial | — |
+| #71 | DOC | Criar `TESTES.md` local apontando para suítes T1–T15 / A1–A13 do `[[TESTES]]` canônico — `CONTRACT.md §11` referencia arquivo que não existe no repo (link quebrado) | Alta | — | Baixa | ✅ Concluído | — |
+| #72 | INFRA | Codeberg Actions workflow `.forgejo/workflows/build.yml` — CMake build matrix Fedora/Debian/Arch, instala dependências via dnf/apt/pacman, executa `cmake --build` (badge no README já aponta para essa URL — workflow ainda não existe) | Alta | — | Média | 🟡 Parcial | — |
 | #73 | TESTE | Testes de integração SQLite — cobrir padrão `PRAGMA table_info` + `ALTER TABLE` idempotente (migração #48), garantir backward-compat de schemas antigos | Média | #18 | Média | ⏳ Pendente | — |
-| #74 | AUDIT | Pre-commit hook com `clang-tidy` + `cppcheck` (sem warnings novos) — instala via dnf/apt/pacman; configuração `.clang-tidy` checada no repo | Média | — | Média | ⏳ Pendente | — |
+| #74 | AUDIT | Pre-commit hook com `clang-tidy` + `cppcheck` (sem warnings novos) — instala via dnf/apt/pacman; configuração `.clang-tidy` checada no repo | Média | — | Média | ✅ Concluído | — |
 | #75 | AUDIT | CI: build dedicado com ASan/UBSan + execução de toda suíte `ctest` — falha pipeline se `ERROR SUMMARY` > 0 | Média | #72, #18 | Média | ⏳ Pendente | — |
-| #76 | AUDIT | Auditoria completa contra `[[AUDITORIAS]]` checklist C++ — gerar `reports/auditoria_<data>.md`, abrir BUGs como itens novos (#NN AUDIT) com `Estado Auditado: ⚠` | Alta | — | Alta | ⏳ Pendente | — |
+| #76 | AUDIT | Auditoria completa contra `[[AUDITORIAS]]` checklist C++ — gerar `reports/auditoria_<data>.md`, abrir BUGs como itens novos (#NN AUDIT) com `Estado Auditado: ⚠` | Alta | — | Alta | 🟡 Parcial | — |
 | #77 | INFRA | ~~Empacotamento Flatpak (`org.peubud.PeuBud`) + AppImage para distribuição cross-distro sem depender de pacotes Qt6 do sistema~~ — cancelado em 2026-05-13 | Baixa | #72 | Alta | ❌ Cancelado | — |
-| #78 | DOC | `CHANGELOG.md` formato Keep a Changelog (1.1.0); seções por versão, agrupadas por `Added/Changed/Fixed/Security/Removed`; release tag git | Média | — | Baixa | ⏳ Pendente | — |
+| #78 | DOC | `CHANGELOG.md` formato Keep a Changelog (1.1.0); seções por versão, agrupadas por `Added/Changed/Fixed/Security/Removed`; release tag git | Média | — | Baixa | ✅ Concluído | — |
 | #79 | FUNC | Backup automático cifrado do banco — schedule (diário/semanal), retenção configurável (N últimas cópias), destino local ou WebDAV; cifrado com mesma chave libsodium do banco principal | Média | — | Média | ⏳ Pendente | — |
 | #80 | FUNC | Atalhos teclado globais — `Ctrl+N` novo lançamento (contextual à aba ativa), `Ctrl+F` busca global, `Ctrl+,` Configurações, `Ctrl+1..9` mudar aba, `Ctrl+B` bloquear sessão; documentar em Help dialog | Baixa | — | Baixa | ⏳ Pendente | — |
 
