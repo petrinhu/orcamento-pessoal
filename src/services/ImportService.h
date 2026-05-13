@@ -2,6 +2,7 @@
 
 #include "models/Compra.h"
 #include "models/Parcela.h"
+#include "services/import/MatchData.h"
 
 #include <QDate>
 #include <QList>
@@ -15,9 +16,23 @@ public:
     struct Result {
         QList<Compra>         compras;
         QList<QList<Parcela>> parcelas; // index matches compras
+        QList<MatchResult>    matches;  // index matches compras (default NotFound)
         QString               error;
         bool isValid() const { return error.isEmpty(); }
     };
+
+    // Aplica IMatchFinder sobre todas as compras de `r` contra `existing`
+    // (transacoes ja persistidas) e preenche r.matches. Retorna contagem por
+    // categoria via parametros opcionais. Janela default = 4 dias.
+    struct AnnotationCounts {
+        int notFound  = 0;
+        int imprecise = 0;
+        int precise   = 0;
+        int duplicate = 0;
+    };
+    static AnnotationCounts annotateMatches(Result &r,
+                                            const QList<MatchData> &existing,
+                                            int matchWindow = 4);
 
     // ── Implemented ─────────────────────────────────────────────────────────
     static Result fromCsv (const QString &path); // auto-detect separator & decimal

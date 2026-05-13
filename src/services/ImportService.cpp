@@ -1,5 +1,6 @@
 #include "ImportService.h"
 #include "ParcelaService.h"
+#include "services/import/ExistingTransactionMatchFinder.h"
 
 #include <QFile>
 #include <QTextStream>
@@ -375,6 +376,39 @@ ImportService::Result ImportService::fromXlsx(const QString &path)
     r.error = QStringLiteral("Suporte a XLSX não compilado nesta versão.");
 #endif
     return r;
+}
+
+// ─── Match annotation (#84) ──────────────────────────────────────────────────
+
+ImportService::AnnotationCounts ImportService::annotateMatches(
+    Result &r, const QList<MatchData> &existing, int matchWindow)
+{
+    AnnotationCounts c;
+    r.matches.clear();
+    r.matches.reserve(r.compras.size());
+
+    ExistingTransactionMatchFinder finder(existing);
+    finder.setMatchWindow(matchWindow);
+
+    for (int i = 0; i < r.compras.size(); ++i) {
+        const Compra &cm = r.compras[i];
+        MatchData input;
+        input.amount = cm.valorTotal;
+        input.payee  = cm.nome;
+        input.date   = QDate(cm.anoInicio, cm.mesInicio, 1);
+        // bankId/accountId nao sao preenchidos pelos parsers atuais; podem
+        // entrar em #93 (parsers PDF por banco) e gerar Duplicate confiavel.
+
+        const MatchResult mr = finder.find(input);
+        r.matches.append(mr);
+        switch (mr) {
+        case MatchResult::NotFound:  ++c.notFound;  break;
+        case MatchResult::Imprecise: ++c.imprecise; break;
+        case MatchResult::Precise:   ++c.precise;   break;
+        case MatchResult::Duplicate: ++c.duplicate; break;
+        }
+    }
+    return c;
 }
 
 // ─── Stubs ────────────────────────────────────────────────────────────────────

@@ -808,28 +808,61 @@ void MainWindow::onImportar(const QString &format)
         return;
     }
 
-    const auto reply = QMessageBox::question(
-        this, tr("Confirmar importação"),
-        tr("%1 transação(ões) encontradas. Deseja importar?")
-            .arg(result.compras.size()));
-    if (reply != QMessageBox::Yes) return;
-
     CompraRepository  cr;
     ParcelaRepository pr;
+
+    // Anota matches contra compras existentes (#84). Duplicate sao filtradas;
+    // Precise/Imprecise/NotFound seguem para importacao mas o usuario eh
+    // avisado da contagem para decidir conscientemente.
+    QList<MatchData> existing;
+    for (const Compra &c : cr.findAll()) {
+        MatchData m;
+        m.amount = c.valorTotal;
+        m.payee  = c.nome;
+        m.date   = QDate(c.anoInicio, c.mesInicio, 1);
+        existing.append(m);
+    }
+    const auto counts = ImportService::annotateMatches(result, existing);
+
+    QString summary = tr("%1 transação(ões) encontradas.")
+                        .arg(result.compras.size());
+    if (counts.duplicate > 0 || counts.precise > 0 || counts.imprecise > 0) {
+        summary += tr("\n\nMatches encontrados:");
+        if (counts.duplicate > 0)
+            summary += tr("\n  • %1 duplicata(s) (mesmo bankId)").arg(counts.duplicate);
+        if (counts.precise > 0)
+            summary += tr("\n  • %1 match(es) preciso(s)").arg(counts.precise);
+        if (counts.imprecise > 0)
+            summary += tr("\n  • %1 match(es) impreciso(s) (revisar)").arg(counts.imprecise);
+    }
+    summary += tr("\n\nDeseja importar? Duplicatas serão ignoradas.");
+
+    const auto reply = QMessageBox::question(
+        this, tr("Confirmar importação"), summary);
+    if (reply != QMessageBox::Yes) return;
+
+    int imported = 0;
+    int skipped  = 0;
     for (int i = 0; i < result.compras.size(); ++i) {
+        const bool isDuplicate = i < result.matches.size()
+                                 && result.matches[i] == MatchResult::Duplicate;
+        if (isDuplicate) { ++skipped; continue; }
         auto compra = result.compras[i];
         if (!cr.insert(compra)) continue;
         for (auto &p : result.parcelas[i]) {
             p.compraId = compra.id;
             pr.insert(p);
         }
+        ++imported;
     }
 
     m_dirty = true;
     m_parcelas->recarregar();
     QMessageBox::information(this, tr("Importar"),
-        tr("%1 compra(s) importada(s) com sucesso.")
-            .arg(result.compras.size()));
+        tr("%1 compra(s) importada(s).%2")
+            .arg(imported)
+            .arg(skipped > 0 ? tr(" %1 duplicata(s) ignorada(s).").arg(skipped)
+                             : QString()));
 }
 
 // ── Export ────────────────────────────────────────────────────────────────────

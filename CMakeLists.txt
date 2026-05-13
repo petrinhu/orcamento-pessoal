@@ -95,6 +95,7 @@ set(SOURCES
     src/services/ParcelaService.cpp
     src/services/CurrencyService.cpp
     src/services/ImportService.cpp
+    src/services/import/IMatchFinder.cpp
     src/services/ExportService.cpp
 
     # UI

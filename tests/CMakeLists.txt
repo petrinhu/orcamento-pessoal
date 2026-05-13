@@ -22,3 +22,4 @@ endfunction()
 # ── Testes registrados ───────────────────────────────────────────────────────
 peubud_add_test(test_canary)
 peubud_add_test(test_finance_engine ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp)
+peubud_add_test(test_match_finder ${CMAKE_SOURCE_DIR}/src/services/import/IMatchFinder.cpp)
