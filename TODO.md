@@ -72,7 +72,8 @@ Arquivo canônico de pendências, auditoria técnica e conformidade com o contra
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | #59 | FUNC | B3CotahistProvider: download e cache histórico completo da B3 (COTAHIST anual/diário + cotação RT cotacao.b3.com.br + composição índices + Hub Dados Públicos) | Alta | #44 | Alta | ⏳ Pendente | — |
 | #45 | FUNC | MarketDataService: fetch assíncrono, providers selecionáveis (B3 Direto/Yahoo/B3 Oficial/Brapi) + FintzProvider (dividendos/splits/fundamentos/PTAX) | Alta | #44 | Alta | 🔄 Em andamento | — |
-| #48 | FUNC | InvestimentosWidget: migração schema (`ticker`/`quantidade`/`preco_unitario`) + preços de mercado em tempo real + DY% via Fintz | Alta | #45 | Alta | ⏳ Pendente | — |
+| #48 | FUNC | InvestimentosWidget: migração schema (`ticker`/`quantidade`/`preco_unitario`) + preços de mercado em tempo real + DY% via Fintz | Alta | #45 | Alta | 🟡 Parcial | ✓ |
+| | | **Entregue:** migration `ALTER TABLE lancamentos_investimentos ADD COLUMN {ticker,quantidade,preco_unitario}` idempotente; modelo + repo bind/read; `InvestimentoDialog` campos novos com auto-cálculo `valor = qty × preco`. RT preços + DY% Fintz ficam para follow-up (requer provider HTTP+auth). | | | | | |
 | #66 | FUNC | Dividendos e Proventos tracker — tabela `proventos_recebidos`, sub-painel por ativo, card Dashboard | Média | #48 | Média | ⏳ Pendente | — |
 | #46 | FUNC | Configurações: seção "Mercado" — provider padrão, credenciais Brapi, histórico COTAHIST, polling, moedas slots 1/2 | Alta | #45 | Baixa | ⏳ Pendente | — |
 | #47 | FUNC | Painel câmbio LED (`CurrencyPanelWidget`, DSEG7) — 50 fiat + 30 cripto; BRL via PTAX Fintz, demais via Frankfurter/CoinGecko | Alta | #46 | Alta | ⏳ Pendente | — |

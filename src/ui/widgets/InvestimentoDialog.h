@@ -8,6 +8,7 @@
 
 class QComboBox;
 class QDateEdit;
+class QDoubleSpinBox;
 class QLineEdit;
 class QSpinBox;
 class QRadioButton;
@@ -48,4 +49,8 @@ private:
     QRadioButton    *m_rbRecorrente = nullptr;
     QSpinBox        *m_spnMeses     = nullptr;
     ReceiptAttachmentWidget *m_receipt = nullptr;
+    // #48: tracking por ticker
+    QLineEdit       *m_edtTicker    = nullptr;
+    QDoubleSpinBox  *m_spnQty       = nullptr;
+    CalculadoraEdit *m_edtPrecoUnit = nullptr;
 };

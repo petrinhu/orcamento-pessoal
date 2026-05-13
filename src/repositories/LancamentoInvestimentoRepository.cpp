@@ -27,6 +27,9 @@ static LancamentoInvestimento fromQuery(const QSqlQuery &q)
     l.obs          = q.value(QStringLiteral("obs")).toString();
     l.criadoEm     = q.value(QStringLiteral("criado_em")).toString();
     l.receipt      = q.value(QStringLiteral("receipt")).toByteArray();
+    l.ticker        = q.value(QStringLiteral("ticker")).toString();
+    l.quantidade    = q.value(QStringLiteral("quantidade")).toDouble();
+    l.precoUnitario = q.value(QStringLiteral("preco_unitario")).toLongLong();
     return l;
 }
 
@@ -35,9 +38,11 @@ bool LancamentoInvestimentoRepository::insert(LancamentoInvestimento &l)
     QSqlQuery q(db());
     q.prepare(QStringLiteral(R"(
         INSERT INTO lancamentos_investimentos
-            (mes, ano, dia, nome, tipo_ativo, tipo_operacao, valor, categoria, categoria_id, obs, criado_em, receipt)
+            (mes, ano, dia, nome, tipo_ativo, tipo_operacao, valor, categoria, categoria_id, obs, criado_em, receipt,
+             ticker, quantidade, preco_unitario)
         VALUES
-            (:mes, :ano, :dia, :nome, :tipo_ativo, :tipo_operacao, :valor, :categoria, :categoria_id, :obs, :criado_em, :receipt)
+            (:mes, :ano, :dia, :nome, :tipo_ativo, :tipo_operacao, :valor, :categoria, :categoria_id, :obs, :criado_em, :receipt,
+             :ticker, :quantidade, :preco_unitario)
     )"));
     q.bindValue(QStringLiteral(":mes"),           l.mes);
     q.bindValue(QStringLiteral(":ano"),           l.ano);
@@ -53,6 +58,9 @@ bool LancamentoInvestimentoRepository::insert(LancamentoInvestimento &l)
     q.bindValue(QStringLiteral(":criado_em"),
                 QDateTime::currentDateTime().toString(Qt::ISODate));
     q.bindValue(QStringLiteral(":receipt"),      l.receipt.isEmpty() ? QVariant() : QVariant(l.receipt));
+    q.bindValue(QStringLiteral(":ticker"),         l.ticker);
+    q.bindValue(QStringLiteral(":quantidade"),     l.quantidade);
+    q.bindValue(QStringLiteral(":preco_unitario"), l.precoUnitario);
     if (!q.exec()) {
         qWarning() << "LancamentoInvestimentoRepository::insert:" << q.lastError().text();
         return false;
@@ -66,17 +74,20 @@ bool LancamentoInvestimentoRepository::update(const LancamentoInvestimento &l)
     QSqlQuery q(db());
     q.prepare(QStringLiteral(R"(
         UPDATE lancamentos_investimentos SET
-            mes           = :mes,
-            ano           = :ano,
-            dia           = :dia,
-            nome          = :nome,
-            tipo_ativo    = :tipo_ativo,
-            tipo_operacao = :tipo_operacao,
-            valor         = :valor,
-            categoria     = :categoria,
-            categoria_id  = :categoria_id,
-            obs           = :obs,
-            receipt       = :receipt
+            mes            = :mes,
+            ano            = :ano,
+            dia            = :dia,
+            nome           = :nome,
+            tipo_ativo     = :tipo_ativo,
+            tipo_operacao  = :tipo_operacao,
+            valor          = :valor,
+            categoria      = :categoria,
+            categoria_id   = :categoria_id,
+            obs            = :obs,
+            receipt        = :receipt,
+            ticker         = :ticker,
+            quantidade     = :quantidade,
+            preco_unitario = :preco_unitario
         WHERE id = :id
     )"));
     q.bindValue(QStringLiteral(":mes"),           l.mes);
@@ -91,7 +102,10 @@ bool LancamentoInvestimentoRepository::update(const LancamentoInvestimento &l)
                 l.categoriaId > 0 ? QVariant(l.categoriaId) : QVariant(QMetaType::fromType<int>()));
     q.bindValue(QStringLiteral(":obs"),          l.obs);
     q.bindValue(QStringLiteral(":receipt"),      l.receipt.isEmpty() ? QVariant() : QVariant(l.receipt));
-    q.bindValue(QStringLiteral(":id"),           l.id);
+    q.bindValue(QStringLiteral(":ticker"),         l.ticker);
+    q.bindValue(QStringLiteral(":quantidade"),     l.quantidade);
+    q.bindValue(QStringLiteral(":preco_unitario"), l.precoUnitario);
+    q.bindValue(QStringLiteral(":id"),            l.id);
     if (!q.exec()) {
         qWarning() << "LancamentoInvestimentoRepository::update:" << q.lastError().text();
         return false;

@@ -8,10 +8,12 @@
 #include <QHBoxLayout>
 #include <QFormLayout>
 #include <QComboBox>
+#include <QDoubleSpinBox>
 #include <QLineEdit>
 #include <QDateEdit>
 #include <QSpinBox>
 #include <QRadioButton>
+#include <cmath>
 #include <QGroupBox>
 #include <QDialogButtonBox>
 #include <QPushButton>
@@ -191,12 +193,45 @@ void InvestimentoDialog::buildUi(const QList<Categoria> &categorias)
     m_cbOperacao->setCurrentIndex(defaultOp);
     form->addRow(tr("Operação:"), m_cbOperacao);
 
+    // ── Ticker + qty + preco unitario (#48) ────────────────────────────────
+    m_edtTicker = new QLineEdit(this);
+    m_edtTicker->setPlaceholderText(tr("ex: PETR4, MGLU3, BTC (opcional)"));
+    m_edtTicker->setText(m_original.ticker);
+    form->addRow(tr("Ticker:"), m_edtTicker);
+
+    m_spnQty = new QDoubleSpinBox(this);
+    m_spnQty->setDecimals(8);
+    m_spnQty->setRange(0.0, 1e12);
+    m_spnQty->setValue(m_original.quantidade);
+    m_spnQty->setSingleStep(1.0);
+    form->addRow(tr("Quantidade:"), m_spnQty);
+
+    m_edtPrecoUnit = new CalculadoraEdit(this);
+    m_edtPrecoUnit->setPlaceholderText(QStringLiteral("0,00"));
+    if (m_original.precoUnitario > 0)
+        m_edtPrecoUnit->setText(formatCentavos(m_original.precoUnitario));
+    form->addRow(tr("Preço unitário:"), m_edtPrecoUnit);
+
     // ── Valor ──────────────────────────────────────────────────────────────
     m_edtValor = new CalculadoraEdit(this);
     m_edtValor->setPlaceholderText(QStringLiteral("0,00"));
     if (m_original.valor > 0)
         m_edtValor->setText(formatCentavos(m_original.valor));
-    form->addRow(tr("Valor:"), m_edtValor);
+    form->addRow(tr("Valor total:"), m_edtValor);
+
+    // Auto-calculo: valor = qty * preco quando ambos preenchidos.
+    auto recalcValor = [this]() {
+        const double qty   = m_spnQty->value();
+        const qint64 preco = parseCentavos(m_edtPrecoUnit->text());
+        if (qty > 0.0 && preco > 0) {
+            const qint64 total = static_cast<qint64>(std::round(qty * preco));
+            m_edtValor->setText(formatCentavos(total));
+        }
+    };
+    connect(m_spnQty, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, recalcValor);
+    connect(m_edtPrecoUnit->lineEdit(), &QLineEdit::editingFinished,
+            this, recalcValor);
 
     // ── Data ───────────────────────────────────────────────────────────────
     m_dateEdit = new QDateEdit(this);
@@ -302,6 +337,9 @@ QList<LancamentoInvestimento> InvestimentoDialog::lancamentos() const
         l.categoriaId  = catId;
         l.obs          = obs;
         if (i == 0) l.receipt = m_receipt->receipt();
+        l.ticker        = m_edtTicker->text().trimmed().toUpper();
+        l.quantidade    = m_spnQty->value();
+        l.precoUnitario = parseCentavos(m_edtPrecoUnit->text());
         result.append(l);
     }
     return result;

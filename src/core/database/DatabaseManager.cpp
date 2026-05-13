@@ -461,6 +461,34 @@ void DatabaseManager::createSchema()
                        .arg(table));
     }
 
+    // Migration #48: ticker/quantidade/preco_unitario em lancamentos_investimentos
+    // Permite tracking de ativos por papel (PETR4, MGLU3, BTC etc.) com qty e
+    // preco unitario separados do valor total. quantidade aceita fracoes
+    // (FII/cripto). preco_unitario em centavos como demais campos monetarios.
+    {
+        QSqlQuery pq(m_db);
+        pq.exec(QStringLiteral("PRAGMA table_info(lancamentos_investimentos)"));
+        bool hasTicker = false, hasQty = false, hasPU = false;
+        while (pq.next()) {
+            const QString col = pq.value(1).toString();
+            if (col == QLatin1String("ticker"))          hasTicker = true;
+            if (col == QLatin1String("quantidade"))      hasQty    = true;
+            if (col == QLatin1String("preco_unitario"))  hasPU     = true;
+        }
+        if (!hasTicker)
+            q.exec(QStringLiteral(
+                "ALTER TABLE lancamentos_investimentos "
+                "ADD COLUMN ticker TEXT NOT NULL DEFAULT ''"));
+        if (!hasQty)
+            q.exec(QStringLiteral(
+                "ALTER TABLE lancamentos_investimentos "
+                "ADD COLUMN quantidade REAL NOT NULL DEFAULT 0"));
+        if (!hasPU)
+            q.exec(QStringLiteral(
+                "ALTER TABLE lancamentos_investimentos "
+                "ADD COLUMN preco_unitario INTEGER NOT NULL DEFAULT 0"));
+    }
+
     // #88: tabela fechamentos_mensais (snapshot imutavel mes contabil)
     if (!FechamentoMensalService::ensureSchema(m_db)) {
         qWarning() << "DatabaseManager: falha ao criar schema de fechamentos_mensais";

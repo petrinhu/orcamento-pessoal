@@ -110,6 +110,11 @@ struct LancamentoInvestimento {
     QString    obs;
     QString    criadoEm;
     QByteArray receipt;             // anexo do comprovante (#90); vazio = sem anexo
+    // #48: tracking por ticker (PETR4, MGLU3, BTC). valor pode ser derivado
+    // como qty * precoUnitario / 100 quando informados.
+    QString    ticker;              // codigo do ativo (uppercase). Vazio = item livre.
+    double     quantidade   = 0.0;  // permite fracoes (FII, cripto)
+    qint64     precoUnitario = 0;   // centavos por unidade
 };
 
 // Valor com sinal para cálculo do saldo líquido:
