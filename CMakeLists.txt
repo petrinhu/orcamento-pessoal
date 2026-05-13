@@ -59,6 +59,9 @@ set(SOURCES
     # Services — Audit log triggers (#92)
     src/services/AuditLogService.cpp
 
+    # Services — Fechamento mensal (#88)
+    src/services/FechamentoMensalService.cpp
+
     # Core — secret store
     src/core/secret/SecretStoreService.cpp
 
