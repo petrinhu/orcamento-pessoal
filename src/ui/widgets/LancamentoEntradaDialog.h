@@ -14,6 +14,7 @@ class QSpinBox;
 class QRadioButton;
 class QGroupBox;
 class QLabel;
+class ReceiptAttachmentWidget;
 
 // Dialog that opens whenever the user activates a cell in EntradasWidget.
 // Pre-fills with existing LancamentoEntrada data (or empty for new entry).
@@ -55,4 +56,5 @@ private:
     QRadioButton *m_rbRecorrente = nullptr;
     QSpinBox     *m_spnMeses     = nullptr;
     QLineEdit    *m_edtObs       = nullptr;
+    ReceiptAttachmentWidget *m_receipt = nullptr;
 };

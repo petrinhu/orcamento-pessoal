@@ -27,6 +27,7 @@ static GastoAvulso fromQuery(const QSqlQuery &q)
     g.pagadorId   = q.value(QStringLiteral("pagador_id")).toInt();
     g.categoriaId = q.value(QStringLiteral("categoria_id")).toInt();
     g.criadoEm    = q.value(QStringLiteral("criado_em")).toString();
+    g.receipt     = q.value(QStringLiteral("receipt")).toByteArray();
     return g;
 }
 
@@ -36,10 +37,10 @@ bool GastoAvulsoRepository::insert(GastoAvulso &g)
     q.prepare(QStringLiteral(R"(
         INSERT INTO lancamentos_gastos
             (mes, ano, dia, descricao, categoria, categoria_id, tipo_pgto, valor, obs,
-             pagador, pagador_id, criado_em)
+             pagador, pagador_id, criado_em, receipt)
         VALUES
             (:mes, :ano, :dia, :descricao, :categoria, :categoria_id, :tipo_pgto, :valor, :obs,
-             :pagador, :pagador_id, :criado_em)
+             :pagador, :pagador_id, :criado_em, :receipt)
     )"));
     q.bindValue(QStringLiteral(":mes"),        g.mes);
     q.bindValue(QStringLiteral(":ano"),        g.ano);
@@ -56,6 +57,7 @@ bool GastoAvulsoRepository::insert(GastoAvulso &g)
                 g.pagadorId > 0 ? QVariant(g.pagadorId) : QVariant(QMetaType::fromType<int>()));
     q.bindValue(QStringLiteral(":criado_em"),
                 QDateTime::currentDateTime().toString(Qt::ISODate));
+    q.bindValue(QStringLiteral(":receipt"),    g.receipt.isEmpty() ? QVariant() : QVariant(g.receipt));
     if (!q.exec()) {
         qWarning() << "GastoAvulsoRepository::insert:" << q.lastError().text();
         return false;
@@ -79,7 +81,8 @@ bool GastoAvulsoRepository::update(const GastoAvulso &g)
             valor        = :valor,
             obs          = :obs,
             pagador      = :pagador,
-            pagador_id   = :pagador_id
+            pagador_id   = :pagador_id,
+            receipt      = :receipt
         WHERE id = :id
     )"));
     q.bindValue(QStringLiteral(":mes"),        g.mes);
@@ -95,6 +98,7 @@ bool GastoAvulsoRepository::update(const GastoAvulso &g)
     q.bindValue(QStringLiteral(":pagador"),    g.pagador);
     q.bindValue(QStringLiteral(":pagador_id"),
                 g.pagadorId > 0 ? QVariant(g.pagadorId) : QVariant(QMetaType::fromType<int>()));
+    q.bindValue(QStringLiteral(":receipt"),    g.receipt.isEmpty() ? QVariant() : QVariant(g.receipt));
     q.bindValue(QStringLiteral(":id"),         g.id);
     if (!q.exec()) {
         qWarning() << "GastoAvulsoRepository::update:" << q.lastError().text();

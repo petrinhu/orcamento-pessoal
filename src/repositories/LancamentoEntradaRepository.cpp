@@ -27,6 +27,7 @@ static LancamentoEntrada fromQuery(const QSqlQuery &q)
     l.inss       = q.value(QStringLiteral("inss")).toLongLong();
     l.obs        = q.value(QStringLiteral("obs")).toString();
     l.criadoEm   = q.value(QStringLiteral("criado_em")).toString();
+    l.receipt    = q.value(QStringLiteral("receipt")).toByteArray();
     return l;
 }
 
@@ -36,10 +37,10 @@ bool LancamentoEntradaRepository::insert(LancamentoEntrada &l)
     q.prepare(QStringLiteral(R"(
         INSERT INTO lancamentos_entradas
             (mes, ano, dia, fonte, fonte_id, categoria, categoria_id,
-             valor_bruto, irpf, inss, obs, criado_em)
+             valor_bruto, irpf, inss, obs, criado_em, receipt)
         VALUES
             (:mes, :ano, :dia, :fonte, :fonte_id, :categoria, :categoria_id,
-             :valor_bruto, :irpf, :inss, :obs, :criado_em)
+             :valor_bruto, :irpf, :inss, :obs, :criado_em, :receipt)
     )"));
     q.bindValue(QStringLiteral(":mes"),        l.mes);
     q.bindValue(QStringLiteral(":ano"),        l.ano);
@@ -55,6 +56,7 @@ bool LancamentoEntradaRepository::insert(LancamentoEntrada &l)
     q.bindValue(QStringLiteral(":obs"),         l.obs);
     q.bindValue(QStringLiteral(":criado_em"),
                 QDateTime::currentDateTime().toString(Qt::ISODate));
+    q.bindValue(QStringLiteral(":receipt"),     l.receipt.isEmpty() ? QVariant() : QVariant(l.receipt));
     if (!q.exec()) {
         qWarning() << "LancamentoEntradaRepository::insert:" << q.lastError().text();
         return false;
@@ -78,7 +80,8 @@ bool LancamentoEntradaRepository::update(const LancamentoEntrada &l)
             valor_bruto  = :valor_bruto,
             irpf         = :irpf,
             inss         = :inss,
-            obs          = :obs
+            obs          = :obs,
+            receipt      = :receipt
         WHERE id = :id
     )"));
     q.bindValue(QStringLiteral(":mes"),        l.mes);
@@ -93,6 +96,7 @@ bool LancamentoEntradaRepository::update(const LancamentoEntrada &l)
     q.bindValue(QStringLiteral(":irpf"),        l.irpf);
     q.bindValue(QStringLiteral(":inss"),        l.inss);
     q.bindValue(QStringLiteral(":obs"),         l.obs);
+    q.bindValue(QStringLiteral(":receipt"),     l.receipt.isEmpty() ? QVariant() : QVariant(l.receipt));
     q.bindValue(QStringLiteral(":id"),          l.id);
     if (!q.exec()) {
         qWarning() << "LancamentoEntradaRepository::update:" << q.lastError().text();

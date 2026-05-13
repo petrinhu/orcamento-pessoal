@@ -17,10 +17,12 @@ bool CompraRepository::insert(Compra &compra)
     q.prepare(QStringLiteral(R"(
         INSERT INTO compras
             (nome, valor_total, num_parcelas, parcela_inicial,
-             mes_inicio, ano_inicio, juros_mensais, moeda, cartao_id, criado_em)
+             mes_inicio, ano_inicio, juros_mensais, moeda, cartao_id, criado_em,
+             receipt)
         VALUES
             (:nome, :valor_total, :num_parcelas, :parcela_inicial,
-             :mes_inicio, :ano_inicio, :juros_mensais, :moeda, :cartao_id, :criado_em)
+             :mes_inicio, :ano_inicio, :juros_mensais, :moeda, :cartao_id, :criado_em,
+             :receipt)
     )"));
 
     q.bindValue(QStringLiteral(":nome"),            compra.nome);
@@ -34,6 +36,7 @@ bool CompraRepository::insert(Compra &compra)
     q.bindValue(QStringLiteral(":cartao_id"),       compra.cartaoId ? QVariant(compra.cartaoId) : QVariant());
     q.bindValue(QStringLiteral(":criado_em"),
                 QDateTime::currentDateTime().toString(Qt::ISODate));
+    q.bindValue(QStringLiteral(":receipt"),         compra.receipt.isEmpty() ? QVariant() : QVariant(compra.receipt));
 
     if (!q.exec()) {
         qWarning() << "CompraRepository::insert:" << q.lastError().text();
@@ -56,7 +59,8 @@ bool CompraRepository::update(const Compra &compra)
             ano_inicio      = :ano_inicio,
             juros_mensais   = :juros_mensais,
             moeda           = :moeda,
-            cartao_id       = :cartao_id
+            cartao_id       = :cartao_id,
+            receipt         = :receipt
         WHERE id = :id
     )"));
 
@@ -69,6 +73,7 @@ bool CompraRepository::update(const Compra &compra)
     q.bindValue(QStringLiteral(":juros_mensais"),   compra.jurosMensais ? QVariant(compra.jurosMensais) : QVariant());
     q.bindValue(QStringLiteral(":moeda"),           compra.moeda);
     q.bindValue(QStringLiteral(":cartao_id"),       compra.cartaoId ? QVariant(compra.cartaoId) : QVariant());
+    q.bindValue(QStringLiteral(":receipt"),         compra.receipt.isEmpty() ? QVariant() : QVariant(compra.receipt));
     q.bindValue(QStringLiteral(":id"),              compra.id);
 
     if (!q.exec()) {
@@ -140,5 +145,6 @@ Compra CompraRepository::fromQuery(const QSqlQuery &q)
     c.moeda          = q.value(QStringLiteral("moeda")).toString();
     c.cartaoId       = q.value(QStringLiteral("cartao_id")).toInt();
     c.criadoEm       = q.value(QStringLiteral("criado_em")).toString();
+    c.receipt        = q.value(QStringLiteral("receipt")).toByteArray();
     return c;
 }

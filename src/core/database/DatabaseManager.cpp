@@ -436,6 +436,28 @@ void DatabaseManager::createSchema()
                 "ADD COLUMN categoria_id INTEGER "
                 "REFERENCES categorias(id) ON DELETE SET NULL"));
     }
+
+    // Migration #90: add receipt BLOB to 4 tables (anexo do comprovante).
+    // Util para IRPF: associar foto/scan ao lancamento. BLOB nullable; UI
+    // mostra thumbnail quando presente.
+    const QStringList receiptTables = {
+        QStringLiteral("lancamentos_entradas"),
+        QStringLiteral("lancamentos_gastos"),
+        QStringLiteral("compras"),
+        QStringLiteral("lancamentos_investimentos"),
+    };
+    for (const QString &table : receiptTables) {
+        QSqlQuery pq(m_db);
+        pq.exec(QStringLiteral("PRAGMA table_info(%1)").arg(table));
+        bool hasReceipt = false;
+        while (pq.next()) {
+            if (pq.value(1).toString() == QLatin1String("receipt"))
+                hasReceipt = true;
+        }
+        if (!hasReceipt)
+            q.exec(QStringLiteral("ALTER TABLE %1 ADD COLUMN receipt BLOB")
+                       .arg(table));
+    }
 }
 
 bool DatabaseManager::encryptAndSave(const QString &srcDbPath,

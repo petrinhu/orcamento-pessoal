@@ -26,6 +26,7 @@ static LancamentoInvestimento fromQuery(const QSqlQuery &q)
     l.categoriaId  = q.value(QStringLiteral("categoria_id")).toInt();
     l.obs          = q.value(QStringLiteral("obs")).toString();
     l.criadoEm     = q.value(QStringLiteral("criado_em")).toString();
+    l.receipt      = q.value(QStringLiteral("receipt")).toByteArray();
     return l;
 }
 
@@ -34,9 +35,9 @@ bool LancamentoInvestimentoRepository::insert(LancamentoInvestimento &l)
     QSqlQuery q(db());
     q.prepare(QStringLiteral(R"(
         INSERT INTO lancamentos_investimentos
-            (mes, ano, dia, nome, tipo_ativo, tipo_operacao, valor, categoria, categoria_id, obs, criado_em)
+            (mes, ano, dia, nome, tipo_ativo, tipo_operacao, valor, categoria, categoria_id, obs, criado_em, receipt)
         VALUES
-            (:mes, :ano, :dia, :nome, :tipo_ativo, :tipo_operacao, :valor, :categoria, :categoria_id, :obs, :criado_em)
+            (:mes, :ano, :dia, :nome, :tipo_ativo, :tipo_operacao, :valor, :categoria, :categoria_id, :obs, :criado_em, :receipt)
     )"));
     q.bindValue(QStringLiteral(":mes"),           l.mes);
     q.bindValue(QStringLiteral(":ano"),           l.ano);
@@ -51,6 +52,7 @@ bool LancamentoInvestimentoRepository::insert(LancamentoInvestimento &l)
     q.bindValue(QStringLiteral(":obs"),          l.obs);
     q.bindValue(QStringLiteral(":criado_em"),
                 QDateTime::currentDateTime().toString(Qt::ISODate));
+    q.bindValue(QStringLiteral(":receipt"),      l.receipt.isEmpty() ? QVariant() : QVariant(l.receipt));
     if (!q.exec()) {
         qWarning() << "LancamentoInvestimentoRepository::insert:" << q.lastError().text();
         return false;
@@ -73,7 +75,8 @@ bool LancamentoInvestimentoRepository::update(const LancamentoInvestimento &l)
             valor         = :valor,
             categoria     = :categoria,
             categoria_id  = :categoria_id,
-            obs           = :obs
+            obs           = :obs,
+            receipt       = :receipt
         WHERE id = :id
     )"));
     q.bindValue(QStringLiteral(":mes"),           l.mes);
@@ -87,6 +90,7 @@ bool LancamentoInvestimentoRepository::update(const LancamentoInvestimento &l)
     q.bindValue(QStringLiteral(":categoria_id"),
                 l.categoriaId > 0 ? QVariant(l.categoriaId) : QVariant(QMetaType::fromType<int>()));
     q.bindValue(QStringLiteral(":obs"),          l.obs);
+    q.bindValue(QStringLiteral(":receipt"),      l.receipt.isEmpty() ? QVariant() : QVariant(l.receipt));
     q.bindValue(QStringLiteral(":id"),           l.id);
     if (!q.exec()) {
         qWarning() << "LancamentoInvestimentoRepository::update:" << q.lastError().text();

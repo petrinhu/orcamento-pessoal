@@ -1,5 +1,6 @@
 #include "InvestimentoDialog.h"
 #include "CalculadoraEdit.h"
+#include "ReceiptAttachmentWidget.h"
 
 #include <QVBoxLayout>
 #include <QStandardItemModel>
@@ -214,6 +215,11 @@ void InvestimentoDialog::buildUi(const QList<Categoria> &categorias)
     m_edtObs->setText(m_original.obs);
     form->addRow(tr("Obs:"), m_edtObs);
 
+    // ── Comprovante (#90) ───────────────────────────────────────────────────
+    m_receipt = new ReceiptAttachmentWidget(this);
+    m_receipt->setReceipt(m_original.receipt);
+    form->addRow(tr("Comprovante:"), m_receipt);
+
     root->addLayout(form);
 
     // ── Recorrência ────────────────────────────────────────────────────────
@@ -295,6 +301,7 @@ QList<LancamentoInvestimento> InvestimentoDialog::lancamentos() const
         l.categoria    = catNome;
         l.categoriaId  = catId;
         l.obs          = obs;
+        if (i == 0) l.receipt = m_receipt->receipt();
         result.append(l);
     }
     return result;

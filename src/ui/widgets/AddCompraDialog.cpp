@@ -1,5 +1,6 @@
 #include "AddCompraDialog.h"
 #include "CalculadoraEdit.h"
+#include "ReceiptAttachmentWidget.h"
 #include "services/ParcelaService.h"
 #include <cmath>
 #include "models/Cartao.h"
@@ -109,6 +110,12 @@ void AddCompraDialog::buildUi()
     auto *pvLayout = new QVBoxLayout(grpPreview);
     pvLayout->addWidget(m_preview);
     root->addWidget(grpPreview);
+
+    // ── Comprovante (#90) ───────────────────────────────────────────────────
+    auto *receiptForm = new QFormLayout;
+    m_receipt = new ReceiptAttachmentWidget(this);
+    receiptForm->addRow(tr("Comprovante:"), m_receipt);
+    root->addLayout(receiptForm);
 
     // ── Buttons ────────────────────────────────────────────────────────────
     auto *btnBox = new QDialogButtonBox(
@@ -556,6 +563,8 @@ void AddCompraDialog::accept()
         m_compra.jurosMensais = static_cast<qint64>(
             std::round(m_jurosMensais->value() * 10000.0));
     }
+
+    m_compra.receipt = m_receipt->receipt();
 
     QDialog::accept();
 }

@@ -12,6 +12,7 @@ class QLineEdit;
 class QSpinBox;
 class QRadioButton;
 class CalculadoraEdit;
+class ReceiptAttachmentWidget;
 
 // Dialog that opens when the user activates a cell in InvestimentosWidget.
 // Pre-fills with existing LancamentoInvestimento data (or empty for new entry).
@@ -46,4 +47,5 @@ private:
     QRadioButton    *m_rbSomente    = nullptr;
     QRadioButton    *m_rbRecorrente = nullptr;
     QSpinBox        *m_spnMeses     = nullptr;
+    ReceiptAttachmentWidget *m_receipt = nullptr;
 };

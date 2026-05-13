@@ -1,6 +1,7 @@
 #include "GastoDialog.h"
 #include "CalculadoraEdit.h"
 #include "PagadorDialog.h"
+#include "ReceiptAttachmentWidget.h"
 #include "repositories/PagadorRepository.h"
 
 #include <QVBoxLayout>
@@ -213,6 +214,11 @@ void GastoDialog::buildUi(const QList<Categoria> &categorias)
     m_edtObs->setText(m_original.obs);
     form->addRow(tr("Obs:"), m_edtObs);
 
+    // ── Comprovante (#90) ───────────────────────────────────────────────────
+    m_receipt = new ReceiptAttachmentWidget(this);
+    m_receipt->setReceipt(m_original.receipt);
+    form->addRow(tr("Comprovante:"), m_receipt);
+
     // ── Beneficiário ───────────────────────────────────────────────────────
     m_cbBeneficiario = new QComboBox(this);
     m_cbBeneficiario->setEditable(true);
@@ -385,6 +391,7 @@ QList<GastoAvulso> GastoDialog::gastos() const
         g.obs         = obs;
         g.pagador     = m_resolvedPagadorNome;
         g.pagadorId   = m_resolvedPagadorId;
+        if (i == 0) g.receipt = m_receipt->receipt();
         result.append(g);
     }
     return result;

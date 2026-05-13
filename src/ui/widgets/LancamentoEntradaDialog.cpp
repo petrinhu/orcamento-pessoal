@@ -1,4 +1,5 @@
 #include "LancamentoEntradaDialog.h"
+#include "ReceiptAttachmentWidget.h"
 
 #include <QVBoxLayout>
 #include <QStandardItemModel>
@@ -242,6 +243,12 @@ void LancamentoEntradaDialog::buildUi(const QList<FonteRenda> &fontes,
     m_edtObs->setMaxLength(200);
     m_edtObs->setText(m_original.obs);
     formObs->addRow(tr("Obs:"), m_edtObs);
+
+    // ── Comprovante (#90) ───────────────────────────────────────────────────
+    m_receipt = new ReceiptAttachmentWidget(this);
+    m_receipt->setReceipt(m_original.receipt);
+    formObs->addRow(tr("Comprovante:"), m_receipt);
+
     root->addLayout(formObs);
 
     // ── Buttons ────────────────────────────────────────────────────────────
@@ -312,6 +319,7 @@ QList<LancamentoEntrada> LancamentoEntradaDialog::lancamentos() const
         l.irpf        = irpf;
         l.inss        = inss;
         l.obs         = obs;
+        if (i == 0) l.receipt = m_receipt->receipt();
         result.append(l);
     }
     return result;

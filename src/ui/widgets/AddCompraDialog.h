@@ -17,6 +17,7 @@ class QDateEdit;
 class QTabWidget;
 class QTableWidget;
 class QPushButton;
+class ReceiptAttachmentWidget;
 
 // Dialog to add a new purchase (compra) with installments.
 // Supports all input modes:
@@ -92,6 +93,9 @@ private:
     QTableWidget *m_preview    = nullptr;
 
     QTabWidget   *m_tabs       = nullptr;
+
+    // Comprovante (#90) — comum a todas as abas
+    ReceiptAttachmentWidget *m_receipt = nullptr;
 
     // Result
     Compra         m_compra;

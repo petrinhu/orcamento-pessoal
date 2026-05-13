@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QByteArray>
 #include <QString>
 #include <QtTypes>
 
@@ -96,18 +97,19 @@ inline QString tipoOpInvLabel(const QString &raw)
 // ── Model ─────────────────────────────────────────────────────────────────────
 
 struct LancamentoInvestimento {
-    int     id           = 0;
-    int     mes          = 1;     // 1–12
-    int     ano          = 2025;
-    int     dia          = 1;
-    QString nome;                 // nome do ativo: "PETR4", "CDB Nubank"
-    QString tipoAtivo;            // raw: "acao"|"fii"|"cdb"|"lci_lca"|"tesouro"|"fundo"|"poupanca"|"outro"
-    QString tipoOperacao;         // raw: "aporte"|"resgate"|"rendimento"|"dividendo"
-    qint64  valor        = 0;     // centavos (sempre positivo; direção dada por tipoOperacao)
-    QString categoria;            // snapshot do nome da categoria
-    int     categoriaId  = 0;    // FK → categorias(id); 0 = sem vínculo
-    QString obs;
-    QString criadoEm;
+    int        id           = 0;
+    int        mes          = 1;     // 1–12
+    int        ano          = 2025;
+    int        dia          = 1;
+    QString    nome;                 // nome do ativo: "PETR4", "CDB Nubank"
+    QString    tipoAtivo;            // raw: "acao"|"fii"|"cdb"|"lci_lca"|"tesouro"|"fundo"|"poupanca"|"outro"
+    QString    tipoOperacao;         // raw: "aporte"|"resgate"|"rendimento"|"dividendo"
+    qint64     valor        = 0;     // centavos (sempre positivo; direção dada por tipoOperacao)
+    QString    categoria;            // snapshot do nome da categoria
+    int        categoriaId  = 0;    // FK → categorias(id); 0 = sem vínculo
+    QString    obs;
+    QString    criadoEm;
+    QByteArray receipt;             // anexo do comprovante (#90); vazio = sem anexo
 };
 
 // Valor com sinal para cálculo do saldo líquido:
