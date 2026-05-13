@@ -21,9 +21,18 @@
 #include "core/settings/AppSettings.h"
 #include "services/ImportService.h"
 #include "services/ExportService.h"
+#include "widgets/ExportDialog.h"
 #include "repositories/CompraRepository.h"
 #include "repositories/ParcelaRepository.h"
+#include "repositories/LancamentoEntradaRepository.h"
+#include "repositories/GastoAvulsoRepository.h"
+#include "repositories/LancamentoInvestimentoRepository.h"
+#include "repositories/OrcamentoRepository.h"
+#include "repositories/TransacaoRecorrenteRepository.h"
+#include "repositories/DividaRepository.h"
+#include "repositories/MetaRepository.h"
 #include "repositories/LembreteRepository.h"
+#include "models/Cartao.h"
 #include "models/Lembrete.h"
 #include "core/CalculadoraHub.h"
 
@@ -782,12 +791,31 @@ void MainWindow::onImportar(const QString &format)
 
 void MainWindow::onExportar(const QString &format)
 {
+    // ── Step 1: escolher seções e formato ────────────────────────────────────
+    const QStringList available = {
+        tr("Entradas"), tr("Gastos"), tr("Investimentos"),
+        tr("Planejamento"), tr("Recorrências"),
+        tr("Dívidas"), tr("Metas"), tr("Lembretes"), tr("Cartões"),
+    };
+
+    ExportDialog dlg(available, format, this);
+    if (dlg.exec() != QDialog::Accepted) return;
+
+    const QStringList selected = dlg.selectedSections();
+    const QString     fmt      = dlg.selectedFormat();
+
+    if (selected.isEmpty()) {
+        QMessageBox::information(this, tr("Exportar"),
+            tr("Nenhuma seção selecionada."));
+        return;
+    }
+
+    // ── Step 2: escolher caminho ──────────────────────────────────────────────
     static const QMap<QString,QString> filters = {
         { QStringLiteral("csv"),  tr("CSV (*.csv)") },
         { QStringLiteral("ofx"),  tr("OFX (*.ofx)") },
         { QStringLiteral("qif"),  tr("QIF (*.qif)") },
         { QStringLiteral("xlsx"), tr("Excel (*.xlsx)") },
-        { QStringLiteral("xls"),  tr("Excel 97-2003 (*.xls)") },
         { QStringLiteral("ods"),  tr("ODS (*.ods)") },
         { QStringLiteral("txt"),  tr("Texto (*.txt)") },
         { QStringLiteral("json"), tr("JSON (*.json)") },
@@ -798,46 +826,96 @@ void MainWindow::onExportar(const QString &format)
 
     const QString path = QFileDialog::getSaveFileName(
         this, tr("Exportar"),
-        QStringLiteral("parcelas.%1").arg(format),
-        filters.value(format));
+        QStringLiteral("orcamento.%1").arg(fmt),
+        filters.value(fmt, tr("Todos os arquivos (*)")));
     if (path.isEmpty()) return;
 
     // ODS stub
-    if (format == QStringLiteral("ods")) {
+    if (fmt == QStringLiteral("ods")) {
         QMessageBox::information(this, tr("Exportar ODS"),
             tr("Exportação ODS ainda não implementada.\n"
                "Use CSV ou XLSX para abrir no LibreOffice Calc."));
         return;
     }
 
-    // Build dataset
-    CompraRepository  cr;
-    ParcelaRepository pr;
-    ExportService::Dataset d;
-    d.compras = cr.findAll();
-    for (const auto &c : d.compras)
-        d.parcelas.append(pr.findByCompra(c.id));
+    // ── Step 3: construir seções ──────────────────────────────────────────────
+    QList<ExportService::Section> sections;
+    QList<ExportService::OFXTx>   txs;
+    const bool needsTxs = (fmt == QStringLiteral("ofx") || fmt == QStringLiteral("qif"));
 
-    QSqlQuery qc(QStringLiteral("SELECT id, apelido FROM cartoes ORDER BY apelido"),
-                 DatabaseManager::instance().db());
-    while (qc.next()) {
-        Cartao ct;
-        ct.id      = qc.value(0).toInt();
-        ct.apelido = qc.value(1).toString();
-        d.cartoes.append(ct);
+    if (selected.contains(tr("Entradas"))) {
+        LancamentoEntradaRepository repo;
+        const auto entradas = repo.findAll();
+        sections.append({ tr("Entradas"), ExportService::buildTableEntradas(entradas) });
+        if (needsTxs) txs += ExportService::ofxFromEntradas(entradas);
+    }
+    if (selected.contains(tr("Gastos"))) {
+        GastoAvulsoRepository repo;
+        const auto gastos = repo.findAll();
+        sections.append({ tr("Gastos"), ExportService::buildTableGastos(gastos) });
+        if (needsTxs) txs += ExportService::ofxFromGastos(gastos);
+    }
+    if (selected.contains(tr("Investimentos"))) {
+        LancamentoInvestimentoRepository repo;
+        sections.append({ tr("Investimentos"),
+                          ExportService::buildTableInvestimentos(repo.findAll()) });
+    }
+    if (selected.contains(tr("Planejamento"))) {
+        OrcamentoRepository repo;
+        sections.append({ tr("Planejamento"),
+                          ExportService::buildTablePlanejamento(repo.findAll()) });
+    }
+    if (selected.contains(tr("Recorrências"))) {
+        TransacaoRecorrenteRepository repo;
+        sections.append({ tr("Recorrências"),
+                          ExportService::buildTableRecorrencias(repo.findAll()) });
+    }
+    if (selected.contains(tr("Dívidas"))) {
+        DividaRepository repo;
+        sections.append({ tr("Dívidas"),
+                          ExportService::buildTableDividas(repo.findAll()) });
+    }
+    if (selected.contains(tr("Metas"))) {
+        MetaRepository repo;
+        sections.append({ tr("Metas"),
+                          ExportService::buildTableMetas(repo.findAll()) });
+    }
+    if (selected.contains(tr("Lembretes"))) {
+        LembreteRepository repo;
+        sections.append({ tr("Lembretes"),
+                          ExportService::buildTableLembretes(repo.findAll()) });
+    }
+    if (selected.contains(tr("Cartões"))) {
+        CompraRepository  cr;
+        ParcelaRepository pr;
+        ExportService::Dataset d;
+        d.compras = cr.findAll();
+        for (const auto &c : d.compras)
+            d.parcelas.append(pr.findByCompra(c.id));
+        QSqlQuery qc(QStringLiteral("SELECT id, apelido FROM cartoes ORDER BY apelido"),
+                     DatabaseManager::instance().db());
+        while (qc.next()) {
+            Cartao ct;
+            ct.id      = qc.value(0).toInt();
+            ct.apelido = qc.value(1).toString();
+            d.cartoes.append(ct);
+        }
+        sections.append({ tr("Cartões"), ExportService::buildTable(d) });
+        if (needsTxs) txs += ExportService::ofxFromDataset(d);
     }
 
+    // ── Step 4: exportar ──────────────────────────────────────────────────────
     bool ok = false;
-    if      (format == QStringLiteral("csv"))  ok = ExportService::toCsv(path, d);
-    else if (format == QStringLiteral("ofx"))  ok = ExportService::toOfx(path, d);
-    else if (format == QStringLiteral("qif"))  ok = ExportService::toQif(path, d);
-    else if (format == QStringLiteral("xlsx") ||
-             format == QStringLiteral("xls")) ok = ExportService::toXlsx(path, d);
-    else if (format == QStringLiteral("txt"))  ok = ExportService::toTxt(path, d);
-    else if (format == QStringLiteral("json")) ok = ExportService::toJson(path, d);
-    else if (format == QStringLiteral("md"))   ok = ExportService::toMarkdown(path, d);
-    else if (format == QStringLiteral("html")) ok = ExportService::toHtml(path, d);
-    else if (format == QStringLiteral("pdf"))  ok = ExportService::toPdf(path, d);
+    if      (fmt == QStringLiteral("ofx"))  ok = ExportService::toMultiOfx(path, txs);
+    else if (fmt == QStringLiteral("qif"))  ok = ExportService::toMultiQif(path, txs);
+    else if (fmt == QStringLiteral("csv"))  ok = ExportService::toMultiCsv(path, sections);
+    else if (fmt == QStringLiteral("xlsx") ||
+             fmt == QStringLiteral("xls")) ok = ExportService::toMultiXlsx(path, sections);
+    else if (fmt == QStringLiteral("json")) ok = ExportService::toMultiJson(path, sections);
+    else if (fmt == QStringLiteral("md"))   ok = ExportService::toMultiMarkdown(path, sections);
+    else if (fmt == QStringLiteral("html")) ok = ExportService::toMultiHtml(path, sections);
+    else if (fmt == QStringLiteral("pdf"))  ok = ExportService::toMultiPdf(path, sections);
+    else if (fmt == QStringLiteral("txt"))  ok = ExportService::toMultiTxt(path, sections);
 
     if (!ok)
         QMessageBox::warning(this, tr("Exportar"),

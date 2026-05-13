@@ -18,9 +18,11 @@ static LancamentoEntrada fromQuery(const QSqlQuery &q)
     l.mes        = q.value(QStringLiteral("mes")).toInt();
     l.ano        = q.value(QStringLiteral("ano")).toInt();
     l.dia        = q.value(QStringLiteral("dia")).toInt();
-    l.fonte      = q.value(QStringLiteral("fonte")).toString();
-    l.fonteId    = q.value(QStringLiteral("fonte_id")).toInt();
-    l.valorBruto = q.value(QStringLiteral("valor_bruto")).toLongLong();
+    l.fonte       = q.value(QStringLiteral("fonte")).toString();
+    l.fonteId     = q.value(QStringLiteral("fonte_id")).toInt();
+    l.categoria   = q.value(QStringLiteral("categoria")).toString();
+    l.categoriaId = q.value(QStringLiteral("categoria_id")).toInt();
+    l.valorBruto  = q.value(QStringLiteral("valor_bruto")).toLongLong();
     l.irpf       = q.value(QStringLiteral("irpf")).toLongLong();
     l.inss       = q.value(QStringLiteral("inss")).toLongLong();
     l.obs        = q.value(QStringLiteral("obs")).toString();
@@ -33,19 +35,24 @@ bool LancamentoEntradaRepository::insert(LancamentoEntrada &l)
     QSqlQuery q(db());
     q.prepare(QStringLiteral(R"(
         INSERT INTO lancamentos_entradas
-            (mes, ano, dia, fonte, fonte_id, valor_bruto, irpf, inss, obs, criado_em)
+            (mes, ano, dia, fonte, fonte_id, categoria, categoria_id,
+             valor_bruto, irpf, inss, obs, criado_em)
         VALUES
-            (:mes, :ano, :dia, :fonte, :fonte_id, :valor_bruto, :irpf, :inss, :obs, :criado_em)
+            (:mes, :ano, :dia, :fonte, :fonte_id, :categoria, :categoria_id,
+             :valor_bruto, :irpf, :inss, :obs, :criado_em)
     )"));
     q.bindValue(QStringLiteral(":mes"),        l.mes);
     q.bindValue(QStringLiteral(":ano"),        l.ano);
     q.bindValue(QStringLiteral(":dia"),        l.dia);
-    q.bindValue(QStringLiteral(":fonte"),      l.fonte);
-    q.bindValue(QStringLiteral(":fonte_id"),   l.fonteId ? QVariant(l.fonteId) : QVariant());
-    q.bindValue(QStringLiteral(":valor_bruto"),l.valorBruto);
-    q.bindValue(QStringLiteral(":irpf"),       l.irpf);
-    q.bindValue(QStringLiteral(":inss"),       l.inss);
-    q.bindValue(QStringLiteral(":obs"),        l.obs);
+    q.bindValue(QStringLiteral(":fonte"),       l.fonte);
+    q.bindValue(QStringLiteral(":fonte_id"),    l.fonteId ? QVariant(l.fonteId) : QVariant());
+    q.bindValue(QStringLiteral(":categoria"),   l.categoria);
+    q.bindValue(QStringLiteral(":categoria_id"),
+                l.categoriaId > 0 ? QVariant(l.categoriaId) : QVariant(QMetaType::fromType<int>()));
+    q.bindValue(QStringLiteral(":valor_bruto"), l.valorBruto);
+    q.bindValue(QStringLiteral(":irpf"),        l.irpf);
+    q.bindValue(QStringLiteral(":inss"),        l.inss);
+    q.bindValue(QStringLiteral(":obs"),         l.obs);
     q.bindValue(QStringLiteral(":criado_em"),
                 QDateTime::currentDateTime().toString(Qt::ISODate));
     if (!q.exec()) {
@@ -64,24 +71,29 @@ bool LancamentoEntradaRepository::update(const LancamentoEntrada &l)
             mes         = :mes,
             ano         = :ano,
             dia         = :dia,
-            fonte       = :fonte,
-            fonte_id    = :fonte_id,
-            valor_bruto = :valor_bruto,
-            irpf        = :irpf,
-            inss        = :inss,
-            obs         = :obs
+            fonte        = :fonte,
+            fonte_id     = :fonte_id,
+            categoria    = :categoria,
+            categoria_id = :categoria_id,
+            valor_bruto  = :valor_bruto,
+            irpf         = :irpf,
+            inss         = :inss,
+            obs          = :obs
         WHERE id = :id
     )"));
     q.bindValue(QStringLiteral(":mes"),        l.mes);
     q.bindValue(QStringLiteral(":ano"),        l.ano);
     q.bindValue(QStringLiteral(":dia"),        l.dia);
-    q.bindValue(QStringLiteral(":fonte"),      l.fonte);
-    q.bindValue(QStringLiteral(":fonte_id"),   l.fonteId ? QVariant(l.fonteId) : QVariant());
-    q.bindValue(QStringLiteral(":valor_bruto"),l.valorBruto);
-    q.bindValue(QStringLiteral(":irpf"),       l.irpf);
-    q.bindValue(QStringLiteral(":inss"),       l.inss);
-    q.bindValue(QStringLiteral(":obs"),        l.obs);
-    q.bindValue(QStringLiteral(":id"),         l.id);
+    q.bindValue(QStringLiteral(":fonte"),       l.fonte);
+    q.bindValue(QStringLiteral(":fonte_id"),    l.fonteId ? QVariant(l.fonteId) : QVariant());
+    q.bindValue(QStringLiteral(":categoria"),   l.categoria);
+    q.bindValue(QStringLiteral(":categoria_id"),
+                l.categoriaId > 0 ? QVariant(l.categoriaId) : QVariant(QMetaType::fromType<int>()));
+    q.bindValue(QStringLiteral(":valor_bruto"), l.valorBruto);
+    q.bindValue(QStringLiteral(":irpf"),        l.irpf);
+    q.bindValue(QStringLiteral(":inss"),        l.inss);
+    q.bindValue(QStringLiteral(":obs"),         l.obs);
+    q.bindValue(QStringLiteral(":id"),          l.id);
     if (!q.exec()) {
         qWarning() << "LancamentoEntradaRepository::update:" << q.lastError().text();
         return false;

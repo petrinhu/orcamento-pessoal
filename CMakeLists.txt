@@ -144,6 +144,9 @@ set(SOURCES
     src/ui/widgets/LembreteDialog.cpp
     src/ui/widgets/LembretesWidget.cpp
 
+    # Exportação multi-seção (#11)
+    src/ui/widgets/ExportDialog.cpp
+
     # Busca global (#32)
     src/ui/widgets/BuscaGlobalDialog.cpp
 
