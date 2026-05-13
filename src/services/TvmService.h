@@ -38,13 +38,6 @@ public:
     // used by ParcelaService::tabelaAmortizacao.
     static QList<AmortizacaoRow> amortizacao(const TvmInput &tvm, QDate dataInicio);
 
-private:
-    // Evaluate the TVM function at rate fraction r (r = i/100).
-    static double tvmF(double r, double n, double pv, double pmt, double fv, bool begin);
-
-    // Numerical derivative of tvmF w.r.t. r.
-    static double tvmDF(double r, double n, double pv, double pmt, double fv, bool begin);
-
-    // Newton-Raphson solver for i; initial guess as fraction.
-    static double resolverI(double n, double pv, double pmt, double fv, bool begin);
+    // Internals migrados para FinanceEngine (#69). Esta classe agora eh um
+    // adapter fino; toda a aritmetica TVM vive em src/services/FinanceEngine.
 };

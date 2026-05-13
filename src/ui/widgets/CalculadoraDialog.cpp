@@ -1,6 +1,7 @@
 #include "CalculadoraDialog.h"
 #include "services/TvmService.h"
 #include "services/ParcelaService.h"
+#include "services/FinanceEngine.h"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -990,8 +991,9 @@ void CalculadoraDialog::buildTabWizards(QWidget *tab)
             const double taxa = parseF(edtTxa);
             const int    nOrig = diasPer.at(cbOrig->currentIndex());
             const int    nDest = diasPer.at(cbDest->currentIndex());
-            const double equiv = (std::pow(1.0 + taxa / 100.0,
-                                           static_cast<double>(nDest) / nOrig) - 1.0) * 100.0;
+            // #69: dedup -> FinanceEngine::taxaEquivalente (regime composto)
+            const double equiv = FinanceEngine::taxaEquivalente(
+                                     taxa / 100.0, nDest, nOrig) * 100.0;
             *resVal = equiv;
             lblRes->setText(tr("Taxa equivalente: <b>%1 % por %2</b>")
                 .arg(fmtF(equiv, 6), cbDest->currentText().toLower()));
@@ -1036,8 +1038,8 @@ void CalculadoraDialog::buildTabWizards(QWidget *tab)
             if (pv <= 0.0 || n <= 0.0) {
                 lblRes->setText(tr("Informe PV e N maiores que zero.")); lblRes->show(); return;
             }
-            const double pmt   = (i == 0.0) ? pv / n
-                                             : pv * i / (1.0 - std::pow(1.0 + i, -n));
+            // #69: dedup -> FinanceEngine::pmt (PV>0 -> retorna pmt<0, inverter)
+            const double pmt   = -FinanceEngine::pmt(pv, 0.0, i, static_cast<int>(n));
             const double total  = pmt * n;
             const double juros  = total - pv;
             *resVal = pmt;
@@ -1141,7 +1143,8 @@ void CalculadoraDialog::buildTabWizards(QWidget *tab)
             if (pv <= 0.0 || n <= 0.0) {
                 lblRes->setText(tr("Informe PV e N maiores que zero.")); lblRes->show(); return;
             }
-            const double fv    = pv * std::pow(1.0 + i, n);
+            // #69: dedup -> FinanceEngine::fv (sinal: pv>0 retorna fv<0)
+            const double fv    = -FinanceEngine::fv(pv, 0.0, i, static_cast<int>(n));
             const double ganho = fv - pv;
             *resVal = fv;
             lblRes->setText(
@@ -1241,7 +1244,9 @@ void CalculadoraDialog::buildTabWizards(QWidget *tab)
             QString txt = tr("Ganho/Perda: <b>R$ %1</b><br>ROI: <b>%2 %</b>")
                 .arg(fmtF(ganho, 2), fmtF(roi, 4));
             if (meses > 0.0 && (1.0 + roi / 100.0) > 0.0) {
-                const double iMes = (std::pow(1.0 + roi / 100.0, 1.0 / meses) - 1.0) * 100.0;
+                // #69: dedup -> FinanceEngine::taxaEquivalente
+                const double iMes = FinanceEngine::taxaEquivalente(
+                                        roi / 100.0, 1, static_cast<int>(meses)) * 100.0;
                 txt += tr("<br>Taxa mensal equiv.: %1 % a.m.").arg(fmtF(iMes, 4));
             }
             lblRes->setText(txt);
@@ -1335,13 +1340,17 @@ void CalculadoraDialog::buildTabWizards(QWidget *tab)
             if (pv <= 0.0 || n <= 0.0 || k < 0.0 || k >= n) {
                 lblRes->setText(tr("Verifique os valores (k deve ser < N).")); lblRes->show(); return;
             }
-            double pmt, sd;
+            double pmt = 0.0;
+            double sd  = 0.0;
+            // #69: dedup -> FinanceEngine::pmt (sinal invertido para Price BR)
+            pmt = -FinanceEngine::pmt(pv, 0.0, i, static_cast<int>(n));
             if (i == 0.0) {
-                pmt = pv / n;
-                sd  = pv - k * pmt;
+                sd = pv - k * pmt;
             } else {
-                pmt = pv * i / (1.0 - std::pow(1.0 + i, -n));
-                sd  = pv * std::pow(1.0 + i, k) - pmt * (std::pow(1.0 + i, k) - 1.0) / i;
+                // Saldo apos k parcelas: pv*(1+i)^k - pmt*((1+i)^k - 1)/i
+                // (sem FinanceEngine helper para essa formula derivada)
+                const double pot = std::pow(1.0 + i, k);
+                sd = pv * pot - pmt * (pot - 1.0) / i;
             }
             *resVal = sd;
             lblRes->setText(
@@ -1452,7 +1461,8 @@ void CalculadoraDialog::buildTabWizards(QWidget *tab)
                 lblRes->setText(tr("Verifique os valores (amortização deve ser < saldo devedor)."));
                 lblRes->show(); return;
             }
-            const double pmtOrig      = sd * i / (1.0 - std::pow(1.0 + i, -nr));
+            // #69: dedup -> FinanceEngine::pmt (sinal invertido para Price BR)
+            const double pmtOrig      = -FinanceEngine::pmt(sd, 0.0, i, static_cast<int>(nr));
             const double novoSD       = sd - amort;
             const double jurosOrigTotal = pmtOrig * nr - sd;
 
@@ -1476,7 +1486,8 @@ void CalculadoraDialog::buildTabWizards(QWidget *tab)
                          QString::number(static_cast<qint64>(nr)),
                          fmtF(economia, 2)));
             } else {
-                const double pmtNovo   = novoSD * i / (1.0 - std::pow(1.0 + i, -nr));
+                // #69: dedup -> FinanceEngine::pmt
+                const double pmtNovo   = -FinanceEngine::pmt(novoSD, 0.0, i, static_cast<int>(nr));
                 const double jurosNovo = pmtNovo * nr - novoSD;
                 const double economia  = jurosOrigTotal - jurosNovo;
                 *resVal = pmtNovo;
@@ -1544,8 +1555,9 @@ void CalculadoraDialog::buildTabWizards(QWidget *tab)
             else if (meses > 12.0)  ir = 0.175;
             else if (meses > 6.0)   ir = 0.20;
 
-            const double taxaCDBm = std::pow(1.0 + taxaCDB / 100.0, 1.0 / 12.0) - 1.0;
-            const double taxaLCIm = std::pow(1.0 + taxaLCI / 100.0, 1.0 / 12.0) - 1.0;
+            // #69: dedup -> FinanceEngine::taxaEquivalente
+            const double taxaCDBm = FinanceEngine::taxaEquivalente(taxaCDB / 100.0, 1, 12);
+            const double taxaLCIm = FinanceEngine::taxaEquivalente(taxaLCI / 100.0, 1, 12);
             const int    n        = static_cast<int>(std::round(meses));
 
             const double brutosCDB  = valor * (std::pow(1.0 + taxaCDBm, n) - 1.0);
