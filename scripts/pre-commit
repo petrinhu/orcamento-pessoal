@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+# PeuBud - hook pre-commit (#74)
+# Instalar: cp scripts/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+#
+# Bloqueia commits com:
+# - warnings novos de clang-tidy nos arquivos C++ alterados
+# - erros de cppcheck nos arquivos C++ alterados
+# - secrets detectados via gitleaks (se instalado)
+
+set -euo pipefail
+
+ROOT="$(git rev-parse --show-toplevel)"
+cd "$ROOT"
+
+# Arquivos C++ staged
+mapfile -t CPP_FILES < <(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(cpp|h|hpp)$' || true)
+
+if [ ${#CPP_FILES[@]} -gt 0 ]; then
+  echo "▶ pre-commit: ${#CPP_FILES[@]} arquivo(s) C++ staged"
+
+  # cppcheck nos arquivos staged
+  if command -v cppcheck >/dev/null 2>&1; then
+    echo "  ▸ cppcheck …"
+    cppcheck --enable=warning,style,performance,portability \
+             --suppressions-list=.cppcheck-suppressions \
+             --error-exitcode=2 \
+             --quiet \
+             "${CPP_FILES[@]}" || { echo "✗ cppcheck falhou"; exit 1; }
+  else
+    echo "  ⚠ cppcheck ausente (dnf install cppcheck / apt install cppcheck / pacman -S cppcheck)"
+  fi
+
+  # clang-tidy nos arquivos staged (precisa de build/compile_commands.json)
+  if command -v clang-tidy >/dev/null 2>&1 && [ -f build/compile_commands.json ]; then
+    echo "  ▸ clang-tidy …"
+    clang-tidy -p build --warnings-as-errors='*' "${CPP_FILES[@]}" || { echo "✗ clang-tidy falhou"; exit 1; }
+  elif command -v clang-tidy >/dev/null 2>&1; then
+    echo "  ⚠ build/compile_commands.json ausente - rode: cmake -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+  else
+    echo "  ⚠ clang-tidy ausente (dnf install clang-tools-extra / apt install clang-tidy / pacman -S clang)"
+  fi
+fi
+
+# gitleaks - secrets em qualquer arquivo staged
+if command -v gitleaks >/dev/null 2>&1; then
+  echo "  ▸ gitleaks …"
+  gitleaks protect --staged --no-banner --redact || { echo "✗ secrets detectados - abortando"; exit 1; }
+fi
+
+echo "✓ pre-commit aprovado"

@@ -1,0 +1,66 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  fedora:
+    name: Fedora (dnf)
+    runs-on: docker
+    container:
+      image: fedora:41
+    steps:
+      - name: Install dependencies
+        run: |
+          dnf install -y --setopt=install_weak_deps=False \
+            qt6-qtbase-devel qt6-qtcharts-devel qt6-qttools-devel \
+            openssl-devel libsecret-devel libsodium-devel \
+            gcc-c++ cmake make git
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Configure
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+      - name: Build
+        run: cmake --build build -j$(nproc)
+
+  debian:
+    name: Debian (apt)
+    runs-on: docker
+    container:
+      image: debian:trixie
+    steps:
+      - name: Install dependencies
+        run: |
+          apt-get update
+          DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            qt6-base-dev libqt6charts6-dev qt6-tools-dev \
+            libssl-dev libsecret-1-dev libsodium-dev \
+            g++ cmake make git ca-certificates
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Configure
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+      - name: Build
+        run: cmake --build build -j$(nproc)
+
+  arch:
+    name: Arch (pacman)
+    runs-on: docker
+    container:
+      image: archlinux:latest
+    steps:
+      - name: Install dependencies
+        run: |
+          pacman -Syu --needed --noconfirm \
+            qt6-base qt6-charts qt6-tools \
+            openssl libsecret libsodium \
+            gcc cmake make git
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Configure
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+      - name: Build
+        run: cmake --build build -j$(nproc)
