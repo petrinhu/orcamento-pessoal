@@ -11,6 +11,7 @@ class QDateEdit;
 class QTableWidget;
 class QStackedWidget;
 class QTabWidget;
+class QTimer;
 
 // Non-modal floating calculator with three tabs:
 //   Tab 0 — Comum:     standard keypad + expression + clipboard history  [v1: functional]
@@ -111,4 +112,7 @@ private:
     bool    m_justDone = false;
 
     QStringList m_historyItems; // up to 20 recent entries
+
+    // Debounce para recalculos pesados disparados por textChanged (#95)
+    QTimer *m_debounceCet = nullptr;
 };

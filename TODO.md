@@ -129,7 +129,7 @@ Arquivo canônico de pendências, auditoria técnica e conformidade com o contra
 | #77 | INFRA | ~~Empacotamento Flatpak (`org.peubud.PeuBud`) + AppImage para distribuição cross-distro sem depender de pacotes Qt6 do sistema~~ — cancelado em 2026-05-13 | Baixa | #72 | Alta | ❌ Cancelado | — |
 | #78 | DOC | `CHANGELOG.md` formato Keep a Changelog (1.1.0); seções por versão, agrupadas por `Added/Changed/Fixed/Security/Removed`; release tag git | Média | — | Baixa | ✅ Concluído | — |
 | #79 | FUNC | Backup automático cifrado do banco — schedule (diário/semanal), retenção configurável (N últimas cópias), destino local ou WebDAV; cifrado com mesma chave libsodium do banco principal | Média | — | Média | ⏳ Pendente | — |
-| #80 | FUNC | Atalhos teclado globais — `Ctrl+N` novo lançamento (contextual à aba ativa), `Ctrl+F` busca global, `Ctrl+,` Configurações, `Ctrl+1..9` mudar aba, `Ctrl+B` bloquear sessão; documentar em Help dialog | Baixa | — | Baixa | ⏳ Pendente | — |
+| #80 | FUNC | Atalhos teclado globais — `Ctrl+F` busca global, `Ctrl+,` Configurações, `Ctrl+1..9` mudar aba, `Ctrl+B` bloquear sessão (Ctrl+N novo lançamento contextual fica para follow-up); documentar em Help dialog | Baixa | — | Baixa | ✅ Concluído | — |
 
 ---
 
@@ -152,8 +152,8 @@ Arquivo canônico de pendências, auditoria técnica e conformidade com o contra
 | #91 | INFRA | `FileObfuscator` — gerar export anonimizado do banco (substitui nomes de pessoas/empresas/contas por dummies; preserva estrutura/valores) para envio em bug reports. Padrão de `grisbi/src/file_obfuscate.c` | Baixa | — | Baixa | ⏳ Pendente | — |
 | #92 | AUDIT | Trilha de auditoria — tabela `audit_log (id, tabela, op INSERT/UPDATE/DELETE, registro_id, dados_antigos JSON, dados_novos JSON, timestamp, usuario)` populada via SQLite triggers `AFTER INSERT/UPDATE/DELETE` em todas as tabelas financeiras. Viewer em Configurações → Auditoria com filtros por data/tabela/op. Padrão de `web-budget` Hibernate Envers | Baixa | — | Média | ⏳ Pendente | — |
 | #93 | FUNC | Import PDF (extrato bancário BR) — `Poppler-qt6` para extrair texto; parsers heurísticos por banco (Itaú, Bradesco, BB, Caixa, Nubank, Inter); cada parser implementa `IBankPDFParser`; fallback a parser genérico tabular. Gap entre 9 formatos atuais e 18 do skrooge | Baixa | #84 | Alta | ⏳ Pendente | — |
-| #94 | FUNC | Print/Preview do Dashboard — `QPrinter` + `QPrintPreviewDialog` para imprimir relatório mensal/anual com layout otimizado A4 (header com mês, KPIs, tabela de categorias, gráfico). Reaproveitar layout existente do Dashboard. Padrão de `kmymoney/views/khomeview.cpp:140-160` | Baixa | — | Média | ⏳ Pendente | — |
-| #95 | FUNC | Debounce 300ms nas calculadoras — `QTimer m_timer` singleShot conectado a `onCalculoDelayed`; campos pesados (TVM/Price/SAC/CET) param de recalcular a cada keystroke, só após 300ms de inatividade. Padrão de `skrooge/.../skgcalculatorpluginwidget.cpp:37-129`. Reduz CPU em wizards complexos do Bloco 2 | Baixa | — | Baixa | ⏳ Pendente | — |
+| #94 | FUNC | Print/Preview do Dashboard — `QPrinter` + `QPrintPreviewDialog` para imprimir relatório mensal/anual com layout otimizado A4 (header com mês, KPIs, tabela de categorias, gráfico). Reaproveitar layout existente do Dashboard. Padrão de `kmymoney/views/khomeview.cpp:140-160` | Baixa | — | Média | ✅ Concluído | — |
+| #95 | FUNC | Debounce 300ms nas calculadoras — `QTimer m_timer` singleShot conectado a `onCalculoDelayed`; campos pesados (TVM/Price/SAC/CET) param de recalcular a cada keystroke, só após 300ms de inatividade. Padrão de `skrooge/.../skgcalculatorpluginwidget.cpp:37-129`. Reduz CPU em wizards complexos do Bloco 2 | Baixa | — | Baixa | ✅ Concluído | — |
 
 ---
 
