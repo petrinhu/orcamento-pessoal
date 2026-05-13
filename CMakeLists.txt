@@ -53,6 +53,12 @@ set(SOURCES
     # Services — OAuth Device Flow RFC 8628 (#83)
     src/services/OAuthDeviceFlow.cpp
 
+    # Services — FileObfuscator (#91)
+    src/services/FileObfuscator.cpp
+
+    # Services — Audit log triggers (#92)
+    src/services/AuditLogService.cpp
+
     # Core — secret store
     src/core/secret/SecretStoreService.cpp
 
