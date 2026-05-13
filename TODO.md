@@ -1,0 +1,167 @@
+# PeuBud — Planejamento
+
+Arquivo canônico de pendências, auditoria técnica e conformidade com o contrato.
+
+## Legenda
+
+- **Grupo**: `FUNC` (funcionalidade) · `TESTE` (teste/qualidade) · `AUDIT` (auditoria técnica) · `CONTRATO` (conformidade com regras mandatórias) · `BUG` (achado concreto de auditoria de código) · `INFRA` (infraestrutura/build/CI) · `DOC` (documentação)
+- **Prioridade**: `Crítica` · `Alta` · `Média` · `Baixa`
+- **Pré-requisito**: `—` (nenhum) ou ID(s) de itens que precisam ser concluídos antes
+- **Dificuldade**: `Alta` · `Média` · `Baixa`
+- **Status**: ✅ Concluído · 🔄 Em andamento · 🟡 Parcial · ⏳ Pendente · 💡 Decisão tomada · 🎨 Pendente design · 🔍 Pendente verificação · ❌ Cancelado
+- **Estado Auditado**: `—` (não auditado) · `✓` (auditado e aprovado) · `⚠` (auditado com ressalvas)
+
+> **Convenção de ID:** `#NN` mantido como identificador estável — usado em commits (`feat(#44): ...`), branches e referências cruzadas. Próximo ID disponível: **#70**.
+>
+> **Hierarquia:** itens filhos só começam após pai ✅; irmãos com mesmo prefixo numérico (ex.: `1.2.1` e `1.2.2`) são paralelos.
+
+---
+
+## Bloco 0 — Concluídos
+
+| ID | Grupo | Descrição Técnica | Prioridade | Pré-requisito | Dificuldade | Status | Estado Auditado |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| #1 | FUNC | Tema: aba ativa mesma cor do conteúdo | Alta | — | Baixa | ✅ Concluído | — |
+| #2 | FUNC | Entradas: clique simples abre dialog | Alta | — | Baixa | ✅ Concluído | — |
+| #3 | FUNC | Cartões: renomear aba "Parcelas" → "Cartões" | Alta | — | Baixa | ✅ Concluído | — |
+| #4 | FUNC | Cartões: renomear "Nova compra" → "Novo item" | Alta | — | Baixa | ✅ Concluído | — |
+| #5 | FUNC | Entradas: labels sub-colunas (linha 1) | Alta | — | Média | ✅ Concluído | — |
+| #6 | FUNC | Dashboard: resumo mensal/anual | Média | — | Alta | ✅ Concluído | — |
+| #7 | FUNC | Colunas: auto-ajuste expand-only | Média | — | Média | ✅ Concluído | — |
+| #8 | FUNC | Entradas: botão "Organizar por" | Média | — | Média | ✅ Concluído | — |
+| #9 | FUNC | Navegação: botão "Hoje" + atalhos teclado | Média | — | Média | ✅ Concluído | — |
+| #10 | FUNC | UX: totais na status bar | Média | — | Baixa | ✅ Concluído | — |
+| #11 | FUNC | Export: escolha de seções (CSV/XLSX/JSON/MD/HTML/PDF/TXT/OFX/QIF) — `ExportDialog` com checkboxes | Baixa | — | Média | ✅ Concluído | — |
+| #12 | FUNC | UX: estado vazio com msg "Clique para adicionar" | Baixa | — | Baixa | ✅ Concluído | — |
+| #13 | FUNC | Configurações: reorganizar UI/UX | Média | — | Média | ✅ Concluído | — |
+| #14 | FUNC | Aba Gastos: lançamentos avulsos PIX/débito/dinheiro/fixos | Alta | — | Alta | ✅ Concluído | — |
+| #15 | FUNC | Conexões entre abas: vincular valores/cálculos entre Cartões, Entradas, Gastos | Média | — | Alta | ✅ Concluído | — |
+| #16 | FUNC | Barra de menu: ícones ⏮◀▶⏭ + Abrir/Salvar/Calc/Config/Bloquear | Média | — | Baixa | ✅ Concluído | — |
+| #17 | FUNC | Calculadora v1: aba Comum + CalculadoraEdit + CalculadoraHub + botão 🧮 | Média | — | Média | ✅ Concluído | — |
+| #20 | FUNC | Aba investimentos | Alta | — | Alta | ✅ Concluído | — |
+| #21 | FUNC | Categorias hierárquicas (gastos, entradas, investimentos) | Média | — | Média | ✅ Concluído | — |
+| #22 | FUNC | Aba planejamento e orçamento | Alta | — | Alta | ✅ Concluído | — |
+| #23 | FUNC | Aba tendências de gastos | Média | — | Média | ✅ Concluído | — |
+| #24 | FUNC | Gráficos (Qt Charts — barras, pizza, linha) | Média | — | Média | ✅ Concluído | — |
+| #26 | FUNC | Transações recorrentes agendadas | Alta | — | Média | ✅ Concluído | — |
+| #27 | FUNC | Reconciliação bancária (extrato vs. app) | Média | — | Alta | ✅ Concluído | — |
+| #28 | FUNC | Metas financeiras (savings goals) | Média | — | Média | ✅ Concluído | — |
+| #29 | FUNC | Gestão de pagadores/recebedores | Baixa | — | Baixa | ✅ Concluído | — |
+| #30 | FUNC | Undo/Redo (QUndoStack único em MainWindow, LambdaCommand genérico) | Média | — | Alta | ✅ Concluído | — |
+| #31 | FUNC | Lembretes/alertas de contas a pagar | Média | — | Média | ✅ Concluído | — |
+| #32 | FUNC | Busca/filtro global de transações | Média | — | Baixa | ✅ Concluído | — |
+| #33 | FUNC | Controle de dívidas e empréstimos | Média | — | Alta | ✅ Concluído | — |
+| #34 | AUDIT | Refactor: extrair acesso a Repository/SQL dos widgets para Services | Alta | — | Alta | ✅ Concluído | — |
+| #35 | FUNC | Cartões: painel inferior com campos editáveis + tabela de amortização Price | Média | — | Alta | ✅ Concluído | — |
+| #36 | FUNC | Calculadora v2: aba Financeira HP-style (TVM, amortização, BEGIN/END, "Enviar para Cartões") | Média | — | Alta | ✅ Concluído | — |
+| #37 | FUNC | Calculadora v3: aba Wizards (CET, juros, parcelas, FV, renda passiva, ROI, comprometimento, saldo devedor, meta, amortização parcial) | Baixa | — | Alta | ✅ Concluído | — |
+| #38 | FUNC | Calculadora: entrada por teclado físico | Média | — | Baixa | ✅ Concluído | — |
+| #39 | FUNC | Calculadora: fechar junto com janela principal | Média | — | Baixa | ✅ Concluído | — |
+| #40 | FUNC | Calculadora: botão "Sempre visível" | Média | — | Baixa | ✅ Concluído | — |
+| #41 | FUNC | Configurações: aba inicial ao abrir o app | Baixa | — | Baixa | ✅ Concluído | — |
+| #42 | CONTRATO | Migrar criptografia para modelo híbrido AES-256-GCM + XChaCha20-Poly1305 via libsodium; Argon2id; formato versionado; backward-compat CBC | Alta | — | Alta | ✅ Concluído | ✓ |
+| #44 | FUNC | Infraestrutura: `PrecoAtivo` + `PriceRepository` + tabelas `precos_ativos` e `cotacoes_tempo_real` | Alta | — | Baixa | ✅ Concluído | — |
+| #49 | FUNC | Calculadora v3: adições — Comparador RF + FIRE number | Baixa | #37 | Baixa | ✅ Concluído | — |
+| #60 | FUNC | Calculadora v3+: FIRE variants (Lean/Fat/Coast/Barista/Geographic Arbitrage) | Baixa | #49 | Média | ✅ Concluído | — |
+
+---
+
+## Bloco 1 — Infraestrutura de Mercado & Dados em Tempo Real
+
+| ID | Grupo | Descrição Técnica | Prioridade | Pré-requisito | Dificuldade | Status | Estado Auditado |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| #59 | FUNC | B3CotahistProvider: download e cache histórico completo da B3 (COTAHIST anual/diário + cotação RT cotacao.b3.com.br + composição índices + Hub Dados Públicos) | Alta | #44 | Alta | ⏳ Pendente | — |
+| #45 | FUNC | MarketDataService: fetch assíncrono, providers selecionáveis (B3 Direto/Yahoo/B3 Oficial/Brapi) + FintzProvider (dividendos/splits/fundamentos/PTAX) | Alta | #44 | Alta | 🔄 Em andamento | — |
+| #48 | FUNC | InvestimentosWidget: migração schema (`ticker`/`quantidade`/`preco_unitario`) + preços de mercado em tempo real + DY% via Fintz | Alta | #45 | Alta | ⏳ Pendente | — |
+| #66 | FUNC | Dividendos e Proventos tracker — tabela `proventos_recebidos`, sub-painel por ativo, card Dashboard | Média | #48 | Média | ⏳ Pendente | — |
+| #46 | FUNC | Configurações: seção "Mercado" — provider padrão, credenciais Brapi, histórico COTAHIST, polling, moedas slots 1/2 | Alta | #45 | Baixa | ⏳ Pendente | — |
+| #47 | FUNC | Painel câmbio LED (`CurrencyPanelWidget`, DSEG7) — 50 fiat + 30 cripto; BRL via PTAX Fintz, demais via Frankfurter/CoinGecko | Alta | #46 | Alta | ⏳ Pendente | — |
+| #58 | FUNC | BrapiProvider (free 15k req · Startup R$59,99 · Pro R$99,99 · auth Bearer · `/api/quote` `/api/crypto` `/api/currency` `/api/inflation` `/api/interest-rate`) | Alta | #46 | Média | ⏳ Pendente | — |
+| #63 | FUNC | Simulador de Rentabilidade e Dividendos — DRIP, ajuste por splits, comparativo CDI/IPCA/IBOV | Baixa | #58, #59 | Alta | ⏳ Pendente | — |
+| #50 | FUNC | Aba Bolsa: infraestrutura + busca + seletor de provider em runtime | Alta | #46 | Média | ⏳ Pendente | — |
+| #51 | FUNC | Aba Bolsa: gráfico de candles fluido sem piscar (QCustomPlot v2.1, layer separado `liveCandle` + `rpQueuedReplot`) | Alta | #50 | Alta | ⏳ Pendente | — |
+| #52 | FUNC | Aba Bolsa: indicadores técnicos (TA-Lib — MA/EMA/RSI/MACD/Stoch/BBands/OBV/ATR) | Alta | #51 | Alta | ⏳ Pendente | — |
+| #53 | FUNC | Aba Bolsa: suporte/resistência (automático Pivot/Fib/Camarilla/Swing + traçado manual persistido) | Média | #51 | Alta | ⏳ Pendente | — |
+| #64 | FUNC | Aba Bolsa: assistente IA integrado (16 providers configuráveis, rotação de chaves, fallback chain, cooldown exponencial, streaming com coalescing, system prompt cache-stable) | Média | #50 | Alta | ⏳ Pendente | — |
+| #65 | FUNC | Ajuste automático por splits e bonificações — tabela `ajustes_corporativos`, fator cumulativo retroativo em `precos_ativos` | Alta | #44 | Média | ⏳ Pendente | — |
+
+---
+
+## Bloco 2 — Calculadoras
+
+| ID | Grupo | Descrição Técnica | Prioridade | Pré-requisito | Dificuldade | Status | Estado Auditado |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| #43 | FUNC | Calculadora v4: Bolsa de Valores (19 wizards — Operacional 7 + Fundamentalista 7 + FIIs 5; dados via Fintz `/v1/financials` quando ticker preenchido) | Baixa | #37 | Alta | ⏳ Pendente | — |
+| #54 | FUNC | Calculadora v5: Imóveis (SAC vs Price, FGTS, CET imobiliário com MIP/DFI, amortização extra, comprometimento CEF, aluguel vs financiamento) | Baixa | #37 | Alta | ⏳ Pendente | — |
+| #55 | FUNC | Calculadora v6: Renda Fixa (%CDI bruto/líquido, IPCA+, prefixado, CDB vs LCI/LCA, Tesouro Selic vs CDB, IOF 30d, **Wizard Tesouro Direto J1–J4** com série histórica `tesouro_yields`) | Baixa | #37 | Alta | ⏳ Pendente | — |
+| #56 | FUNC | Calculadora v7: IR & Tributos (IRPF mensal, PGBL benefício fiscal, PGBL vs VGBL, carnê-leão, simplificada vs completa) | Baixa | #37 | Alta | ⏳ Pendente | — |
+| #57 | FUNC | Calculadora v8: Inflação & Câmbio (IPCA/IGP-M/TR/INPC, poder de compra, Fisher real, conversão com IOF, meta corrigida) | Baixa | #37 | Média | ⏳ Pendente | — |
+| #61 | FUNC | Calculadora Reserva de Emergência (despesas × meses, gap, comparativo Poupança/CDB/Tesouro Selic líquidos) | Baixa | #37 | Baixa | ⏳ Pendente | — |
+| #62 | FUNC | Calculadora CLT vs PJ (Simples Nacional anexos I–V + Lucro Presumido, break-even faturamento) | Baixa | #37 | Alta | ⏳ Pendente | — |
+
+---
+
+## Bloco 3 — Melhorias Gerais
+
+| ID | Grupo | Descrição Técnica | Prioridade | Pré-requisito | Dificuldade | Status | Estado Auditado |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| #25 | FUNC | Consultor financeiro IA — modo "copiar prompt" + modo API direta (mesmos 16 providers de #64, default sugerido Venice AI private); memória persistente `ia_memoria_consultor` | Baixa | — | Alta | ⏳ Pendente | — |
+| #18 | TESTE | Testes automatizados CLI (ctest + QTest) — `ParcelaService` (CET/Newton-Raphson), `CurrencyService`, `ImportService`, `ExportService`; mocks para `DatabaseManager` | Baixa | — | Alta | ⏳ Pendente | — |
+| #19 | FUNC | Tradução i18n completa pt-BR / en — completar `peubud_en.ts` via Qt Linguist; locale-aware datas/moeda | Baixa | — | Média | ⏳ Pendente | — |
+| #68 | FUNC | Alertas de preço e eventos via Telegram Bot — `QNetworkAccessManager` puro, retry 3× com `retry_after`, streaming IA via `editMessageText` | Baixa | #45 | Média | ⏳ Pendente | — |
+| #69 | AUDIT | Eliminar duplicação de funções financeiras — extrair fórmulas inline de `CalculadoraDialog` lambdas + `ParcelaService`/`TvmService` para `CalculadoraService` (stateless, métodos estáticos, fonte única) | Baixa | — | Média | ⏳ Pendente | — |
+
+---
+
+## Bloco 4 — Conformidade, Infra & Auditoria (novas)
+
+> Itens derivados de auditoria de contexto (sessão 2026-05-13). Próximo ID disponível após este bloco: **#81**.
+
+| ID | Grupo | Descrição Técnica | Prioridade | Pré-requisito | Dificuldade | Status | Estado Auditado |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| #70 | CONTRATO | Sincronizar `CONTRACT.md` local (fork, 1048 linhas) com `[[CONTRACT]]` canônico do vault (945 linhas) — gerar diff, classificar adições C++/Qt como upstream-candidates ou local-only, documentar política de sync | Média | — | Média | ⏳ Pendente | — |
+| #71 | DOC | Criar `TESTES.md` local apontando para suítes T1–T15 / A1–A13 do `[[TESTES]]` canônico — `CONTRACT.md §11` referencia arquivo que não existe no repo (link quebrado) | Alta | — | Baixa | ⏳ Pendente | — |
+| #72 | INFRA | Codeberg Actions workflow `.forgejo/workflows/build.yml` — CMake build matrix Fedora/Debian/Arch, instala dependências via dnf/apt/pacman, executa `cmake --build` (badge no README já aponta para essa URL — workflow ainda não existe) | Alta | — | Média | ⏳ Pendente | — |
+| #73 | TESTE | Testes de integração SQLite — cobrir padrão `PRAGMA table_info` + `ALTER TABLE` idempotente (migração #48), garantir backward-compat de schemas antigos | Média | #18 | Média | ⏳ Pendente | — |
+| #74 | AUDIT | Pre-commit hook com `clang-tidy` + `cppcheck` (sem warnings novos) — instala via dnf/apt/pacman; configuração `.clang-tidy` checada no repo | Média | — | Média | ⏳ Pendente | — |
+| #75 | AUDIT | CI: build dedicado com ASan/UBSan + execução de toda suíte `ctest` — falha pipeline se `ERROR SUMMARY` > 0 | Média | #72, #18 | Média | ⏳ Pendente | — |
+| #76 | AUDIT | Auditoria completa contra `[[AUDITORIAS]]` checklist C++ — gerar `reports/auditoria_<data>.md`, abrir BUGs como itens novos (#NN AUDIT) com `Estado Auditado: ⚠` | Alta | — | Alta | ⏳ Pendente | — |
+| #77 | INFRA | ~~Empacotamento Flatpak (`org.peubud.PeuBud`) + AppImage para distribuição cross-distro sem depender de pacotes Qt6 do sistema~~ — cancelado em 2026-05-13 | Baixa | #72 | Alta | ❌ Cancelado | — |
+| #78 | DOC | `CHANGELOG.md` formato Keep a Changelog (1.1.0); seções por versão, agrupadas por `Added/Changed/Fixed/Security/Removed`; release tag git | Média | — | Baixa | ⏳ Pendente | — |
+| #79 | FUNC | Backup automático cifrado do banco — schedule (diário/semanal), retenção configurável (N últimas cópias), destino local ou WebDAV; cifrado com mesma chave libsodium do banco principal | Média | — | Média | ⏳ Pendente | — |
+| #80 | FUNC | Atalhos teclado globais — `Ctrl+N` novo lançamento (contextual à aba ativa), `Ctrl+F` busca global, `Ctrl+,` Configurações, `Ctrl+1..9` mudar aba, `Ctrl+B` bloquear sessão; documentar em Help dialog | Baixa | — | Baixa | ⏳ Pendente | — |
+
+---
+
+## Bloco 5 — Aprendizados dos Modelos (auditoria `./models/`)
+
+> Itens derivados de auditoria de `models/` (kmymoney, skrooge, gnucash, grisbi, bot-tesouro-direto, openclaw, Denaro, web-budget) — 2026-05-13. Algoritmos extraídos como domínio público (fórmulas matemáticas), padrões arquiteturais reimplementados limpos em C++20/Qt6. Próximo ID disponível após este bloco: **#96**.
+
+| ID | Grupo | Descrição Técnica | Prioridade | Pré-requisito | Dificuldade | Status | Estado Auditado |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| #81 | FUNC | `FinanceEngine` — motor financeiro stateless centralizado (PMT/PV/FV/N/i via Newton-Raphson; 5 frequências capitalização × 5 pagamento; discreta/contínua; início/fim período). Fonte única para Cartões/Calculadoras/Investimentos. Algoritmo de `gnucash/libgnucash/app-utils/calculation/fin.c:1304-1366` (`f(i)=A*(PV+C)+PV+FV` + derivada, guess inicial em 3 ramos). Documentar fórmulas inline com referências eq.1–18. Suporta backend de #19/#54/#55/#56/#69 | Alta | — | Alta | ⏳ Pendente | — |
+| #82 | FUNC | `ParcelaService`/`FinanceEngine`: suporte explícito a **proportionnel** (linear `r/n`) vs **actuariel** (composto `exp(log(1+r)/n)-1`) — cobre modelo BR de consignado (parcela fixa + taxa % saldo) vs SAC/Price atuarial. Algoritmo de `grisbi/src/bet_data_finance.c:73-105`. Crítico para CET correto em #54 | Alta | #81 | Média | ⏳ Pendente | — |
+| #83 | FUNC | `OAuthDeviceFlow` em C++ — implementação RFC 8628 (Device Authorization Grant). POST `/login/device/code` → exibe `user_code` + URL → polling `/login/oauth/access_token` com trato de `authorization_pending`, `slow_down` (+2s), `expired_token`, `access_denied`. Client ID público GitHub Copilot `Iv1.b507a08c87ecfe98`. Token cifrado via libsecret. Base de #64 (GitHub Copilot + OpenAI Codex ChatGPT). Template em `openclaw/extensions/github-copilot/login.ts` | Alta | — | Média | ⏳ Pendente | — |
+| #84 | AUDIT | Refactor `ImportService`: introduzir `IMatchFinder` interface + `MatchResult` enum `{NotFound, Imprecise, Precise, Duplicate}` + janela de dias configurável (`m_matchWindow=4`). Duas implementações: `ExistingTransactionMatchFinder` + `ScheduledTransactionMatchFinder`. Heurísticas: bankId, amount±%, payee, account. Padrão de `kmymoney/converter/transactionmatchfinder.h:22-149` | Média | — | Média | ⏳ Pendente | — |
+| #85 | FUNC | Reconciliação automática por knapsack/subset-sum — dado saldo-alvo, achar combinação de lançamentos que bate. DP com bounds `rem_pos`/`rem_neg` + timeout 2–5s + fallback manual. Melhora #27. Algoritmo de `gnucash/libgnucash/app-utils/gnc-autoclear.cpp` | Média | #27 | Alta | ⏳ Pendente | — |
+| #86 | INFRA | Provider externo via `QProcess` — wrapping de scripts Python helpers para cotações/câmbio (isola HTTP + parsing de libs externas; atualiza fora do binário). Padrão de `skrooge/skgbankmodeler/skgunitobject.cpp:2292+` (Python) e `gnucash/libgnucash/app-utils/gnc-quotes.cpp` (Perl `Finance::Quote`). Alternativa a `QNetworkAccessManager` puro para providers complexos | Média | #45 | Média | ⏳ Pendente | — |
+| #87 | FUNC | `BaseWizardDialog` reutilizável — `QDialog` puro + sidebar de steps + área de página + botões; páginas implementam `nextPage()`/`previousPage()` virtuais (navegação não-linear, mais flexível que `QWizard`). Base de todos os wizards do Bloco 2 (#43, #54, #55, #56, #57, #61, #62). Padrão de `kmymoney/wizards/kmymoneywizard.h` | Média | — | Média | ⏳ Pendente | — |
+| #88 | FUNC | `FechamentoMensalService` — snapshot imutável do mês fechado (entradas, gastos, investimentos, patrimônio, saldo); operações `close(periodo)`, `reopen(periodo)`, `simulate(periodo)`. Tabela `fechamentos_mensais` (período, dados serializados JSON, criado_em, fechado_por). Garante histórico consistente após edições retroativas. Padrão de `web-budget/.../ClosingService.java:43-110` | Média | — | Média | ⏳ Pendente | — |
+| #89 | FUNC | Activity pattern em `OperacaoInvestimentoDialog` — sub-classe por tipo de operação (10: `BuyShares, SellShares, Dividend, ReinvestDividend, Yield, AddShares, RemoveShares, SplitShares, InterestIncome, Bonificacao`); cada uma com `showWidgets()` (campos dinâmicos), `consistencyCheck()`, `type()`. Substitui `if/switch` por dispatch polimórfico. Padrão de `kmymoney/views/investactivities.cpp:360-510` + enum `kmymoney/mymoney/mymoneyenums.h:357-368`. Refactor de #48 | Média | #48 | Média | ⏳ Pendente | — |
+| #90 | FUNC | Anexar comprovante (Receipt) por lançamento — campo `BLOB` em `lancamentos_entradas`/`lancamentos_gastos`/`compras` para foto/scan do comprovante. UI: botão "📎 Anexar" + thumbnail + viewer expandido. Útil para IRPF (declaração ano-base). Padrão de `Denaro/.../Transaction.cs:75` | Baixa | — | Média | ⏳ Pendente | — |
+| #91 | INFRA | `FileObfuscator` — gerar export anonimizado do banco (substitui nomes de pessoas/empresas/contas por dummies; preserva estrutura/valores) para envio em bug reports. Padrão de `grisbi/src/file_obfuscate.c` | Baixa | — | Baixa | ⏳ Pendente | — |
+| #92 | AUDIT | Trilha de auditoria — tabela `audit_log (id, tabela, op INSERT/UPDATE/DELETE, registro_id, dados_antigos JSON, dados_novos JSON, timestamp, usuario)` populada via SQLite triggers `AFTER INSERT/UPDATE/DELETE` em todas as tabelas financeiras. Viewer em Configurações → Auditoria com filtros por data/tabela/op. Padrão de `web-budget` Hibernate Envers | Baixa | — | Média | ⏳ Pendente | — |
+| #93 | FUNC | Import PDF (extrato bancário BR) — `Poppler-qt6` para extrair texto; parsers heurísticos por banco (Itaú, Bradesco, BB, Caixa, Nubank, Inter); cada parser implementa `IBankPDFParser`; fallback a parser genérico tabular. Gap entre 9 formatos atuais e 18 do skrooge | Baixa | #84 | Alta | ⏳ Pendente | — |
+| #94 | FUNC | Print/Preview do Dashboard — `QPrinter` + `QPrintPreviewDialog` para imprimir relatório mensal/anual com layout otimizado A4 (header com mês, KPIs, tabela de categorias, gráfico). Reaproveitar layout existente do Dashboard. Padrão de `kmymoney/views/khomeview.cpp:140-160` | Baixa | — | Média | ⏳ Pendente | — |
+| #95 | FUNC | Debounce 300ms nas calculadoras — `QTimer m_timer` singleShot conectado a `onCalculoDelayed`; campos pesados (TVM/Price/SAC/CET) param de recalcular a cada keystroke, só após 300ms de inatividade. Padrão de `skrooge/.../skgcalculatorpluginwidget.cpp:37-129`. Reduz CPU em wizards complexos do Bloco 2 | Baixa | — | Baixa | ⏳ Pendente | — |
+
+---
+
+## Referências
+
+- Padrões e regras: `CONTRACT.md` (fork local) · `[[CONTRACT]]` (canônico do vault)
+- Testes/auditoria: `[[TESTES]]` · `[[AUDITORIAS]]`
+- Deploy: `[[DEPLOY_CHECKLIST]]`
+- Sprint/INVEST/PDCA: `[[AGILE]]`
+- Convenções de código: `.claude/CLAUDE.md` (centavos qint64, juros ×10000, bindValue, PRAGMA FK)
+- Segurança histórica (migração #42): conteúdo consolidado neste arquivo — `SECURITY.md` removido após conclusão
