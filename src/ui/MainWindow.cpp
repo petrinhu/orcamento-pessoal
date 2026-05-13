@@ -59,6 +59,8 @@
 #include <QCloseEvent>
 #include <QToolBar>
 #include <QUndoStack>
+#include <QShortcut>
+#include <QKeySequence>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -66,6 +68,49 @@ MainWindow::MainWindow(QWidget *parent)
     setWindowTitle(QStringLiteral("PeuBud — Orçamento Pessoal"));
     setMinimumSize(960, 620);
     buildUi();
+    setupShortcuts();
+}
+
+// ── Atalhos globais (#80) ─────────────────────────────────────────────────────
+// Ctrl+1..9 muda para aba correspondente (0..8 no QTabWidget).
+// Ctrl+, abre Configurações.
+// Ctrl+F abre Busca Global.
+// Ctrl+B bloqueia a sessão (fecha app; libsecret/KWallet reabre na próxima).
+void MainWindow::setupShortcuts()
+{
+    // Ctrl+1..9 → trocar de aba
+    for (int i = 1; i <= 9; ++i) {
+        const auto seq = QKeySequence(QStringLiteral("Ctrl+%1").arg(i));
+        auto *sc = new QShortcut(seq, this);
+        sc->setContext(Qt::ApplicationShortcut);
+        const int tabIdx = i - 1;
+        connect(sc, &QShortcut::activated, this, [this, tabIdx]() {
+            if (tabIdx < m_tabs->count())
+                m_tabs->setCurrentIndex(tabIdx);
+        });
+    }
+
+    // Ctrl+, → Configurações
+    auto *scCfg = new QShortcut(QKeySequence(QStringLiteral("Ctrl+,")), this);
+    scCfg->setContext(Qt::ApplicationShortcut);
+    connect(scCfg, &QShortcut::activated, this, &MainWindow::onConfiguracoes);
+
+    // Ctrl+F → Busca Global
+    auto *scFind = new QShortcut(QKeySequence::Find, this);
+    scFind->setContext(Qt::ApplicationShortcut);
+    connect(scFind, &QShortcut::activated, this, &MainWindow::onBuscaGlobal);
+
+    // Ctrl+B → Bloquear sessão
+    auto *scLock = new QShortcut(QKeySequence(QStringLiteral("Ctrl+B")), this);
+    scLock->setContext(Qt::ApplicationShortcut);
+    connect(scLock, &QShortcut::activated, this, &MainWindow::onBloquear);
+}
+
+void MainWindow::onBloquear()
+{
+    // Fecha a janela principal: closeEvent já trata dirty/autosave e cifra banco
+    // pelo destructor de DatabaseManager. Próxima abertura exige login.
+    close();
 }
 
 void MainWindow::buildUi()

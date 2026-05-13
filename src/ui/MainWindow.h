@@ -60,6 +60,10 @@ private:
 
     void onReconciliar();
     void onBuscaGlobal();
+    void onBloquear();
+
+    // Atalhos globais de teclado (#80)
+    void setupShortcuts();
 
     // Recebe dados TVM do CalculadoraHub e abre AddCompraDialog na aba Cartões.
     void onTvmParaCartoes(double pv, int n, double iMensal, double pmt);
