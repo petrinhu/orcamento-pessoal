@@ -1,0 +1,3 @@
+leak:Qt6
+leak:QApplicationPrivate
+leak:libQt6Core
