@@ -39,6 +39,15 @@ private slots:
     void taxaProporcionalAnualParaMensal();
     void taxaActuarielMensalParaAnual();
     void taxaConversaoZero();
+
+    // Capitalizacao continua (#81 follow-up)
+    void fvContinuoExponencial();
+    void pvContinuoInversoDeFv();
+    void taxaContinuaDeDiscreta12mEquivale();
+    void taxaDiscretaDeContinuaInversa();
+
+    // Multiplas frequencias (#81 follow-up)
+    void pmtMultiFreqSemestralVsMensal();
 };
 
 // Tolerancia: 0.01 (centavo de Real) para valores monetarios; 1e-6 para taxa.
@@ -152,6 +161,50 @@ void TestFinanceEngine::taxaConversaoZero()
     // i=0 deve sempre retornar 0 (sem juros)
     QCOMPARE(FinanceEngine::taxaEquivalente(0.0, 1, 12), 0.0);
     QCOMPARE(FinanceEngine::taxaProporcional(0.0, 1, 12), 0.0);
+}
+
+void TestFinanceEngine::fvContinuoExponencial()
+{
+    // PV=1000, i=10% a.a. continuo, 1 ano -> 1000 * e^0.1 = 1105.17
+    const double fv = FinanceEngine::fvContinuo(1000.0, 0.10, 1.0);
+    QVERIFY2(qAbs(fv - 1105.1709) < 0.01,
+        qPrintable(QStringLiteral("FV continuo = %1, esperado 1105.1709").arg(fv)));
+}
+
+void TestFinanceEngine::pvContinuoInversoDeFv()
+{
+    // PV * e^(0.05*2) = FV; reverso
+    const double fv = 1105.17;
+    const double pv = FinanceEngine::pvContinuo(fv, 0.05, 2.0);
+    QVERIFY2(qAbs(pv - 1000.0) < 0.1,
+        qPrintable(QStringLiteral("PV continuo = %1, esperado ~1000").arg(pv)));
+}
+
+void TestFinanceEngine::taxaContinuaDeDiscreta12mEquivale()
+{
+    // 1% a.m. discreta -> r_cont = 12 * ln(1.01) = 0.11944 (~11.94% a.a.)
+    const double r = FinanceEngine::taxaContinuaDeDiscreta(0.01, 12);
+    QVERIFY2(qAbs(r - 0.11944) < 1e-4,
+        qPrintable(QStringLiteral("r_cont = %1, esperado ~0.11944").arg(r)));
+}
+
+void TestFinanceEngine::taxaDiscretaDeContinuaInversa()
+{
+    // r = 0.12 a.a. -> i_mensal = e^(0.12/12) - 1 = 0.01005 (~1,005% a.m.)
+    const double i = FinanceEngine::taxaDiscretaDeContinua(0.12, 12);
+    QVERIFY2(qAbs(i - 0.01005) < 1e-4,
+        qPrintable(QStringLiteral("i = %1, esperado ~0.01005").arg(i)));
+}
+
+void TestFinanceEngine::pmtMultiFreqSemestralVsMensal()
+{
+    // Cap semestral 6% (12.36% a.a.) com pgto mensal por 1 ano.
+    // iMensal = (1.1236)^(1/12) - 1 = 0.009759
+    // pv=10000 -> pmt = -10000 * 0.009759 / (1 - (1.009759)^-12)
+    //          = ~-885.65 (saida do bolso)
+    const double pmt = FinanceEngine::pmtMultiFreq(10000.0, 0.06, 2, 12, 1.0);
+    QVERIFY2(pmt < 0.0 && qAbs(pmt) > 800.0 && qAbs(pmt) < 1000.0,
+        qPrintable(QStringLiteral("pmt = %1, esperado ~-885").arg(pmt)));
 }
 
 QTEST_GUILESS_MAIN(TestFinanceEngine)

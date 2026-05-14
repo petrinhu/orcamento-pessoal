@@ -183,3 +183,55 @@ double FinanceEngine::taxaProporcional(double i, int periodosDe, int periodosPar
     return i * static_cast<double>(periodosDe)
              / static_cast<double>(periodosPara);
 }
+
+// ── Capitalizacao continua (#81 follow-up) ───────────────────────────────────
+
+double FinanceEngine::fvContinuo(double pv, double iAnual, double anos)
+{
+    return pv * std::exp(iAnual * anos);
+}
+
+double FinanceEngine::pvContinuo(double fv, double iAnual, double anos)
+{
+    return fv * std::exp(-iAnual * anos);
+}
+
+double FinanceEngine::taxaContinuaDeDiscreta(double i, int nPeriodos)
+{
+    if (nPeriodos <= 0) {
+        throw std::domain_error("taxaContinuaDeDiscreta: nPeriodos > 0");
+    }
+    if (i <= -1.0) {
+        throw std::domain_error("taxaContinuaDeDiscreta: i <= -100%");
+    }
+    return static_cast<double>(nPeriodos) * std::log(1.0 + i);
+}
+
+double FinanceEngine::taxaDiscretaDeContinua(double rAnual, int nPeriodos)
+{
+    if (nPeriodos <= 0) {
+        throw std::domain_error("taxaDiscretaDeContinua: nPeriodos > 0");
+    }
+    return std::exp(rAnual / static_cast<double>(nPeriodos)) - 1.0;
+}
+
+// ── Multiplas frequencias (#81 follow-up) ────────────────────────────────────
+
+double FinanceEngine::pmtMultiFreq(double pv, double iCapital,
+                                    int nCap, int nPgto, double anos)
+{
+    if (nCap <= 0 || nPgto <= 0) {
+        throw std::domain_error("pmtMultiFreq: nCap e nPgto devem ser > 0");
+    }
+    if (anos <= 0.0) {
+        throw std::domain_error("pmtMultiFreq: anos deve ser > 0");
+    }
+
+    // Converte iCapital (taxa por periodo cap) para anual equivalente
+    const double iAnual    = std::pow(1.0 + iCapital, nCap) - 1.0;
+    // Converte para taxa por periodo de pagamento
+    const double iPgto     = std::pow(1.0 + iAnual, 1.0 / nPgto) - 1.0;
+    const int    nPagamentos = static_cast<int>(std::round(anos * nPgto));
+
+    return pmt(pv, 0.0, iPgto, nPagamentos, false);
+}

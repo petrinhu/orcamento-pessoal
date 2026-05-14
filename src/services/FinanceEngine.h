@@ -62,4 +62,45 @@ public:
     // Padrao BR para: cartao de credito, juros de mora, multas.
     [[nodiscard]] static double taxaProporcional(double i, int periodosDe,
                                                  int periodosPara);
+
+    // ── Capitalizacao continua (#81 follow-up) ───────────────────────────────
+    //
+    // Regime continuo: limite de cap composta com periodos -> infinito.
+    // Util para opcoes (Black-Scholes), forex offshore, modelos teoricos.
+
+    // FV continuo: fv = pv * e^(i*t), t em unidades da taxa (anos).
+    [[nodiscard]] static double fvContinuo(double pv, double iAnual,
+                                            double anos);
+
+    // PV continuo: pv = fv * e^(-i*t).
+    [[nodiscard]] static double pvContinuo(double fv, double iAnual,
+                                            double anos);
+
+    // Taxa equivalente discreta -> continua. (1+i)^n - 1 = e^(r*n) - 1
+    //   r_cont = n * ln(1 + i / n)
+    // i: taxa por periodo discreto; nPeriodos: periodos por ano.
+    [[nodiscard]] static double taxaContinuaDeDiscreta(double i, int nPeriodos);
+
+    // Taxa contínua anual -> discreta com nPeriodos por ano.
+    //   i_discreta = e^(r / nPeriodos) - 1
+    [[nodiscard]] static double taxaDiscretaDeContinua(double rAnual,
+                                                       int nPeriodos);
+
+    // ── Multiplas frequencias capitalizacao (#81 follow-up) ──────────────────
+    //
+    // Modela cenario em que capitalizacao (rendimento) ocorre em frequencia
+    // diferente da de pagamento. Exemplo: emprestimo HP-12C com cap semestral
+    // e pgto mensal.
+    //
+    // pmtMultiFreq calcula PMT efetivo dado:
+    //   pv: principal
+    //   iCapital: taxa por periodo de capitalizacao
+    //   nCap: numero de periodos de capitalizacao por ano
+    //   nPgto: numero de pagamentos por ano
+    //   anos: prazo total em anos
+    //
+    // Converte iCapital para taxa equivalente no periodo de pagamento, depois
+    // delega para pmt() padrao.
+    [[nodiscard]] static double pmtMultiFreq(double pv, double iCapital,
+                                              int nCap, int nPgto, double anos);
 };
