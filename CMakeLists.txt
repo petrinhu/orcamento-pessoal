@@ -286,3 +286,71 @@ if(BUILD_TESTING)
     enable_testing()
     add_subdirectory(tests)
 endif()
+
+# ═════════════════════════════════════════════════════════════════════════════
+# CPack: gera DEB + RPM + TGZ + source tarball (#96)
+# Uso: cd build && cpack -G DEB     (Debian/Ubuntu)
+#      cd build && cpack -G RPM     (Fedora/RHEL)
+#      cd build && cpack -G TGZ     (genérico)
+#      cd build && cpack --config CPackSourceConfig.cmake  (source tarball)
+# ═════════════════════════════════════════════════════════════════════════════
+
+include(GNUInstallDirs)
+
+# Instalação dos artefatos no destino
+install(TARGETS orcamento-pessoal
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+
+# Metadados CPack
+set(CPACK_PACKAGE_NAME            "peubud")
+set(CPACK_PACKAGE_VENDOR          "Petrus Silva Costa")
+set(CPACK_PACKAGE_CONTACT         "petrinhu@yahoo.com.br")
+set(CPACK_PACKAGE_VERSION         "${PROJECT_VERSION}")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY
+    "Aplicativo de orçamento pessoal em C++20/Qt6 com banco cifrado")
+set(CPACK_PACKAGE_HOMEPAGE_URL
+    "https://codeberg.org/petrinhu/orcamento_pessoal")
+set(CPACK_PACKAGE_INSTALL_DIRECTORY "PeuBud")
+set(CPACK_RESOURCE_FILE_LICENSE   "${CMAKE_SOURCE_DIR}/LICENSE")
+set(CPACK_RESOURCE_FILE_README    "${CMAKE_SOURCE_DIR}/README.md")
+
+set(CPACK_GENERATOR "TGZ;DEB;RPM")
+set(CPACK_SOURCE_GENERATOR "TGZ")
+set(CPACK_SOURCE_IGNORE_FILES
+    "/build/"
+    "/build-test/"
+    "/build-sanitize/"
+    "/\\\\.git/"
+    "/\\\\.idea/"
+    "/data/"
+    "\\\\.user$"
+    "\\\\.qm$"
+)
+
+# ── DEB ─────────────────────────────────────────────────────────────────────
+set(CPACK_DEBIAN_PACKAGE_NAME        "peubud")
+set(CPACK_DEBIAN_PACKAGE_SECTION     "misc")
+set(CPACK_DEBIAN_PACKAGE_PRIORITY    "optional")
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER  "${CPACK_PACKAGE_CONTACT}")
+set(CPACK_DEBIAN_PACKAGE_HOMEPAGE    "${CPACK_PACKAGE_HOMEPAGE_URL}")
+set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS   ON)
+# Fallback explicito caso shlibdeps nao seja executado
+set(CPACK_DEBIAN_PACKAGE_DEPENDS
+    "libqt6core6, libqt6gui6, libqt6widgets6, libqt6charts6, libqt6sql6, libqt6network6, libqt6printsupport6, libssl3, libsecret-1-0, libsodium23")
+
+# ── RPM ─────────────────────────────────────────────────────────────────────
+set(CPACK_RPM_PACKAGE_NAME           "peubud")
+set(CPACK_RPM_PACKAGE_GROUP          "Applications/Office")
+set(CPACK_RPM_PACKAGE_LICENSE        "PolyForm Noncommercial 1.0.0")
+set(CPACK_RPM_PACKAGE_URL            "${CPACK_PACKAGE_HOMEPAGE_URL}")
+set(CPACK_RPM_PACKAGE_REQUIRES
+    "qt6-qtbase, qt6-qtcharts, openssl-libs, libsecret, libsodium")
+set(CPACK_RPM_PACKAGE_AUTOREQPROV    ON)
+set(CPACK_RPM_PACKAGE_RELOCATABLE    OFF)
+
+# ── TGZ ─────────────────────────────────────────────────────────────────────
+set(CPACK_ARCHIVE_FILE_NAME
+    "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")
+
+include(CPack)
