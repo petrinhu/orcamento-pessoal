@@ -40,6 +40,7 @@
 #include "models/Lembrete.h"
 #include "core/CalculadoraHub.h"
 
+#include <QIcon>
 #include <QLabel>
 #include <QTabBar>
 #include <QTabWidget>
@@ -71,6 +72,7 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
     setWindowTitle(QStringLiteral("PeuBud — Orçamento Pessoal"));
+    setWindowIcon(QIcon(QStringLiteral(":/icon/icon.png")));
     setMinimumSize(960, 620);
     buildUi();
     setupShortcuts();

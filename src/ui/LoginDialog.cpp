@@ -8,6 +8,7 @@
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
+#include <QIcon>
 #include <QLineEdit>
 #include <QLabel>
 #include <QPushButton>
@@ -21,6 +22,7 @@ LoginDialog::LoginDialog(QWidget *parent)
     : QDialog(parent)
 {
     setWindowTitle(tr("Orçamento Pessoal"));
+    setWindowIcon(QIcon(QStringLiteral(":/icon/icon.png")));
     setWindowFlags(Qt::Dialog | Qt::FramelessWindowHint);
     setModal(true);
     buildUi();
