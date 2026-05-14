@@ -38,3 +38,10 @@ Thumbs.db
 
 # Cache local (ferramentas, LSP, etc.)
 .cache/
+
+# Runtime data — NUNCA versionar (CLAUDE.md)
+data/
+*.pbd
+.*.db
+*.qm
+
