@@ -84,7 +84,7 @@ Arquivo canônico de pendências, auditoria técnica e conformidade com o contra
 | #52 | FUNC | Aba Bolsa: indicadores técnicos (TA-Lib — MA/EMA/RSI/MACD/Stoch/BBands/OBV/ATR) | Alta | #51 | Alta | ⏳ Pendente | — |
 | #53 | FUNC | Aba Bolsa: suporte/resistência (automático Pivot/Fib/Camarilla/Swing + traçado manual persistido) | Média | #51 | Alta | ⏳ Pendente | — |
 | #64 | FUNC | Aba Bolsa: assistente IA integrado (16 providers configuráveis, rotação de chaves, fallback chain, cooldown exponencial, streaming com coalescing, system prompt cache-stable) | Média | #50 | Alta | ⏳ Pendente | — |
-| #65 | FUNC | Ajuste automático por splits e bonificações — tabela `ajustes_corporativos`, fator cumulativo retroativo em `precos_ativos` | Alta | #44 | Média | ⏳ Pendente | — |
+| #65 | FUNC | Ajuste automático por splits e bonificações — tabela `ajustes_corporativos`, fator cumulativo retroativo em `precos_ativos`. **Entregue:** model `AjusteCorporativo` (split/inplit/bonificacao); `AjusteCorporativoService` CRUD + `fatorCumulativo(ticker, dataAlvo, refData, eventos)` inline (testavel sem DB). Schema idempotente em `DatabaseManager::createSchema`. 6 testes TDD (semEventos/split/inplit/multiplos/foraIntervalo/tickerDiferente). UI cadastro + aplicação retroativa em `precos_ativos` ficam para follow-up. | Alta | #44 | Média | 🟡 Parcial | ✓ |
 
 ---
 

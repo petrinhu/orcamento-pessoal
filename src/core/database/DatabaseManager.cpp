@@ -4,6 +4,7 @@
 #include "services/FechamentoMensalService.h"
 #include "services/AuditLogService.h"
 #include "repositories/ProventoRepository.h"
+#include "services/AjusteCorporativoService.h"
 
 #include <QSqlQuery>
 #include <QSqlError>
@@ -493,6 +494,11 @@ void DatabaseManager::createSchema()
     // #66: tabela proventos_recebidos (tracker dividendos/JCP/rendimento FII)
     if (!ProventoRepository::ensureSchema()) {
         qWarning() << "DatabaseManager: falha ao criar schema de proventos_recebidos";
+    }
+
+    // #65: tabela ajustes_corporativos (splits/inplits/bonificacoes)
+    if (!AjusteCorporativoService::ensureSchema()) {
+        qWarning() << "DatabaseManager: falha ao criar schema de ajustes_corporativos";
     }
 
     // #88: tabela fechamentos_mensais (snapshot imutavel mes contabil)
