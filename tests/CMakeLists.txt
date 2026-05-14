@@ -44,3 +44,6 @@ peubud_add_test(test_suporte_resistencia
     ${CMAKE_SOURCE_DIR}/src/services/SuporteResistencia.cpp)
 peubud_add_test(test_drip
     ${CMAKE_SOURCE_DIR}/src/services/DripSimulator.cpp)
+peubud_add_test(test_invest_activities
+    ${CMAKE_SOURCE_DIR}/src/services/investimento/InvestActivities.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/investimento/InvestActivityFactory.cpp)

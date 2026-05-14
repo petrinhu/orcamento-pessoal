@@ -86,6 +86,10 @@ set(SOURCES
     # Services — DRIP Simulator (dividendos + comparativo CDI/IPCA/IBOV) (#63)
     src/services/DripSimulator.cpp
 
+    # Services — Activity pattern Investimentos (#89)
+    src/services/investimento/InvestActivities.cpp
+    src/services/investimento/InvestActivityFactory.cpp
+
     # Core — secret store
     src/core/secret/SecretStoreService.cpp
 
