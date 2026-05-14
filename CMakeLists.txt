@@ -83,6 +83,9 @@ set(SOURCES
     # Services — Suporte/Resistencia (Pivot/Camarilla/Fib) (#53)
     src/services/SuporteResistencia.cpp
 
+    # Services — DRIP Simulator (dividendos + comparativo CDI/IPCA/IBOV) (#63)
+    src/services/DripSimulator.cpp
+
     # Core — secret store
     src/core/secret/SecretStoreService.cpp
 

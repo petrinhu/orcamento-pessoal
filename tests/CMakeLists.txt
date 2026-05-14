@@ -42,3 +42,5 @@ peubud_add_test(test_indicadores
     ${CMAKE_SOURCE_DIR}/src/services/IndicadoresTecnicos.cpp)
 peubud_add_test(test_suporte_resistencia
     ${CMAKE_SOURCE_DIR}/src/services/SuporteResistencia.cpp)
+peubud_add_test(test_drip
+    ${CMAKE_SOURCE_DIR}/src/services/DripSimulator.cpp)
