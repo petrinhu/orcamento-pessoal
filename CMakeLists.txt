@@ -136,7 +136,6 @@ set(SOURCES
     src/ui/Theme.cpp
     src/ui/LoginDialog.cpp
     src/ui/MainWindow.cpp
-    src/ui/IconGenerator.cpp
     src/ui/widgets/ParcelasWidget.cpp
     src/ui/widgets/ReceiptAttachmentWidget.cpp
     src/ui/widgets/AuditLogViewer.cpp
@@ -317,8 +316,11 @@ install(FILES resources/desktop/org.peubud.PeuBud.desktop
 install(FILES resources/desktop/org.peubud.PeuBud.metainfo.xml
     DESTINATION ${CMAKE_INSTALL_DATADIR}/metainfo)
 
-install(FILES resources/desktop/icons/org.peubud.PeuBud.svg
-    DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/scalable/apps)
+# Icon PNG real (porco verde + brotinho, 1024x1024) instalado em
+# hicolor/512x512 — KDE/GNOME escalam para tamanhos menores quando precisam.
+install(FILES resources/icon/icon.png
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/512x512/apps
+    RENAME org.peubud.PeuBud.png)
 
 install(FILES resources/desktop/peubud.1
     DESTINATION ${CMAKE_INSTALL_MANDIR}/man1)

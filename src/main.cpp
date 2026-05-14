@@ -1,13 +1,13 @@
 #include "ui/Theme.h"
 #include "ui/LoginDialog.h"
 #include "ui/MainWindow.h"
-#include "ui/IconGenerator.h"
 #include "core/database/DatabaseManager.h"
 #include "core/session/UserSession.h"
 #include "core/settings/AppSettings.h"
 
 #include <QApplication>
 #include <QDir>
+#include <QIcon>
 #include <QMessageBox>
 #include <QTranslator>
 
@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
     app.setApplicationDisplayName(QStringLiteral("PeuBud — Orçamento Pessoal"));
     app.setApplicationVersion(QStringLiteral("0.1.0"));
     app.setOrganizationName(QStringLiteral("petrinhu"));
-    app.setWindowIcon(IconGenerator::generate());
+    app.setWindowIcon(QIcon(QStringLiteral(":/icon/icon.png")));
 
     // ── Translator ─────────────────────────────────────────────────────────
     QTranslator translator;
