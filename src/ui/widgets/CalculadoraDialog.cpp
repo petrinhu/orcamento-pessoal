@@ -7,6 +7,8 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QGridLayout>
+#include <QGroupBox>
+#include <QFormLayout>
 #include <QLineEdit>
 #include <QLabel>
 #include <QListWidget>
@@ -2171,27 +2173,313 @@ void CalculadoraDialog::buildTabWizards(QWidget *tab)
     }
 }
 
-// ── Stubs das abas novas (#43 #54 #55 #56 #57) ────────────────────────────────
-// Esqueletos vazios para destravar o build enquanto os wizards internos não
-// estão implementados. Cada aba recebe um placeholder explicativo.
+// ── Helpers compartilhados (impl simples para todas as abas) ─────────────
 namespace {
-void placeholderTab(QWidget *tab, const QString &titulo, const QString &itemId)
+double parseDouble(QLineEdit *le) {
+    QString s = le->text().trimmed();
+    s.remove(QLatin1Char('R')).remove(QLatin1Char('$')).remove(QLatin1Char('%'))
+     .remove(QLatin1Char(' '));
+    if (s.contains(QLatin1Char(',')))
+        s.remove(QLatin1Char('.')).replace(QLatin1Char(','), QLatin1Char('.'));
+    return s.toDouble();
+}
+QString fmtBR(double v, int dec = 2) {
+    QString s = QString::number(v, 'f', dec);
+    return s.replace(QLatin1Char('.'), QLatin1Char(','));
+}
+QLineEdit *mkLE(QWidget *p, const QString &placeholder = QString()) {
+    auto *le = new QLineEdit(p);
+    le->setAlignment(Qt::AlignRight);
+    if (!placeholder.isEmpty()) le->setPlaceholderText(placeholder);
+    return le;
+}
+}
+
+// ── #43 Bolsa de Valores ─────────────────────────────────────────────────
+void CalculadoraDialog::buildTabBolsa(QWidget *tab)
 {
     auto *v = new QVBoxLayout(tab);
-    v->setContentsMargins(20, 20, 20, 20);
-    auto *lbl = new QLabel(tab);
-    lbl->setText(QStringLiteral("<h3>%1</h3><p>Wizards em implementação (%2). Ver <code>TODO.md</code>.</p>")
-                     .arg(titulo, itemId));
-    lbl->setTextFormat(Qt::RichText);
-    lbl->setAlignment(Qt::AlignCenter);
-    lbl->setWordWrap(true);
-    v->addWidget(lbl);
-    v->addStretch();
-}
-} // anonymous
+    v->addWidget(new QLabel(tr("<b>Calculadora de Bolsa</b><br>"
+        "Payback simples + ROI sobre dividendos."), tab));
+    auto *form = new QFormLayout;
+    auto *edtPreco = mkLE(tab, tr("ex: 28,50"));
+    auto *edtDiv   = mkLE(tab, tr("ex: 2,40 (anual)"));
+    auto *edtMeta  = mkLE(tab, tr("ex: 100 (%)"));
+    form->addRow(tr("Preço atual (R$):"),        edtPreco);
+    form->addRow(tr("Dividendo anual/papel:"),   edtDiv);
+    form->addRow(tr("Meta de retorno (%):"),     edtMeta);
+    v->addLayout(form);
 
-void CalculadoraDialog::buildTabBolsa(QWidget *tab)          { placeholderTab(tab, tr("Bolsa de Valores"),    QStringLiteral("#43")); }
-void CalculadoraDialog::buildTabImoveis(QWidget *tab)        { placeholderTab(tab, tr("Imóveis"),             QStringLiteral("#54")); }
-void CalculadoraDialog::buildTabRendaFixa(QWidget *tab)      { placeholderTab(tab, tr("Renda Fixa"),          QStringLiteral("#55")); }
-void CalculadoraDialog::buildTabIrTributos(QWidget *tab)     { placeholderTab(tab, tr("IR & Tributos"),       QStringLiteral("#56")); }
-void CalculadoraDialog::buildTabInflacaoCambio(QWidget *tab) { placeholderTab(tab, tr("Inflação & Câmbio"),   QStringLiteral("#57")); }
+    auto *btn = new QPushButton(tr("Calcular"), tab);
+    btn->setObjectName(QStringLiteral("primary"));
+    v->addWidget(btn);
+    auto *lbl = new QLabel(tab); lbl->setWordWrap(true); v->addWidget(lbl);
+    v->addStretch();
+
+    connect(btn, &QPushButton::clicked, tab, [=]() {
+        const double preco = parseDouble(edtPreco);
+        const double div   = parseDouble(edtDiv);
+        const double meta  = parseDouble(edtMeta) / 100.0;
+        if (preco <= 0 || div <= 0) { lbl->setText(tr("Informe preço e dividendo.")); return; }
+        const double dy        = div / preco * 100.0;
+        const double payback   = preco / div;
+        const double precoMeta = div / meta;
+        lbl->setText(tr(
+            "<b>DY:</b> %1 %<br>"
+            "<b>Payback (anos via dividendos):</b> %2<br>"
+            "<b>Preço-teto para meta %3 %:</b> R$ %4")
+            .arg(fmtBR(dy, 4), fmtBR(payback, 2),
+                 fmtBR(meta * 100.0, 2), fmtBR(precoMeta, 2)));
+    });
+}
+
+// ── #54 Imóveis ──────────────────────────────────────────────────────────
+void CalculadoraDialog::buildTabImoveis(QWidget *tab)
+{
+    auto *v = new QVBoxLayout(tab);
+    v->addWidget(new QLabel(tr("<b>Calculadora Imóveis</b><br>"
+        "ITBI + custos + comparativo SAC × Price."), tab));
+    auto *form = new QFormLayout;
+    auto *edtVal   = mkLE(tab, tr("ex: 400000"));
+    auto *edtITBI  = mkLE(tab, tr("3,0 (% — varia por cidade)"));
+    auto *edtEntr  = mkLE(tab, tr("ex: 100000"));
+    auto *edtTaxa  = mkLE(tab, tr("0,8 (% a.m.)"));
+    auto *edtPrazo = mkLE(tab, tr("360 (meses)"));
+    form->addRow(tr("Valor do imóvel (R$):"),   edtVal);
+    form->addRow(tr("ITBI (%):"),                edtITBI);
+    form->addRow(tr("Entrada (R$):"),            edtEntr);
+    form->addRow(tr("Juros mensais (%):"),       edtTaxa);
+    form->addRow(tr("Prazo (meses):"),           edtPrazo);
+    v->addLayout(form);
+
+    auto *btn = new QPushButton(tr("Calcular"), tab);
+    btn->setObjectName(QStringLiteral("primary"));
+    v->addWidget(btn);
+    auto *lbl = new QLabel(tab); lbl->setWordWrap(true); v->addWidget(lbl);
+    v->addStretch();
+
+    connect(btn, &QPushButton::clicked, tab, [=]() {
+        const double val = parseDouble(edtVal);
+        const double itbi = parseDouble(edtITBI) / 100.0;
+        const double entr = parseDouble(edtEntr);
+        const double i    = parseDouble(edtTaxa) / 100.0;
+        const int    n    = static_cast<int>(parseDouble(edtPrazo));
+        if (val <= 0 || n <= 0 || entr >= val) {
+            lbl->setText(tr("Verifique os valores."));
+            return;
+        }
+        const double custosITBI = val * itbi;
+        const double fin        = val - entr;
+        // Price: pmt fixa
+        const double pmtPrice = (i > 0)
+            ? -FinanceEngine::pmt(fin, 0.0, i, n)
+            : fin / n;
+        // SAC: amortização fixa, parcelas decrescentes; primeira parcela
+        const double amortSAC = fin / n;
+        const double pmtSAC1  = amortSAC + fin * i;
+        const double pmtSACn  = amortSAC + amortSAC * i; // ultima
+        lbl->setText(tr(
+            "<b>Custos:</b> ITBI R$ %1<br>"
+            "Valor financiado: R$ %2<br><br>"
+            "<b>Price:</b> parcela fixa R$ %3 · total R$ %4<br>"
+            "<b>SAC:</b> 1ª parcela R$ %5, última R$ %6 · total R$ %7")
+            .arg(fmtBR(custosITBI, 2), fmtBR(fin, 2),
+                 fmtBR(pmtPrice, 2), fmtBR(pmtPrice * n, 2),
+                 fmtBR(pmtSAC1, 2), fmtBR(pmtSACn, 2),
+                 fmtBR((pmtSAC1 + pmtSACn) / 2.0 * n, 2)));
+    });
+}
+
+// ── #55 Renda Fixa ───────────────────────────────────────────────────────
+void CalculadoraDialog::buildTabRendaFixa(QWidget *tab)
+{
+    auto *v = new QVBoxLayout(tab);
+    v->addWidget(new QLabel(tr("<b>Calculadora Renda Fixa</b><br>"
+        "Aporte único + prazo · comparativo bruto/líquido CDB/LCI/Tesouro."), tab));
+    auto *form = new QFormLayout;
+    auto *edtAporte = mkLE(tab, tr("ex: 10000"));
+    auto *edtSelic  = mkLE(tab, tr("11,75"));
+    auto *edtCDIPct = mkLE(tab, tr("100 (% CDI)"));
+    auto *edtDias   = mkLE(tab, tr("ex: 1095 (3 anos)"));
+    form->addRow(tr("Aporte (R$):"),       edtAporte);
+    form->addRow(tr("Selic anual (%):"),    edtSelic);
+    form->addRow(tr("% do CDI:"),           edtCDIPct);
+    form->addRow(tr("Prazo (dias):"),       edtDias);
+    v->addLayout(form);
+
+    auto *btn = new QPushButton(tr("Calcular"), tab);
+    btn->setObjectName(QStringLiteral("primary"));
+    v->addWidget(btn);
+    auto *lbl = new QLabel(tab); lbl->setWordWrap(true); v->addWidget(lbl);
+    v->addStretch();
+
+    connect(btn, &QPushButton::clicked, tab, [=]() {
+        const double aporte = parseDouble(edtAporte);
+        const double selic  = parseDouble(edtSelic) / 100.0;
+        const double cdiPct = parseDouble(edtCDIPct) / 100.0;
+        const int    dias   = static_cast<int>(parseDouble(edtDias));
+        if (aporte <= 0 || selic <= 0 || dias <= 0) {
+            lbl->setText(tr("Verifique os valores."));
+            return;
+        }
+        const double anos    = dias / 365.0;
+        const double cdiAA   = selic; // CDI ~ Selic
+        const double txCDB   = cdiAA * cdiPct;
+        const double brutoCDB = aporte * std::pow(1.0 + txCDB, anos);
+        const double ganhoCDB = brutoCDB - aporte;
+        const double aliqIR   = FiscalService::irRendaFixaPorDias(dias);
+        const double liquidoCDB = aporte + ganhoCDB * (1.0 - aliqIR);
+        // LCI/LCA: isento IR; tipico 90% CDI
+        const double brutoLCI = aporte * std::pow(1.0 + cdiAA * 0.90, anos);
+        // Poupanca
+        const double mPoup    = FiscalService::poupancaMensal(selic);
+        const double brutoPoup = aporte * std::pow(1.0 + mPoup, anos * 12.0);
+        lbl->setText(tr(
+            "<b>CDB %1% CDI</b><br>"
+            "&nbsp;&nbsp;Bruto: R$ %2 · IR %3% · <b>Líquido: R$ %4</b><br><br>"
+            "<b>LCI/LCA 90% CDI (isento IR):</b> R$ %5<br><br>"
+            "<b>Poupança</b> (taxa Selic > 8,5% = 0,5% a.m.): R$ %6")
+            .arg(fmtBR(cdiPct * 100.0, 0),
+                 fmtBR(brutoCDB, 2),
+                 fmtBR(aliqIR * 100.0, 1),
+                 fmtBR(liquidoCDB, 2),
+                 fmtBR(brutoLCI, 2),
+                 fmtBR(brutoPoup, 2)));
+    });
+}
+
+// ── #56 IR & Tributos ────────────────────────────────────────────────────
+void CalculadoraDialog::buildTabIrTributos(QWidget *tab)
+{
+    auto *v = new QVBoxLayout(tab);
+    v->addWidget(new QLabel(tr("<b>Calculadora IRPF Anual</b><br>"
+        "Base anual + dedutíveis · imposto devido · simples vs completa."), tab));
+    auto *form = new QFormLayout;
+    auto *edtRend  = mkLE(tab, tr("ex: 120000 (anual)"));
+    auto *edtINSS  = mkLE(tab, tr("ex: 9600"));
+    auto *edtDep   = mkLE(tab, tr("ex: 2 (dependentes)"));
+    auto *edtSaude = mkLE(tab, tr("ex: 4800 (despesas saúde)"));
+    auto *edtEduc  = mkLE(tab, tr("ex: 3000 (educação, teto R$ 3.561,50)"));
+    auto *edtPrev  = mkLE(tab, tr("ex: 12000 (PGBL ate 12% renda)"));
+    form->addRow(tr("Rendimento tributável anual (R$):"), edtRend);
+    form->addRow(tr("INSS anual (R$):"),                  edtINSS);
+    form->addRow(tr("Dependentes:"),                       edtDep);
+    form->addRow(tr("Despesas saúde (R$):"),               edtSaude);
+    form->addRow(tr("Despesas educação (R$):"),            edtEduc);
+    form->addRow(tr("PGBL (R$):"),                          edtPrev);
+    v->addLayout(form);
+
+    auto *btn = new QPushButton(tr("Calcular"), tab);
+    btn->setObjectName(QStringLiteral("primary"));
+    v->addWidget(btn);
+    auto *lbl = new QLabel(tab); lbl->setWordWrap(true); v->addWidget(lbl);
+    v->addStretch();
+
+    connect(btn, &QPushButton::clicked, tab, [=]() {
+        const double rend  = parseDouble(edtRend);
+        const double inss  = parseDouble(edtINSS);
+        const int    dep   = static_cast<int>(parseDouble(edtDep));
+        const double saude = parseDouble(edtSaude);
+        double educ        = parseDouble(edtEduc);
+        const double prev  = std::min(parseDouble(edtPrev), rend * 0.12);
+        if (rend <= 0) { lbl->setText(tr("Informe rendimento.")); return; }
+
+        // Deducao simplificada: 20% rend, teto R$ 16.754,34
+        const double simples = std::min(rend * 0.20, 16754.34);
+        // Educacao tem limite por dependente
+        const double tetoEduc = 3561.50 * std::max(1, dep);
+        educ = std::min(educ, tetoEduc);
+        const double depDed = dep * 2275.08;
+        const double completa = inss + depDed + saude + educ + prev;
+
+        const double baseSimples  = rend - simples;
+        const double baseCompleta = rend - completa;
+        // Tabela IRPF anual 2024 (12x mensal)
+        auto irAnual = [](double base) {
+            double ir = 0.0;
+            if      (base > 55976.16) ir = base * 0.275 - 10752.00;
+            else if (base > 45012.60) ir = base * 0.225 - 7953.24;
+            else if (base > 33919.80) ir = base * 0.150 - 4577.28;
+            else if (base > 27110.40) ir = base * 0.075 - 2033.28;
+            return std::max(0.0, ir);
+        };
+        const double irS = irAnual(baseSimples);
+        const double irC = irAnual(baseCompleta);
+        const QString melhor = irS < irC ? tr("Simples") : tr("Completa");
+        lbl->setText(tr(
+            "<b>Simples (20% — teto R$ 16.754,34):</b><br>"
+            "&nbsp;&nbsp;Dedução: R$ %1 · base R$ %2 · IR R$ %3<br><br>"
+            "<b>Completa (INSS + dep + saúde + educ + PGBL):</b><br>"
+            "&nbsp;&nbsp;Dedução: R$ %4 · base R$ %5 · IR R$ %6<br><br>"
+            "<b>Melhor opção: %7</b> (economia R$ %8)")
+            .arg(fmtBR(simples, 2),    fmtBR(baseSimples, 2),  fmtBR(irS, 2),
+                 fmtBR(completa, 2),   fmtBR(baseCompleta, 2), fmtBR(irC, 2),
+                 melhor,               fmtBR(std::abs(irC - irS), 2)));
+    });
+}
+
+// ── #57 Inflação & Câmbio ────────────────────────────────────────────────
+void CalculadoraDialog::buildTabInflacaoCambio(QWidget *tab)
+{
+    auto *v = new QVBoxLayout(tab);
+    v->addWidget(new QLabel(tr("<b>Inflação &amp; Câmbio</b><br>"
+        "Poder de compra com IPCA + conversor de moedas com taxa manual."), tab));
+
+    // Inflacao
+    auto *grpInf = new QGroupBox(tr("Poder de compra (IPCA)"), tab);
+    auto *fI = new QFormLayout(grpInf);
+    auto *edtValor = mkLE(grpInf, tr("ex: 1000"));
+    auto *edtIPCA  = mkLE(grpInf, tr("ex: 4,5 (% a.a.)"));
+    auto *edtAnos  = mkLE(grpInf, tr("ex: 10"));
+    fI->addRow(tr("Valor inicial (R$):"), edtValor);
+    fI->addRow(tr("IPCA anual (%):"),      edtIPCA);
+    fI->addRow(tr("Período (anos):"),      edtAnos);
+    auto *btnI = new QPushButton(tr("Calcular IPCA"), grpInf);
+    fI->addRow(btnI);
+    auto *lblI = new QLabel(grpInf); lblI->setWordWrap(true);
+    fI->addRow(lblI);
+    v->addWidget(grpInf);
+
+    connect(btnI, &QPushButton::clicked, tab, [=]() {
+        const double valor = parseDouble(edtValor);
+        const double ipca  = parseDouble(edtIPCA) / 100.0;
+        const double anos  = parseDouble(edtAnos);
+        if (valor <= 0 || anos <= 0) { lblI->setText(tr("Verifique os valores.")); return; }
+        const double futuro = valor * std::pow(1.0 + ipca, anos);
+        const double poder  = valor / std::pow(1.0 + ipca, anos);
+        lblI->setText(tr(
+            "Valor nominal em %1 anos: <b>R$ %2</b><br>"
+            "Poder de compra equivalente hoje: <b>R$ %3</b><br>"
+            "(R$ %4 hoje = R$ %2 em %1 anos com inflação %5 %)")
+            .arg(fmtBR(anos, 0), fmtBR(futuro, 2), fmtBR(poder, 2),
+                 fmtBR(valor, 2), fmtBR(ipca * 100.0, 2)));
+    });
+
+    // Cambio
+    auto *grpC = new QGroupBox(tr("Conversor de moedas"), tab);
+    auto *fC = new QFormLayout(grpC);
+    auto *edtMontante = mkLE(grpC, tr("ex: 1000"));
+    auto *edtTaxa     = mkLE(grpC, tr("ex: 5,15 (R$ por USD)"));
+    auto *cbDir       = new QComboBox(grpC);
+    cbDir->addItem(tr("Moeda → BRL"), 0);
+    cbDir->addItem(tr("BRL → Moeda"), 1);
+    fC->addRow(tr("Montante:"), edtMontante);
+    fC->addRow(tr("Cotação (R$):"), edtTaxa);
+    fC->addRow(tr("Direção:"), cbDir);
+    auto *btnC = new QPushButton(tr("Converter"), grpC);
+    fC->addRow(btnC);
+    auto *lblC = new QLabel(grpC); lblC->setWordWrap(true);
+    fC->addRow(lblC);
+    v->addWidget(grpC);
+    v->addStretch();
+
+    connect(btnC, &QPushButton::clicked, tab, [=]() {
+        const double m = parseDouble(edtMontante);
+        const double t = parseDouble(edtTaxa);
+        if (m <= 0 || t <= 0) { lblC->setText(tr("Verifique os valores.")); return; }
+        const double resultado = (cbDir->currentData().toInt() == 0)
+            ? m * t
+            : m / t;
+        lblC->setText(tr("<b>Resultado:</b> %1").arg(fmtBR(resultado, 2)));
+    });
+}
