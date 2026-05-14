@@ -9,6 +9,7 @@ function(peubud_add_test test_name)
     target_link_libraries(${test_name} PRIVATE
         Qt6::Core
         Qt6::Test
+        Qt6::Sql
     )
     target_include_directories(${test_name} PRIVATE
         ${CMAKE_SOURCE_DIR}/src
@@ -28,3 +29,4 @@ peubud_add_test(test_backup ${CMAKE_SOURCE_DIR}/src/services/BackupService.cpp)
 peubud_add_test(test_pdf_parsers
     ${CMAKE_SOURCE_DIR}/src/services/import/BankPDFParsers.cpp)
 peubud_add_test(test_ajustes)
+peubud_add_test(test_sqlite_migrations)
