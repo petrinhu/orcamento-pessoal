@@ -18,13 +18,16 @@ jobs:
           dnf install -y --setopt=install_weak_deps=False \
             qt6-qtbase-devel qt6-qtcharts-devel qt6-qttools-devel \
             openssl-devel libsecret-devel libsodium-devel \
+            poppler-qt6-devel \
             gcc-c++ cmake make git
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Configure
-        run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+      - name: Configure (Release + tests)
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
       - name: Build
         run: cmake --build build -j$(nproc)
+      - name: Test (ctest)
+        run: ctest --test-dir build --output-on-failure --no-tests=error
 
   debian:
     name: Debian (apt)
@@ -38,13 +41,16 @@ jobs:
           DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
             qt6-base-dev libqt6charts6-dev qt6-tools-dev \
             libssl-dev libsecret-1-dev libsodium-dev \
+            libpoppler-qt6-dev \
             g++ cmake make git ca-certificates
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Configure
-        run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+      - name: Configure (Release + tests)
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
       - name: Build
         run: cmake --build build -j$(nproc)
+      - name: Test (ctest)
+        run: ctest --test-dir build --output-on-failure --no-tests=error
 
   arch:
     name: Arch (pacman)
@@ -57,10 +63,38 @@ jobs:
           pacman -Syu --needed --noconfirm \
             qt6-base qt6-charts qt6-tools \
             openssl libsecret libsodium \
+            poppler-qt6 \
             gcc cmake make git
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Configure
-        run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+      - name: Configure (Release + tests)
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
       - name: Build
         run: cmake --build build -j$(nproc)
+      - name: Test (ctest)
+        run: ctest --test-dir build --output-on-failure --no-tests=error
+
+  lint:
+    name: Lint (clang-tidy + cppcheck)
+    runs-on: docker
+    container:
+      image: fedora:41
+    steps:
+      - name: Install dependencies
+        run: |
+          dnf install -y --setopt=install_weak_deps=False \
+            qt6-qtbase-devel qt6-qtcharts-devel qt6-qttools-devel \
+            openssl-devel libsecret-devel libsodium-devel \
+            poppler-qt6-devel \
+            gcc-c++ cmake make git clang-tools-extra cppcheck
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Configure (gera compile_commands.json)
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Debug \
+                            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+      - name: cppcheck (services + repositories + models)
+        run: |
+          cppcheck --enable=warning,style,performance,portability \
+                   --quiet --std=c++20 --suppress=missingInclude \
+                   --error-exitcode=0 \
+                   src/services src/repositories src/models
