@@ -19,6 +19,8 @@
 #include "core/session/UserSession.h"
 #include "core/database/DatabaseManager.h"
 #include "services/BackupService.h"
+#include "services/MarketDataService.h"
+#include "ui/widgets/BolsaWidget.h"
 #include "core/settings/AppSettings.h"
 #include "services/ImportService.h"
 #include "services/ExportService.h"
@@ -119,6 +121,8 @@ void MainWindow::buildUi()
     m_undoStack = new QUndoStack(this);
     m_undoStack->setUndoLimit(50);
 
+    m_marketService = new MarketDataService(this);
+    m_bolsa         = new BolsaWidget(m_marketService, this);
     m_dashboard   = new DashboardWidget(this);
     m_tendencias  = new TendenciasWidget(this);
 
@@ -137,6 +141,7 @@ void MainWindow::buildUi()
     m_tabs->addTab(m_gastos,        tr("Gastos"));         // 2
     m_tabs->addTab(m_tendencias,    tr("Tendências"));     // 3
     m_tabs->addTab(m_investimentos, tr("Investimentos"));  // 4
+    m_tabs->addTab(m_bolsa,         tr("Bolsa"));          // 4b (#50)
     m_tabs->addTab(m_planejamento,  tr("Planejamento"));   // 5
     m_tabs->addTab(m_recorrencias,  tr("Recorrências"));   // 6
     m_tabs->addTab(m_dividas,       tr("Dívidas"));        // 7

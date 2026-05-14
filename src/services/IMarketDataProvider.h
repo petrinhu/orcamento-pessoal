@@ -6,8 +6,7 @@
 #include <QDate>
 #include <QList>
 #include <functional>
-#include "models/PrecoAtivo.h"
-#include "models/CotacaoRT.h"
+#include "models/PrecoAtivo.h" // declara CotacaoRT tambem
 
 // Interface para provedores de dados de mercado (cotações, OHLCV, busca, etc.)
 class IMarketDataProvider : public QObject {

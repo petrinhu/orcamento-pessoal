@@ -6,8 +6,7 @@
 #include <QString>
 #include <functional>
 #include "IMarketDataProvider.h"
-#include "models/PrecoAtivo.h"
-#include "models/CotacaoRT.h"
+#include "models/PrecoAtivo.h" // declara CotacaoRT tambem
 
 class MarketDataService : public QObject {
     Q_OBJECT

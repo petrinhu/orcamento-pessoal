@@ -106,6 +106,7 @@ set(SOURCES
     src/services/ParcelaService.cpp
     src/services/CurrencyService.cpp
     src/services/ImportService.cpp
+    src/services/MarketDataService.cpp
     src/services/import/IMatchFinder.cpp
     src/services/import/BankPDFParsers.cpp
     src/services/ExportService.cpp
@@ -120,6 +121,7 @@ set(SOURCES
     src/ui/widgets/AuditLogViewer.cpp
     src/ui/widgets/BackupConfigWidget.cpp
     src/ui/widgets/MarketConfigWidget.cpp
+    src/ui/widgets/BolsaWidget.cpp
     src/ui/widgets/AddCompraDialog.cpp
     src/ui/widgets/ConfigWidget.cpp
     src/ui/widgets/PrefsWidget.cpp
