@@ -38,5 +38,7 @@ peubud_add_test(test_currency_service
     ${CMAKE_SOURCE_DIR}/src/core/currency/FrankfurterProvider.cpp)
 peubud_add_test(test_reconciliacao
     ${CMAKE_SOURCE_DIR}/src/services/ReconciliacaoAutomatica.cpp)
+peubud_add_test(test_indicadores
+    ${CMAKE_SOURCE_DIR}/src/services/IndicadoresTecnicos.cpp)
 peubud_add_test(test_suporte_resistencia
     ${CMAKE_SOURCE_DIR}/src/services/SuporteResistencia.cpp)

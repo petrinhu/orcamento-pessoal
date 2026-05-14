@@ -77,6 +77,9 @@ set(SOURCES
     # Services — Reconciliacao automatica subset-sum (#85)
     src/services/ReconciliacaoAutomatica.cpp
 
+    # Services — Indicadores tecnicos (SMA/EMA/RSI/MACD/BBands) (#52)
+    src/services/IndicadoresTecnicos.cpp
+
     # Services — Suporte/Resistencia (Pivot/Camarilla/Fib) (#53)
     src/services/SuporteResistencia.cpp
 
