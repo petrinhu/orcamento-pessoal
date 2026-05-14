@@ -10,6 +10,7 @@ function(peubud_add_test test_name)
         Qt6::Core
         Qt6::Test
         Qt6::Sql
+        Qt6::Network
     )
     target_include_directories(${test_name} PRIVATE
         ${CMAKE_SOURCE_DIR}/src
@@ -32,3 +33,6 @@ peubud_add_test(test_ajustes)
 peubud_add_test(test_sqlite_migrations)
 peubud_add_test(test_parcela_service
     ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp)
+peubud_add_test(test_currency_service
+    ${CMAKE_SOURCE_DIR}/src/services/CurrencyService.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/currency/FrankfurterProvider.cpp)

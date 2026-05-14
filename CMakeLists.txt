@@ -124,6 +124,10 @@ set(SOURCES
     src/ui/widgets/BackupConfigWidget.cpp
     src/ui/widgets/MarketConfigWidget.cpp
     src/ui/widgets/BolsaWidget.cpp
+    src/ui/widgets/ProventoDialog.cpp
+    src/ui/widgets/ProventosWidget.cpp
+    src/ui/widgets/AjusteCorporativoDialog.cpp
+    src/ui/widgets/AjustesCorporativosWidget.cpp
     src/ui/widgets/AddCompraDialog.cpp
     src/ui/widgets/ConfigWidget.cpp
     src/ui/widgets/PrefsWidget.cpp

@@ -59,7 +59,7 @@
     <message>
         <location filename="../../src/ui/widgets/AddCompraDialog.cpp" line="53"/>
         <source>Cartão</source>
-        <translation type="unfinished"></translation>
+        <translation>Card</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/AddCompraDialog.cpp" line="61"/>
@@ -267,7 +267,7 @@ O app calculará as parcelas anteriores automaticamente.</source>
         <location filename="../../src/ui/widgets/AuditLogViewer.cpp" line="44"/>
         <location filename="../../src/ui/widgets/AuditLogViewer.cpp" line="113"/>
         <source>(todas)</source>
-        <translation type="unfinished"></translation>
+        <translation>(all)</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/AuditLogViewer.cpp" line="62"/>
@@ -277,32 +277,32 @@ O app calculará as parcelas anteriores automaticamente.</source>
     <message>
         <location filename="../../src/ui/widgets/AuditLogViewer.cpp" line="65"/>
         <source>Tabela:</source>
-        <translation type="unfinished"></translation>
+        <translation>Table:</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/AuditLogViewer.cpp" line="68"/>
         <source>Op:</source>
-        <translation type="unfinished"></translation>
+        <translation>Op:</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/AuditLogViewer.cpp" line="71"/>
         <source>De:</source>
-        <translation type="unfinished"></translation>
+        <translation>From:</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/AuditLogViewer.cpp" line="73"/>
         <source>Até:</source>
-        <translation type="unfinished"></translation>
+        <translation>To:</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/AuditLogViewer.cpp" line="76"/>
         <source>Limite:</source>
-        <translation type="unfinished"></translation>
+        <translation>Limit:</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/AuditLogViewer.cpp" line="90"/>
         <source>Timestamp</source>
-        <translation type="unfinished"></translation>
+        <translation>Timestamp</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/AuditLogViewer.cpp" line="90"/>
@@ -317,17 +317,17 @@ O app calculará as parcelas anteriores automaticamente.</source>
     <message>
         <location filename="../../src/ui/widgets/AuditLogViewer.cpp" line="90"/>
         <source>Registro</source>
-        <translation type="unfinished"></translation>
+        <translation>Record</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/AuditLogViewer.cpp" line="91"/>
         <source>Antes</source>
-        <translation type="unfinished"></translation>
+        <translation>Before</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/AuditLogViewer.cpp" line="91"/>
         <source>Depois</source>
-        <translation type="unfinished"></translation>
+        <translation>After</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/AuditLogViewer.cpp" line="177"/>
@@ -342,7 +342,7 @@ O app calculará as parcelas anteriores automaticamente.</source>
     <message>
         <location filename="../../src/ui/widgets/AuditLogViewer.cpp" line="191"/>
         <source>(vazio)</source>
-        <translation type="unfinished"></translation>
+        <translation>(empty)</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/AuditLogViewer.cpp" line="209"/>
@@ -380,42 +380,42 @@ O app calculará as parcelas anteriores automaticamente.</source>
     <message>
         <location filename="../../src/ui/widgets/BackupConfigWidget.cpp" line="41"/>
         <source>Frequência:</source>
-        <translation type="unfinished"></translation>
+        <translation>Frequency:</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/BackupConfigWidget.cpp" line="46"/>
         <source>Escolher…</source>
-        <translation type="unfinished"></translation>
+        <translation>Choose…</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/BackupConfigWidget.cpp" line="49"/>
         <source>Destino:</source>
-        <translation type="unfinished"></translation>
+        <translation>Destination:</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/BackupConfigWidget.cpp" line="53"/>
         <source> cópias</source>
-        <translation type="unfinished"></translation>
+        <translation> copies</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/BackupConfigWidget.cpp" line="54"/>
         <source>Retenção:</source>
-        <translation type="unfinished"></translation>
+        <translation>Retention:</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/BackupConfigWidget.cpp" line="57"/>
         <source>Último backup:</source>
-        <translation type="unfinished"></translation>
+        <translation>Last backup:</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/BackupConfigWidget.cpp" line="62"/>
         <source>Salvar configuração</source>
-        <translation type="unfinished"></translation>
+        <translation>Save settings</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/BackupConfigWidget.cpp" line="63"/>
         <source>Fazer backup agora</source>
-        <translation type="unfinished"></translation>
+        <translation>Backup now</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/BackupConfigWidget.cpp" line="70"/>
@@ -425,7 +425,7 @@ O app calculará as parcelas anteriores automaticamente.</source>
     <message>
         <location filename="../../src/ui/widgets/BackupConfigWidget.cpp" line="89"/>
         <source>(nunca)</source>
-        <translation type="unfinished"></translation>
+        <translation>(never)</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/BackupConfigWidget.cpp" line="99"/>
@@ -506,7 +506,7 @@ O app calculará as parcelas anteriores automaticamente.</source>
     <message>
         <location filename="../../src/ui/widgets/BolsaWidget.cpp" line="63"/>
         <source>Ticker</source>
-        <translation type="unfinished"></translation>
+        <translation>Ticker</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/BolsaWidget.cpp" line="63"/>
@@ -659,27 +659,27 @@ O app calculará as parcelas anteriores automaticamente.</source>
     <message>
         <location filename="../../src/ui/widgets/BuscaGlobalDialog.cpp" line="223"/>
         <source>Entrada</source>
-        <translation type="unfinished"></translation>
+        <translation>Income</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/BuscaGlobalDialog.cpp" line="265"/>
         <source>Gasto</source>
-        <translation type="unfinished"></translation>
+        <translation>Expense</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/BuscaGlobalDialog.cpp" line="306"/>
         <source>Investimento</source>
-        <translation type="unfinished"></translation>
+        <translation>Investment</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/BuscaGlobalDialog.cpp" line="334"/>
         <source>Dívida</source>
-        <translation type="unfinished"></translation>
+        <translation>Debt</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/BuscaGlobalDialog.cpp" line="361"/>
         <source>Cartão</source>
-        <translation type="unfinished"></translation>
+        <translation>Card</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/BuscaGlobalDialog.cpp" line="395"/>
@@ -772,7 +772,7 @@ O app calculará as parcelas anteriores automaticamente.</source>
     <message>
         <location filename="../../src/ui/widgets/CalculadoraDialog.cpp" line="280"/>
         <source>Histórico</source>
-        <translation type="unfinished"></translation>
+        <translation>History</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/CalculadoraDialog.cpp" line="287"/>
@@ -1045,7 +1045,7 @@ O app calculará as parcelas anteriores automaticamente.</source>
         <location filename="../../src/ui/widgets/CalculadoraDialog.cpp" line="1983"/>
         <location filename="../../src/ui/widgets/CalculadoraDialog.cpp" line="2097"/>
         <source>Calcular</source>
-        <translation type="unfinished"></translation>
+        <translation>Calculate</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/CalculadoraDialog.cpp" line="937"/>
@@ -1390,7 +1390,7 @@ O app calculará as parcelas anteriores automaticamente.</source>
         <location filename="../../src/ui/widgets/CalculadoraDialog.cpp" line="1930"/>
         <location filename="../../src/ui/widgets/CalculadoraDialog.cpp" line="2113"/>
         <source>Verifique os valores.</source>
-        <translation type="unfinished"></translation>
+        <translation>Check the values.</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/CalculadoraDialog.cpp" line="1575"/>
@@ -1558,7 +1558,7 @@ O app calculará as parcelas anteriores automaticamente.</source>
         <location filename="../../src/ui/widgets/CalculadoraDialog.cpp" line="1841"/>
         <location filename="../../src/ui/widgets/CalculadoraDialog.cpp" line="2083"/>
         <source>ex: 8000</source>
-        <translation type="unfinished"></translation>
+        <translation>e.g. 8000</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/CalculadoraDialog.cpp" line="1842"/>
@@ -1653,7 +1653,7 @@ O app calculará as parcelas anteriores automaticamente.</source>
     <message>
         <location filename="../../src/ui/widgets/CalculadoraDialog.cpp" line="1978"/>
         <source>Selic anual (%):</source>
-        <translation type="unfinished"></translation>
+        <translation>Annual Selic (%):</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/CalculadoraDialog.cpp" line="1979"/>
@@ -1668,7 +1668,7 @@ O app calculará as parcelas anteriores automaticamente.</source>
     <message>
         <location filename="../../src/ui/widgets/CalculadoraDialog.cpp" line="2002"/>
         <source>Informe as despesas.</source>
-        <translation type="unfinished"></translation>
+        <translation>Enter expenses.</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/CalculadoraDialog.cpp" line="2010"/>
@@ -1744,22 +1744,22 @@ O app calculará as parcelas anteriores automaticamente.</source>
     <message>
         <location filename="../../src/ui/widgets/CalculadoraDialog.cpp" line="2084"/>
         <source>ex: 12000</source>
-        <translation type="unfinished"></translation>
+        <translation>e.g. 12000</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/CalculadoraDialog.cpp" line="2085"/>
         <source>Salário CLT bruto (R$):</source>
-        <translation type="unfinished"></translation>
+        <translation>CLT gross salary ($):</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/CalculadoraDialog.cpp" line="2086"/>
         <source>Faturamento PJ (R$/mês):</source>
-        <translation type="unfinished"></translation>
+        <translation>PJ revenue ($/month):</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/CalculadoraDialog.cpp" line="2087"/>
         <source>Regime PJ:</source>
-        <translation type="unfinished"></translation>
+        <translation>PJ regime:</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/CalculadoraDialog.cpp" line="2091"/>
@@ -1810,17 +1810,17 @@ O app calculará as parcelas anteriores automaticamente.</source>
     <message>
         <location filename="../../src/ui/widgets/CategoriaDialog.cpp" line="58"/>
         <source>Gasto</source>
-        <translation type="unfinished"></translation>
+        <translation>Expense</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/CategoriaDialog.cpp" line="59"/>
         <source>Entrada</source>
-        <translation type="unfinished"></translation>
+        <translation>Income</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/CategoriaDialog.cpp" line="60"/>
         <source>Investimento</source>
-        <translation type="unfinished"></translation>
+        <translation>Investment</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/CategoriaDialog.cpp" line="63"/>
@@ -2112,7 +2112,7 @@ As compras vinculadas ficarão sem cartão.</source>
     <message>
         <location filename="../../src/ui/widgets/DashboardWidget.cpp" line="167"/>
         <source>Fechar mês contábil (snapshot imutável)</source>
-        <translation type="unfinished"></translation>
+        <translation>Close accounting month (immutable snapshot)</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/DashboardWidget.cpp" line="194"/>
@@ -2225,7 +2225,7 @@ As compras vinculadas ficarão sem cartão.</source>
     <message>
         <location filename="../../src/ui/widgets/DashboardWidget.cpp" line="540"/>
         <source>Mês já fechado</source>
-        <translation type="unfinished"></translation>
+        <translation>Month already closed</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/DashboardWidget.cpp" line="541"/>
@@ -2243,7 +2243,7 @@ os lançamentos originais permanecem intactos.</source>
     <message>
         <location filename="../../src/ui/widgets/DashboardWidget.cpp" line="551"/>
         <source>Reaberto</source>
-        <translation type="unfinished"></translation>
+        <translation>Reopened</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/DashboardWidget.cpp" line="552"/>
@@ -2258,7 +2258,7 @@ os lançamentos originais permanecem intactos.</source>
     <message>
         <location filename="../../src/ui/widgets/DashboardWidget.cpp" line="556"/>
         <source>Reabrir</source>
-        <translation type="unfinished"></translation>
+        <translation>Reopen</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/DashboardWidget.cpp" line="557"/>
@@ -2286,12 +2286,12 @@ Confirmar fechamento?</source>
         <location filename="../../src/ui/widgets/DashboardWidget.cpp" line="588"/>
         <location filename="../../src/ui/widgets/DashboardWidget.cpp" line="601"/>
         <source>Fechar mês</source>
-        <translation type="unfinished"></translation>
+        <translation>Close month</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/DashboardWidget.cpp" line="595"/>
         <source>Mês fechado</source>
-        <translation type="unfinished"></translation>
+        <translation>Month closed</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/DashboardWidget.cpp" line="596"/>
@@ -2395,12 +2395,12 @@ Saldo líquido consolidado: R$ %2</source>
     <message>
         <location filename="../../src/ui/widgets/DividaDialog.cpp" line="119"/>
         <source>Quitado</source>
-        <translation type="unfinished"></translation>
+        <translation>Paid off</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/DividaDialog.cpp" line="120"/>
         <source>Atrasado</source>
-        <translation type="unfinished"></translation>
+        <translation>Late</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/DividaDialog.cpp" line="126"/>
@@ -2475,12 +2475,12 @@ Saldo líquido consolidado: R$ %2</source>
     <message>
         <location filename="../../src/ui/widgets/DividasWidget.cpp" line="101"/>
         <source>Quitado</source>
-        <translation type="unfinished"></translation>
+        <translation>Paid off</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/DividasWidget.cpp" line="102"/>
         <source>Atrasado</source>
-        <translation type="unfinished"></translation>
+        <translation>Late</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/DividasWidget.cpp" line="122"/>
@@ -2515,7 +2515,7 @@ Saldo líquido consolidado: R$ %2</source>
     <message>
         <location filename="../../src/ui/widgets/DividasWidget.cpp" line="139"/>
         <source>Pago</source>
-        <translation type="unfinished"></translation>
+        <translation>Paid</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/DividasWidget.cpp" line="139"/>
@@ -2631,7 +2631,7 @@ Saldo líquido consolidado: R$ %2</source>
     <message>
         <location filename="../../src/ui/widgets/EntradasWidget.cpp" line="332"/>
         <source>Fonte</source>
-        <translation type="unfinished"></translation>
+        <translation>Source</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/EntradasWidget.cpp" line="332"/>
@@ -2792,7 +2792,7 @@ Entradas (crédito), Gastos (débito) e Cartões (débito).</source>
     <message>
         <location filename="../../src/services/ExportService.cpp" line="66"/>
         <source>Cartão</source>
-        <translation type="unfinished"></translation>
+        <translation>Card</translation>
     </message>
     <message>
         <location filename="../../src/services/ExportService.cpp" line="67"/>
@@ -2810,7 +2810,7 @@ Entradas (crédito), Gastos (débito) e Cartões (débito).</source>
     <message>
         <location filename="../../src/services/ExportService.cpp" line="481"/>
         <source>Fonte</source>
-        <translation type="unfinished"></translation>
+        <translation>Source</translation>
     </message>
     <message>
         <location filename="../../src/services/ExportService.cpp" line="482"/>
@@ -2877,7 +2877,7 @@ Entradas (crédito), Gastos (débito) e Cartões (débito).</source>
     <message>
         <location filename="../../src/services/ExportService.cpp" line="529"/>
         <source>Beneficiário</source>
-        <translation type="unfinished"></translation>
+        <translation>Payee</translation>
     </message>
     <message>
         <location filename="../../src/services/ExportService.cpp" line="559"/>
@@ -2940,7 +2940,7 @@ Entradas (crédito), Gastos (débito) e Cartões (débito).</source>
     <message>
         <location filename="../../src/services/ExportService.cpp" line="628"/>
         <source>Ativo</source>
-        <translation type="unfinished"></translation>
+        <translation>Active</translation>
     </message>
     <message>
         <location filename="../../src/services/ExportService.cpp" line="629"/>
@@ -2950,12 +2950,12 @@ Entradas (crédito), Gastos (débito) e Cartões (débito).</source>
     <message>
         <location filename="../../src/services/ExportService.cpp" line="635"/>
         <source>Entrada</source>
-        <translation type="unfinished"></translation>
+        <translation>Income</translation>
     </message>
     <message>
         <location filename="../../src/services/ExportService.cpp" line="636"/>
         <source>Gasto</source>
-        <translation type="unfinished"></translation>
+        <translation>Expense</translation>
     </message>
     <message>
         <location filename="../../src/services/ExportService.cpp" line="650"/>
@@ -3128,7 +3128,7 @@ Entradas (crédito), Gastos (débito) e Cartões (débito).</source>
     <message>
         <location filename="../../src/ui/widgets/GastoDialog.cpp" line="263"/>
         <source> meses</source>
-        <translation type="unfinished"></translation>
+        <translation> months</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/GastoDialog.cpp" line="279"/>
@@ -3227,7 +3227,7 @@ Entradas (crédito), Gastos (débito) e Cartões (débito).</source>
     <message>
         <location filename="../../src/ui/widgets/GastosWidget.cpp" line="326"/>
         <source>Beneficiário</source>
-        <translation type="unfinished"></translation>
+        <translation>Payee</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/GastosWidget.cpp" line="396"/>
@@ -3325,12 +3325,12 @@ Entradas (crédito), Gastos (débito) e Cartões (débito).</source>
     <message>
         <location filename="../../src/ui/widgets/InvestimentoDialog.cpp" line="181"/>
         <source>Tipo de ativo:</source>
-        <translation type="unfinished"></translation>
+        <translation>Asset type:</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/InvestimentoDialog.cpp" line="194"/>
         <source>Operação:</source>
-        <translation type="unfinished"></translation>
+        <translation>Operation:</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/InvestimentoDialog.cpp" line="198"/>
@@ -3340,7 +3340,7 @@ Entradas (crédito), Gastos (débito) e Cartões (débito).</source>
     <message>
         <location filename="../../src/ui/widgets/InvestimentoDialog.cpp" line="200"/>
         <source>Ticker:</source>
-        <translation type="unfinished"></translation>
+        <translation>Ticker:</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/InvestimentoDialog.cpp" line="207"/>
@@ -3350,7 +3350,7 @@ Entradas (crédito), Gastos (débito) e Cartões (débito).</source>
     <message>
         <location filename="../../src/ui/widgets/InvestimentoDialog.cpp" line="213"/>
         <source>Preço unitário:</source>
-        <translation type="unfinished"></translation>
+        <translation>Unit price:</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/InvestimentoDialog.cpp" line="220"/>
@@ -3395,7 +3395,7 @@ Entradas (crédito), Gastos (débito) e Cartões (débito).</source>
     <message>
         <location filename="../../src/ui/widgets/InvestimentoDialog.cpp" line="273"/>
         <source> meses</source>
-        <translation type="unfinished"></translation>
+        <translation> months</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/InvestimentoDialog.cpp" line="289"/>
@@ -3740,7 +3740,7 @@ Entradas (crédito), Gastos (débito) e Cartões (débito).</source>
     <message>
         <location filename="../../src/ui/widgets/LancamentoEntradaDialog.cpp" line="227"/>
         <source> meses</source>
-        <translation type="unfinished"></translation>
+        <translation> months</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/LancamentoEntradaDialog.cpp" line="242"/>
@@ -3823,7 +3823,7 @@ Entradas (crédito), Gastos (débito) e Cartões (débito).</source>
     <message>
         <location filename="../../src/ui/widgets/LembreteDialog.cpp" line="87"/>
         <source>Frequência:</source>
-        <translation type="unfinished"></translation>
+        <translation>Frequency:</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/LembreteDialog.cpp" line="90"/>
@@ -3839,12 +3839,12 @@ Caso o débito não ocorra, use &quot;Marcar como não debitado&quot; para acion
     <message>
         <location filename="../../src/ui/widgets/LembreteDialog.cpp" line="99"/>
         <source>Pendente</source>
-        <translation type="unfinished"></translation>
+        <translation>Pending</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/LembreteDialog.cpp" line="100"/>
         <source>Pago</source>
-        <translation type="unfinished"></translation>
+        <translation>Paid</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/LembreteDialog.cpp" line="101"/>
@@ -4698,7 +4698,7 @@ Use CSV ou XLSX para abrir no LibreOffice Calc.</source>
     <message>
         <location filename="../../src/ui/widgets/MarketConfigWidget.cpp" line="61"/>
         <source>Provider padrão:</source>
-        <translation type="unfinished"></translation>
+        <translation>Default provider:</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/MarketConfigWidget.cpp" line="66"/>
@@ -4708,17 +4708,17 @@ Use CSV ou XLSX para abrir no LibreOffice Calc.</source>
     <message>
         <location filename="../../src/ui/widgets/MarketConfigWidget.cpp" line="67"/>
         <source>Token Brapi:</source>
-        <translation type="unfinished"></translation>
+        <translation>Brapi token:</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/MarketConfigWidget.cpp" line="73"/>
         <source>Plano Brapi:</source>
-        <translation type="unfinished"></translation>
+        <translation>Brapi plan:</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/MarketConfigWidget.cpp" line="75"/>
         <source>Testar token…</source>
-        <translation type="unfinished"></translation>
+        <translation>Test token…</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/MarketConfigWidget.cpp" line="77"/>
@@ -4728,12 +4728,12 @@ Use CSV ou XLSX para abrir no LibreOffice Calc.</source>
     <message>
         <location filename="../../src/ui/widgets/MarketConfigWidget.cpp" line="84"/>
         <source> s</source>
-        <translation type="unfinished"></translation>
+        <translation> s</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/MarketConfigWidget.cpp" line="85"/>
         <source>Polling RT:</source>
-        <translation type="unfinished"></translation>
+        <translation>Polling RT:</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/MarketConfigWidget.cpp" line="88"/>
@@ -4743,17 +4743,17 @@ Use CSV ou XLSX para abrir no LibreOffice Calc.</source>
     <message>
         <location filename="../../src/ui/widgets/MarketConfigWidget.cpp" line="93"/>
         <source> anos</source>
-        <translation type="unfinished"></translation>
+        <translation> years</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/MarketConfigWidget.cpp" line="94"/>
         <source>Histórico:</source>
-        <translation type="unfinished"></translation>
+        <translation>History:</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/MarketConfigWidget.cpp" line="108"/>
         <source>Painel câmbio (slots):</source>
-        <translation type="unfinished"></translation>
+        <translation>Currency panel (slots):</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/MarketConfigWidget.cpp" line="113"/>
@@ -4836,7 +4836,7 @@ Use CSV ou XLSX para abrir no LibreOffice Calc.</source>
     <message>
         <location filename="../../src/ui/widgets/MetaDialog.cpp" line="68"/>
         <source>Outro</source>
-        <translation type="unfinished"></translation>
+        <translation>Other</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/MetaDialog.cpp" line="74"/>
@@ -4960,7 +4960,7 @@ Clique em &quot;+ Nova&quot; para começar.</source>
     <message>
         <location filename="../../src/ui/widgets/MetasWidget.cpp" line="116"/>
         <source>Meta</source>
-        <translation type="unfinished"></translation>
+        <translation>Goal</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/MetasWidget.cpp" line="116"/>
@@ -5167,7 +5167,7 @@ Clique em &quot;+ Nova&quot; para começar.</source>
         <location filename="../../src/ui/widgets/ParcelasWidget.cpp" line="288"/>
         <location filename="../../src/ui/widgets/ParcelasWidget.cpp" line="565"/>
         <source>Cartão</source>
-        <translation type="unfinished"></translation>
+        <translation>Card</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/ParcelasWidget.cpp" line="289"/>
@@ -5517,17 +5517,17 @@ Clique em &quot;+ Nova&quot; para começar.</source>
     <message>
         <location filename="../../src/ui/widgets/ConfigCategoriasWidget.cpp" line="72"/>
         <source>Gasto</source>
-        <translation type="unfinished"></translation>
+        <translation>Expense</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/ConfigCategoriasWidget.cpp" line="73"/>
         <source>Entrada</source>
-        <translation type="unfinished"></translation>
+        <translation>Income</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/ConfigCategoriasWidget.cpp" line="74"/>
         <source>Investimento</source>
-        <translation type="unfinished"></translation>
+        <translation>Investment</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/GastoDialog.cpp" line="73"/>
@@ -5549,7 +5549,7 @@ Clique em &quot;+ Nova&quot; para começar.</source>
         <location filename="../../src/ui/widgets/ReceiptAttachmentWidget.cpp" line="30"/>
         <location filename="../../src/ui/widgets/ReceiptAttachmentWidget.cpp" line="145"/>
         <source>📎 Anexar</source>
-        <translation type="unfinished"></translation>
+        <translation>📎 Attach</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/ReceiptAttachmentWidget.cpp" line="31"/>
@@ -5564,7 +5564,7 @@ Clique em &quot;+ Nova&quot; para começar.</source>
     <message>
         <location filename="../../src/ui/widgets/ReceiptAttachmentWidget.cpp" line="45"/>
         <source>Remover comprovante anexado</source>
-        <translation type="unfinished"></translation>
+        <translation>Remove attached receipt</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/ReceiptAttachmentWidget.cpp" line="65"/>
@@ -5621,7 +5621,7 @@ Clique em &quot;+ Nova&quot; para começar.</source>
     <message>
         <location filename="../../src/ui/widgets/ReceiptAttachmentWidget.cpp" line="145"/>
         <source>📎 Trocar</source>
-        <translation type="unfinished"></translation>
+        <translation>📎 Change</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/ReceiptAttachmentWidget.cpp" line="156"/>
@@ -5797,7 +5797,7 @@ Verifique se o formato é CSV (data, descrição, valor) ou OFX/QFX padrão.</so
     <message>
         <location filename="../../src/ui/widgets/ReconciliacaoDialog.cpp" line="336"/>
         <source>Pendente</source>
-        <translation type="unfinished"></translation>
+        <translation>Pending</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/ReconciliacaoDialog.cpp" line="336"/>
@@ -5846,12 +5846,12 @@ Verifique se o formato é CSV (data, descrição, valor) ou OFX/QFX padrão.</so
     <message>
         <location filename="../../src/ui/widgets/RecorrenciaDialog.cpp" line="122"/>
         <source>Gasto</source>
-        <translation type="unfinished"></translation>
+        <translation>Expense</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/RecorrenciaDialog.cpp" line="123"/>
         <source>Entrada</source>
-        <translation type="unfinished"></translation>
+        <translation>Income</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/RecorrenciaDialog.cpp" line="124"/>
@@ -5901,7 +5901,7 @@ Verifique se o formato é CSV (data, descrição, valor) ou OFX/QFX padrão.</so
     <message>
         <location filename="../../src/ui/widgets/RecorrenciaDialog.cpp" line="189"/>
         <source>Frequência:</source>
-        <translation type="unfinished"></translation>
+        <translation>Frequency:</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/RecorrenciaDialog.cpp" line="195"/>
@@ -5984,17 +5984,17 @@ Verifique se o formato é CSV (data, descrição, valor) ou OFX/QFX padrão.</so
     <message>
         <location filename="../../src/ui/widgets/RecorrenciaWidget.cpp" line="97"/>
         <source>Ativo</source>
-        <translation type="unfinished"></translation>
+        <translation>Active</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/RecorrenciaWidget.cpp" line="155"/>
         <source>Entrada</source>
-        <translation type="unfinished"></translation>
+        <translation>Income</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/RecorrenciaWidget.cpp" line="155"/>
         <source>Gasto</source>
-        <translation type="unfinished"></translation>
+        <translation>Expense</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/RecorrenciaWidget.cpp" line="176"/>
@@ -6049,12 +6049,12 @@ Os lançamentos já gerados não serão afetados.</source>
     <message>
         <location filename="../../src/ui/widgets/TendenciasWidget.cpp" line="56"/>
         <source>De:</source>
-        <translation type="unfinished"></translation>
+        <translation>From:</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/TendenciasWidget.cpp" line="61"/>
         <source>Até:</source>
-        <translation type="unfinished"></translation>
+        <translation>To:</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/TendenciasWidget.cpp" line="66"/>

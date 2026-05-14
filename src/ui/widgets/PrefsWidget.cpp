@@ -1,4 +1,5 @@
 #include "PrefsWidget.h"
+#include "AjustesCorporativosWidget.h"
 #include "AuditLogViewer.h"
 #include "BackupConfigWidget.h"
 #include "ConfigCategoriasWidget.h"
@@ -287,6 +288,10 @@ void PrefsWidget::buildUi()
     // ── Backup (#79) ────────────────────────────────────────────────────────
     auto *backupConf = new BackupConfigWidget(tabs);
     tabs->addTab(backupConf, tr("Backup"));
+
+    // ── Ajustes corporativos (#65) ──────────────────────────────────────────
+    auto *ajustes = new AjustesCorporativosWidget(tabs);
+    tabs->addTab(ajustes, tr("Ajustes"));
 
     // ── Auditoria (#92) ────────────────────────────────────────────────────
     auto *auditViewer = new AuditLogViewer(tabs);

@@ -76,6 +76,7 @@ private:
     InvestimentosWidget  *m_investimentos  = nullptr;
     class BolsaWidget    *m_bolsa          = nullptr;
     class MarketDataService *m_marketService = nullptr;
+    class ProventosWidget *m_proventos      = nullptr;
     PlanejamentoWidget   *m_planejamento   = nullptr;
     RecorrenciaWidget    *m_recorrencias   = nullptr;
     DividasWidget        *m_dividas        = nullptr;
