@@ -9,6 +9,6 @@
     <file>help/help.html</file>
   </qresource>
   <qresource prefix="/icon">
-    <file>icon/icon.png</file>
+    <file alias="icon.png">icon/icon.png</file>
   </qresource>
 </RCC>
