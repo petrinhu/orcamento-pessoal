@@ -120,7 +120,7 @@ bool DatabaseManager::importFromFile(const QString &srcPath)
 
     bool ok = false;
 #ifndef QT_DEBUG
-    ok = decryptAndLoad(srcPath, m_dbPath, m_key);
+    ok = decryptAndLoad(srcPath, m_dbPath, m_key, m_keyLegacy);
 #else
     QFile::remove(m_dbPath);
     ok = QFile::copy(srcPath, m_dbPath);
