@@ -30,3 +30,5 @@ peubud_add_test(test_pdf_parsers
     ${CMAKE_SOURCE_DIR}/src/services/import/BankPDFParsers.cpp)
 peubud_add_test(test_ajustes)
 peubud_add_test(test_sqlite_migrations)
+peubud_add_test(test_parcela_service
+    ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp)
