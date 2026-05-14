@@ -62,6 +62,10 @@ private:
     void onBuscaGlobal();
     void onBloquear();
 
+    // Tab order persistence (drag & drop)
+    void aplicarOrdemAbasSalva();
+    void salvarOrdemAbas();
+
     // Atalhos globais de teclado (#80)
     void setupShortcuts();
 

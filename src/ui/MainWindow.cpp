@@ -41,6 +41,7 @@
 #include "core/CalculadoraHub.h"
 
 #include <QLabel>
+#include <QTabBar>
 #include <QTabWidget>
 #include <QVBoxLayout>
 #include <QDialogButtonBox>
@@ -117,6 +118,43 @@ void MainWindow::onBloquear()
     close();
 }
 
+// ── Tab order persistence (drag & drop) ──────────────────────────────────────
+
+void MainWindow::aplicarOrdemAbasSalva()
+{
+    if (!m_tabs) return;
+    const QStringList ordem = AppSettings::instance().tabOrder();
+    if (ordem.isEmpty()) return; // primeiro start: usa ordem default do código
+
+    auto *bar = m_tabs->tabBar();
+    // Para cada chave salva (na ordem desejada), mover aba correspondente
+    // para a posicao final acumulada. Chaves desconhecidas ignoradas;
+    // abas novas (em código mas nao em ordem salva) permanecem na cauda.
+    int destino = 0;
+    for (const QString &chave : ordem) {
+        for (int i = destino; i < m_tabs->count(); ++i) {
+            const QWidget *w = m_tabs->widget(i);
+            if (w && w->objectName() == chave) {
+                if (i != destino) bar->moveTab(i, destino);
+                ++destino;
+                break;
+            }
+        }
+    }
+}
+
+void MainWindow::salvarOrdemAbas()
+{
+    if (!m_tabs) return;
+    QStringList ordem;
+    ordem.reserve(m_tabs->count());
+    for (int i = 0; i < m_tabs->count(); ++i) {
+        const QWidget *w = m_tabs->widget(i);
+        if (w && !w->objectName().isEmpty()) ordem.append(w->objectName());
+    }
+    AppSettings::instance().setTabOrder(ordem);
+}
+
 void MainWindow::buildUi()
 {
     m_undoStack = new QUndoStack(this);
@@ -138,6 +176,24 @@ void MainWindow::buildUi()
     m_metas         = new MetasWidget(this);
     m_lembretes     = new LembretesWidget(this);
     m_tabs = new QTabWidget(this);
+    m_tabs->setMovable(true); // drag-and-drop reorder
+
+    // objectName eh a chave estavel usada para persistir ordem em
+    // AppSettings::tabOrder. Nao traduzir; uppercase opcional.
+    m_dashboard    ->setObjectName(QStringLiteral("tab_dashboard"));
+    m_entradas     ->setObjectName(QStringLiteral("tab_entradas"));
+    m_gastos       ->setObjectName(QStringLiteral("tab_gastos"));
+    m_tendencias   ->setObjectName(QStringLiteral("tab_tendencias"));
+    m_investimentos->setObjectName(QStringLiteral("tab_investimentos"));
+    m_bolsa        ->setObjectName(QStringLiteral("tab_bolsa"));
+    m_proventos    ->setObjectName(QStringLiteral("tab_proventos"));
+    m_planejamento ->setObjectName(QStringLiteral("tab_planejamento"));
+    m_recorrencias ->setObjectName(QStringLiteral("tab_recorrencias"));
+    m_dividas      ->setObjectName(QStringLiteral("tab_dividas"));
+    m_metas        ->setObjectName(QStringLiteral("tab_metas"));
+    m_lembretes    ->setObjectName(QStringLiteral("tab_lembretes"));
+    m_parcelas     ->setObjectName(QStringLiteral("tab_parcelas"));
+
     m_tabs->addTab(m_dashboard,     tr("Dashboard"));      // 0
     m_tabs->addTab(m_entradas,      tr("Entradas"));       // 1
     m_tabs->addTab(m_gastos,        tr("Gastos"));         // 2
@@ -151,8 +207,16 @@ void MainWindow::buildUi()
     m_tabs->addTab(m_metas,         tr("Metas"));          // 8
     m_tabs->addTab(m_lembretes,     tr("Lembretes"));      // 9
     m_tabs->addTab(m_parcelas,      tr("Cartões"));        // 10
+
+    // Restaura ordem salva (drag & drop)
+    aplicarOrdemAbasSalva();
+
     m_tabs->setCurrentIndex(AppSettings::instance().initialTab());
     setCentralWidget(m_tabs);
+
+    // Persiste ordem ao soltar aba arrastada
+    connect(m_tabs->tabBar(), &QTabBar::tabMoved,
+            this, &MainWindow::salvarOrdemAbas);
 
     // Pass undo stack to data widgets
     m_parcelas->setUndoStack(m_undoStack);

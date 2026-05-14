@@ -51,6 +51,12 @@ public:
     int  initialTab() const;          // default: 0 (Dashboard)
     void setInitialTab(int index);
 
+    // ── Tab order (drag & drop persistence) ───────────────────────────────
+    // Lista de chaves (objectName de cada widget) na ordem desejada.
+    // Vazia = ordem default do código (sem persistência aplicada).
+    QStringList tabOrder() const;
+    void        setTabOrder(const QStringList &keys);
+
     // ── Painel câmbio (#46/#47): slots de moeda para o painel LED ────────
     QString currencySlot1() const;            // default: USD
     void    setCurrencySlot1(const QString &code);

@@ -124,6 +124,16 @@ void AppSettings::setInitialTab(int index)
     m_s.setValue(QStringLiteral("initial_tab"), index);
 }
 
+QStringList AppSettings::tabOrder() const
+{
+    return m_s.value(QStringLiteral("tab_order")).toStringList();
+}
+
+void AppSettings::setTabOrder(const QStringList &keys)
+{
+    m_s.setValue(QStringLiteral("tab_order"), keys);
+}
+
 // ── Market data (#46) ────────────────────────────────────────────────────────
 
 QString AppSettings::marketDefaultProvider() const
