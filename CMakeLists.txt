@@ -90,6 +90,9 @@ set(SOURCES
     src/services/investimento/InvestActivities.cpp
     src/services/investimento/InvestActivityFactory.cpp
 
+    # External process wrapper (#86)
+    src/services/external/ExternalProcessProvider.cpp
+
     # Core — secret store
     src/core/secret/SecretStoreService.cpp
 

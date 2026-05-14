@@ -47,3 +47,5 @@ peubud_add_test(test_drip
 peubud_add_test(test_invest_activities
     ${CMAKE_SOURCE_DIR}/src/services/investimento/InvestActivities.cpp
     ${CMAKE_SOURCE_DIR}/src/services/investimento/InvestActivityFactory.cpp)
+peubud_add_test(test_external_process
+    ${CMAKE_SOURCE_DIR}/src/services/external/ExternalProcessProvider.cpp)
