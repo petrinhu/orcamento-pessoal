@@ -100,6 +100,7 @@ set(SOURCES
     src/repositories/ParcelaRepository.cpp
     src/repositories/FonteRendaRepository.cpp
     src/repositories/LancamentoEntradaRepository.cpp
+    src/repositories/ProventoRepository.cpp
 
     # Services
     src/services/CalculadoraService.cpp

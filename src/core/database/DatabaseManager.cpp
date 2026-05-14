@@ -3,6 +3,7 @@
 #include "core/crypto/SodiumCryptoService.h"
 #include "services/FechamentoMensalService.h"
 #include "services/AuditLogService.h"
+#include "repositories/ProventoRepository.h"
 
 #include <QSqlQuery>
 #include <QSqlError>
@@ -487,6 +488,11 @@ void DatabaseManager::createSchema()
             q.exec(QStringLiteral(
                 "ALTER TABLE lancamentos_investimentos "
                 "ADD COLUMN preco_unitario INTEGER NOT NULL DEFAULT 0"));
+    }
+
+    // #66: tabela proventos_recebidos (tracker dividendos/JCP/rendimento FII)
+    if (!ProventoRepository::ensureSchema()) {
+        qWarning() << "DatabaseManager: falha ao criar schema de proventos_recebidos";
     }
 
     // #88: tabela fechamentos_mensais (snapshot imutavel mes contabil)
