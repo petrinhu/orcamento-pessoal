@@ -119,6 +119,7 @@ set(SOURCES
     src/ui/widgets/ReceiptAttachmentWidget.cpp
     src/ui/widgets/AuditLogViewer.cpp
     src/ui/widgets/BackupConfigWidget.cpp
+    src/ui/widgets/MarketConfigWidget.cpp
     src/ui/widgets/AddCompraDialog.cpp
     src/ui/widgets/ConfigWidget.cpp
     src/ui/widgets/PrefsWidget.cpp

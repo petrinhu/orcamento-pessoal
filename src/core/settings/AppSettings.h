@@ -51,6 +51,16 @@ public:
     int  initialTab() const;          // default: 0 (Dashboard)
     void setInitialTab(int index);
 
+    // ── Painel câmbio (#46/#47): slots de moeda para o painel LED ────────
+    QString currencySlot1() const;            // default: USD
+    void    setCurrencySlot1(const QString &code);
+    QString currencySlot2() const;            // default: EUR
+    void    setCurrencySlot2(const QString &code);
+
+    // ── COTAHIST B3 (#46/#59) ────────────────────────────────────────────
+    bool    cotahistEnabled() const;          // default: false
+    void    setCotahistEnabled(bool on);
+
 signals:
     void languageChanged(Language lang);
     void currencyChanged(const QString &code);

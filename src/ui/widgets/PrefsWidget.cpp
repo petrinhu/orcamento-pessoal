@@ -5,6 +5,7 @@
 #include "ConfigFontesWidget.h"
 #include "ConfigPagadoresWidget.h"
 #include "ConfigWidget.h"
+#include "MarketConfigWidget.h"
 #include "core/settings/AppSettings.h"
 
 #include <QVBoxLayout>
@@ -278,6 +279,10 @@ void PrefsWidget::buildUi()
     catLay->addStretch();
 
     tabs->addTab(catScroll, tr("Categorias"));
+
+    // ── Mercado (#46) ──────────────────────────────────────────────────────
+    auto *marketConf = new MarketConfigWidget(tabs);
+    tabs->addTab(marketConf, tr("Mercado"));
 
     // ── Backup (#79) ────────────────────────────────────────────────────────
     auto *backupConf = new BackupConfigWidget(tabs);
