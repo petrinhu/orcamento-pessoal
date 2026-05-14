@@ -1,0 +1,40 @@
+.TH PEUBUD 1 "2026-05-14" "0.1.0" "PeuBud User Manual"
+.SH NAME
+peubud \- personal budget manager with encrypted database
+.SH SYNOPSIS
+.B peubud
+[\fIFILE\fR]
+.SH DESCRIPTION
+.B PeuBud
+is a personal budget application in C++20/Qt6 with focus on Brazilian
+fiscal rules. It tracks income, expenses, investments and credit card
+installments. The database is encrypted with XChaCha20-Poly1305 + Argon2id
+key derivation; private files use the \fI.pbd\fR extension.
+.SH OPTIONS
+.TP
+.I FILE
+Optional path to a \fI.pbd\fR database file to open on startup.
+.SH FILES
+.TP
+.I ~/Documents/PeuBud/
+Default save folder.
+.TP
+.I ~/Backups/peubud/
+Default backup destination.
+.TP
+.I ~/.config/petrinhu/PeuBud.conf
+QSettings preferences (language, currency, market provider, etc).
+.SH ENVIRONMENT
+.TP
+.B QT_LOGGING_RULES
+Standard Qt logging filter (e.g. \fI*.debug=true\fR).
+.SH BUGS
+Report at https://codeberg.org/petrinhu/orcamento_pessoal/issues
+.SH AUTHOR
+Petrus Silva Costa <petrinhu@yahoo.com.br>
+.SH LICENSE
+PolyForm Noncommercial License 1.0.0
+.SH SEE ALSO
+.BR sqlite3 (1),
+.BR gnucash (1),
+.BR kmymoney (1)

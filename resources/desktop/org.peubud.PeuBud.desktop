@@ -1,0 +1,16 @@
+[Desktop Entry]
+Type=Application
+Name=PeuBud
+Name[pt_BR]=PeuBud
+Comment=Personal budget with encrypted database
+Comment[pt_BR]=Orçamento pessoal com banco cifrado
+GenericName=Personal Budget Manager
+GenericName[pt_BR]=Gerenciador de Orçamento Pessoal
+Exec=peubud %F
+Icon=org.peubud.PeuBud
+Terminal=false
+Categories=Office;Finance;Qt;
+Keywords=budget;finance;money;personal;encrypted;
+Keywords[pt_BR]=orçamento;finanças;dinheiro;pessoal;cifrado;
+StartupWMClass=peubud
+MimeType=application/x-peubud;

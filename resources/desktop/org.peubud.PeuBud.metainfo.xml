@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>org.peubud.PeuBud</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>LicenseRef-PolyForm-Noncommercial-1.0.0</project_license>
+
+  <name>PeuBud</name>
+  <name xml:lang="pt-BR">PeuBud</name>
+
+  <summary>Personal budget manager with encrypted database</summary>
+  <summary xml:lang="pt-BR">Gerenciador de orçamento pessoal com banco cifrado</summary>
+
+  <description>
+    <p>PeuBud is a personal budget application built in C++20/Qt6 with focus on
+    Brazilian fiscal rules. Features include:</p>
+    <ul>
+      <li>Income, expenses, investments and credit card tracking</li>
+      <li>Encrypted SQLite database (XChaCha20-Poly1305 + Argon2id)</li>
+      <li>Built-in financial calculators (TVM, CET, Price/SAC, FIRE)</li>
+      <li>Brazilian fiscal calculators (INSS, IRPF, Simples Nacional)</li>
+      <li>Automatic backup with retention policy</li>
+      <li>Monthly closing with immutable snapshots</li>
+      <li>Receipt attachments for IRPF declaration</li>
+      <li>Audit trail via SQLite triggers</li>
+      <li>Import OFX/CSV/XLSX with duplicate detection</li>
+    </ul>
+    <p xml:lang="pt-BR">PeuBud é um aplicativo de orçamento pessoal em C++20/Qt6
+    com foco em regras fiscais brasileiras.</p>
+  </description>
+
+  <launchable type="desktop-id">org.peubud.PeuBud.desktop</launchable>
+
+  <url type="homepage">https://codeberg.org/petrinhu/orcamento_pessoal</url>
+  <url type="bugtracker">https://codeberg.org/petrinhu/orcamento_pessoal/issues</url>
+
+  <developer id="org.peubud">
+    <name>Petrus Silva Costa</name>
+  </developer>
+
+  <screenshots>
+    <screenshot type="default">
+      <caption>Dashboard with monthly summary</caption>
+      <caption xml:lang="pt-BR">Dashboard com resumo mensal</caption>
+      <image>https://codeberg.org/petrinhu/orcamento_pessoal/raw/branch/main/resources/screenshots/dashboard.png</image>
+    </screenshot>
+  </screenshots>
+
+  <content_rating type="oars-1.1"/>
+
+  <categories>
+    <category>Office</category>
+    <category>Finance</category>
+  </categories>
+
+  <keywords>
+    <keyword>budget</keyword>
+    <keyword>finance</keyword>
+    <keyword>money</keyword>
+    <keyword>encrypted</keyword>
+    <keyword xml:lang="pt-BR">orçamento</keyword>
+    <keyword xml:lang="pt-BR">finanças</keyword>
+  </keywords>
+
+  <releases>
+    <release version="0.1.0" date="2026-05-14">
+      <description>
+        <p>Initial development release.</p>
+      </description>
+    </release>
+  </releases>
+
+  <supports>
+    <control>pointing</control>
+    <control>keyboard</control>
+  </supports>
+
+  <provides>
+    <binary>peubud</binary>
+  </provides>
+</component>

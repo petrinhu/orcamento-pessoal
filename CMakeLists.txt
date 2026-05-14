@@ -139,6 +139,7 @@ set(SOURCES
     src/ui/widgets/AuditLogViewer.cpp
     src/ui/widgets/BackupConfigWidget.cpp
     src/ui/widgets/MarketConfigWidget.cpp
+    src/ui/widgets/CurrencyPanelWidget.cpp
     src/ui/widgets/BolsaWidget.cpp
     src/ui/widgets/ProventoDialog.cpp
     src/ui/widgets/ProventosWidget.cpp
@@ -305,6 +306,22 @@ include(GNUInstallDirs)
 install(TARGETS orcamento-pessoal
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
+
+# Desktop integration (#98)
+install(FILES resources/desktop/org.peubud.PeuBud.desktop
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/applications)
+
+install(FILES resources/desktop/org.peubud.PeuBud.metainfo.xml
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/metainfo)
+
+install(FILES resources/desktop/icons/org.peubud.PeuBud.svg
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/scalable/apps)
+
+install(FILES resources/desktop/peubud.1
+    DESTINATION ${CMAKE_INSTALL_MANDIR}/man1)
+
+# Renomeia binário instalado para "peubud" (Exec= no .desktop)
+set_target_properties(orcamento-pessoal PROPERTIES OUTPUT_NAME peubud)
 
 # Metadados CPack
 set(CPACK_PACKAGE_NAME            "peubud")
