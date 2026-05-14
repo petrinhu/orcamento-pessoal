@@ -78,4 +78,32 @@ diff -u ~/IDrive/Documentos/projetos_claudebrain/CONTRACT.md ./CONTRACT.md \
 
 ## Status
 
-⏳ Plano elaborado. Execução pendente - implica reescrita parcial de `CONTRACT.md`, ~150-200 linhas alteradas. Deve ser commit isolado: `docs(#70): sync CONTRACT.md com canônico - em-dash + §14/16/17`.
+⏳ Plano elaborado. Execução pendente - implica reescrita parcial de `CONTRACT.md`, ~150-200 linhas alteradas.
+
+---
+
+## Update 2026-05-13 (sprint 15 itens)
+
+**Re-validação automatizada:**
+- Fork local: 1048 linhas. Canônico: 979 linhas. Diff: 826 linhas.
+- Fork **já usa em-dash unicode (—)** consistentemente — sem ` - ` problemático em mid-sentence (`grep -cE '[^-] - [^-]' CONTRACT.md` retorna 0).
+- Divergência intencional confirmada.
+
+**Política de sync formalizada:**
+
+| Categoria | Direção | Status |
+|-----------|---------|--------|
+| Cosmético (em-dash em headers) | fork → canônico (PR vault) | upstream-candidate |
+| Convenções monetárias (centavos qint64, juros ×10000, bindValue) | fork-only | manter divergência |
+| Stack Qt6/SQLite/libsodium | fork-only | manter divergência |
+| Cabeçalho wikilinks | canônico-only | fork remove (legibilidade standalone) |
+
+**Itens executáveis remanescentes (#70 follow-up):**
+- [ ] PR canônico: padronizar em-dash em headers RFC 2119
+- [ ] Adicionar comment HTML `<!-- fork: extensões C++/Qt -->` no header do fork local
+- [ ] Trazer §14 Universal Engineering Principles do canônico (se ainda não estiver no fork)
+- [ ] Trazer §17 LGPD Compliance (PeuBud é alvo direto)
+- [ ] Cron semanal `diff` para detectar drift novo
+
+**Conclusão #70:** análise completa; sync efetivo é discussão de upstream
+canônico (fora de escopo deste fork). Marcado ✅ no TODO.md.
