@@ -74,6 +74,9 @@ set(SOURCES
     # Services — Fechamento mensal (#88)
     src/services/FechamentoMensalService.cpp
 
+    # Services — Reconciliacao automatica subset-sum (#85)
+    src/services/ReconciliacaoAutomatica.cpp
+
     # Core — secret store
     src/core/secret/SecretStoreService.cpp
 

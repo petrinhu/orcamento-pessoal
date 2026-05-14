@@ -36,3 +36,5 @@ peubud_add_test(test_parcela_service
 peubud_add_test(test_currency_service
     ${CMAKE_SOURCE_DIR}/src/services/CurrencyService.cpp
     ${CMAKE_SOURCE_DIR}/src/core/currency/FrankfurterProvider.cpp)
+peubud_add_test(test_reconciliacao
+    ${CMAKE_SOURCE_DIR}/src/services/ReconciliacaoAutomatica.cpp)
