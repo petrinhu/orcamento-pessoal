@@ -1,6 +1,7 @@
 #include "MarketConfigWidget.h"
 
 #include "core/settings/AppSettings.h"
+#include "services/BrapiProvider.h"
 
 #include <QCheckBox>
 #include <QComboBox>
@@ -73,8 +74,7 @@ void MarketConfigWidget::buildUi()
     form->addRow(tr("Plano Brapi:"), m_cbPlano);
 
     m_btnTestar = new QPushButton(tr("Testar token…"), this);
-    m_btnTestar->setEnabled(false); // placeholder ate #58 BrapiProvider entrar
-    m_btnTestar->setToolTip(tr("Disponível após #58 BrapiProvider"));
+    m_btnTestar->setToolTip(tr("GET /api/quote/PETR4 com Bearer token atual"));
     form->addRow(QString(), m_btnTestar);
 
     // ── Polling ────────────────────────────────────────────────────────────
@@ -165,7 +165,27 @@ void MarketConfigWidget::onSalvar()
 
 void MarketConfigWidget::onTestarBrapi()
 {
-    // Stub: ativa quando #58 BrapiProvider for entregue
-    QMessageBox::information(this, tr("Testar Brapi"),
-        tr("Funcionalidade disponível após implementação de BrapiProvider (#58)."));
+    // Salva token antes para garantir teste do que esta visivel no campo.
+    AppSettings::instance().setBrapiToken(m_edtToken->text());
+
+    if (m_edtToken->text().trimmed().isEmpty()) {
+        QMessageBox::warning(this, tr("Testar Brapi"),
+            tr("Informe o token Bearer obtido em brapi.dev/dashboard."));
+        return;
+    }
+
+    m_btnTestar->setEnabled(false);
+    m_btnTestar->setText(tr("Testando…"));
+
+    auto *provider = new BrapiProvider(this);
+    provider->testarConexao([this, provider](bool ok, const QString &msg) {
+        m_btnTestar->setEnabled(true);
+        m_btnTestar->setText(tr("Testar token…"));
+        if (ok) {
+            QMessageBox::information(this, tr("Testar Brapi"), msg);
+        } else {
+            QMessageBox::warning(this, tr("Testar Brapi"), msg);
+        }
+        provider->deleteLater();
+    });
 }

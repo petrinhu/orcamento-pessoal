@@ -128,6 +128,8 @@ set(SOURCES
     src/services/CurrencyService.cpp
     src/services/ImportService.cpp
     src/services/MarketDataService.cpp
+    src/services/IMarketDataProvider.cpp
+    src/services/BrapiProvider.cpp
     src/services/import/IMatchFinder.cpp
     src/services/import/BankPDFParsers.cpp
     src/services/ExportService.cpp
