@@ -77,6 +77,9 @@ set(SOURCES
     # Services — Reconciliacao automatica subset-sum (#85)
     src/services/ReconciliacaoAutomatica.cpp
 
+    # Services — Suporte/Resistencia (Pivot/Camarilla/Fib) (#53)
+    src/services/SuporteResistencia.cpp
+
     # Core — secret store
     src/core/secret/SecretStoreService.cpp
 
