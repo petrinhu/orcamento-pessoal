@@ -1,6 +1,8 @@
 #include "CalculadoraHub.h"
 #include "ui/widgets/CalculadoraDialog.h"
+#include "ui/widgets/WizardGuiadoDialog.h"
 #include "services/CalculadoraService.h"
+#include "core/settings/AppSettings.h"
 
 #include <QLineEdit>
 
@@ -47,6 +49,14 @@ void CalculadoraHub::mostrar(QLineEdit *invoker, QWidget *parent)
 
 void CalculadoraHub::mostrarGlobal(QWidget *parent)
 {
+    // #108 - Modo Iniciante substitui calculadora densa por wizard guiado
+    // pergunta-a-pergunta. Apenas no acesso global (toolbar): campos
+    // monetarios usam mostrar(invoker, ...) e mantem fluxo da calculadora.
+    if (AppSettings::instance().modoIniciante()) {
+        WizardGuiadoDialog wiz(parent);
+        wiz.exec();
+        return;
+    }
     mostrar(nullptr, parent);
 }
 
