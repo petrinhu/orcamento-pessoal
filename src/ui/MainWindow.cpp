@@ -20,6 +20,7 @@
 #include "core/database/DatabaseManager.h"
 #include "services/BackupService.h"
 #include "services/BrapiProvider.h"
+#include "services/GlossarioService.h"
 #include "services/MarketDataService.h"
 #include "ui/widgets/BolsaWidget.h"
 #include "ui/widgets/CurrencyPanelWidget.h"
@@ -223,6 +224,11 @@ void MainWindow::buildUi()
 
     m_tabs->setCurrentIndex(AppSettings::instance().initialTab());
     setCentralWidget(m_tabs);
+
+    // #103 Glossario: aplica tooltips automaticos em labels/buttons com siglas
+    // financeiras conhecidas (CET, FIRE, DY, IRPF, etc). Hover mostra
+    // definicao em pt-BR sem o usuario precisar saber a sigla.
+    GlossarioService::aplicarTooltips(this);
 
     // Persiste ordem ao soltar aba arrastada
     connect(m_tabs->tabBar(), &QTabBar::tabMoved,

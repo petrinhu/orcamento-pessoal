@@ -11,6 +11,7 @@ function(peubud_add_test test_name)
         Qt6::Test
         Qt6::Sql
         Qt6::Network
+        Qt6::Widgets
     )
     target_include_directories(${test_name} PRIVATE
         ${CMAKE_SOURCE_DIR}/src
@@ -49,3 +50,5 @@ peubud_add_test(test_invest_activities
     ${CMAKE_SOURCE_DIR}/src/services/investimento/InvestActivityFactory.cpp)
 peubud_add_test(test_external_process
     ${CMAKE_SOURCE_DIR}/src/services/external/ExternalProcessProvider.cpp)
+peubud_add_test(test_glossario
+    ${CMAKE_SOURCE_DIR}/src/services/GlossarioService.cpp)

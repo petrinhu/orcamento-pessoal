@@ -59,6 +59,7 @@ set(SOURCES
     # Services — FinanceEngine (#81)
     src/services/FinanceEngine.cpp
     src/services/FiscalService.cpp
+    src/services/GlossarioService.cpp
     src/services/BackupService.cpp
     src/services/AjusteCorporativoService.cpp
 
