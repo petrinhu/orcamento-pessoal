@@ -19,8 +19,10 @@
 #include "core/session/UserSession.h"
 #include "core/database/DatabaseManager.h"
 #include "services/BackupService.h"
+#include "services/BrapiProvider.h"
 #include "services/MarketDataService.h"
 #include "ui/widgets/BolsaWidget.h"
+#include "ui/widgets/CurrencyPanelWidget.h"
 #include "ui/widgets/ProventosWidget.h"
 #include "core/settings/AppSettings.h"
 #include "services/ImportService.h"
@@ -163,6 +165,12 @@ void MainWindow::buildUi()
     m_undoStack->setUndoLimit(50);
 
     m_marketService = new MarketDataService(this);
+    // #58: registra BrapiProvider; ativa-o se for o provider salvo em
+    // AppSettings (default 'frankfurter' — usuario muda em Prefs/Mercado).
+    m_marketService->registerProvider(QStringLiteral("brapi"),
+                                       new BrapiProvider(m_marketService));
+    m_marketService->setActiveProvider(
+        AppSettings::instance().marketDefaultProvider());
     m_bolsa         = new BolsaWidget(m_marketService, this);
     m_proventos     = new ProventosWidget(this);
     m_dashboard   = new DashboardWidget(this);
@@ -243,6 +251,12 @@ void MainWindow::buildUi()
     m_statusTotal = new QLabel(this);
     m_statusTotal->setObjectName(QStringLiteral("subtitle"));
     statusBar()->addPermanentWidget(m_statusTotal);
+
+    // #47: painel câmbio LED na statusbar (slots USD-BRL + EUR-BRL ou
+    // configuracao em Prefs/Mercado). Sem rede ainda — recarrega quando
+    // BrapiProvider expor rates via signal (follow-up #58).
+    auto *currencyPanel = new CurrencyPanelWidget(this);
+    statusBar()->addPermanentWidget(currencyPanel);
 
     // ── TVM calculator → Cartões tab ───────────────────────────────────────
     connect(&CalculadoraHub::instance(), &CalculadoraHub::tvmParaCartoes,

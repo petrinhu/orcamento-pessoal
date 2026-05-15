@@ -5,6 +5,7 @@
 #include "services/FechamentoMensalService.h"
 #include "repositories/GastoAvulsoRepository.h"
 #include "repositories/LancamentoInvestimentoRepository.h"
+#include "repositories/ProventoRepository.h"
 #include "models/LancamentoInvestimento.h"
 #include "core/database/DatabaseManager.h"
 #include "core/session/UserSession.h"
@@ -214,6 +215,7 @@ void DashboardWidget::buildUi()
     row2->setSpacing(12);
     row2->addWidget(makeCard(tr("Investimentos (net)"), &m_valInvNet, &m_subInvNet, 4));
     row2->addWidget(makeCard(tr("Saldo líquido total"), &m_valSaldoLiq));
+    row2->addWidget(makeCard(tr("Proventos (ano)"),     &m_valProventos, &m_subProventos, 6)); // #66 aba Proventos = 6
     row2->addStretch();
     lay->addLayout(row2);
 
@@ -382,6 +384,17 @@ void DashboardWidget::atualizarDados()
     m_subInvNet->setText(tr("Aportes: %1  Resgates: %2")
         .arg(fmtCentavos(totalAportes))
         .arg(fmtCentavos(totalResgates)));
+
+    // #66: card Proventos (acumulado ano corrente)
+    {
+        ProventoRepository repoProv;
+        const qint64 totalProvAno = repoProv.totalLiquidoAno(ano);
+        setValor(m_valProventos, totalProvAno);
+        const int qtd = repoProv.findByPeriod(QDate(ano, 1, 1),
+                                              QDate(ano, 12, 31)).size();
+        m_subProventos->setText(tr("%n evento(s) em %1", nullptr, qtd)
+            .arg(ano));
+    }
 
     emit statusAtualizado(tr("Saldo %1: %2  ")
         .arg(m_mes.toString(QStringLiteral("MMM/yy")))

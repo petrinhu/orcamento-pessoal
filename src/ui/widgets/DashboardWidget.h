@@ -56,6 +56,8 @@ private:
     // Mês — linha 2
     QLabel *m_valInvNet   = nullptr;
     QLabel *m_valSaldoLiq = nullptr;
+    QLabel *m_valProventos = nullptr; // #66 dividendos/JCP/rendimentos
+    QLabel *m_subProventos = nullptr;
 
     // Subs
     QLabel *m_subEntradas = nullptr;
