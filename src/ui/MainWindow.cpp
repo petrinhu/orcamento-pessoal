@@ -1205,6 +1205,12 @@ void MainWindow::onAjuda()
     dlg->show();
 }
 
+void MainWindow::onGlossario()
+{
+    GlossarioDialog dlg(this);
+    dlg.exec();
+}
+
 void MainWindow::onSobre()
 {
     AboutDialog dlg(this);
