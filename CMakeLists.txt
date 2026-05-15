@@ -156,6 +156,7 @@ set(SOURCES
     src/ui/widgets/AboutDialog.cpp
     src/ui/widgets/HelpDialog.cpp
     src/ui/widgets/GlossarioDialog.cpp
+    src/ui/widgets/OnboardingDialog.cpp
     src/ui/widgets/EntradasWidget.cpp
     src/ui/widgets/LancamentoEntradaDialog.cpp
     src/ui/widgets/GastosWidget.cpp
@@ -218,6 +219,9 @@ set(SOURCES
 
     # Base wizard reutilizavel (#87)
     src/ui/widgets/BaseWizardDialog.cpp
+
+    # Wizards guiados pergunta-a-pergunta (#108)
+    src/ui/widgets/WizardGuiadoDialog.cpp
 )
 
 set(RESOURCES

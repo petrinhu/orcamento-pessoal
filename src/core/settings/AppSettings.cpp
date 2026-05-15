@@ -259,3 +259,15 @@ void AppSettings::setModoIniciante(bool on)
     m_s.setValue(QStringLiteral("ui/modo_iniciante"), on);
     emit modoInicianteChanged(on);
 }
+
+// ── Onboarding (#109) ─────────────────────────────────────────────────────────
+
+bool AppSettings::onboardingFeito() const
+{
+    return m_s.value(QStringLiteral("ui/onboarding_feito"), false).toBool();
+}
+
+void AppSettings::setOnboardingFeito(bool feito)
+{
+    m_s.setValue(QStringLiteral("ui/onboarding_feito"), feito);
+}

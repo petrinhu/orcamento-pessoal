@@ -1,6 +1,7 @@
 #include "ui/Theme.h"
 #include "ui/LoginDialog.h"
 #include "ui/MainWindow.h"
+#include "ui/widgets/OnboardingDialog.h"
 #include "core/database/DatabaseManager.h"
 #include "core/session/UserSession.h"
 #include "core/settings/AppSettings.h"
@@ -48,6 +49,14 @@ int main(int argc, char *argv[])
             QStringLiteral("Não foi possível abrir o banco de dados.\n"
                            "Verifique se a senha está correta."));
         return 1;
+    }
+
+    // ── Onboarding first-run (#109) ───────────────────────────────────────
+    // Exibido apenas se a flag nunca foi marcada. "Pular" e "Concluir"
+    // ambos persistem a flag — nao re-exibe em proximas sessoes.
+    if (!AppSettings::instance().onboardingFeito()) {
+        OnboardingDialog onb;
+        onb.exec();
     }
 
     // ── Main window ────────────────────────────────────────────────────────

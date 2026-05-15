@@ -73,6 +73,12 @@ public:
     bool modoIniciante() const;
     void setModoIniciante(bool on);
 
+    // ── Onboarding (#109) ─────────────────────────────────────────────────
+    // Flag first-run. Default false; o OnboardingDialog seta para true ao
+    // concluir ou pular. Subsequentemente, login nao re-exibe o wizard.
+    bool onboardingFeito() const;
+    void setOnboardingFeito(bool feito);
+
 signals:
     void languageChanged(Language lang);
     void currencyChanged(const QString &code);
