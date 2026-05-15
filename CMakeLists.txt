@@ -155,6 +155,7 @@ set(SOURCES
     src/ui/widgets/PrefsWidget.cpp
     src/ui/widgets/AboutDialog.cpp
     src/ui/widgets/HelpDialog.cpp
+    src/ui/widgets/GlossarioDialog.cpp
     src/ui/widgets/EntradasWidget.cpp
     src/ui/widgets/LancamentoEntradaDialog.cpp
     src/ui/widgets/GastosWidget.cpp

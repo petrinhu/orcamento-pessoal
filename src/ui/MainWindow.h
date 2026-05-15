@@ -56,6 +56,7 @@ private:
     // Configurações / Ajuda
     void onConfiguracoes();
     void onAjuda();
+    void onGlossario();
     void onSobre();
 
     void onReconciliar();

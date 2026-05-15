@@ -16,6 +16,7 @@
 #include "services/RecorrenciaService.h"
 #include "widgets/AboutDialog.h"
 #include "widgets/HelpDialog.h"
+#include "widgets/GlossarioDialog.h"
 #include "core/session/UserSession.h"
 #include "core/database/DatabaseManager.h"
 #include "services/BackupService.h"
@@ -229,6 +230,11 @@ void MainWindow::buildUi()
     // financeiras conhecidas (CET, FIRE, DY, IRPF, etc). Hover mostra
     // definicao em pt-BR sem o usuario precisar saber a sigla.
     GlossarioService::aplicarTooltips(this);
+
+    // #104 Modo Iniciante: se ativo (default), renomeia labels/botoes/grupos
+    // para versao coloquial cadastrada em GlossarioService::labelColoquial.
+    // Ex.: "FIRE" -> "Aposentadoria Antecipada (FIRE)". No-op em modo Avancado.
+    GlossarioService::aplicarLabelsColoquiais(this);
 
     // Persiste ordem ao soltar aba arrastada
     connect(m_tabs->tabBar(), &QTabBar::tabMoved,
@@ -625,6 +631,10 @@ void MainWindow::buildMenuBar()
     auto *aAjuda = mAjuda->addAction(tr("&Ajuda"));
     aAjuda->setShortcut(QKeySequence::HelpContents);
     connect(aAjuda, &QAction::triggered, this, &MainWindow::onAjuda);
+
+    auto *aGlossario = mAjuda->addAction(tr("&Glossário financeiro…"));
+    aGlossario->setShortcut(QKeySequence(Qt::Key_F2));
+    connect(aGlossario, &QAction::triggered, this, &MainWindow::onGlossario);
 
     mAjuda->addSeparator();
 
