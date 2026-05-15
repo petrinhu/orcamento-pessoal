@@ -1,7 +1,9 @@
 // PeuBud - GlossarioService TDD (#103, #104)
 
 #include <QtTest/QtTest>
+#include <QFormLayout>
 #include <QLabel>
+#include <QLineEdit>
 #include <QWidget>
 #include "core/settings/AppSettings.h"
 #include "services/GlossarioService.h"
@@ -22,6 +24,8 @@ private slots:
     void caseInsensitive();
     void aplicarLabelsColoquiaisRenomeia();
     void aplicarLabelsRespeitaModoAvancado();
+    void aplicarMicrocopiesAdicionaLabelCinza();
+    void aplicarMicrocopiesIdempotente();
 };
 
 void TestGlossario::definicaoCetNaoVazia()
@@ -108,6 +112,35 @@ void TestGlossario::aplicarLabelsRespeitaModoAvancado()
     GlossarioService::aplicarLabelsColoquiais(&root);
     QCOMPARE(lbl->text(), QStringLiteral("Calcular FIRE"));
     AppSettings::instance().setModoIniciante(true); // restaura default
+}
+
+void TestGlossario::aplicarMicrocopiesAdicionaLabelCinza()
+{
+    QWidget root;
+    auto *form = new QFormLayout(&root);
+    form->addRow(new QLabel(QStringLiteral("CET (% a.a.):"), &root),
+                 new QLineEdit(&root));
+    GlossarioService::aplicarMicrocopies(&root);
+    // 1 linha original + 1 linha microcopy = 2.
+    QCOMPARE(form->rowCount(), 2);
+    auto *fieldItem = form->itemAt(1, QFormLayout::FieldRole);
+    QVERIFY(fieldItem != nullptr);
+    auto *micro = qobject_cast<QLabel*>(fieldItem->widget());
+    QVERIFY(micro != nullptr);
+    QVERIFY(micro->text().startsWith(QStringLiteral("=")));
+    QVERIFY(micro->property("microcopy").toBool());
+    QVERIFY(micro->styleSheet().contains(QStringLiteral("gray")));
+}
+
+void TestGlossario::aplicarMicrocopiesIdempotente()
+{
+    QWidget root;
+    auto *form = new QFormLayout(&root);
+    form->addRow(new QLabel(QStringLiteral("CET"), &root),
+                 new QLineEdit(&root));
+    GlossarioService::aplicarMicrocopies(&root);
+    GlossarioService::aplicarMicrocopies(&root); // 2a chamada nao duplica
+    QCOMPARE(form->rowCount(), 2);
 }
 
 QTEST_MAIN(TestGlossario)

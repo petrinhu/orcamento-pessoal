@@ -236,6 +236,12 @@ void MainWindow::buildUi()
     // Ex.: "FIRE" -> "Aposentadoria Antecipada (FIRE)". No-op em modo Avancado.
     GlossarioService::aplicarLabelsColoquiais(this);
 
+    // #105 Microcopy: para cada QFormLayout descendente cujo label tem sigla
+    // cadastrada, insere abaixo do campo uma linha cinza pequena explicando
+    // em pt-BR plain (ex.: "CET" -> "= juros total ao ano (com IOF e tarifas)").
+    // Idempotente. Roda apos labels coloquiais para nao quebrar lookup do termo.
+    GlossarioService::aplicarMicrocopies(this);
+
     // Persiste ordem ao soltar aba arrastada
     connect(m_tabs->tabBar(), &QTabBar::tabMoved,
             this, &MainWindow::salvarOrdemAbas);

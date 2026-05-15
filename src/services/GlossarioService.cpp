@@ -3,6 +3,7 @@
 #include "core/settings/AppSettings.h"
 
 #include <QCheckBox>
+#include <QFormLayout>
 #include <QGroupBox>
 #include <QHash>
 #include <QLabel>
@@ -326,5 +327,49 @@ void GlossarioService::aplicarLabelsColoquiais(QWidget *root)
         const QString coloq = labelColoquial(termo);
         if (coloq.isEmpty()) continue;
         grp->setTitle(coloq);
+    }
+}
+
+void GlossarioService::aplicarMicrocopies(QWidget *root)
+{
+    if (!root) return;
+
+    // Coletar todos os QFormLayout descendentes (inclusive em filhos diretos).
+    const auto layouts = root->findChildren<QFormLayout*>();
+    for (auto *form : layouts) {
+        // Iterar de tras pra frente: insertRow desloca indices das linhas
+        // seguintes mas nao das anteriores.
+        for (int row = form->rowCount() - 1; row >= 0; --row) {
+            auto *labelItem = form->itemAt(row, QFormLayout::LabelRole);
+            auto *fieldItem = form->itemAt(row, QFormLayout::FieldRole);
+            if (!labelItem || !fieldItem) continue;
+
+            auto *lbl = qobject_cast<QLabel*>(labelItem->widget());
+            if (!lbl) continue;
+
+            const QString termo = primeiroTermoEncontrado(lbl->text());
+            if (termo.isEmpty()) continue;
+
+            const QString micro = microcopy(termo);
+            if (micro.isEmpty()) continue;
+
+            // Idempotencia: se proxima linha ja for microcopy, pula.
+            if (row + 1 < form->rowCount()) {
+                auto *nextField = form->itemAt(row + 1, QFormLayout::FieldRole);
+                if (nextField) {
+                    auto *nextLbl = qobject_cast<QLabel*>(nextField->widget());
+                    if (nextLbl && nextLbl->property("microcopy").toBool())
+                        continue;
+                }
+            }
+
+            auto *microLbl = new QLabel(micro);
+            microLbl->setProperty("microcopy", true);
+            microLbl->setStyleSheet(
+                QStringLiteral("color: gray; font-size: 11px;"));
+            microLbl->setWordWrap(true);
+            // SpanningRole ocuparia label+field; usar FieldRole alinha embaixo do campo.
+            form->insertRow(row + 1, QString(), microLbl);
+        }
     }
 }

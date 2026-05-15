@@ -47,4 +47,11 @@ public:
     // se modo iniciante ativo. Texto original "FIRE" -> "Aposentadoria Antecipada (FIRE)".
     // Chamar apos aplicarTooltips em MainWindow::buildUi. (#104)
     static void aplicarLabelsColoquiais(QWidget *root);
+
+    // (#105) Inspeciona QFormLayout em todos descendentes; para cada linha cujo
+    // label contem sigla cadastrada e que tem microcopy nao-vazio, insere uma
+    // linha logo abaixo com QLabel cinza pequeno (11px) explicando em pt-BR
+    // plain. Idempotente: chamadas repetidas nao adicionam duplicatas (marca
+    // o QLabel inserido com property "microcopy" = true).
+    static void aplicarMicrocopies(QWidget *root);
 };
