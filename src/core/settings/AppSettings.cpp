@@ -245,3 +245,17 @@ void AppSettings::setCotahistEnabled(bool on)
     m_s.setValue(QStringLiteral("market/cotahist_enabled"), on);
     emit marketSettingsChanged();
 }
+
+// ── Modo Iniciante (#104) ─────────────────────────────────────────────────────
+
+bool AppSettings::modoIniciante() const
+{
+    return m_s.value(QStringLiteral("ui/modo_iniciante"), true).toBool();
+}
+
+void AppSettings::setModoIniciante(bool on)
+{
+    if (m_s.value(QStringLiteral("ui/modo_iniciante"), true).toBool() == on) return;
+    m_s.setValue(QStringLiteral("ui/modo_iniciante"), on);
+    emit modoInicianteChanged(on);
+}

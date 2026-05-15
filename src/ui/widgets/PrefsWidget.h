@@ -48,6 +48,7 @@ private:
     QLineEdit    *m_edtSavesFolder     = nullptr;
     QLineEdit    *m_edtAutosavesFolder = nullptr;
     QComboBox    *m_comboInitialTab    = nullptr;
+    QCheckBox    *m_chkIniciante       = nullptr;
     ConfigCategoriasWidget*m_categorias= nullptr;
     ConfigFontesWidget   *m_fontes    = nullptr;
     ConfigPagadoresWidget*m_pagadores = nullptr;

@@ -231,6 +231,29 @@ void PrefsWidget::buildUi()
     });
 
     layGeral->addWidget(grpComport);
+
+    // ── Grupo: Apresentação (#104 — Modo Iniciante vs Avançado) ────────────
+    auto *grpModo = new QGroupBox(tr("Apresentação"), pageGeral);
+    auto *modoLay = new QVBoxLayout(grpModo);
+    m_chkIniciante = new QCheckBox(
+        tr("Modo Iniciante (usar termos do dia-a-dia em vez de siglas)"),
+        grpModo);
+    m_chkIniciante->setToolTip(tr(
+        "Mostra 'Aposentadoria Antecipada' em vez de 'FIRE', "
+        "'Imposto de Renda' em vez de 'IRPF', etc. "
+        "Toggle para Avançado se preferir siglas técnicas."));
+    m_chkIniciante->setChecked(AppSettings::instance().modoIniciante());
+    auto *lblAviso = new QLabel(
+        tr("<i>Reabra o app para aplicar mudanças em todos os labels.</i>"),
+        grpModo);
+    lblAviso->setWordWrap(true);
+    lblAviso->setStyleSheet(QStringLiteral("color: gray; font-size: 11px;"));
+    modoLay->addWidget(m_chkIniciante);
+    modoLay->addWidget(lblAviso);
+    connect(m_chkIniciante, &QCheckBox::toggled,
+            this, [](bool on) { AppSettings::instance().setModoIniciante(on); });
+    layGeral->addWidget(grpModo);
+
     layGeral->addStretch();
 
     tabs->addTab(scrollGeral, tr("Geral"));

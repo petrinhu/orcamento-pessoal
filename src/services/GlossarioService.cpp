@@ -1,8 +1,13 @@
 #include "GlossarioService.h"
 
+#include "core/settings/AppSettings.h"
+
+#include <QCheckBox>
+#include <QGroupBox>
 #include <QHash>
 #include <QLabel>
 #include <QPushButton>
+#include <QRadioButton>
 #include <QRegularExpression>
 #include <QWidget>
 
@@ -292,5 +297,34 @@ void GlossarioService::aplicarTooltips(QWidget *root)
         if (!termo.isEmpty() && b->toolTip().isEmpty()) {
             b->setToolTip(definicao(termo));
         }
+    }
+}
+
+void GlossarioService::aplicarLabelsColoquiais(QWidget *root)
+{
+    if (!root) return;
+    if (!AppSettings::instance().modoIniciante()) return;
+
+    // Helper para widgets com text()/setText() (QLabel/QPushButton/QCheckBox/QRadioButton).
+    auto aplicarText = [](auto *w) {
+        const QString termo = primeiroTermoEncontrado(w->text());
+        if (termo.isEmpty()) return;
+        const QString coloq = labelColoquial(termo);
+        if (coloq.isEmpty()) return;
+        w->setText(coloq);
+    };
+
+    for (auto *lbl : root->findChildren<QLabel*>())       aplicarText(lbl);
+    for (auto *btn : root->findChildren<QPushButton*>())  aplicarText(btn);
+    for (auto *cb  : root->findChildren<QCheckBox*>())    aplicarText(cb);
+    for (auto *rb  : root->findChildren<QRadioButton*>()) aplicarText(rb);
+
+    // QGroupBox usa title()/setTitle().
+    for (auto *grp : root->findChildren<QGroupBox*>()) {
+        const QString termo = primeiroTermoEncontrado(grp->title());
+        if (termo.isEmpty()) continue;
+        const QString coloq = labelColoquial(termo);
+        if (coloq.isEmpty()) continue;
+        grp->setTitle(coloq);
     }
 }

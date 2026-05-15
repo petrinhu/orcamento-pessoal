@@ -42,4 +42,9 @@ public:
     // quando o texto bate com algum termo do glossario. Chamar uma vez apos
     // construir o widget.
     static void aplicarTooltips(QWidget *root);
+
+    // Aplica labelColoquial em QLabel/QPushButton/QGroupBox/QCheckBox/QRadioButton
+    // se modo iniciante ativo. Texto original "FIRE" -> "Aposentadoria Antecipada (FIRE)".
+    // Chamar apos aplicarTooltips em MainWindow::buildUi. (#104)
+    static void aplicarLabelsColoquiais(QWidget *root);
 };

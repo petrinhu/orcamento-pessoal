@@ -1,6 +1,9 @@
-// PeuBud - GlossarioService TDD (#103)
+// PeuBud - GlossarioService TDD (#103, #104)
 
 #include <QtTest/QtTest>
+#include <QLabel>
+#include <QWidget>
+#include "core/settings/AppSettings.h"
 #include "services/GlossarioService.h"
 
 class TestGlossario : public QObject
@@ -17,6 +20,8 @@ private slots:
     void primeiroTermoEncontradoCetEmFrase();
     void primeiroTermoEncontradoNenhumQuandoVazio();
     void caseInsensitive();
+    void aplicarLabelsColoquiaisRenomeia();
+    void aplicarLabelsRespeitaModoAvancado();
 };
 
 void TestGlossario::definicaoCetNaoVazia()
@@ -85,5 +90,25 @@ void TestGlossario::caseInsensitive()
     QVERIFY(!GlossarioService::definicao(QStringLiteral("ipca")).isEmpty());
 }
 
-QTEST_GUILESS_MAIN(TestGlossario)
+void TestGlossario::aplicarLabelsColoquiaisRenomeia()
+{
+    AppSettings::instance().setModoIniciante(true);
+    QWidget root;
+    auto *lbl = new QLabel(QStringLiteral("Calcular FIRE"), &root);
+    GlossarioService::aplicarLabelsColoquiais(&root);
+    QVERIFY(lbl->text().contains(QStringLiteral("Aposentadoria")));
+    QVERIFY(lbl->text().contains(QStringLiteral("(FIRE)")));
+}
+
+void TestGlossario::aplicarLabelsRespeitaModoAvancado()
+{
+    AppSettings::instance().setModoIniciante(false);
+    QWidget root;
+    auto *lbl = new QLabel(QStringLiteral("Calcular FIRE"), &root);
+    GlossarioService::aplicarLabelsColoquiais(&root);
+    QCOMPARE(lbl->text(), QStringLiteral("Calcular FIRE"));
+    AppSettings::instance().setModoIniciante(true); // restaura default
+}
+
+QTEST_MAIN(TestGlossario)
 #include "test_glossario.moc"

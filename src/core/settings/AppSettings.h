@@ -67,11 +67,18 @@ public:
     bool    cotahistEnabled() const;          // default: false
     void    setCotahistEnabled(bool on);
 
+    // ── Modo Iniciante (#104) ─────────────────────────────────────────────
+    // Default: true (iniciante). Aplica labels coloquiais + esconde campos
+    // avancados em wizards complexos.
+    bool modoIniciante() const;
+    void setModoIniciante(bool on);
+
 signals:
     void languageChanged(Language lang);
     void currencyChanged(const QString &code);
     void autosaveSettingsChanged();
     void marketSettingsChanged();
+    void modoInicianteChanged(bool on);
 
 private:
     explicit AppSettings();
