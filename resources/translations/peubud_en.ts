@@ -30,8 +30,8 @@
     </message>
     <message>
         <location filename="../../src/ui/widgets/AboutDialog.cpp" line="73"/>
-        <source>&lt;b&gt;Licença: PolyForm Noncommercial License 1.0.0&lt;/b&gt;&lt;br&gt;✓ Uso pessoal, distribuição e modificação: &lt;b&gt;permitidos&lt;/b&gt;.&lt;br&gt;✗ Uso comercial ou venda: &lt;b&gt;proibidos&lt;/b&gt;.</source>
-        <translation>&lt;b&gt;License: PolyForm Noncommercial License 1.0.0&lt;/b&gt;&lt;br&gt;✓ Personal use, distribution and modification: &lt;b&gt;allowed&lt;/b&gt;.&lt;br&gt;✗ Commercial use or sale: &lt;b&gt;forbidden&lt;/b&gt;.</translation>
+        <source>&lt;b&gt;Licença: GNU Affero General Public License v3.0 (AGPL-3.0)&lt;/b&gt;&lt;br&gt;✓ Uso pessoal, distribuição e modificação: &lt;b&gt;permitidos&lt;/b&gt;.&lt;br&gt;✗ Uso comercial ou venda: &lt;b&gt;proibidos&lt;/b&gt;.</source>
+        <translation>&lt;b&gt;License: GNU Affero General Public License v3.0 (AGPL-3.0)&lt;/b&gt;&lt;br&gt;✓ Personal use, distribution and modification: &lt;b&gt;allowed&lt;/b&gt;.&lt;br&gt;✗ Commercial use or sale: &lt;b&gt;forbidden&lt;/b&gt;.</translation>
     </message>
 </context>
 <context>

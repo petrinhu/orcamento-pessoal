@@ -149,3 +149,9 @@ resources/     fonte Inter, traduções (.ts / .qm)
 - Queries SQL sempre com `bindValue` (sem concatenação de strings)
 - `PRAGMA foreign_keys = ON` + `ON DELETE CASCADE/SET NULL`
 - Prioridade: **Precisão financeira > Robustez > Segurança > UX**
+
+---
+
+## Licença
+
+[GNU Affero General Public License v3.0](LICENSE) (copyleft forte).

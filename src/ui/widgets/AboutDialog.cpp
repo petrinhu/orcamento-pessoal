@@ -70,7 +70,7 @@ AboutDialog::AboutDialog(QWidget *parent)
 
     // ── License ───────────────────────────────────────────────────────────
     auto *lblLic = new QLabel(
-        tr("<b>Licença: PolyForm Noncommercial License 1.0.0</b><br>"
+        tr("<b>Licença: GNU Affero General Public License v3.0 (AGPL-3.0)</b><br>"
            "✓ Uso pessoal, distribuição e modificação: <b>permitidos</b>.<br>"
            "✗ Uso comercial ou venda: <b>proibidos</b>."), this);
     lblLic->setWordWrap(true);
