@@ -591,22 +591,22 @@ void MainWindow::buildMenuBar()
     // ── Arquivo ────────────────────────────────────────────────────────────
     QMenu *mArquivo = mb->addMenu(tr("&Arquivo"));
 
-    auto *aAbrir = mArquivo->addAction(tr("&Abrir…"));
+    auto *aAbrir = mArquivo->addAction(tr("📁 &Abrir…"));
     aAbrir->setShortcut(QKeySequence::Open);
     connect(aAbrir, &QAction::triggered, this, &MainWindow::onAbrir);
 
-    auto *aSalvar = mArquivo->addAction(tr("&Salvar"));
+    auto *aSalvar = mArquivo->addAction(tr("💾 &Salvar"));
     aSalvar->setShortcut(QKeySequence::Save);
     connect(aSalvar, &QAction::triggered, this, &MainWindow::onSalvar);
 
-    auto *aSalvarComo = mArquivo->addAction(tr("Salvar &como…"));
+    auto *aSalvarComo = mArquivo->addAction(tr("💾 Salvar &como…"));
     aSalvarComo->setShortcut(QKeySequence::SaveAs);
     connect(aSalvarComo, &QAction::triggered, this, &MainWindow::onSalvarComo);
 
     mArquivo->addSeparator();
 
     // Importar submenu
-    QMenu *mImportar = mArquivo->addMenu(tr("&Importar de"));
+    QMenu *mImportar = mArquivo->addMenu(tr("📁 &Importar de"));
     const QList<QPair<QString,QString>> importFormats = {
         { QStringLiteral("CSV (.csv)…"),        QStringLiteral("csv")  },
         { QStringLiteral("OFX / QFX (.ofx)…"),  QStringLiteral("ofx")  },
@@ -626,7 +626,7 @@ void MainWindow::buildMenuBar()
     }
 
     // Exportar submenu
-    QMenu *mExportar = mArquivo->addMenu(tr("&Exportar"));
+    QMenu *mExportar = mArquivo->addMenu(tr("💾 &Exportar"));
     const QList<QPair<QString,QString>> exportFormats = {
         { QStringLiteral("CSV (.csv)…"),        QStringLiteral("csv")  },
         { QStringLiteral("OFX (.ofx)…"),        QStringLiteral("ofx")  },
@@ -648,7 +648,7 @@ void MainWindow::buildMenuBar()
 
     mArquivo->addSeparator();
 
-    auto *aReconciliar = mArquivo->addAction(tr("Reconciliar &extrato…"));
+    auto *aReconciliar = mArquivo->addAction(tr("🔄 Reconciliar &extrato…"));
     connect(aReconciliar, &QAction::triggered, this, &MainWindow::onReconciliar);
 
     mArquivo->addSeparator();
@@ -686,30 +686,30 @@ void MainWindow::buildMenuBar()
 
     mEditar->addSeparator();
 
-    auto *aBusca = mEditar->addAction(tr("&Buscar transação…"));
+    auto *aBusca = mEditar->addAction(tr("🔍 &Buscar transação…"));
     aBusca->setShortcut(QKeySequence::Find);
     connect(aBusca, &QAction::triggered, this, &MainWindow::onBuscaGlobal);
 
     // ── Configurações ──────────────────────────────────────────────────────
     QMenu *mConfig = mb->addMenu(tr("&Configurações"));
 
-    auto *aPrefs = mConfig->addAction(tr("&Preferências…"));
+    auto *aPrefs = mConfig->addAction(tr("⚙️ &Preferências…"));
     connect(aPrefs, &QAction::triggered, this, &MainWindow::onConfiguracoes);
 
     // ── Ajuda ──────────────────────────────────────────────────────────────
     QMenu *mAjuda = mb->addMenu(tr("A&juda"));
 
-    auto *aAjuda = mAjuda->addAction(tr("&Ajuda"));
+    auto *aAjuda = mAjuda->addAction(tr("❓ &Ajuda"));
     aAjuda->setShortcut(QKeySequence::HelpContents);
     connect(aAjuda, &QAction::triggered, this, &MainWindow::onAjuda);
 
-    auto *aGlossario = mAjuda->addAction(tr("&Glossário financeiro…"));
+    auto *aGlossario = mAjuda->addAction(tr("📝 &Glossário financeiro…"));
     aGlossario->setShortcut(QKeySequence(Qt::Key_F2));
     connect(aGlossario, &QAction::triggered, this, &MainWindow::onGlossario);
 
     mAjuda->addSeparator();
 
-    auto *aSobre = mAjuda->addAction(tr("&Sobre PeuBud…"));
+    auto *aSobre = mAjuda->addAction(tr("ℹ️ &Sobre PeuBud…"));
     connect(aSobre, &QAction::triggered, this, &MainWindow::onSobre);
 }
 

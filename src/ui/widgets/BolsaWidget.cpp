@@ -10,7 +10,6 @@
 #include <QLineEdit>
 #include <QMessageBox>
 #include <QPushButton>
-#include <QIcon>
 #include <QTableWidget>
 #include <QVBoxLayout>
 
@@ -51,7 +50,7 @@ void BolsaWidget::buildUi()
     m_edtBusca->setClearButtonEnabled(true);
     bar->addWidget(m_edtBusca, 1);
 
-    m_btnBuscar = new QPushButton(QIcon::fromTheme(QStringLiteral("system-search")), tr("Buscar"), this);
+    m_btnBuscar = new QPushButton(tr("🔍 Buscar"), this);
     m_btnBuscar->setObjectName(QStringLiteral("primary"));
     bar->addWidget(m_btnBuscar);
 

@@ -15,7 +15,6 @@
 #include <QHeaderView>
 #include <QPushButton>
 #include <QComboBox>
-#include <QIcon>
 #include <QApplication>
 #include <QClipboard>
 #include <QMessageBox>
@@ -89,14 +88,12 @@ void LembretesWidget::buildUi()
     toolbar->setContentsMargins(8, 8, 8, 4);
     toolbar->setSpacing(8);
 
-    auto *btnNovo  = new QPushButton(QIcon::fromTheme(QStringLiteral("list-add")),     tr("Novo"), this);
-    m_btnEdit      = new QPushButton(QIcon::fromTheme(QStringLiteral("document-edit"),
-                                     QIcon::fromTheme(QStringLiteral("edit-rename"))), tr("Editar"), this);
-    m_btnDel       = new QPushButton(QIcon::fromTheme(QStringLiteral("edit-delete")),  tr("Excluir"), this);
-    m_btnPagar     = new QPushButton(QIcon::fromTheme(QStringLiteral("dialog-ok-apply"),
-                                     QIcon::fromTheme(QStringLiteral("checkmark"))),   tr("Pagar"), this);
-    m_btnNaoDebito = new QPushButton(QIcon::fromTheme(QStringLiteral("dialog-warning")), tr("Não debitado"), this);
-    m_btnIgnorar   = new QPushButton(QIcon::fromTheme(QStringLiteral("dialog-cancel")),  tr("Ignorar"), this);
+    auto *btnNovo  = new QPushButton(tr("➕ Novo"), this);
+    m_btnEdit      = new QPushButton(tr("✏️ Editar"), this);
+    m_btnDel       = new QPushButton(tr("🗑️ Excluir"), this);
+    m_btnPagar     = new QPushButton(tr("✅ Pagar"), this);
+    m_btnNaoDebito = new QPushButton(tr("⚠️ Não debitado"), this);
+    m_btnIgnorar   = new QPushButton(tr("🚫 Ignorar"), this);
 
     m_btnEdit->setEnabled(false);
     m_btnDel->setEnabled(false);
@@ -131,7 +128,7 @@ void LembretesWidget::buildUi()
     auto *emptyLay  = new QVBoxLayout(emptyPage);
     emptyLay->setAlignment(Qt::AlignCenter);
     auto *lblEmpty  = new QLabel(
-        tr("Nenhum lembrete cadastrado.\nClique em \"+ Novo\" para adicionar."),
+        tr("Nenhum lembrete cadastrado.\nClique em \"➕ Novo\" para adicionar."),
         emptyPage);
     lblEmpty->setAlignment(Qt::AlignCenter);
     lblEmpty->setObjectName(QStringLiteral("subtitle"));

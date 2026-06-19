@@ -16,7 +16,6 @@
 #include <QPushButton>
 #include <QProgressBar>
 #include <QComboBox>
-#include <QIcon>
 #include <QApplication>
 #include <QClipboard>
 #include <QMessageBox>
@@ -73,11 +72,10 @@ void MetasWidget::buildUi()
     toolbar->setContentsMargins(8, 8, 8, 4);
     toolbar->setSpacing(8);
 
-    auto *btnNova = new QPushButton(QIcon::fromTheme(QStringLiteral("list-add")),    tr("Nova meta"), this);
-    m_btnEdit     = new QPushButton(QIcon::fromTheme(QStringLiteral("document-edit"),
-                                    QIcon::fromTheme(QStringLiteral("edit-rename"))), tr("Editar"), this);
-    m_btnDel      = new QPushButton(QIcon::fromTheme(QStringLiteral("edit-delete")), tr("Excluir"), this);
-    m_btnAporte   = new QPushButton(QIcon::fromTheme(QStringLiteral("list-add")),    tr("Aporte"), this);
+    auto *btnNova = new QPushButton(tr("➕ Nova meta"), this);
+    m_btnEdit     = new QPushButton(tr("✏️ Editar"), this);
+    m_btnDel      = new QPushButton(tr("🗑️ Excluir"), this);
+    m_btnAporte   = new QPushButton(tr("💰 Aporte"), this);
     m_btnEdit->setEnabled(false);
     m_btnDel->setEnabled(false);
     m_btnAporte->setEnabled(false);
@@ -107,7 +105,7 @@ void MetasWidget::buildUi()
     auto *emptyPage  = new QWidget(m_stack);
     auto *emptyLay   = new QVBoxLayout(emptyPage);
     emptyLay->setAlignment(Qt::AlignCenter);
-    auto *lblEmpty   = new QLabel(tr("Nenhuma meta cadastrada.\nClique em \"Nova meta\" para começar."), emptyPage);
+    auto *lblEmpty   = new QLabel(tr("Nenhuma meta cadastrada.\nClique em \"➕ Nova meta\" para começar."), emptyPage);
     lblEmpty->setAlignment(Qt::AlignCenter);
     lblEmpty->setObjectName(QStringLiteral("subtitle"));
     emptyLay->addWidget(lblEmpty);

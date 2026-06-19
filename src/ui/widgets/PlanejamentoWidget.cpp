@@ -22,7 +22,6 @@
 #include <QTableWidgetItem>
 #include <QHeaderView>
 #include <QPushButton>
-#include <QIcon>
 #include <QMessageBox>
 #include <QFont>
 #include <QLocale>
@@ -67,9 +66,9 @@ void PlanejamentoWidget::buildUi()
     toolbar->setContentsMargins(8, 8, 8, 4);
     toolbar->setSpacing(8);
 
-    auto *btnNovo = new QPushButton(QIcon::fromTheme(QStringLiteral("list-add")), tr("Novo item"), this);
+    auto *btnNovo = new QPushButton(tr("➕ Novo item"), this);
     btnNovo->setObjectName(QStringLiteral("primary"));
-    m_btnDel = new QPushButton(QIcon::fromTheme(QStringLiteral("edit-delete")), tr("Excluir"), this);
+    m_btnDel = new QPushButton(tr("🗑️ Excluir"), this);
     m_btnDel->setEnabled(false);
 
     // Month navigation
@@ -100,7 +99,7 @@ void PlanejamentoWidget::buildUi()
     lblTitle->setAlignment(Qt::AlignCenter);
     QFont fTitle = lblTitle->font(); fTitle.setPointSize(14);
     lblTitle->setFont(fTitle);
-    auto *lblHint = new QLabel(tr("Clique em \"Novo item\" para começar."), emptyPage);
+    auto *lblHint = new QLabel(tr("Clique em \"➕ Novo item\" para começar."), emptyPage);
     lblHint->setObjectName(QStringLiteral("subtitle"));
     lblHint->setAlignment(Qt::AlignCenter);
     emptyLay->addWidget(lblTitle);

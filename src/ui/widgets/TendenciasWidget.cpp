@@ -12,7 +12,6 @@
 #include <QDateEdit>
 #include <QComboBox>
 #include <QPushButton>
-#include <QIcon>
 #include <QTabWidget>
 #include <QDate>
 #include <QSet>
@@ -72,8 +71,7 @@ void TendenciasWidget::buildUi()
     m_cbCategoria->addItem(tr("Todas"));
     m_cbCategoria->setMinimumWidth(160);
 
-    auto *btnAplicar = new QPushButton(QIcon::fromTheme(QStringLiteral("dialog-ok"),
-                                       QIcon::fromTheme(QStringLiteral("view-refresh"))), tr("Aplicar"), this);
+    auto *btnAplicar = new QPushButton(tr("🔄 Aplicar"), this);
     btnAplicar->setObjectName(QStringLiteral("primary"));
 
     ctrlBar->addWidget(lblDe);
