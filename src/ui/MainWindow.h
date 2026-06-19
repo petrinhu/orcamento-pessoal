@@ -75,21 +75,37 @@ private:
     // Recebe dados TVM do CalculadoraHub e abre AddCompraDialog na aba Cartões.
     void onTvmParaCartoes(double pv, int n, double iMensal, double pmt);
 
-    DashboardWidget      *m_dashboard     = nullptr;
-    TendenciasWidget     *m_tendencias    = nullptr;
-    ParcelasWidget       *m_parcelas      = nullptr;
-    class TabShell       *m_shellCartoes  = nullptr; // invólucro da aba Cartões
-    EntradasWidget       *m_entradas      = nullptr;
-    GastosWidget         *m_gastos        = nullptr;
+    // Cada aba é um widget de conteúdo (m_<x>) envolvido por um TabShell
+    // (m_shell<X>). O shell é o widget efetivamente inserido na aba e carrega
+    // o objectName de persistência de ordem (tab_<x>); o widget de conteúdo
+    // segue intacto (lógica e conexões inalteradas).
+    DashboardWidget      *m_dashboard      = nullptr;
+    class TabShell       *m_shellDashboard = nullptr;
+    TendenciasWidget     *m_tendencias     = nullptr;
+    class TabShell       *m_shellTendencias = nullptr;
+    ParcelasWidget       *m_parcelas       = nullptr;
+    class TabShell       *m_shellCartoes   = nullptr;
+    EntradasWidget       *m_entradas       = nullptr;
+    class TabShell       *m_shellEntradas  = nullptr;
+    GastosWidget         *m_gastos         = nullptr;
+    class TabShell       *m_shellGastos    = nullptr;
     InvestimentosWidget  *m_investimentos  = nullptr;
+    class TabShell       *m_shellInvestimentos = nullptr;
     class BolsaWidget    *m_bolsa          = nullptr;
+    class TabShell       *m_shellBolsa     = nullptr;
     class MarketDataService *m_marketService = nullptr;
-    class ProventosWidget *m_proventos      = nullptr;
+    class ProventosWidget *m_proventos     = nullptr;
+    class TabShell       *m_shellProventos = nullptr;
     PlanejamentoWidget   *m_planejamento   = nullptr;
+    class TabShell       *m_shellPlanejamento = nullptr;
     RecorrenciaWidget    *m_recorrencias   = nullptr;
+    class TabShell       *m_shellRecorrencias = nullptr;
     DividasWidget        *m_dividas        = nullptr;
+    class TabShell       *m_shellDividas   = nullptr;
     MetasWidget          *m_metas          = nullptr;
+    class TabShell       *m_shellMetas     = nullptr;
     LembretesWidget      *m_lembretes      = nullptr;
+    class TabShell       *m_shellLembretes = nullptr;
     BuscaGlobalDialog    *m_buscaGlobal    = nullptr;
     QTabWidget     *m_tabs       = nullptr;
     QLabel         *m_statusUser  = nullptr;

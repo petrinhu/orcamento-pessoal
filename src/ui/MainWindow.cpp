@@ -235,50 +235,55 @@ void MainWindow::buildUi()
     m_tabs = new QTabWidget(this);
     m_tabs->setMovable(true); // drag-and-drop reorder
 
-    // objectName eh a chave estavel usada para persistir ordem em
-    // AppSettings::tabOrder. Nao traduzir; uppercase opcional.
-    m_dashboard    ->setObjectName(QStringLiteral("tab_dashboard"));
-    m_entradas     ->setObjectName(QStringLiteral("tab_entradas"));
-    m_gastos       ->setObjectName(QStringLiteral("tab_gastos"));
-    m_tendencias   ->setObjectName(QStringLiteral("tab_tendencias"));
-    m_investimentos->setObjectName(QStringLiteral("tab_investimentos"));
-    m_bolsa        ->setObjectName(QStringLiteral("tab_bolsa"));
-    m_proventos    ->setObjectName(QStringLiteral("tab_proventos"));
-    m_planejamento ->setObjectName(QStringLiteral("tab_planejamento"));
-    m_recorrencias ->setObjectName(QStringLiteral("tab_recorrencias"));
-    m_dividas      ->setObjectName(QStringLiteral("tab_dividas"));
-    m_metas        ->setObjectName(QStringLiteral("tab_metas"));
-    m_lembretes    ->setObjectName(QStringLiteral("tab_lembretes"));
+    // ── TabShell em todas as abas (#158): cada aba ganha um invólucro com
+    // título + descrição + instruções p/ iniciante (texto do registro central
+    // tabHelp, DRY com o HelpDialog). A chave estavel de persistencia de ordem
+    // (objectName tab_<x>) passa a viver no shell, que e o widget efetivamente
+    // inserido na aba; o widget de conteúdo segue intacto (lógica/conexões
+    // inalteradas). O navegador de cards do Dashboard e a BuscaGlobal usam
+    // índice — os índices das abas não mudam, só o widget em cada slot.
+    auto montarShell = [this](TabShell *&shell, const QString &objName,
+                              const QString &tabKey, QWidget *conteudo) {
+        shell = new TabShell(QString(), this);
+        shell->setObjectName(objName);
+        shell->setTabKey(tabKey);
+        shell->applyHelp();
+        shell->setContent(conteudo);
+    };
 
-    // ── Piloto TabShell (#41/layout padrão): aba Cartões ───────────────────
-    // Envolve o ParcelasWidget num invólucro com título + descrição p/
-    // iniciante. A chave estavel de persistencia (tab_parcelas) passa a viver
-    // no shell, que e o widget efetivamente inserido na aba; m_parcelas segue
-    // intacto (lógica e conexões inalteradas).
-    m_shellCartoes = new TabShell(tr("Cartões"), this);
-    m_shellCartoes->setObjectName(QStringLiteral("tab_parcelas"));
-    // tabKey do registro central (DRY): descrição + instruções colapsáveis
-    // vêm de tabHelp("tab_cartoes"); o mesmo texto alimenta o HelpDialog.
-    m_shellCartoes->setTabKey(QStringLiteral("tab_cartoes"));
-    m_shellCartoes->applyHelp();
-    m_shellCartoes->setContent(m_parcelas);
+    // objectName = chave de persistência de ordem (ordemAbasDefault). A aba
+    // Cartões mantém tab_parcelas (compat. com ordem já salva); a tabKey de
+    // ajuda é tab_cartoes — as duas strings são independentes.
+    montarShell(m_shellDashboard,     QStringLiteral("tab_dashboard"),     QStringLiteral("tab_dashboard"),     m_dashboard);
+    montarShell(m_shellEntradas,      QStringLiteral("tab_entradas"),      QStringLiteral("tab_entradas"),      m_entradas);
+    montarShell(m_shellGastos,        QStringLiteral("tab_gastos"),        QStringLiteral("tab_gastos"),        m_gastos);
+    montarShell(m_shellCartoes,       QStringLiteral("tab_parcelas"),      QStringLiteral("tab_cartoes"),       m_parcelas);
+    montarShell(m_shellRecorrencias,  QStringLiteral("tab_recorrencias"),  QStringLiteral("tab_recorrencias"),  m_recorrencias);
+    montarShell(m_shellDividas,       QStringLiteral("tab_dividas"),       QStringLiteral("tab_dividas"),       m_dividas);
+    montarShell(m_shellMetas,         QStringLiteral("tab_metas"),         QStringLiteral("tab_metas"),         m_metas);
+    montarShell(m_shellPlanejamento,  QStringLiteral("tab_planejamento"),  QStringLiteral("tab_planejamento"),  m_planejamento);
+    montarShell(m_shellTendencias,    QStringLiteral("tab_tendencias"),    QStringLiteral("tab_tendencias"),    m_tendencias);
+    montarShell(m_shellInvestimentos, QStringLiteral("tab_investimentos"), QStringLiteral("tab_investimentos"), m_investimentos);
+    montarShell(m_shellProventos,     QStringLiteral("tab_proventos"),     QStringLiteral("tab_proventos"),     m_proventos);
+    montarShell(m_shellBolsa,         QStringLiteral("tab_bolsa"),         QStringLiteral("tab_bolsa"),         m_bolsa);
+    montarShell(m_shellLembretes,     QStringLiteral("tab_lembretes"),     QStringLiteral("tab_lembretes"),     m_lembretes);
 
     // Ordem default (1º start e apos reset). A chave estavel de cada aba e o
-    // objectName; a ordem real exibida pode diferir desta se o usuario
+    // objectName do shell; a ordem real exibida pode diferir desta se o usuario
     // reordenou por drag & drop (restaurada em aplicarOrdemAbasSalva).
-    m_tabs->addTab(m_dashboard,     tr("Dashboard"));      // 0
-    m_tabs->addTab(m_entradas,      tr("Entradas"));       // 1
-    m_tabs->addTab(m_gastos,        tr("Gastos"));         // 2
-    m_tabs->addTab(m_shellCartoes,  tr("Cartões"));        // 3 (piloto TabShell)
-    m_tabs->addTab(m_recorrencias,  tr("Recorrências"));   // 4
-    m_tabs->addTab(m_dividas,       tr("Dívidas"));        // 5
-    m_tabs->addTab(m_metas,         tr("Metas"));          // 6
-    m_tabs->addTab(m_planejamento,  tr("Planejamento"));   // 7
-    m_tabs->addTab(m_tendencias,    tr("Tendências"));     // 8
-    m_tabs->addTab(m_investimentos, tr("Investimentos"));  // 9
-    m_tabs->addTab(m_proventos,     tr("Proventos"));      // 10 (#66)
-    m_tabs->addTab(m_bolsa,         tr("Bolsa"));          // 11 (#50)
-    m_tabs->addTab(m_lembretes,     tr("Lembretes"));      // 12
+    m_tabs->addTab(m_shellDashboard,     tr("Dashboard"));      // 0
+    m_tabs->addTab(m_shellEntradas,      tr("Entradas"));       // 1
+    m_tabs->addTab(m_shellGastos,        tr("Gastos"));         // 2
+    m_tabs->addTab(m_shellCartoes,       tr("Cartões"));        // 3
+    m_tabs->addTab(m_shellRecorrencias,  tr("Recorrências"));   // 4
+    m_tabs->addTab(m_shellDividas,       tr("Dívidas"));        // 5
+    m_tabs->addTab(m_shellMetas,         tr("Metas"));          // 6
+    m_tabs->addTab(m_shellPlanejamento,  tr("Planejamento/Orçamento")); // 7
+    m_tabs->addTab(m_shellTendencias,    tr("Tendências"));     // 8
+    m_tabs->addTab(m_shellInvestimentos, tr("Investimentos"));  // 9
+    m_tabs->addTab(m_shellProventos,     tr("Proventos"));      // 10 (#66)
+    m_tabs->addTab(m_shellBolsa,         tr("Bolsa"));          // 11 (#50)
+    m_tabs->addTab(m_shellLembretes,     tr("Lembretes"));      // 12
 
     // Restaura ordem salva (drag & drop)
     aplicarOrdemAbasSalva();
@@ -344,7 +349,7 @@ void MainWindow::buildUi()
     // ── Dirty flag + status bar ────────────────────────────────────────────
     connect(m_dashboard, &DashboardWidget::statusAtualizado,
             this, [this](const QString &msg) {
-                if (m_tabs->currentWidget() == m_dashboard)
+                if (m_tabs->currentWidget() == m_shellDashboard)
                     m_statusTotal->setText(msg + QStringLiteral("  "));
             });
 
@@ -387,13 +392,13 @@ void MainWindow::buildUi()
 
     // Tendências se atualiza quando Gastos muda dados (lazy: só se a aba estiver visível)
     connect(m_gastos, &GastosWidget::dadosAlterados, this, [this]() {
-        if (m_tabs->currentWidget() == m_tendencias)
+        if (m_tabs->currentWidget() == m_shellTendencias)
             m_tendencias->recarregar();
     });
 
     // Dashboard se atualiza quando qualquer aba muda dados
     auto refreshDash = [this]() {
-        if (m_tabs->currentWidget() == m_dashboard)
+        if (m_tabs->currentWidget() == m_shellDashboard)
             m_dashboard->recarregar();
     };
     connect(m_entradas,      &EntradasWidget::dadosAlterados,      this, refreshDash);
@@ -404,7 +409,7 @@ void MainWindow::buildUi()
 
     // Planejamento se atualiza quando Gastos, Entradas ou Cartões mudam
     auto refreshPlanning = [this]() {
-        if (m_tabs->currentWidget() == m_planejamento)
+        if (m_tabs->currentWidget() == m_shellPlanejamento)
             m_planejamento->recarregar();
     };
     connect(m_gastos,    &GastosWidget::dadosAlterados,   this, refreshPlanning);
@@ -423,51 +428,51 @@ void MainWindow::buildUi()
             });
     connect(m_entradas, &EntradasWidget::statusAtualizado,
             this, [this](const QString &msg) {
-                if (m_tabs->currentWidget() == m_entradas)
+                if (m_tabs->currentWidget() == m_shellEntradas)
                     m_statusTotal->setText(msg + QStringLiteral("  "));
             });
     connect(m_gastos, &GastosWidget::statusAtualizado,
             this, [this](const QString &msg) {
-                if (m_tabs->currentWidget() == m_gastos)
+                if (m_tabs->currentWidget() == m_shellGastos)
                     m_statusTotal->setText(msg + QStringLiteral("  "));
             });
     connect(m_investimentos, &InvestimentosWidget::statusAtualizado,
             this, [this](const QString &msg) {
-                if (m_tabs->currentWidget() == m_investimentos)
+                if (m_tabs->currentWidget() == m_shellInvestimentos)
                     m_statusTotal->setText(msg + QStringLiteral("  "));
             });
     connect(m_planejamento, &PlanejamentoWidget::statusAtualizado,
             this, [this](const QString &msg) {
-                if (m_tabs->currentWidget() == m_planejamento)
+                if (m_tabs->currentWidget() == m_shellPlanejamento)
                     m_statusTotal->setText(msg + QStringLiteral("  "));
             });
     connect(m_dividas, &DividasWidget::statusAtualizado,
             this, [this](const QString &msg) {
-                if (m_tabs->currentWidget() == m_dividas)
+                if (m_tabs->currentWidget() == m_shellDividas)
                     m_statusTotal->setText(msg + QStringLiteral("  "));
             });
     connect(m_metas, &MetasWidget::statusAtualizado,
             this, [this](const QString &msg) {
-                if (m_tabs->currentWidget() == m_metas)
+                if (m_tabs->currentWidget() == m_shellMetas)
                     m_statusTotal->setText(msg + QStringLiteral("  "));
             });
     connect(m_lembretes, &LembretesWidget::statusAtualizado,
             this, [this](const QString &msg) {
-                if (m_tabs->currentWidget() == m_lembretes)
+                if (m_tabs->currentWidget() == m_shellLembretes)
                     m_statusTotal->setText(msg + QStringLiteral("  "));
             });
     connect(m_tabs, &QTabWidget::currentChanged, this, [this]() {
-        if      (m_tabs->currentWidget() == m_dashboard)     m_dashboard->recarregar();
-        else if (m_tabs->currentWidget() == m_entradas)      m_entradas->recarregar();
-        else if (m_tabs->currentWidget() == m_gastos)        m_gastos->recarregar();
-        else if (m_tabs->currentWidget() == m_tendencias)    m_tendencias->recarregar();
-        else if (m_tabs->currentWidget() == m_investimentos) m_investimentos->recarregar();
-        else if (m_tabs->currentWidget() == m_planejamento)  m_planejamento->recarregar();
-        else if (m_tabs->currentWidget() == m_recorrencias)  m_recorrencias->recarregar();
-        else if (m_tabs->currentWidget() == m_dividas)        m_dividas->recarregar();
-        else if (m_tabs->currentWidget() == m_metas)          m_metas->recarregar();
-        else if (m_tabs->currentWidget() == m_lembretes)      m_lembretes->recarregar();
-        else if (m_tabs->currentWidget() == m_shellCartoes)   m_parcelas->recarregar();
+        if      (m_tabs->currentWidget() == m_shellDashboard)     m_dashboard->recarregar();
+        else if (m_tabs->currentWidget() == m_shellEntradas)      m_entradas->recarregar();
+        else if (m_tabs->currentWidget() == m_shellGastos)        m_gastos->recarregar();
+        else if (m_tabs->currentWidget() == m_shellTendencias)    m_tendencias->recarregar();
+        else if (m_tabs->currentWidget() == m_shellInvestimentos) m_investimentos->recarregar();
+        else if (m_tabs->currentWidget() == m_shellPlanejamento)  m_planejamento->recarregar();
+        else if (m_tabs->currentWidget() == m_shellRecorrencias)  m_recorrencias->recarregar();
+        else if (m_tabs->currentWidget() == m_shellDividas)       m_dividas->recarregar();
+        else if (m_tabs->currentWidget() == m_shellMetas)         m_metas->recarregar();
+        else if (m_tabs->currentWidget() == m_shellLembretes)     m_lembretes->recarregar();
+        else if (m_tabs->currentWidget() == m_shellCartoes)       m_parcelas->recarregar();
     });
 
     // ── Gerar recorrências pendentes ao abrir o app ─────────────────────────
@@ -542,7 +547,7 @@ void MainWindow::buildUi()
         auto *btnIr = dlg->addButton(tr("Ver lembretes"), QMessageBox::ActionRole);
         dlg->exec();
         if (dlg->clickedButton() == btnIr)
-            m_tabs->setCurrentWidget(m_lembretes); // aba Lembretes (índice varia)
+            m_tabs->setCurrentWidget(m_shellLembretes); // aba Lembretes (índice varia)
     });
 
     // ── Auto-save timer ────────────────────────────────────────────────────
@@ -796,10 +801,10 @@ void MainWindow::buildThemeBar()
     connect(btnBusca, &QToolButton::clicked, this, &MainWindow::onBuscaGlobal);
     auto *btnHoje = makeBtn("go-jump-today", QStringLiteral("📅"), tr("Hoje"));
     connect(btnHoje, &QToolButton::clicked, this, [this]() {
-        if      (m_tabs->currentWidget() == m_shellCartoes)  m_parcelas->scrollParaMesAtual();
-        else if (m_tabs->currentWidget() == m_entradas)      m_entradas->scrollParaMesAtual();
-        else if (m_tabs->currentWidget() == m_gastos)        m_gastos->scrollParaMesAtual();
-        else if (m_tabs->currentWidget() == m_investimentos) m_investimentos->scrollParaMesAtual();
+        if      (m_tabs->currentWidget() == m_shellCartoes)       m_parcelas->scrollParaMesAtual();
+        else if (m_tabs->currentWidget() == m_shellEntradas)      m_entradas->scrollParaMesAtual();
+        else if (m_tabs->currentWidget() == m_shellGastos)        m_gastos->scrollParaMesAtual();
+        else if (m_tabs->currentWidget() == m_shellInvestimentos) m_investimentos->scrollParaMesAtual();
         // PlanejamentoWidget has its own month navigation — no scroll needed
     });
     auto *btnCalc = makeBtn("accessories-calculator", QStringLiteral("🧮"), tr("Calculadora"));
@@ -1219,22 +1224,22 @@ void MainWindow::onConfiguracoes()
 
 void MainWindow::onCopiar()
 {
-    if      (m_tabs->currentWidget() == m_entradas)      m_entradas->copiar();
-    else if (m_tabs->currentWidget() == m_gastos)        m_gastos->copiar();
-    else if (m_tabs->currentWidget() == m_investimentos) m_investimentos->copiar();
-    else if (m_tabs->currentWidget() == m_metas)         m_metas->copiar();
-    else if (m_tabs->currentWidget() == m_lembretes)     m_lembretes->copiar();
-    else                                                 m_parcelas->copiar();
+    if      (m_tabs->currentWidget() == m_shellEntradas)      m_entradas->copiar();
+    else if (m_tabs->currentWidget() == m_shellGastos)        m_gastos->copiar();
+    else if (m_tabs->currentWidget() == m_shellInvestimentos) m_investimentos->copiar();
+    else if (m_tabs->currentWidget() == m_shellMetas)         m_metas->copiar();
+    else if (m_tabs->currentWidget() == m_shellLembretes)     m_lembretes->copiar();
+    else                                                      m_parcelas->copiar();
 }
 void MainWindow::onColar()         { /* sem suporte — paste requer contexto da célula */ }
 void MainWindow::onSelecionarTudo()
 {
-    if      (m_tabs->currentWidget() == m_entradas)      m_entradas->selecionarTudo();
-    else if (m_tabs->currentWidget() == m_gastos)        m_gastos->selecionarTudo();
-    else if (m_tabs->currentWidget() == m_investimentos) m_investimentos->selecionarTudo();
-    else if (m_tabs->currentWidget() == m_metas)         m_metas->selecionarTudo();
-    else if (m_tabs->currentWidget() == m_lembretes)     m_lembretes->selecionarTudo();
-    else                                                 m_parcelas->selecionarTudo();
+    if      (m_tabs->currentWidget() == m_shellEntradas)      m_entradas->selecionarTudo();
+    else if (m_tabs->currentWidget() == m_shellGastos)        m_gastos->selecionarTudo();
+    else if (m_tabs->currentWidget() == m_shellInvestimentos) m_investimentos->selecionarTudo();
+    else if (m_tabs->currentWidget() == m_shellMetas)         m_metas->selecionarTudo();
+    else if (m_tabs->currentWidget() == m_shellLembretes)     m_lembretes->selecionarTudo();
+    else                                                      m_parcelas->selecionarTudo();
 }
 
 void MainWindow::onReconciliar()
