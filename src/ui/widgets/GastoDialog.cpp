@@ -165,7 +165,7 @@ void GastoDialog::buildUi(const QList<Categoria> &categorias)
             defaultIdx = i;
     }
     m_cbTipo->setCurrentIndex(defaultIdx);
-    form->addRow(tr("Tipo:"), m_cbTipo);
+    form->addRow(tr("Tipo de pagamento:"), m_cbTipo);
 
     // ── Valor ──────────────────────────────────────────────────────────────
     m_edtValor = new CalculadoraEdit(this);

@@ -97,7 +97,8 @@ const QMap<QString, TabHelpEntry> &tabHelp()
                     "As parcelas aparecem <b>por mês</b> na tabela; navegue com "
                     "as setas <b>◀ ▶</b>."),
                 QCoreApplication::translate("TabHelp",
-                    "Quer simular antes de comprar? Use a <b>calculadora 🧮</b>."),
+                    "Quer simular antes de comprar? Use a <b>calculadora 🧮</b> "
+                    "na barra superior do app."),
             }
         });
 

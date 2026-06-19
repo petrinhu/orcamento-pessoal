@@ -68,12 +68,22 @@ void ParcelasWidget::buildUi()
 
     // ── Toolbar ────────────────────────────────────────────────────────────
     auto *toolbar = new QHBoxLayout;
-    m_btnNova = new QPushButton(tr("+ Novo item"), this);
+    m_btnNova = new QPushButton(tr("➕ Novo item"), this);
     m_btnNova->setObjectName(QStringLiteral("primary"));
     m_btnExcluir = new QPushButton(tr("Excluir"), this);
     m_btnExcluir->setEnabled(false);
 
     auto *btnOrganizar = new QPushButton(tr("Organizar por ▾"), this);
+
+    // Month navigation (espelha Dashboard/Planejamento; reusa navegarMes)
+    auto *btnPrevMes = new QPushButton(QStringLiteral("◀"), this);
+    auto *btnNextMes = new QPushButton(QStringLiteral("▶"), this);
+    btnPrevMes->setFixedWidth(28);
+    btnNextMes->setFixedWidth(28);
+    btnPrevMes->setToolTip(tr("Mês anterior"));
+    btnNextMes->setToolTip(tr("Próximo mês"));
+    connect(btnPrevMes, &QPushButton::clicked, this, [this]() { navegarMes(-1); });
+    connect(btnNextMes, &QPushButton::clicked, this, [this]() { navegarMes(+1); });
 
     m_lblStatus = new QLabel(this);
     m_lblStatus->setObjectName(QStringLiteral("subtitle"));
@@ -82,6 +92,8 @@ void ParcelasWidget::buildUi()
     toolbar->addWidget(m_btnExcluir);
     toolbar->addWidget(btnOrganizar);
     toolbar->addStretch();
+    toolbar->addWidget(btnPrevMes);
+    toolbar->addWidget(btnNextMes);
     toolbar->addWidget(m_lblStatus);
     root->addLayout(toolbar);
 
@@ -96,7 +108,7 @@ void ParcelasWidget::buildUi()
     QFont fTitle = lblEmptyTitle->font();
     fTitle.setPointSize(14);
     lblEmptyTitle->setFont(fTitle);
-    auto *lblEmptyHint = new QLabel(tr("Clique em \"+ Novo item\" para começar."), emptyPage);
+    auto *lblEmptyHint = new QLabel(tr("Clique em \"➕ Novo item\" para começar."), emptyPage);
     lblEmptyHint->setObjectName(QStringLiteral("subtitle"));
     lblEmptyHint->setAlignment(Qt::AlignCenter);
     emptyLay->addWidget(lblEmptyTitle);
@@ -332,7 +344,7 @@ void ParcelasWidget::populateTable()
         for (const auto &p : parcelas) {
             const QDate d   = ParcelaService::dataParaParcela(c, p.numero);
             const int   col = columnForDate(d);
-            if (col < 0 || col >= cols) continue;
+            if (col < COL_FIRST_MONTH || col >= cols) continue;
 
             const int k = col - COL_FIRST_MONTH;
             monthTotals[k] += p.valor;
