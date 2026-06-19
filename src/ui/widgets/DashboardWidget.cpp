@@ -1,5 +1,6 @@
 #include "DashboardWidget.h"
 #include "services/ResumoService.h"
+#include "services/GastoService.h"
 #include "services/FechamentoMensalService.h"
 #include "core/database/DatabaseManager.h"
 #include "core/session/UserSession.h"
@@ -210,6 +211,9 @@ void DashboardWidget::buildUi()
     row2->addWidget(makeCard(tr("Investimentos (net)"), &m_valInvNet, &m_subInvNet, 4));
     row2->addWidget(makeCard(tr("Saldo líquido total"), &m_valSaldoLiq));
     row2->addWidget(makeCard(tr("Proventos (ano)"),     &m_valProventos, &m_subProventos, 6)); // #66 aba Proventos = 6
+    // #121: gastos fixos × variáveis do mês (aba Gastos = 2)
+    row2->addWidget(makeCard(tr("Gastos fixos vs variáveis"),
+                             &m_valFixosVar, &m_subFixosVar, 2));
     row2->addStretch();
     lay->addLayout(row2);
 
@@ -317,6 +321,15 @@ void DashboardWidget::atualizarDados()
     setValor(m_valProventos, a.proventosLiquidos);
     m_subProventos->setText(tr("%n evento(s) em %1", nullptr, a.cntProventos)
         .arg(ano));
+
+    // #121: card Gastos fixos × variáveis (mês exibido)
+    const ResumoGastos rg = GastoService().resumoDoMes(mes, ano);
+    const double pctFixos = rg.pctFixosBps / 100.0;
+    m_valFixosVar->setText(tr("Fixos %1").arg(fmtCentavos(rg.totalFixos)));
+    m_valFixosVar->setStyleSheet(QString());
+    m_subFixosVar->setText(tr("Variáveis: %1  •  Fixos: %2%")
+        .arg(fmtCentavos(rg.totalVariaveis))
+        .arg(QString::number(pctFixos, 'f', 1)));
 
     emit statusAtualizado(tr("Saldo %1: %2  ")
         .arg(m_mes.toString(QStringLiteral("MMM/yy")))

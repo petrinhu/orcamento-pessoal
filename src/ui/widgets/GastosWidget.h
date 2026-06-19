@@ -10,6 +10,7 @@ class QTableWidget;
 class QPushButton;
 class QStackedWidget;
 class QUndoStack;
+class QLabel;
 
 enum class SortFieldGastos { None, Descricao, Categoria, Tipo, Valor, Data };
 
@@ -40,16 +41,18 @@ private slots:
 private:
     void buildUi();
     void populateTable();
+    void atualizarResumoFixoVariavel(); // #121: rodapé fixos×variáveis do mês atual
 
     GastoAvulso gastoDaLinha(int dataRow, int monthIndex) const;
 
     static const int COL_PER_MONTH = 7; // Descrição | Categoria | Tipo | Valor | Data | Obs | Beneficiário
     static const int HEADER_ROWS   = 2; // row 0 = mês, row 1 = sub-labels
 
-    QStackedWidget *m_stack  = nullptr;
-    QTableWidget   *m_table  = nullptr;
-    QPushButton    *m_btnDel = nullptr;
-    QPushButton    *m_btnOrg = nullptr;
+    QStackedWidget *m_stack      = nullptr;
+    QTableWidget   *m_table      = nullptr;
+    QPushButton    *m_btnDel     = nullptr;
+    QPushButton    *m_btnOrg     = nullptr;
+    QLabel         *m_lblResumoFV = nullptr; // #121
 
     SortFieldGastos m_sortField = SortFieldGastos::None;
     bool            m_sortAsc   = true;

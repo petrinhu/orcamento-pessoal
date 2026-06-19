@@ -3,6 +3,7 @@
 #include "repositories/CategoriaRepository.h"
 #include "repositories/GastoAvulsoRepository.h"
 #include "repositories/PagadorRepository.h"
+#include "services/GastoService.h"
 #include "core/settings/AppSettings.h"
 #include "core/commands/UndoCommands.h"
 
@@ -121,6 +122,13 @@ void GastosWidget::buildUi()
     m_stack->addWidget(m_table); // index 1
 
     root->addWidget(m_stack);
+
+    // ── Rodapé: fixos × variáveis do mês atual (#121) ──────────────────────
+    m_lblResumoFV = new QLabel(this);
+    m_lblResumoFV->setObjectName(QStringLiteral("subtitle"));
+    m_lblResumoFV->setContentsMargins(8, 4, 8, 6);
+    m_lblResumoFV->setTextFormat(Qt::RichText);
+    root->addWidget(m_lblResumoFV);
 
     // ── Connections ────────────────────────────────────────────────────────
     connect(btnNova, &QPushButton::clicked, this, [this]() {
@@ -293,6 +301,24 @@ void GastosWidget::recarregar()
     emit statusAtualizado(tr("Gastos %1: %2")
         .arg(cur.toString(QStringLiteral("MMM/yy")))
         .arg(formatCentavos(totalMes)));
+
+    atualizarResumoFixoVariavel();
+}
+
+// ── Resumo fixo × variável (#121) ───────────────────────────────────────────────
+// Mês corrente = mês/ano atuais (o widget navega por scroll, sem seletor de mês;
+// o resumo acompanha a status bar, que já usa QDate::currentDate()).
+void GastosWidget::atualizarResumoFixoVariavel()
+{
+    const QDate hoje = QDate::currentDate();
+    const ResumoGastos r = GastoService().resumoDoMes(hoje.month(), hoje.year());
+    const double pctFixos = r.pctFixosBps / 100.0;
+
+    m_lblResumoFV->setText(
+        tr("Mês atual — Fixos: <b>%1</b> (%2%) &nbsp;·&nbsp; Variáveis: <b>%3</b>")
+            .arg(formatCentavos(r.totalFixos))
+            .arg(QString::number(pctFixos, 'f', 1))
+            .arg(formatCentavos(r.totalVariaveis)));
 }
 
 void GastosWidget::populateTable()

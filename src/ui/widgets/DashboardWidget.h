@@ -59,6 +59,10 @@ private:
     QLabel *m_valProventos = nullptr; // #66 dividendos/JCP/rendimentos
     QLabel *m_subProventos = nullptr;
 
+    // #121: gastos fixos × variáveis do mês
+    QLabel *m_valFixosVar = nullptr;
+    QLabel *m_subFixosVar = nullptr;
+
     // Subs
     QLabel *m_subEntradas = nullptr;
     QLabel *m_subGastos   = nullptr;

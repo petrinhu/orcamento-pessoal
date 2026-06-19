@@ -27,9 +27,12 @@ private:
     void build(const QString &tipo, const QList<Categoria> &pais);
     void populatePais(const QList<Categoria> &pais, const QString &tipo);
 
-    QLineEdit *m_edtNome  = nullptr;
-    QComboBox *m_cbTipo   = nullptr;
-    QComboBox *m_cbPai    = nullptr;
+    void atualizarVisibilidadeDespesa();
+
+    QLineEdit *m_edtNome   = nullptr;
+    QComboBox *m_cbTipo    = nullptr;
+    QComboBox *m_cbPai     = nullptr;
+    QComboBox *m_cbDespesa = nullptr; // #121: Variável/Fixo (só para tipo "gasto")
 
     Categoria  m_result;
     int        m_editId   = 0;  // 0 = criação

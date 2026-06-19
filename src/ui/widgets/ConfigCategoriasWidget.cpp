@@ -11,11 +11,12 @@
 #include <QMessageBox>
 
 // Colunas da tree
-enum Col { ColNome = 0, ColTipo = 1, ColCount = 2 };
+enum Col { ColNome = 0, ColTipo = 1, ColDespesa = 2, ColCount = 3 };
 
-static const int RoleId    = Qt::UserRole;
-static const int RolePaiId = Qt::UserRole + 1;
-static const int RoleTipo  = Qt::UserRole + 2;
+static const int RoleId      = Qt::UserRole;
+static const int RolePaiId   = Qt::UserRole + 1;
+static const int RoleTipo    = Qt::UserRole + 2;
+static const int RoleDespesa = Qt::UserRole + 3; // #121: tipoDespesa (0|1)
 
 // ── Construção ────────────────────────────────────────────────────────────────
 
@@ -33,9 +34,10 @@ void ConfigCategoriasWidget::buildUi()
 
     m_tree = new QTreeWidget(this);
     m_tree->setColumnCount(ColCount);
-    m_tree->setHeaderLabels({ tr("Nome"), tr("Tipo") });
+    m_tree->setHeaderLabels({ tr("Nome"), tr("Tipo"), tr("Despesa") });
     m_tree->header()->setSectionResizeMode(ColNome, QHeaderView::Stretch);
     m_tree->header()->setSectionResizeMode(ColTipo, QHeaderView::ResizeToContents);
+    m_tree->header()->setSectionResizeMode(ColDespesa, QHeaderView::ResizeToContents);
     m_tree->setRootIsDecorated(true);
     m_tree->setSelectionMode(QAbstractItemView::SingleSelection);
     m_tree->setAlternatingRowColors(true);
@@ -90,9 +92,12 @@ void ConfigCategoriasWidget::recarregar()
         auto *item = new QTreeWidgetItem(m_tree);
         item->setText(ColNome, c.nome);
         item->setText(ColTipo, tipoDisplay(c.tipo));
-        item->setData(ColNome, RoleId,    c.id);
-        item->setData(ColNome, RolePaiId, c.paiId);
-        item->setData(ColNome, RoleTipo,  c.tipo);
+        if (c.tipo == QStringLiteral("gasto"))
+            item->setText(ColDespesa, tipoDespesaLabel(c.tipoDespesa));
+        item->setData(ColNome, RoleId,      c.id);
+        item->setData(ColNome, RolePaiId,   c.paiId);
+        item->setData(ColNome, RoleTipo,    c.tipo);
+        item->setData(ColNome, RoleDespesa, tipoDespesaParaInt(c.tipoDespesa));
         QFont f = item->font(ColNome);
         f.setBold(true);
         item->setFont(ColNome, f);
@@ -108,9 +113,12 @@ void ConfigCategoriasWidget::recarregar()
             : new QTreeWidgetItem(m_tree);
         item->setText(ColNome, c.nome);
         item->setText(ColTipo, tipoDisplay(c.tipo));
-        item->setData(ColNome, RoleId,    c.id);
-        item->setData(ColNome, RolePaiId, c.paiId);
-        item->setData(ColNome, RoleTipo,  c.tipo);
+        if (c.tipo == QStringLiteral("gasto"))
+            item->setText(ColDespesa, tipoDespesaLabel(c.tipoDespesa));
+        item->setData(ColNome, RoleId,      c.id);
+        item->setData(ColNome, RolePaiId,   c.paiId);
+        item->setData(ColNome, RoleTipo,    c.tipo);
+        item->setData(ColNome, RoleDespesa, tipoDespesaParaInt(c.tipoDespesa));
         itemMap.insert(c.id, item);
     }
 
@@ -121,10 +129,11 @@ void ConfigCategoriasWidget::recarregar()
 Categoria ConfigCategoriasWidget::categoriaFromItem(QTreeWidgetItem *item) const
 {
     Categoria c;
-    c.id    = item->data(ColNome, RoleId).toInt();
-    c.paiId = item->data(ColNome, RolePaiId).toInt();
-    c.tipo  = item->data(ColNome, RoleTipo).toString();
-    c.nome  = item->text(ColNome);
+    c.id          = item->data(ColNome, RoleId).toInt();
+    c.paiId       = item->data(ColNome, RolePaiId).toInt();
+    c.tipo        = item->data(ColNome, RoleTipo).toString();
+    c.nome        = item->text(ColNome);
+    c.tipoDespesa = tipoDespesaDeInt(item->data(ColNome, RoleDespesa).toInt());
     return c;
 }
 
