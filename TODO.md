@@ -84,11 +84,11 @@ Arquivo canônico de pendências, auditoria técnica e conformidade com o contra
 
 | Onda | ID | Grupo | Descrição Técnica | Prioridade | Pré-requisito | Dificuldade | Status | Estado Auditado |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| 4 | #127 | AUDIT | DB em claro em `data/.<slug>.db` durante a sessão: unlink-on-open + diretório `0700` (`QStandardPaths::AppDataLocation`) + limpeza de órfãos | Média | — | Média | ⏳ Pendente | — |
-| 4 | #128 | AUDIT | Zeroizar chave/senha em memória (`sodium_memzero` + `mlock`); evitar swap da chave-mestra | Média | — | Média | ⏳ Pendente | — |
-| 4 | #129 | AUDIT | `brapi_token` em QSettings em claro → mover para keystore (libsecret) | Média | (Brapi no 1.0?) | Baixa | ⏳ Pendente | — |
-| 4 | #130 | BUG | `FileObfuscator` MD5 reversível + não mascara valores = falsa anonimização — resolvido por #137 (deletar módulo) | Baixa | #137 | Baixa | ⏳ Pendente | — |
-| 4 | #131 | DOC | Atualizar CLAUDE.md/SECURITY.md: cripto ativa é Argon2id+AEAD, não PBKDF2 (legacy só leitura) | Baixa | — | Baixa | ⏳ Pendente | — |
+| 4 | #127 | AUDIT | DB em claro durante a sessão. **Entregue (a/c):** `data/` chmod 0700 + `.db` 0600; limpa `.db` órfão de crash no startup (release). **Recuou (b):** delete-on-open incompatível com o `close()` que re-cifra pelo path (risco de perda) → ficou só (a)+(c). Local do `.pbd` intocado | Média | — | Média | 🟡 Parcial | ✓ |
+| 4 | #128 | AUDIT | Zeroizar chave/senha. **Entregue:** `sodium_memzero` na chave/senha no logout/close/destrutor de UserSession/LoginDialog (pós-uso). **Recuou:** `mlock`/`sodium_malloc` (COW do QByteArray dá falsa garantia → refactor maior, fora de escopo). Limitação COW documentada | Média | — | Média | 🟡 Parcial | ✓ |
+| 4 | #129 | AUDIT | `brapi_token` QSettings claro → keystore. **Entregue:** backend de `AppSettings::brapiToken` movido p/ `SecretStoreService` (libsecret) + migração lazy fail-safe (grava no cofre antes de limpar QSettings) | Média | — | Baixa | ✅ Concluído | ✓ |
+| 4 | #130 | BUG | `FileObfuscator` falsa anonimização. **Entregue:** mapeamento sequencial irreversível (`d_<n>`, era MD5 reversível) + aviso no header que NÃO mascara valores/datas. (Continua dead code sem consumidor) | Baixa | — | Baixa | ✅ Concluído | ✓ |
+| 4 | #131 | DOC | **Entregue:** `.claude/CLAUDE.md` reflete a cripto real (Argon2id+AEAD libsodium; AES-CBC+PBKDF2 marcado legacy só-leitura). SECURITY.md não citava PBKDF2 ativo (ok) | Baixa | — | Baixa | ✅ Concluído | ✓ |
 
 ### Onda 5 — Cobertura de teste de regressão (pré-release)
 
