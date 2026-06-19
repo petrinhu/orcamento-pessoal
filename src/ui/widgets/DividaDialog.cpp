@@ -14,6 +14,21 @@
 #include <QDialogButtonBox>
 #include <QDate>
 
+#include <cmath>
+
+// Conversões de juros compostos (i em fração, ex.: 1,5% = 0,015).
+//   a.a. = (1 + i_m)^12 - 1
+//   i_m  = (1 + i_a)^(1/12) - 1
+static double mensalParaAnual(double mensalPct)
+{
+    return (std::pow(1.0 + mensalPct / 100.0, 12.0) - 1.0) * 100.0;
+}
+
+static double anualParaMensal(double anualPct)
+{
+    return (std::pow(1.0 + anualPct / 100.0, 1.0 / 12.0) - 1.0) * 100.0;
+}
+
 // ── Constructor ───────────────────────────────────────────────────────────────
 
 DividaDialog::DividaDialog(const Divida &divida, QWidget *parent)
@@ -68,6 +83,30 @@ void DividaDialog::buildUi(const Divida &d)
     m_spnJuros->setSuffix(QStringLiteral(" % a.m."));
     m_spnJuros->setValue(d.jurosMensal / 10000.0);
     form->addRow(tr("Juros a.m.:"), m_spnJuros);
+
+    m_spnJurosAnual = new QDoubleSpinBox(this);
+    m_spnJurosAnual->setRange(0.0, 100000.0);  // (1+1)^12-1 ~= 409500% no extremo
+    m_spnJurosAnual->setDecimals(2);
+    m_spnJurosAnual->setSuffix(QStringLiteral(" % a.a."));
+    m_spnJurosAnual->setValue(mensalParaAnual(d.jurosMensal / 10000.0));
+    form->addRow(tr("Juros a.a.:"), m_spnJurosAnual);
+
+    // Sincronização bidirecional: a.m. é a fonte da verdade ao salvar; editar
+    // um campo recalcula o outro pela fórmula composta. O flag-guard evita loop.
+    connect(m_spnJuros, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, [this](double v) {
+                if (m_sincronizando) return;
+                m_sincronizando = true;
+                m_spnJurosAnual->setValue(mensalParaAnual(v));
+                m_sincronizando = false;
+            });
+    connect(m_spnJurosAnual, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, [this](double v) {
+                if (m_sincronizando) return;
+                m_sincronizando = true;
+                m_spnJuros->setValue(anualParaMensal(v));
+                m_sincronizando = false;
+            });
 
     m_dtInicio = new QDateEdit(this);
     m_dtInicio->setCalendarPopup(true);

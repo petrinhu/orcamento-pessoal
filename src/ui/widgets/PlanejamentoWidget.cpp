@@ -9,6 +9,7 @@
 #include "core/settings/AppSettings.h"
 #include "core/commands/UndoCommands.h"
 #include "ui/UiFormatters.h"
+#include "ui/Theme.h"
 
 #include <QUndoStack>
 #include <memory>
@@ -241,10 +242,10 @@ void PlanejamentoWidget::recarregar()
     m_table->setRowCount(nRows);
     m_itemIds.resize(nRows, 0);
 
-    // Color palette
-    const QColor colGreen(QStringLiteral("#166F4A"));
-    const QColor colRed(QStringLiteral("#C94040"));
-    const QColor colBg(QStringLiteral("#166F4A"));
+    // Color palette (tokens do Theme — coerentes com light/dark)
+    const QColor colGreen(Theme::positivo());   // bem dentro / acima da meta de receita
+    const QColor colBlue(Theme::acento());      // dentro de ±10%
+    const QColor colRed(Theme::negativo());     // estourou / abaixo da meta de receita
 
     int row = 0;
 
@@ -289,12 +290,28 @@ void PlanejamentoWidget::recarregar()
         m_table->setItem(row, 1, roItemRight(uifmt::formatCentavosBRL(plan)));
         m_table->setItem(row, 2, roItemRight(uifmt::formatCentavosBRL(real)));
 
-        auto *itDiff = roItemRight(uifmt::formatCentavosBRL(diff));
-        // Color: for despesa diff < 0 = good (spent less); for receita diff > 0 = good (earned more)
-        if (diff != 0) {
-            const bool good = isDespesa ? (diff < 0) : (diff > 0);
-            itDiff->setForeground(QBrush(good ? colGreen : colRed));
+        // ── Cor de aderência (tolerância ±10%, comparação em inteiros) ────────
+        //   Despesa: real ≤ plan·0,90 → verde; ±10% → azul; real > plan·1,10 → vermelho.
+        //   Receita (invertido): real ≥ plan·1,10 → verde; ±10% → azul; < plan·0,90 → vermelho.
+        //   plan == 0 → sem cor (evita divisão por zero / item sem meta).
+        QColor aderencia;  // inválida = sem cor
+        if (plan > 0) {
+            const bool dentroBaixo = real * 100 <= plan * 90;   // real ≤ 90% do plan
+            const bool acimaAlto   = real * 100 >  plan * 110;  // real > 110% do plan
+            if (isDespesa) {
+                if (dentroBaixo)      aderencia = colGreen;  // gastou bem menos
+                else if (acimaAlto)   aderencia = colRed;    // estourou
+                else                  aderencia = colBlue;   // dentro de ±10%
+            } else {
+                const bool acimaMeta = real * 100 >= plan * 110;  // real ≥ 110% do plan
+                if (acimaMeta)        aderencia = colGreen;  // recebeu bem mais
+                else if (dentroBaixo) aderencia = colRed;    // recebeu bem menos
+                else                  aderencia = colBlue;   // dentro de ±10%
+            }
         }
+
+        auto *itDiff = roItemRight(uifmt::formatCentavosBRL(diff));
+        if (aderencia.isValid()) itDiff->setForeground(QBrush(aderencia));
         m_table->setItem(row, 3, itDiff);
 
         QString pctStr = QStringLiteral("—");
@@ -303,12 +320,7 @@ void PlanejamentoWidget::recarregar()
             pctStr = QStringLiteral("%1%").arg(pct);
         }
         auto *itPct = roItemRight(pctStr);
-        if (plan > 0) {
-            const bool over = real > plan;
-            const bool isGoodOver = !isDespesa; // receita: over = good; despesa: over = bad
-            if (real != plan)
-                itPct->setForeground(QBrush((over == isGoodOver) ? colGreen : colRed));
-        }
+        if (aderencia.isValid()) itPct->setForeground(QBrush(aderencia));
         m_table->setItem(row, 4, itPct);
 
         m_table->setRowHeight(row, 28);

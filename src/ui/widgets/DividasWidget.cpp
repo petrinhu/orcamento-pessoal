@@ -23,6 +23,8 @@
 #include <QBrush>
 #include <QColor>
 
+#include <cmath>
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 static QString fmtCentavos(qint64 c)
@@ -37,8 +39,12 @@ static QString fmtCentavos(qint64 c)
 static QString fmtJuros(int jurosMensal)
 {
     if (jurosMensal == 0) return QStringLiteral("—");
-    const double v = jurosMensal / 10000.0;
-    return QStringLiteral("%1 %").arg(v, 0, 'f', 2);
+    const double mensal = jurosMensal / 10000.0;
+    // a.a. composto = (1 + i_m)^12 - 1
+    const double anual = (std::pow(1.0 + mensal / 100.0, 12.0) - 1.0) * 100.0;
+    return QStringLiteral("%1% a.m. (%2% a.a.)")
+        .arg(mensal, 0, 'f', 2)
+        .arg(anual,  0, 'f', 2);
 }
 
 static QString fmtData(const QString &iso)
@@ -137,7 +143,7 @@ void DividasWidget::buildUi()
     m_table->setHorizontalHeaderLabels({
         tr("Tipo"), tr("Contraparte"), tr("Descrição"),
         tr("Total"), tr("Pago"), tr("Saldo"),
-        tr("Juros a.m."), tr("Vencimento"), tr("Status"), tr("Obs")
+        tr("Juros"), tr("Vencimento"), tr("Status"), tr("Obs")
     });
     m_table->horizontalHeader()->setStretchLastSection(true);
     m_table->horizontalHeader()->setSectionResizeMode(ColContraparte, QHeaderView::Interactive);

@@ -26,11 +26,13 @@ private:
     QLineEdit       *m_edtDescricao   = nullptr;
     CalculadoraEdit *m_edtTotal       = nullptr;
     CalculadoraEdit *m_edtPago        = nullptr;
-    QDoubleSpinBox  *m_spnJuros       = nullptr;
+    QDoubleSpinBox  *m_spnJuros       = nullptr;   // juros a.m. — fonte da verdade
+    QDoubleSpinBox  *m_spnJurosAnual  = nullptr;   // juros a.a. — derivado (composto)
     QDateEdit       *m_dtInicio       = nullptr;
     QDateEdit       *m_dtVenc         = nullptr;
     QComboBox       *m_cbStatus       = nullptr;
     QLineEdit       *m_edtObs         = nullptr;
 
+    bool m_sincronizando = false;   // flag-guard contra loop de sinais a.m. <-> a.a.
     int m_id = 0;
 };

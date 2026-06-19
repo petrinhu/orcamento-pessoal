@@ -2,6 +2,7 @@
 #include "LembreteDialog.h"
 #include "repositories/LembreteRepository.h"
 #include "core/commands/UndoCommands.h"
+#include "ui/Theme.h"
 
 #include <QUndoStack>
 
@@ -39,6 +40,33 @@ static QString fmtData(const QString &iso)
     if (iso.isEmpty()) return QStringLiteral("—");
     const QDate d = QDate::fromString(iso, Qt::ISODate);
     return d.isValid() ? d.toString(QStringLiteral("dd/MM/yyyy")) : iso;
+}
+
+// Amarelo "vence em breve" — sem token próprio no Theme; tom coerente claro/dark.
+static QColor amareloAtencao()
+{
+    return Theme::currentMode() == Theme::ThemeMode::Dark
+        || (Theme::currentMode() == Theme::ThemeMode::Auto
+            && Theme::texto() == Theme::Color::TextDark)
+        ? QColor(QStringLiteral("#8A6D00"))   // âmbar escuro (fundo escuro)
+        : QColor(QStringLiteral("#FFF3C4"));  // âmbar claro (fundo claro)
+}
+
+// Label dinâmico de prazo para lembrete NÃO resolvido.
+//   dias < 0  → "Vencido há N dias"
+//   dias == 0 → "Vence hoje"
+//   1..3      → "Vence em N dia(s)"
+//   > 3       → status base (caller decide)
+static QString labelPrazo(int dias)
+{
+    if (dias < 0) {
+        const int n = -dias;
+        return n == 1 ? QStringLiteral("Vencido há 1 dia")
+                      : QStringLiteral("Vencido há %1 dias").arg(n);
+    }
+    if (dias == 0) return QStringLiteral("Vence hoje");
+    if (dias == 1) return QStringLiteral("Vence em 1 dia");
+    return QStringLiteral("Vence em %1 dias").arg(dias);
 }
 
 static QTableWidgetItem *roItem(const QString &text,
@@ -162,8 +190,36 @@ void LembretesWidget::populateTable(const QList<Lembrete> &lista)
 {
     m_table->setRowCount(lista.size());
 
+    const QColor cNegativo = QColor(Theme::negativo());
+    const QColor cPositivo = QColor(Theme::positivo());
+    const QColor cAmarelo  = amareloAtencao();
+
     for (int r = 0; r < lista.size(); ++r) {
         const Lembrete &l = lista[r];
+        const int  dias      = l.diasParaVencer();
+        const bool resolvido = l.pago() || l.ignorado();
+
+        // ── Estado / aparência ────────────────────────────────────────────
+        // Cores: negativo (atrasado / não debitado), branco (vence hoje),
+        // amarelo (1..3 dias), positivo (resolvido), sem destaque (futuro).
+        QColor bg, fg;
+        QString statusTexto = statusLembreteLabel(statusLembreteDeTexto(l.status));
+
+        if (resolvido) {
+            bg = cPositivo;
+            fg = QColor(Qt::white);
+        } else if (l.naoPago() || dias < 0) {
+            bg = cNegativo;
+            fg = QColor(Qt::white);
+            statusTexto = l.naoPago() ? statusTexto : labelPrazo(dias);
+        } else if (dias == 0) {
+            // Vence hoje → branco, sem fundo forte; texto realçado.
+            statusTexto = labelPrazo(dias);
+        } else if (dias >= 1 && dias <= 3) {
+            bg = cAmarelo;
+            statusTexto = labelPrazo(dias);
+        }
+        // dias > 3 (futuro): sem destaque, status base preservado.
 
         m_table->setItem(r, ColDescricao, roItem(l.descricao));
         m_table->setItem(r, ColValor,     roItem(fmtCentavos(l.valor),
@@ -173,33 +229,19 @@ void LembretesWidget::populateTable(const QList<Lembrete> &lista)
             frequenciaLembreteDeTexto(l.frequencia))));
         m_table->setItem(r, ColTipo,      roItem(l.debitoAutomatico
             ? tr("Déb. Auto") : tr("Manual")));
-        m_table->setItem(r, ColStatus,    roItem(statusLembreteLabel(
-            statusLembreteDeTexto(l.status))));
+        m_table->setItem(r, ColStatus,    roItem(statusTexto));
         m_table->setItem(r, ColObs,       roItem(l.obs));
 
         // Guarda id
         if (auto *it = m_table->item(r, ColDescricao))
             it->setData(Qt::UserRole, l.id);
 
-        // Cor da linha
-        QColor bg;
-        const int dias = l.diasParaVencer();
-        if (l.naoPago()) {
-            bg = QColor(0xFFE0E0);    // vermelho claro — não debitado
-        } else if (l.vencido()) {
-            bg = QColor(0xFFEEEE);    // vermelho suave — vencido manual
-        } else if (l.proximo()) {
-            bg = QColor(0xFFFBE6);    // amarelo — próximo
-        } else if (l.debitoAutomatico && l.pendente() && dias >= 0 && dias <= 7) {
-            bg = QColor(0xEEEEFF);    // roxo suave — débito automático próximo
-        } else if (l.pago() || l.ignorado()) {
-            bg = QColor(0xF0F0F0);    // cinza — resolvido
-        }
-
-        if (bg.isValid()) {
+        if (bg.isValid() || fg.isValid()) {
             for (int c = 0; c < ColCount; ++c) {
-                if (auto *it = m_table->item(r, c))
-                    it->setBackground(bg);
+                if (auto *it = m_table->item(r, c)) {
+                    if (bg.isValid()) it->setBackground(bg);
+                    if (fg.isValid()) it->setForeground(fg);
+                }
             }
         }
     }
