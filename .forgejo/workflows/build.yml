@@ -9,7 +9,7 @@ on:
 jobs:
   fedora:
     name: Fedora (dnf)
-    runs-on: docker
+    runs-on: codeberg-medium
     container:
       image: fedora:41
     steps:
@@ -19,7 +19,7 @@ jobs:
             qt6-qtbase-devel qt6-qtcharts-devel qt6-qttools-devel \
             openssl-devel libsecret-devel libsodium-devel \
             poppler-qt6-devel \
-            gcc-c++ cmake make git
+            gcc-c++ cmake make git nodejs
       - name: Checkout
         uses: actions/checkout@v4
       - name: Configure (Release + tests)
@@ -31,7 +31,7 @@ jobs:
 
   debian:
     name: Debian (apt)
-    runs-on: docker
+    runs-on: codeberg-medium
     container:
       image: debian:trixie
     steps:
@@ -42,7 +42,7 @@ jobs:
             qt6-base-dev libqt6charts6-dev qt6-tools-dev \
             libssl-dev libsecret-1-dev libsodium-dev \
             libpoppler-qt6-dev \
-            g++ cmake make git ca-certificates
+            g++ cmake make git ca-certificates nodejs
       - name: Checkout
         uses: actions/checkout@v4
       - name: Configure (Release + tests)
@@ -54,7 +54,7 @@ jobs:
 
   arch:
     name: Arch (pacman)
-    runs-on: docker
+    runs-on: codeberg-medium
     container:
       image: archlinux:latest
     steps:
@@ -64,7 +64,7 @@ jobs:
             qt6-base qt6-charts qt6-tools \
             openssl libsecret libsodium \
             poppler-qt6 \
-            gcc cmake make git
+            gcc cmake make git nodejs
       - name: Checkout
         uses: actions/checkout@v4
       - name: Configure (Release + tests)
@@ -76,7 +76,7 @@ jobs:
 
   lint:
     name: Lint (clang-tidy + cppcheck)
-    runs-on: docker
+    runs-on: codeberg-small
     container:
       image: fedora:41
     steps:
@@ -86,7 +86,7 @@ jobs:
             qt6-qtbase-devel qt6-qtcharts-devel qt6-qttools-devel \
             openssl-devel libsecret-devel libsodium-devel \
             poppler-qt6-devel \
-            gcc-c++ cmake make git clang-tools-extra cppcheck
+            gcc-c++ cmake make git clang-tools-extra cppcheck nodejs
       - name: Checkout
         uses: actions/checkout@v4
       - name: Configure (gera compile_commands.json)
@@ -101,7 +101,7 @@ jobs:
 
   sanitizers:
     name: ASan + UBSan (Fedora)
-    runs-on: docker
+    runs-on: codeberg-medium
     container:
       image: fedora:41
     steps:
@@ -111,7 +111,7 @@ jobs:
             qt6-qtbase-devel qt6-qtcharts-devel qt6-qttools-devel \
             openssl-devel libsecret-devel libsodium-devel \
             poppler-qt6-devel \
-            gcc-c++ cmake make git libasan libubsan
+            gcc-c++ cmake make git libasan libubsan nodejs
       - name: Checkout
         uses: actions/checkout@v4
       - name: Configure (Debug + sanitizers)
