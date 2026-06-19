@@ -25,6 +25,63 @@ endfunction()
 # ── Testes registrados ───────────────────────────────────────────────────────
 peubud_add_test(test_canary)
 peubud_add_test(test_finance_engine ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp)
+
+# #132: CalculadoraService — funcoes puras (sem dependencias externas).
+peubud_add_test(test_calculadora
+    ${CMAKE_SOURCE_DIR}/src/services/CalculadoraService.cpp)
+
+# #132: RecorrenciaService::proximaApos — funcao PURA de data. O .cpp tambem
+# contem gerarPendentes(), que arrasta repos/servicos/DatabaseManager/crypto;
+# linkar a cadeia (espelha test_resumo) para resolver os simbolos mesmo
+# testando apenas a estatica proximaApos.
+peubud_add_test(test_recorrencia
+    ${CMAKE_SOURCE_DIR}/src/services/RecorrenciaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/EntradaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/TransacaoRecorrenteRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/GastoAvulsoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/LancamentoEntradaRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/FonteRendaRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/database/DatabaseManager.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/AjusteCorporativoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/AuditLogService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FechamentoMensalService.cpp
+    # FechamentoMensalService::simulate puxa a cadeia do ResumoService.
+    ${CMAKE_SOURCE_DIR}/src/services/ResumoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/CompraService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/LancamentoInvestimentoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/ProventoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/CompraRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/ParcelaRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/CartaoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/SodiumCryptoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/AesCryptoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/KeyDerivation.cpp)
+target_link_libraries(test_recorrencia PRIVATE
+    OpenSSL::SSL
+    OpenSSL::Crypto
+    ${LIBSODIUM_LIBRARIES})
+target_include_directories(test_recorrencia PRIVATE ${LIBSODIUM_INCLUDE_DIRS})
+
+# #133: ImportService parsers via API publica fromCsv/fromOfx. Cadeia:
+# ImportService + parsers PDF + match finder + ParcelaService/FinanceEngine.
+peubud_add_test(test_import
+    ${CMAKE_SOURCE_DIR}/src/services/ImportService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/import/BankPDFParsers.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/import/IMatchFinder.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp)
+
+# #133: ExportService round-trip OFX + format machine-readable. Puxa
+# ParcelaService/FinanceEngine e a cadeia de import (para reimportar).
+peubud_add_test(test_export
+    ${CMAKE_SOURCE_DIR}/src/services/ExportService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/ImportService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/import/BankPDFParsers.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/import/IMatchFinder.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp)
 peubud_add_test(test_match_finder ${CMAKE_SOURCE_DIR}/src/services/import/IMatchFinder.cpp)
 peubud_add_test(test_fiscal ${CMAKE_SOURCE_DIR}/src/services/FiscalService.cpp)
 peubud_add_test(test_backup ${CMAKE_SOURCE_DIR}/src/services/BackupService.cpp)

@@ -2,6 +2,7 @@
 // Usa ICurrencyProvider mock para nao depender de HTTP.
 
 #include <QtTest/QtTest>
+#include <stdexcept>
 #include "services/CurrencyService.h"
 #include "core/currency/ICurrencyProvider.h"
 
@@ -27,6 +28,11 @@ private slots:
     void converterCentavos();
     void moedasListadas();
     void provedorIndisponivel();
+    // ── Bordas (#132) ───────────────────────────────────────────────────────
+    void moedaDestinoAusenteUsaFallbackUm();
+    void moedaOrigemAusenteLancaExcecao();
+    void taxaOrigemZeroLancaExcecao();
+    void idaVoltaPreservaComArredondamento();
 };
 
 void TestCurrencyService::taxaBrlParaUsd()
@@ -90,6 +96,78 @@ void TestCurrencyService::provedorIndisponivel()
     mock->available = false;
     CurrencyService svc(std::move(mock));
     QVERIFY(!svc.disponivel());
+}
+
+// ── Bordas (#132): protecao contra divisao por zero / moeda ausente ──────────
+
+void TestCurrencyService::moedaDestinoAusenteUsaFallbackUm()
+{
+    // Moeda destino (JPY) NAO esta no provider. taxa() usa value(para, 1.0),
+    // entao retorna rPara=1.0 / rDe. FIXA o comportamento REAL: nao lanca,
+    // nao divide por zero — usa fallback 1.0 para o destino.
+    // ACHADO documentado: destino ausente vira taxa "silenciosa" (=1/rDe),
+    // sem sinalizar erro ao chamador. Ver relatorio.
+    auto mock = std::make_unique<MockProvider>();
+    mock->ratesFixed.insert(QStringLiteral("BRL"), 1.0);   // 1 BRL = 1 BRL
+    // JPY ausente de proposito.
+    CurrencyService svc(std::move(mock));
+
+    const double t = svc.taxa(QStringLiteral("BRL"), QStringLiteral("JPY"));
+    QVERIFY2(qAbs(t - 1.0) < 1e-9,
+        qPrintable(QStringLiteral("destino ausente: taxa=%1, esperado fallback 1.0").arg(t)));
+}
+
+void TestCurrencyService::moedaOrigemAusenteLancaExcecao()
+{
+    // Moeda origem ausente -> value(de, 1.0) = 1.0, NAO dispara o guard
+    // (guard so trava se rDe < 1e-12). Logo origem ausente tambem cai no
+    // fallback 1.0 e NAO lanca. FIXA o comportamento REAL.
+    auto mock = std::make_unique<MockProvider>();
+    mock->ratesFixed.insert(QStringLiteral("BRL"), 1.0);
+    mock->ratesFixed.insert(QStringLiteral("USD"), 0.20);
+    CurrencyService svc(std::move(mock));
+
+    // origem "XAU" ausente -> rDe=1.0; destino USD=0.20 -> taxa=0.20.
+    const double t = svc.taxa(QStringLiteral("XAU"), QStringLiteral("USD"));
+    QVERIFY2(qAbs(t - 0.20) < 1e-9,
+        qPrintable(QStringLiteral("origem ausente: taxa=%1, esperado 0.20 (fallback)").arg(t)));
+}
+
+void TestCurrencyService::taxaOrigemZeroLancaExcecao()
+{
+    // Se o provider devolve a moeda origem com taxa exatamente 0, o guard
+    // rDe < 1e-12 dispara e lanca std::runtime_error (evita divisao por zero).
+    auto mock = std::make_unique<MockProvider>();
+    mock->ratesFixed.insert(QStringLiteral("BRL"), 1.0);
+    mock->ratesFixed.insert(QStringLiteral("ZZZ"), 0.0);   // taxa zero explicita
+    mock->ratesFixed.insert(QStringLiteral("USD"), 0.20);
+    CurrencyService svc(std::move(mock));
+
+    bool throwed = false;
+    try {
+        svc.taxa(QStringLiteral("ZZZ"), QStringLiteral("USD"));
+    } catch (const std::runtime_error &) {
+        throwed = true;
+    }
+    QVERIFY2(throwed, "taxa com origem=0 deveria lancar runtime_error (sem divisao por zero)");
+}
+
+void TestCurrencyService::idaVoltaPreservaComArredondamento()
+{
+    // Conversao ida-volta A->B->A: por arredondamento de centavos, o valor
+    // pode oscilar +-1 centavo. Tolerancia DOCUMENTADA: |delta| <= 1 cent.
+    auto mock = std::make_unique<MockProvider>();
+    mock->ratesFixed.insert(QStringLiteral("BRL"), 1.0);
+    mock->ratesFixed.insert(QStringLiteral("USD"), 0.193); // taxa "feia" de proposito
+    CurrencyService svc(std::move(mock));
+
+    const qint64 original = 123456; // R$ 1.234,56
+    const qint64 emUsd = svc.converter(original, QStringLiteral("BRL"), QStringLiteral("USD"));
+    const qint64 deVolta = svc.converter(emUsd, QStringLiteral("USD"), QStringLiteral("BRL"));
+
+    QVERIFY2(qAbs(deVolta - original) <= 1,
+        qPrintable(QStringLiteral("ida-volta: original=%1, voltou=%2 (delta=%3, tol=1 cent)")
+            .arg(original).arg(deVolta).arg(deVolta - original)));
 }
 
 QTEST_GUILESS_MAIN(TestCurrencyService)
