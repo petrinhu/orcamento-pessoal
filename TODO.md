@@ -11,9 +11,11 @@ Arquivo canônico de pendências, auditoria técnica e conformidade com o contra
 - **Status**: ✅ Concluído · 🔄 Em andamento · 🟡 Parcial · ⏳ Pendente · 💡 Decisão tomada · 🎨 Pendente design · 🔍 Pendente verificação · ❌ Cancelado
 - **Estado Auditado**: `—` (não auditado) · `✓` (auditado e aprovado) · `⚠` (auditado com ressalvas)
 
-> **Convenção de ID:** `#NN` mantido como identificador estável — usado em commits (`feat(#44): ...`), branches e referências cruzadas. Próximo ID disponível: **#70**.
+> **Convenção de ID:** `#NN` mantido como identificador estável — usado em commits (`feat(#44): ...`), branches e referências cruzadas. Próximo ID disponível: **#141**.
 >
 > **Hierarquia:** itens filhos só começam após pai ✅; irmãos com mesmo prefixo numérico (ex.: `1.2.1` e `1.2.2`) são paralelos.
+>
+> **Plano de Ondas (auditoria C-level 2026-06-18):** os Blocos 0–7 acima são o agrupamento **histórico/temático**. A coluna de execução agora é a **Onda** — ver seção **“Plano de Ondas”** ao fim do arquivo, que sequencia itens novos (#113–#140) e realoca pendentes por dependência (core/back → teste → UI) e prioridade (Precisão > Robustez > Segurança > UX). Periféricos congelados para **pós-1.0** por decisão do usuário.
 
 ---
 
@@ -190,6 +192,95 @@ Arquivo canônico de pendências, auditoria técnica e conformidade com o contra
 | #110 | FUNC | **Ícone ℹ️ clicável ao lado de termos técnicos** — `InfoIconButton` widget (QToolButton flat 16x16 com ícone ℹ️ Unicode) ao lado de labels com sigla. Click abre `QToolTip::showText` rich-text ou pequeno popup com definição curta + botão "Ver no glossário" que navega a #107. Aplicar via `Glossario::infoButton(termo)` factory | Baixa | #103, #107 | Baixa | ⏳ Pendente | — |
 | #111 | FUNC | **Renomear defaults para coloquial** — labels principais usam termo coloquial + sigla técnica entre parênteses pequena: `"Aposentadoria Antecipada (FIRE)"`, `"Renda por dividendos (DY)"`, `"Imposto de renda (IRPF)"`, `"Juros total ao ano (CET)"`. Modo Avançado (#104) inverte: mostra sigla destacada e coloquial em microcopy. Atualizar via `Glossario::labelColoquial(termo)` que respeita modo iniciante/avançado | Média | #103, #104 | Baixa | ⏳ Pendente | — |
 | #112 | FUNC | **Tradução pt-BR coloquial** modo Iniciante — strings completas reescritas para linguagem 6ª série: "Aplicação de baixo risco" em vez de "Renda Fixa"; "Quanto você quer juntar?" em vez de "Capital objetivo (FV)". Adicionar contexto `coloquial` no `peubud_pt_BR_coloquial.ts` (carregado se `AppSettings::modoIniciante()`). Manter `peubud_pt_BR.ts` técnico padrão para modo Avançado. Coexistem como tradutores em cadeia: técnico → coloquial (sobrescreve) | Baixa | #103, #104 | Média | ⏳ Pendente | — |
+
+---
+
+## Plano de Ondas — Reorganização pós-auditoria (2026-06-18)
+
+> Derivado da auditoria completa da constelação C-level (Cósimo classificou porte **early/modo-auditoria**; Celso/CEO, Caetano/CTO, Capitolino/CPO, Narciso/CISO + software-architect, code-reviewer, security-engineer, qa-engineer, product-manager). Sequência: **core/back → teste → UI**; prioridade **Precisão > Robustez > Segurança > UX**.
+>
+> **Decisões do usuário (2026-06-18):** (1) periféricos congelados para **pós-1.0**; (2) **C1 (FiscalService `double`) + C2 (testes do motor) são GATE obrigatório do 1.0**; (3) schema fixo/variável = **Categoria.fixo (recomendado), pendente "ok" final** antes de migrar; (4) remover providers-fantasma da UI = **sim**; (5) deletar dead modules conforme CTO = **sim**.
+>
+> **Gate de 1.0:** não emitir release 1.0 com **#113** e **#114** abertos.
+
+### Onda 0 — Precisão (pré-tudo · GATE de 1.0)
+
+| ID | Grupo | Descrição Técnica | Prioridade | Pré-requisito | Dificuldade | Status | Estado Auditado |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| #114 | TESTE | Amortização Price/SAC sem teste: cobrir `TvmService::amortizacao`/`resolver` (domain_error) + `ParcelaService::tabelaAmortizacao`/`resolverTaxa`. **Entregue:** novo `tests/test_tvm.cpp` (17 casos) + `test_parcela_service` estendido (+11); 30 casos novos, determinístico; **ctest 18/18 verde sob Qt 6.11.1**. Achado p/ #123: `TvmService::amortizacao` não absorve resíduo, `ParcelaService::tabelaAmortizacao` fecha em 0 — unificar convenção. | Crítica | — | Média | ✅ Concluído | ✓ |
+| #113 | BUG | `FiscalService::inssMensal2024`/`irpfMensal2024`/`simplesAliquotaEfetiva`: acumular faixas em `qint64` centavos (era `double`) + teste fixando faixas 2024. **Entregue:** 3 funções convertidas para aritmética inteira half-up (`×permilagem/1000`); 3 testes-âncora data-driven (28 linhas) com comparação exata; validado vs oráculo oficial 2024 (Python Decimal, varredura exaustiva, 0 divergências); **ctest 18/18 verde**. Pendente apenas: limpar 2 warnings clang-tidy (chaves/parênteses) antes do commit. | Crítica | #114 | Baixa | ✅ Concluído | ✓ |
+| #141 | INFRA | **Bloqueador local (RESOLVIDO 2026-06-18):** Qt6 dessincronizado (mix 6.10.2/6.11.1) travava build CMake/ctest. **Entregue:** `dnf upgrade "qt6-*"` → toda a stack Qt6 consistente em **6.11.1**; build completo + ctest 18/18 verdes. Rollback: `dnf history undo last`. | Alta | — | Baixa | ✅ Concluído | — |
+
+### Onda 1 — Dashboard (prioridade 1 do usuário)
+
+| ID | Grupo | Descrição Técnica | Prioridade | Pré-requisito | Dificuldade | Status | Estado Auditado |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| #115 | AUDIT | Extrair `ResumoService`/`DashboardService` (camada Mid) agregando entradas+gastos+parcelas+investimentos+proventos+saldos; remove lógica inline de `DashboardWidget.cpp:275-404` | Alta | #113 | Alta | ⏳ Pendente | — |
+| #116 | TESTE | Testes do `ResumoService`: consolidação mensal/anual, mês vazio, sinais receita−despesa, líquido de IR/INSS, bordas de período | Alta | #115 | Média | ⏳ Pendente | — |
+| #117 | FUNC | Migrar `DashboardWidget` para consumir `ResumoService` (UI burra); cards dependentes de preço RT (#45/#58) exibem placeholder explícito; integrar card de proventos (#66 follow-up) | Alta | #116 | Média | ⏳ Pendente | — |
+
+### Onda 2 — Gastos fixos vs variáveis (prioridade 2 do usuário)
+
+| ID | Grupo | Descrição Técnica | Prioridade | Pré-requisito | Dificuldade | Status | Estado Auditado |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| #118 | FUNC | Migration idempotente `ALTER TABLE … ADD COLUMN fixo` — **tabela recomendada `Categoria` (pendente ok final do usuário)** + model/repo bind/read | Alta | (decisão schema) | Baixa | ⏳ Pendente | — |
+| #119 | AUDIT | Criar `GastoService` (Mid): consolidação fixo/variável, totais por classe, % do orçamento; migra `GastosWidget`/`GastoDialog` do acesso direto a Repository | Alta | #118 | Média | ⏳ Pendente | — |
+| #120 | TESTE | Testes do `GastoService`: soma por classe, gasto sem classificação (default), recorrente=fixo, bordas de mês | Alta | #119 | Média | ⏳ Pendente | — |
+| #121 | FUNC | UI: filtro/visão fixo×variável em `GastosWidget` + indicador no Dashboard (consome `ResumoService`+`GastoService`) | Média | #120, #117 | Média | ⏳ Pendente | — |
+
+### Onda 3 — Higiene de arquitetura & código (dívida, sem feature nova)
+
+| ID | Grupo | Descrição Técnica | Prioridade | Pré-requisito | Dificuldade | Status | Estado Auditado |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| #122 | AUDIT | Extrair `UiFormatters`: `parseCentavos` (dup. 8 arquivos) + `formatCentavos` (dup. 13) — usar `std::llround` | Média | — | Baixa | ⏳ Pendente | — |
+| #123 | AUDIT | Unificar fórmula PMT Price (4× em `ParcelaService.cpp`) → `FinanceEngine::pmt` | Média | — | Baixa | ⏳ Pendente | — |
+| #124 | BUG | Checar retorno de `q.exec()` em PriceRepository/Compra/Lembrete/Meta/Divida (falha silenciosa) | Alta | — | Baixa | ⏳ Pendente | — |
+| #125 | AUDIT | Migrar QtSql inline em `MainWindow.cpp:64,1108` → `CartaoRepository`; mover `GlossarioService::aplicarTooltips` (Mid→Front) para helper de UI | Média | — | Média | ⏳ Pendente | — |
+| #126 | AUDIT | Concluir extração #34: 16 widgets que instanciam Repository direto (exceto os de Gastos, já na Onda 2) | Média | — | Média | ⏳ Pendente | — |
+
+### Onda 4 — Hardening de segurança pré-release (4 IMPORTANTES, 0 crítico)
+
+| ID | Grupo | Descrição Técnica | Prioridade | Pré-requisito | Dificuldade | Status | Estado Auditado |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| #127 | AUDIT | DB em claro em `data/.<slug>.db` durante a sessão: unlink-on-open + diretório `0700` (`QStandardPaths::AppDataLocation`) + limpeza de órfãos | Média | — | Média | ⏳ Pendente | — |
+| #128 | AUDIT | Zeroizar chave/senha em memória (`sodium_memzero` + `mlock`); evitar swap da chave-mestra | Média | — | Média | ⏳ Pendente | — |
+| #129 | AUDIT | `brapi_token` em QSettings em claro → mover para keystore (libsecret) | Média | (Brapi no 1.0?) | Baixa | ⏳ Pendente | — |
+| #130 | BUG | `FileObfuscator` MD5 reversível + não mascara valores = falsa anonimização — resolvido por #137 (deletar módulo) | Baixa | #137 | Baixa | ⏳ Pendente | — |
+| #131 | DOC | Atualizar CLAUDE.md/SECURITY.md: cripto ativa é Argon2id+AEAD, não PBKDF2 (legacy só leitura) | Baixa | — | Baixa | ⏳ Pendente | — |
+
+### Onda 5 — Cobertura de teste de regressão (pré-release)
+
+| ID | Grupo | Descrição Técnica | Prioridade | Pré-requisito | Dificuldade | Status | Estado Auditado |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| #132 | TESTE | Testes: `CalculadoraService` (arredondamento centavos), `RecorrenciaService::proximaApos` (datas/bissexto), conversão de moeda em bordas (taxa ausente/zero) | Média | — | Média | ⏳ Pendente | — |
+| #133 | TESTE | Testes: `ImportService` parsers (parseAmount/parseDate/detect*), `ExportService` round-trip OFX/CSV/QIF, `FechamentoMensalService` (SQLite :memory:) | Média | — | Média | ⏳ Pendente | — |
+| #134 | TESTE | Plugar e testar `InvestActivityFactory::consistencyCheck` no `InvestimentoDialog` (hoje nunca chamado → validações silenciosas) | Média | #89 | Média | ⏳ Pendente | — |
+
+### Onda 6 — Periféricos / Mercado / Bolsa (**CONGELADO PÓS-1.0**)
+
+| ID | Grupo | Descrição Técnica | Prioridade | Pré-requisito | Dificuldade | Status | Estado Auditado |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| #135 | BUG | Providers-fantasma: **remover da UI** `cotahist`/`b3direct` (fora do CMake, oferecidos mas inexistentes no binário) — decisão do usuário (4)=sim. Build completo fica pós-1.0 | Alta | — | Baixa | ⏳ Pendente | — |
+| #136 | AUDIT | `PriceRepository` sem chamador ativo: ligar com #45/#58 (pós-1.0) ou remover | Baixa | #45 | Baixa | ⏳ Pendente | — |
+| — | — | **Realocados pós-1.0 (congelados):** #45 (MarketDataService), #58 (Brapi), #59 (COTAHIST), #51 (candles), #52/#53 follow-ups, #64 (IA Bolsa), #25 (consultor IA), #68 (Telegram), #63 follow-up (wizard DRIP) | — | — | — | ❄️ Pós-1.0 | — |
+
+### Onda 7 — Limpeza de dead code & decisões OE (decisão do usuário (5)=sim)
+
+| ID | Grupo | Descrição Técnica | Prioridade | Pré-requisito | Dificuldade | Status | Estado Auditado |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| #137 | AUDIT | **Deletar** dead modules sem consumidor: `DripSimulator`, `IndicadoresTecnicos`, `SuporteResistencia`, `FileObfuscator`, `OAuthDeviceFlow`, `BaseWizardDialog`, `ScheduledTransactionMatchFinder` (remover do build) | Média | — | Média | ⏳ Pendente | — |
+| #138 | AUDIT | `IRepository<T>` órfã (2/19 repos): remover (recomendado CTO, anti-OE) | Baixa | — | Média | ⏳ Pendente | — |
+| #139 | AUDIT | CRÍTICO arquitetura: extrair SQL cru de `BuscaGlobalDialog.cpp` (6 tabelas) → `BuscaService`; **plugar** `ReconciliacaoAutomatica` (#85) no `ReconciliacaoDialog` (em vez de deletar) | Alta | #85 | Alta | ⏳ Pendente | — |
+
+### Onda 8 — Distribuição & docs (fim de tabela)
+
+| ID | Grupo | Descrição Técnica | Prioridade | Pré-requisito | Dificuldade | Status | Estado Auditado |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| #97 #99 #100 #101 | INFRA | Distribuição (AUR, GPG, Codeberg Releases, repo APT/RPM) — ordem preservada do Bloco 6 | Média | — | Alta | ⏳ Pendente | — |
+| #106 #110 #111 #112 | FUNC | Cauda UX iniciante pendente do Bloco 7 (placeholders, ícone ℹ️, labels coloquiais, tradução coloquial) | Baixa | #103 | Baixa | ⏳ Pendente | — |
+| #140 | DOC | Wiki do repo (Codeberg/Forgejo wiki-native) + doc `.md` extensa para INICIANTE em computação, derivada de `docs/`; executar via technical-writer/ux-writer | Baixa | (tag v1.0) | Média | ⏳ Pendente | — |
+
+> **Próximo ID disponível após este plano: #141.** Itens #113–#140 são novos (auditoria 2026-06-18); IDs existentes (#25/#45/#51/#58/#59/#63/#64/#68/#97/#99/#100/#101/#106/#110/#111/#112) foram realocados às ondas sem perder rastreabilidade nos blocos históricos.
 
 ---
 
