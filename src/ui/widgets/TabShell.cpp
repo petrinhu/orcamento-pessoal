@@ -1,9 +1,17 @@
 #include "TabShell.h"
+#include "ui/TabHelp.h"
+#include "core/settings/AppSettings.h"
 
 #include <QLabel>
+#include <QToolButton>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QFrame>
+
+namespace {
+constexpr auto kBlocoDesc  = "desc";
+constexpr auto kBlocoInstr = "instr";
+}
 
 TabShell::TabShell(const QString &titulo, QWidget *parent)
     : QWidget(parent)
@@ -39,21 +47,9 @@ TabShell::TabShell(const QString &titulo, QWidget *parent)
     sepHeader->setFrameShadow(QFrame::Plain);
     root->addWidget(sepHeader);
 
-    // ── Descrição (oculta enquanto vazia) ──────────────────────────────────
-    m_description = new QLabel(this);
-    m_description->setObjectName(QStringLiteral("subtitle")); // QSS: 12px / cinza
-    m_description->setWordWrap(true);
-    m_description->setTextFormat(Qt::PlainText);
-    m_description->setMaximumHeight(m_description->fontMetrics().lineSpacing() * 3
-                                    + 4); // ~3 linhas
-    m_description->hide();
-    root->addWidget(m_description);
-
-    m_sepDesc = new QFrame(this);
-    m_sepDesc->setFrameShape(QFrame::HLine);
-    m_sepDesc->setFrameShadow(QFrame::Plain);
-    m_sepDesc->hide();
-    root->addWidget(m_sepDesc);
+    // ── Bloco Descrição + Bloco Instruções (colapsáveis, independentes) ────
+    montarBloco(QString::fromLatin1(kBlocoDesc),  m_description,  m_descToggle,  m_sepDesc,  root);
+    montarBloco(QString::fromLatin1(kBlocoInstr), m_instructions, m_instrToggle, m_sepInstr, root);
 
     // ── Slot de conteúdo (recebe a tabela/widget da aba) ───────────────────
     m_contentSlot = new QVBoxLayout;
@@ -61,17 +57,113 @@ TabShell::TabShell(const QString &titulo, QWidget *parent)
     root->addLayout(m_contentSlot, 1);
 }
 
+void TabShell::montarBloco(const QString &bloco, QLabel *&outLabel, QToolButton *&outToggle,
+                           QFrame *&outSep, QVBoxLayout *root)
+{
+    auto *linha = new QHBoxLayout;
+    linha->setContentsMargins(0, 0, 0, 0);
+    linha->setSpacing(6);
+
+    outLabel = new QLabel(this);
+    outLabel->setObjectName(QStringLiteral("subtitle")); // QSS: 12px / cinza
+    outLabel->setWordWrap(true);
+    outLabel->setTextFormat(Qt::RichText);
+    outLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    linha->addWidget(outLabel, 1);
+
+    // Toggle ▲/▼ alinhado ao topo-direita, na mesma linha do cabeçalho do bloco.
+    outToggle = new QToolButton(this);
+    outToggle->setAutoRaise(true);
+    outToggle->setCursor(Qt::PointingHandCursor);
+    outToggle->setFocusPolicy(Qt::TabFocus);
+    outToggle->setCheckable(false);
+    linha->addWidget(outToggle, 0, Qt::AlignTop | Qt::AlignRight);
+
+    root->addLayout(linha);
+
+    outSep = new QFrame(this);
+    outSep->setFrameShape(QFrame::HLine);
+    outSep->setFrameShadow(QFrame::Plain);
+    root->addWidget(outSep);
+
+    // Estado inicial vem do default (true); o estado persistido real é aplicado
+    // quando setDescription/setInstructions têm texto (lá conhecemos a tabKey).
+    QObject::connect(outToggle, &QToolButton::clicked, this, [this, bloco, outLabel, outToggle] {
+        const bool novo = !outLabel->isVisible();
+        aplicarColapso(outLabel, outToggle, novo);
+        if (!m_tabKey.isEmpty())
+            AppSettings::instance().setTabHelpExpanded(m_tabKey, bloco, novo);
+    });
+
+    outLabel->hide();
+    outSep->hide();
+    outToggle->hide();
+}
+
+void TabShell::aplicarColapso(QLabel *label, QToolButton *toggle, bool expandido)
+{
+    label->setVisible(expandido);
+    // ▲ = recolher (está expandido), ▼ = expandir (está recolhido).
+    toggle->setText(expandido ? QStringLiteral("▲") : QStringLiteral("▼"));
+    toggle->setToolTip(expandido ? tr("Recolher") : tr("Expandir"));
+    toggle->setAccessibleName(expandido ? tr("Recolher bloco") : tr("Expandir bloco"));
+}
+
 void TabShell::setTitle(const QString &titulo)
 {
     m_title->setText(titulo);
 }
 
+void TabShell::setTabKey(const QString &tabKey)
+{
+    m_tabKey = tabKey;
+}
+
 void TabShell::setDescription(const QString &texto)
 {
-    m_description->setText(texto);
     const bool temTexto = !texto.trimmed().isEmpty();
-    m_description->setVisible(temTexto);
+    m_description->setText(texto);
+    m_descToggle->setVisible(temTexto);
     m_sepDesc->setVisible(temTexto);
+    if (!temTexto) { m_description->hide(); return; }
+
+    const bool expandido = m_tabKey.isEmpty()
+        ? true
+        : AppSettings::instance().tabHelpExpanded(m_tabKey, QString::fromLatin1(kBlocoDesc));
+    aplicarColapso(m_description, m_descToggle, expandido);
+}
+
+void TabShell::setInstructions(const QString &textoRich)
+{
+    const bool temTexto = !textoRich.trimmed().isEmpty();
+    m_instructions->setText(textoRich);
+    m_instrToggle->setVisible(temTexto);
+    m_sepInstr->setVisible(temTexto);
+    if (!temTexto) { m_instructions->hide(); return; }
+
+    const bool expandido = m_tabKey.isEmpty()
+        ? true
+        : AppSettings::instance().tabHelpExpanded(m_tabKey, QString::fromLatin1(kBlocoInstr));
+    aplicarColapso(m_instructions, m_instrToggle, expandido);
+}
+
+void TabShell::applyHelp()
+{
+    if (m_tabKey.isEmpty()) return;
+    const TabHelpEntry e = tabHelpEntry(m_tabKey);
+    if (!e.titulo.isEmpty())
+        setTitle(e.titulo);
+    setDescription(e.descricao);
+
+    if (e.passos.isEmpty()) {
+        setInstructions(QString());
+        return;
+    }
+    QString ol = QStringLiteral("<ol style='margin:0 0 0 16px; padding:0;'>");
+    for (const QString &passo : e.passos)
+        ol += QStringLiteral("<li style='margin:2px 0;'>%1</li>").arg(passo);
+    ol += QStringLiteral("</ol>");
+    setInstructions(ol);
 }
 
 void TabShell::setContent(QWidget *content)

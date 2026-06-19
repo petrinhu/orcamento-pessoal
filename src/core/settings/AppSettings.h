@@ -79,6 +79,13 @@ public:
     bool onboardingFeito() const;
     void setOnboardingFeito(bool feito);
 
+    // ── Colapso dos blocos de ajuda do TabShell ───────────────────────────
+    // Estado expandido/recolhido por aba (tabKey) e por bloco ("desc" ou
+    // "instr"). Chave QSettings: ui/tabhelp/<tabKey>/<bloco>. Default: true
+    // (ambos expandidos no 1º uso).
+    bool tabHelpExpanded(const QString &tabKey, const QString &bloco) const;
+    void setTabHelpExpanded(const QString &tabKey, const QString &bloco, bool expanded);
+
 signals:
     void languageChanged(Language lang);
     void currencyChanged(const QString &code);

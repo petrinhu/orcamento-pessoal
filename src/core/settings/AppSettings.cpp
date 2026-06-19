@@ -304,3 +304,22 @@ void AppSettings::setOnboardingFeito(bool feito)
 {
     m_s.setValue(QStringLiteral("ui/onboarding_feito"), feito);
 }
+
+// ── Colapso dos blocos de ajuda do TabShell ─────────────────────────────────────
+
+static QString tabHelpKey(const QString &tabKey, const QString &bloco)
+{
+    return QStringLiteral("ui/tabhelp/%1/%2").arg(tabKey, bloco);
+}
+
+bool AppSettings::tabHelpExpanded(const QString &tabKey, const QString &bloco) const
+{
+    return m_s.value(tabHelpKey(tabKey, bloco), true).toBool();
+}
+
+void AppSettings::setTabHelpExpanded(const QString &tabKey, const QString &bloco, bool expanded)
+{
+    const QString k = tabHelpKey(tabKey, bloco);
+    if (m_s.value(k, true).toBool() == expanded) return;
+    m_s.setValue(k, expanded);
+}

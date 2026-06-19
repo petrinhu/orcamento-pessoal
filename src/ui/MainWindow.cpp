@@ -257,10 +257,10 @@ void MainWindow::buildUi()
     // intacto (lógica e conexões inalteradas).
     m_shellCartoes = new TabShell(tr("Cartões"), this);
     m_shellCartoes->setObjectName(QStringLiteral("tab_parcelas"));
-    m_shellCartoes->setDescription(tr(
-        "Cadastre suas compras parceladas no cartão. Veja as parcelas de cada "
-        "mês, os juros (CET) e a tabela de amortização. Use a calculadora 🧮 "
-        "para simular o parcelamento antes de comprar."));
+    // tabKey do registro central (DRY): descrição + instruções colapsáveis
+    // vêm de tabHelp("tab_cartoes"); o mesmo texto alimenta o HelpDialog.
+    m_shellCartoes->setTabKey(QStringLiteral("tab_cartoes"));
+    m_shellCartoes->applyHelp();
     m_shellCartoes->setContent(m_parcelas);
 
     // Ordem default (1º start e apos reset). A chave estavel de cada aba e o
