@@ -441,6 +441,24 @@ void DatabaseManager::createSchema()
                 "REFERENCES categorias(id) ON DELETE SET NULL"));
     }
 
+    // Migration #118: add fixo (classificacao fixo/variavel) a categorias.
+    // 0 = variavel (default seguro), 1 = fixo. Categorias antigas, sem
+    // classificacao, viram "variavel" e nao inflam a despesa fixa do orcamento.
+    // Idempotente via PRAGMA table_info (mesmo padrao de #48/#90).
+    {
+        QSqlQuery pq(m_db);
+        pq.exec(QStringLiteral("PRAGMA table_info(categorias)"));
+        bool hasFixo = false;
+        while (pq.next()) {
+            if (pq.value(1).toString() == QLatin1String("fixo"))
+                hasFixo = true;
+        }
+        if (!hasFixo)
+            q.exec(QStringLiteral(
+                "ALTER TABLE categorias "
+                "ADD COLUMN fixo INTEGER NOT NULL DEFAULT 0"));
+    }
+
     // Migration #90: add receipt BLOB to 4 tables (anexo do comprovante).
     // Util para IRPF: associar foto/scan ao lancamento. BLOB nullable; UI
     // mostra thumbnail quando presente.

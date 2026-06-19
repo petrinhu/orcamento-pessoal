@@ -104,3 +104,22 @@ target_link_libraries(test_audit_triggers PRIVATE
     OpenSSL::Crypto
     ${LIBSODIUM_LIBRARIES})
 target_include_directories(test_audit_triggers PRIVATE ${LIBSODIUM_INCLUDE_DIRS})
+
+# Teste de Categoria (#118): classificacao fixo/variavel (TipoDespesa).
+# Exercita a migration #118 (coluna `fixo`) + round-trip pelo repo, com o
+# schema real (createSchema) e triggers de auditoria ativos.
+peubud_add_test(test_categoria
+    ${CMAKE_SOURCE_DIR}/src/core/database/DatabaseManager.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/CategoriaRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/AuditLogService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/AjusteCorporativoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FechamentoMensalService.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/ProventoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/SodiumCryptoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/AesCryptoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/KeyDerivation.cpp)
+target_link_libraries(test_categoria PRIVATE
+    OpenSSL::SSL
+    OpenSSL::Crypto
+    ${LIBSODIUM_LIBRARIES})
+target_include_directories(test_categoria PRIVATE ${LIBSODIUM_INCLUDE_DIRS})

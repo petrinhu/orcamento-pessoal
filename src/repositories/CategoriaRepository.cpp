@@ -14,6 +14,7 @@ static Categoria fromQuery(const QSqlQuery &q)
     c.nome    = q.value(QStringLiteral("nome")).toString();
     c.tipo    = q.value(QStringLiteral("tipo")).toString();
     c.paiId   = q.value(QStringLiteral("pai_id")).toInt();
+    c.tipoDespesa = tipoDespesaDeInt(q.value(QStringLiteral("fixo")).toInt());
     return c;
 }
 
@@ -23,13 +24,15 @@ int CategoriaRepository::insert(const Categoria &c)
 {
     QSqlQuery q(DatabaseManager::instance().db());
     q.prepare(QStringLiteral(
-        "INSERT INTO categorias (nome, tipo, pai_id) VALUES (:nome, :tipo, :pai_id)"));
+        "INSERT INTO categorias (nome, tipo, pai_id, fixo) "
+        "VALUES (:nome, :tipo, :pai_id, :fixo)"));
     q.bindValue(QStringLiteral(":nome"),   c.nome);
     q.bindValue(QStringLiteral(":tipo"),   c.tipo);
     if (c.paiId > 0)
         q.bindValue(QStringLiteral(":pai_id"), c.paiId);
     else
         q.bindValue(QStringLiteral(":pai_id"), QVariant(QMetaType::fromType<int>()));
+    q.bindValue(QStringLiteral(":fixo"), tipoDespesaParaInt(c.tipoDespesa));
 
     if (!q.exec()) {
         qWarning() << "CategoriaRepository::insert:" << q.lastError().text();
@@ -42,13 +45,15 @@ bool CategoriaRepository::update(const Categoria &c)
 {
     QSqlQuery q(DatabaseManager::instance().db());
     q.prepare(QStringLiteral(
-        "UPDATE categorias SET nome=:nome, tipo=:tipo, pai_id=:pai_id WHERE id=:id"));
+        "UPDATE categorias SET nome=:nome, tipo=:tipo, pai_id=:pai_id, fixo=:fixo "
+        "WHERE id=:id"));
     q.bindValue(QStringLiteral(":nome"),   c.nome);
     q.bindValue(QStringLiteral(":tipo"),   c.tipo);
     if (c.paiId > 0)
         q.bindValue(QStringLiteral(":pai_id"), c.paiId);
     else
         q.bindValue(QStringLiteral(":pai_id"), QVariant(QMetaType::fromType<int>()));
+    q.bindValue(QStringLiteral(":fixo"), tipoDespesaParaInt(c.tipoDespesa));
     q.bindValue(QStringLiteral(":id"),     c.id);
 
     if (!q.exec()) {
@@ -76,7 +81,7 @@ QList<Categoria> CategoriaRepository::findAll() const
 {
     QSqlQuery q(DatabaseManager::instance().db());
     q.prepare(QStringLiteral(
-        "SELECT c.id, c.nome, c.tipo, c.pai_id, p.nome AS pai_nome "
+        "SELECT c.id, c.nome, c.tipo, c.pai_id, c.fixo, p.nome AS pai_nome "
         "FROM categorias c LEFT JOIN categorias p ON c.pai_id = p.id "
         "ORDER BY c.tipo, p.nome NULLS FIRST, c.nome"));
     QList<Categoria> list;
@@ -96,7 +101,7 @@ QList<Categoria> CategoriaRepository::findByTipo(const QString &tipo) const
 {
     QSqlQuery q(DatabaseManager::instance().db());
     q.prepare(QStringLiteral(
-        "SELECT c.id, c.nome, c.tipo, c.pai_id, p.nome AS pai_nome "
+        "SELECT c.id, c.nome, c.tipo, c.pai_id, c.fixo, p.nome AS pai_nome "
         "FROM categorias c LEFT JOIN categorias p ON c.pai_id = p.id "
         "WHERE c.tipo=:tipo "
         "ORDER BY p.nome NULLS FIRST, c.nome"));
@@ -118,7 +123,7 @@ Categoria CategoriaRepository::findById(int id) const
 {
     QSqlQuery q(DatabaseManager::instance().db());
     q.prepare(QStringLiteral(
-        "SELECT c.id, c.nome, c.tipo, c.pai_id, p.nome AS pai_nome "
+        "SELECT c.id, c.nome, c.tipo, c.pai_id, c.fixo, p.nome AS pai_nome "
         "FROM categorias c LEFT JOIN categorias p ON c.pai_id = p.id "
         "WHERE c.id=:id"));
     q.bindValue(QStringLiteral(":id"), id);
