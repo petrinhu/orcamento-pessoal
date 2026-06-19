@@ -4,6 +4,7 @@
     <file>fonts/Inter-Regular.ttf</file>
     <file>fonts/Inter-Medium.ttf</file>
     <file>fonts/Inter-SemiBold.ttf</file>
+    <file>fonts/NotoColorEmoji.ttf</file>
   </qresource>
   <qresource prefix="/help">
     <file>help/help.html</file>

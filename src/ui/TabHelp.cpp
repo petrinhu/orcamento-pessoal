@@ -81,7 +81,7 @@ const QMap<QString, TabHelpEntry> &tabHelp()
         m.insert(QStringLiteral("tab_cartoes"), TabHelpEntry{
             QCoreApplication::translate("TabHelp", "Cartões"),
             QCoreApplication::translate("TabHelp",
-                "Aqui você registra as compras feitas no cartão de crédito — à "
+                "💳 Aqui você registra as compras feitas no cartão de crédito — à "
                 "vista ou parceladas. O app distribui as parcelas por mês e "
                 "calcula os juros e a tabela de amortização."),
             QStringList{
@@ -91,10 +91,10 @@ const QMap<QString, TabHelpEntry> &tabHelp()
                     "Escolha o <b>cartão</b>, a <b>descrição</b>, o <b>valor "
                     "total</b> e o <b>nº de parcelas</b>."),
                 QCoreApplication::translate("TabHelp",
-                    "Se houver <b>juros</b>, informe a taxa — o app calcula o "
+                    "💰 Se houver <b>juros</b>, informe a taxa — o app calcula o "
                     "<b>CET</b> e a <b>tabela de amortização</b> (Price)."),
                 QCoreApplication::translate("TabHelp",
-                    "As parcelas aparecem <b>por mês</b> na tabela; navegue com "
+                    "📅 As parcelas aparecem <b>por mês</b> na tabela; navegue com "
                     "as setas <b>◀ ▶</b>."),
                 QCoreApplication::translate("TabHelp",
                     "Quer simular antes de comprar? Use a <b>calculadora 🧮</b> "

@@ -76,6 +76,9 @@ static void carregarFontes()
     QFontDatabase::addApplicationFont(QStringLiteral(":/fonts/Inter-Regular.ttf"));
     QFontDatabase::addApplicationFont(QStringLiteral(":/fonts/Inter-Medium.ttf"));
     QFontDatabase::addApplicationFont(QStringLiteral(":/fonts/Inter-SemiBold.ttf"));
+    // Noto Color Emoji (subset, COLRv1) embutida: garante emoji colorido em
+    // qualquer distro, sem depender da fonte de emoji do sistema.
+    QFontDatabase::addApplicationFont(QStringLiteral(":/fonts/NotoColorEmoji.ttf"));
 }
 
 static QString gerarQss()
