@@ -1,7 +1,10 @@
 #include "TendenciasWidget.h"
+#include "models/Categoria.h"
 #include "models/GastoAvulso.h"
 #include "repositories/GastoAvulsoRepository.h"
+#include "services/GastoService.h"
 #include "services/ParcelaService.h"
+#include "services/ResumoService.h"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -91,13 +94,15 @@ void TendenciasWidget::buildUi()
         return v;
     };
 
-    m_viewMensal = makeView();
-    m_viewCat    = makeView();
-    m_viewTipo   = makeView();
+    m_viewMensal  = makeView();
+    m_viewCat     = makeView();
+    m_viewTipo    = makeView();
+    m_viewFixoVar = makeView();
 
-    m_chartTabs->addTab(m_viewMensal, tr("Mensal"));
-    m_chartTabs->addTab(m_viewCat,    tr("Por Categoria"));
-    m_chartTabs->addTab(m_viewTipo,   tr("Por Tipo de Pagamento"));
+    m_chartTabs->addTab(m_viewMensal,  tr("Mensal"));
+    m_chartTabs->addTab(m_viewCat,     tr("Por Categoria"));
+    m_chartTabs->addTab(m_viewTipo,    tr("Por Tipo de Pagamento"));
+    m_chartTabs->addTab(m_viewFixoVar, tr("Fixo × Variável"));
     root->addWidget(m_chartTabs, 1);
 
     // ── Summary strip ─────────────────────────────────────────────────────────
@@ -134,8 +139,11 @@ void TendenciasWidget::recarregar()
     const QString catSel = m_cbCategoria->currentIndex() == 0
                            ? QString() : m_cbCategoria->currentText();
 
+    // Gastos avulsos do período: alimentam o breakdown por categoria (filtrado)
+    // e por tipo de pagamento. O filtro de categoria afeta APENAS o gráfico
+    // "Por Categoria" (#149 decisão 1A) — não o Mensal, nem Tipo, nem Fixo×Var.
     const auto todos = GastoAvulsoRepository().findAll();
-    QList<GastoAvulso> filtrados;
+    QList<GastoAvulso> noPeriodo;
     QSet<QString> cats;
 
     for (const auto &g : todos) {
@@ -143,8 +151,7 @@ void TendenciasWidget::recarregar()
         if (d < inicio || d > fim) continue;
         const QString cat = g.categoria.isEmpty() ? tr("Sem categoria") : g.categoria;
         cats.insert(cat);
-        if (catSel.isEmpty() || g.categoria == catSel)
-            filtrados.append(g);
+        noPeriodo.append(g);
     }
 
     reconstruirComboCategorias(QStringList(cats.begin(), cats.end()), catSel);
@@ -160,21 +167,46 @@ void TendenciasWidget::recarregar()
         cur = cur.addMonths(1);
     }
 
+    // Gráfico Mensal: total de despesas do mês inteiro (gastos + parcelas) via
+    // serviço canônico (Mid), igual ao Dashboard. Inclui parcelas de cartão que
+    // o agregado de GastoAvulso omitia (#149 decisão 1A).
+    {
+        ResumoService resumoSvc;
+        for (const auto &m : m_meses) {
+            const ResumoMensal r = resumoSvc.resumoDoMes(m.second, m.first);
+            m_porMes[m] = r.gastos + r.parcelas;
+        }
+    }
+
+    // Fixo × Variável agregado do período via GastoService (eixo TipoDespesa da
+    // categoria, canônico #118) — resolve a classificação correta de "fixo".
+    m_totalFixos = 0;
+    m_totalVariaveis = 0;
+    {
+        GastoService gastoSvc;
+        for (const auto &m : m_meses) {
+            const ResumoGastos rg = gastoSvc.resumoDoMes(m.second, m.first);
+            m_totalFixos     += rg.totalFixos;
+            m_totalVariaveis += rg.totalVariaveis;
+        }
+    }
+
     m_porCat.clear();
     m_porTipo.clear();
 
-    for (const auto &g : filtrados) {
-        const QPair<int,int> key{g.ano, g.mes};
-        m_porMes[key] += g.valor;
+    for (const auto &g : noPeriodo) {
         const QString cat  = g.categoria.isEmpty() ? tr("Sem categoria") : g.categoria;
         const QString tipo = tipoPgtoLabel(g.tipoPgto);
-        m_porCat[cat]   += g.valor;
+        // Filtro de categoria aplica só ao breakdown por categoria.
+        if (catSel.isEmpty() || g.categoria == catSel)
+            m_porCat[cat] += g.valor;
         m_porTipo[tipo] += g.valor;
     }
 
     buildGraficoMensal();
     buildGraficoCategoria();
     buildGraficoTipo();
+    buildGraficoFixoVariavel();
 
     // Compute summary stats
     qint64 total   = 0;
@@ -204,12 +236,12 @@ void TendenciasWidget::buildGraficoMensal()
     chart->setMargins(QMargins(4, 4, 4, 4));
 
     if (m_meses.isEmpty()) {
-        chart->setTitle(tr("Gastos mensais — sem dados"));
+        chart->setTitle(tr("Despesas mensais — sem dados"));
         m_viewMensal->setChart(chart);
         return;
     }
 
-    auto *barSet = new QBarSet(tr("Gasto (R$)"));
+    auto *barSet = new QBarSet(tr("Despesa (R$)"));
     barSet->setColor(QColor(0xC9, 0x40, 0x40));
 
     QStringList labels;
@@ -221,7 +253,7 @@ void TendenciasWidget::buildGraficoMensal()
     auto *series = new QBarSeries;
     series->append(barSet);
     chart->addSeries(series);
-    chart->setTitle(tr("Gastos mensais"));
+    chart->setTitle(tr("Despesas mensais (gastos + parcelas)"));
 
     auto *axisX = new QBarCategoryAxis;
     axisX->append(labels);
@@ -300,6 +332,41 @@ void TendenciasWidget::buildGraficoTipo()
     chart->addSeries(series);
     chart->legend()->setAlignment(Qt::AlignRight);
     m_viewTipo->setChart(chart);
+}
+
+void TendenciasWidget::buildGraficoFixoVariavel()
+{
+    auto *chart = new QChart;
+    chart->setAnimationOptions(QChart::SeriesAnimations);
+    chart->setMargins(QMargins(4, 4, 4, 4));
+    chart->setTitle(tr("Gastos fixos × variáveis"));
+
+    const qint64 total = m_totalFixos + m_totalVariaveis;
+    if (total <= 0) {
+        m_viewFixoVar->setChart(chart);
+        return;
+    }
+
+    auto *series = new QPieSeries;
+    series->setHoleSize(0.35);
+
+    struct Fatia { qint64 valor; QString label; QColor cor; };
+    const Fatia fatias[] = {
+        { m_totalFixos,     tipoDespesaLabel(TipoDespesa::Fixo),     kPaleta.at(0) },
+        { m_totalVariaveis, tipoDespesaLabel(TipoDespesa::Variavel), kPaleta.at(2) },
+    };
+
+    for (const auto &f : fatias) {
+        if (f.valor <= 0) continue;
+        const double pct = f.valor * 100.0 / total;
+        const QString lbl = QStringLiteral("%1 (%2 %)").arg(f.label).arg(pct, 0, 'f', 1);
+        auto *slice = series->append(lbl, f.valor / 100.0);
+        slice->setColor(f.cor);
+    }
+
+    chart->addSeries(series);
+    chart->legend()->setAlignment(Qt::AlignRight);
+    m_viewFixoVar->setChart(chart);
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────

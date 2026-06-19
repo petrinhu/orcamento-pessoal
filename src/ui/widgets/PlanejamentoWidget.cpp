@@ -5,8 +5,7 @@
 #include "repositories/OrcamentoRepository.h"
 #include "repositories/GastoAvulsoRepository.h"
 #include "repositories/LancamentoEntradaRepository.h"
-#include "services/CompraService.h"
-#include "services/ParcelaService.h"
+#include "services/ResumoService.h"
 #include "core/settings/AppSettings.h"
 #include "core/commands/UndoCommands.h"
 
@@ -187,34 +186,25 @@ void PlanejamentoWidget::recarregar()
     const auto gastos   = GastoAvulsoRepository().findByMesAno(m_mes, m_ano);
     const auto entradas = LancamentoEntradaRepository().findByMesAno(m_mes, m_ano);
 
-    // Parcelas de cartão do mês
-    qint64 parcelasTotalMes = 0;
-    {
-        CompraService svc;
-        for (const auto &c : svc.compras())
-            for (const auto &p : svc.parcelasDeCompra(c.id)) {
-                const QDate d = ParcelaService::dataParaParcela(c, p.numero);
-                if (d.year() == m_ano && d.month() == m_mes)
-                    parcelasTotalMes += p.valor;
-            }
-    }
+    // Totais agregados ("realizado") vêm do serviço canônico (Mid): entradas
+    // líquidas, gastos e parcelas do mês inteiro — fonte única de verdade,
+    // igual ao Dashboard. O breakdown por categoria/fonte abaixo continua via
+    // repositório porque o ResumoService não expõe esse detalhe.
+    const ResumoMensal resumo = ResumoService().resumoDoMes(m_mes, m_ano);
+    const qint64 parcelasTotalMes = resumo.parcelas;
+    const qint64 gastosTotalMes   = resumo.gastos;
+    const qint64 entradasTotalMes = resumo.entradasLiquidas;
 
-    // Pre-compute totals for fast lookup
-    // gastos: category → sum
+    // gastos: category → sum (breakdown por categoria, via repositório)
     QMap<QString, qint64> gastosPorCat;
-    qint64 gastosTotalMes = 0;
-    for (const auto &g : gastos) {
+    for (const auto &g : gastos)
         gastosPorCat[g.categoria] += g.valor;
-        gastosTotalMes += g.valor;
-    }
 
-    // entradas: fonte → valorLiquido
+    // entradas: fonte → valorLiquido (breakdown por fonte, via repositório)
     QMap<QString, qint64> entradasPorFonte;
-    qint64 entradasTotalMes = 0;
     for (const auto &e : entradas) {
         const qint64 liq = e.valorBruto - e.irpf - e.inss;
         entradasPorFonte[e.fonte] += liq;
-        entradasTotalMes += liq;
     }
 
     // Compute real for each item
