@@ -80,7 +80,8 @@ static qint64 parseCentavos(const QString &txt)
 static QString formatCentavos(qint64 c)
 {
     const qint64 abs_c = c < 0 ? -c : c;
-    return QStringLiteral("%1,%2")
+    return QStringLiteral("%1%2,%3")
+        .arg(c < 0 ? QStringLiteral("-") : QString())
         .arg(abs_c / 100)
         .arg(abs_c % 100, 2, 10, QLatin1Char('0'));
 }
