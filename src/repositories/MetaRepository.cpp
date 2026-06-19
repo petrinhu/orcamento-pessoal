@@ -102,9 +102,12 @@ bool MetaRepository::remove(int id)
 QList<Meta> MetaRepository::findAll() const
 {
     QSqlQuery q(db());
-    q.exec(QStringLiteral(
-        "SELECT * FROM metas ORDER BY status ASC, data_prazo ASC, id ASC"));
     QList<Meta> list;
+    if (!q.exec(QStringLiteral(
+            "SELECT * FROM metas ORDER BY status ASC, data_prazo ASC, id ASC"))) {
+        qWarning() << "MetaRepository::findAll:" << q.lastError().text();
+        return list;
+    }
     while (q.next())
         list << fromQuery(q);
     return list;
@@ -115,7 +118,10 @@ std::optional<Meta> MetaRepository::findById(int id) const
     QSqlQuery q(db());
     q.prepare(QStringLiteral("SELECT * FROM metas WHERE id = :id"));
     q.bindValue(QStringLiteral(":id"), id);
-    q.exec();
+    if (!q.exec()) {
+        qWarning() << "MetaRepository::findById:" << q.lastError().text();
+        return std::nullopt;
+    }
     if (q.next())
         return fromQuery(q);
     return std::nullopt;

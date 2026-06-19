@@ -117,15 +117,20 @@ QList<Compra> CompraRepository::findAll()
 QList<Compra> CompraRepository::findByCartao(int cartaoId)
 {
     QSqlQuery q(db());
+    bool ok = false;
     if (cartaoId == 0) {
-        q.exec(QStringLiteral("SELECT * FROM compras ORDER BY ano_inicio, mes_inicio, id"));
+        ok = q.exec(QStringLiteral("SELECT * FROM compras ORDER BY ano_inicio, mes_inicio, id"));
     } else {
         q.prepare(QStringLiteral(
             "SELECT * FROM compras WHERE cartao_id = :cid ORDER BY ano_inicio, mes_inicio, id"));
         q.bindValue(QStringLiteral(":cid"), cartaoId);
-        q.exec();
+        ok = q.exec();
     }
     QList<Compra> list;
+    if (!ok) {
+        qWarning() << "CompraRepository::findByCartao:" << q.lastError().text();
+        return list;
+    }
     while (q.next())
         list.append(fromQuery(q));
     return list;

@@ -289,6 +289,44 @@ private slots:
         QCOMPARE(somaVar, qint64(55000));
     }
 
+    // #146: insert de GastoAvulso com campos TEXT NOT NULL deixados no default
+    // (QString() null) DEVE persistir. Antes da correcao, o repo bindava NULL
+    // explicito em colunas NOT NULL DEFAULT '' (categoria, descricao, tipo_pgto,
+    // obs, pagador) e o INSERT falhava silenciosamente (qWarning + return false).
+    // O repo agora normaliza null -> "" antes do bind.
+    void insertComCamposTextNulosPersiste()
+    {
+        // arrange: NAO preenche descricao/categoria/tipoPgto/obs/pagador.
+        // Permanecem QString() null (o caso que reproduz o bug).
+        GastoAvulso g;
+        g.mes   = 11;
+        g.ano   = 2026;
+        g.dia   = 1;
+        g.valor = 9900;
+        QVERIFY(g.categoria.isNull());   // garante o cenario (null, nao "")
+        QVERIFY(g.obs.isNull());
+        QVERIFY(g.pagador.isNull());
+        QVERIFY(g.descricao.isNull());
+        QVERIFY(g.tipoPgto.isNull());
+
+        // act: hoje (sem o fix) retornaria false e id continuaria 0.
+        const bool ok = GastoAvulsoRepository().insert(g);
+
+        // assert: persistiu de fato.
+        QVERIFY2(ok, "insert deveria persistir mesmo com campos TEXT nulos (#146)");
+        QVERIFY(g.id > 0);
+
+        // round-trip: null virou "" no banco (nao NULL).
+        const auto lido = GastoAvulsoRepository().findById(g.id);
+        QVERIFY(lido.has_value());
+        QCOMPARE(lido->valor, qint64(9900));
+        QCOMPARE(lido->categoria, QString::fromLatin1(""));
+        QCOMPARE(lido->obs,       QString::fromLatin1(""));
+        QCOMPARE(lido->pagador,   QString::fromLatin1(""));
+        QCOMPARE(lido->descricao, QString::fromLatin1(""));
+        QCOMPARE(lido->tipoPgto,  QString::fromLatin1(""));
+    }
+
     // ESPEC 10: totalPorTipo bate com o campo correspondente do resumoDoMes.
     void totalPorTipoConsistenteComResumo()
     {

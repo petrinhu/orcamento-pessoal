@@ -124,8 +124,11 @@ QList<Divida> DividaRepository::findByStatus(const QString &status) const
     q.prepare(QStringLiteral(
         "SELECT * FROM dividas WHERE status = :status ORDER BY data_inicio DESC"));
     q.bindValue(QStringLiteral(":status"), status);
-    q.exec();
     QList<Divida> list;
+    if (!q.exec()) {
+        qWarning() << "DividaRepository::findByStatus:" << q.lastError().text();
+        return list;
+    }
     while (q.next())
         list << fromQuery(q);
     return list;
@@ -136,7 +139,10 @@ std::optional<Divida> DividaRepository::findById(int id) const
     QSqlQuery q(db());
     q.prepare(QStringLiteral("SELECT * FROM dividas WHERE id = :id"));
     q.bindValue(QStringLiteral(":id"), id);
-    q.exec();
+    if (!q.exec()) {
+        qWarning() << "DividaRepository::findById:" << q.lastError().text();
+        return std::nullopt;
+    }
     if (q.next())
         return fromQuery(q);
     return std::nullopt;

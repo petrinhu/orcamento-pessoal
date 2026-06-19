@@ -11,6 +11,15 @@ static QSqlDatabase db()
     return DatabaseManager::instance().db();
 }
 
+// #146: colunas TEXT NOT NULL (fonte) e NOT NULL DEFAULT '' (categoria, obs).
+// bindValue de QString() null insere NULL explicito -> viola NOT NULL (o DEFAULT
+// so vale quando a coluna e OMITIDA). Normaliza null -> "" para evitar falha
+// silenciosa do INSERT/UPDATE.
+static QString naoNulo(const QString &s)
+{
+    return s.isNull() ? QString::fromLatin1("") : s;
+}
+
 static LancamentoEntrada fromQuery(const QSqlQuery &q)
 {
     LancamentoEntrada l;
@@ -45,15 +54,15 @@ bool LancamentoEntradaRepository::insert(LancamentoEntrada &l)
     q.bindValue(QStringLiteral(":mes"),        l.mes);
     q.bindValue(QStringLiteral(":ano"),        l.ano);
     q.bindValue(QStringLiteral(":dia"),        l.dia);
-    q.bindValue(QStringLiteral(":fonte"),       l.fonte);
+    q.bindValue(QStringLiteral(":fonte"),       naoNulo(l.fonte));
     q.bindValue(QStringLiteral(":fonte_id"),    l.fonteId ? QVariant(l.fonteId) : QVariant());
-    q.bindValue(QStringLiteral(":categoria"),   l.categoria);
+    q.bindValue(QStringLiteral(":categoria"),   naoNulo(l.categoria));
     q.bindValue(QStringLiteral(":categoria_id"),
                 l.categoriaId > 0 ? QVariant(l.categoriaId) : QVariant(QMetaType::fromType<int>()));
     q.bindValue(QStringLiteral(":valor_bruto"), l.valorBruto);
     q.bindValue(QStringLiteral(":irpf"),        l.irpf);
     q.bindValue(QStringLiteral(":inss"),        l.inss);
-    q.bindValue(QStringLiteral(":obs"),         l.obs);
+    q.bindValue(QStringLiteral(":obs"),         naoNulo(l.obs));
     q.bindValue(QStringLiteral(":criado_em"),
                 QDateTime::currentDateTime().toString(Qt::ISODate));
     q.bindValue(QStringLiteral(":receipt"),     l.receipt.isEmpty() ? QVariant() : QVariant(l.receipt));
@@ -87,15 +96,15 @@ bool LancamentoEntradaRepository::update(const LancamentoEntrada &l)
     q.bindValue(QStringLiteral(":mes"),        l.mes);
     q.bindValue(QStringLiteral(":ano"),        l.ano);
     q.bindValue(QStringLiteral(":dia"),        l.dia);
-    q.bindValue(QStringLiteral(":fonte"),       l.fonte);
+    q.bindValue(QStringLiteral(":fonte"),       naoNulo(l.fonte));
     q.bindValue(QStringLiteral(":fonte_id"),    l.fonteId ? QVariant(l.fonteId) : QVariant());
-    q.bindValue(QStringLiteral(":categoria"),   l.categoria);
+    q.bindValue(QStringLiteral(":categoria"),   naoNulo(l.categoria));
     q.bindValue(QStringLiteral(":categoria_id"),
                 l.categoriaId > 0 ? QVariant(l.categoriaId) : QVariant(QMetaType::fromType<int>()));
     q.bindValue(QStringLiteral(":valor_bruto"), l.valorBruto);
     q.bindValue(QStringLiteral(":irpf"),        l.irpf);
     q.bindValue(QStringLiteral(":inss"),        l.inss);
-    q.bindValue(QStringLiteral(":obs"),         l.obs);
+    q.bindValue(QStringLiteral(":obs"),         naoNulo(l.obs));
     q.bindValue(QStringLiteral(":receipt"),     l.receipt.isEmpty() ? QVariant() : QVariant(l.receipt));
     q.bindValue(QStringLiteral(":id"),          l.id);
     if (!q.exec()) {

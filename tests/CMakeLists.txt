@@ -33,7 +33,9 @@ peubud_add_test(test_pdf_parsers
 peubud_add_test(test_ajustes)
 peubud_add_test(test_sqlite_migrations)
 peubud_add_test(test_parcela_service
-    ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp)
+    ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp
+    # #123: ParcelaService usa FinanceEngine::pmt (formula Price centralizada).
+    ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp)
 peubud_add_test(test_tvm
     ${CMAKE_SOURCE_DIR}/src/services/TvmService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp
@@ -57,7 +59,9 @@ peubud_add_test(test_external_process
 peubud_add_test(test_glossario
     ${CMAKE_SOURCE_DIR}/src/services/GlossarioService.cpp
     ${CMAKE_SOURCE_DIR}/src/core/settings/AppSettings.cpp
-    ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp)
+    ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp
+    # #123: ParcelaService usa FinanceEngine::pmt.
+    ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp)
 peubud_add_test(test_resumo
     ${CMAKE_SOURCE_DIR}/src/services/ResumoService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/EntradaService.cpp

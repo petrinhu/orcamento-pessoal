@@ -11,6 +11,15 @@ static QSqlDatabase db()
     return DatabaseManager::instance().db();
 }
 
+// #146: colunas TEXT NOT NULL DEFAULT '' (descricao, categoria, tipo_pgto, obs,
+// pagador). bindValue de um QString() null insere NULL explicito -> viola a
+// constraint NOT NULL (o DEFAULT so vale quando a coluna e OMITIDA, nao quando
+// recebe NULL). Normaliza null -> "" para nao falhar silenciosamente.
+static QString naoNulo(const QString &s)
+{
+    return s.isNull() ? QString::fromLatin1("") : s;
+}
+
 static GastoAvulso fromQuery(const QSqlQuery &q)
 {
     GastoAvulso g;
@@ -45,14 +54,14 @@ bool GastoAvulsoRepository::insert(GastoAvulso &g)
     q.bindValue(QStringLiteral(":mes"),        g.mes);
     q.bindValue(QStringLiteral(":ano"),        g.ano);
     q.bindValue(QStringLiteral(":dia"),        g.dia);
-    q.bindValue(QStringLiteral(":descricao"),  g.descricao);
-    q.bindValue(QStringLiteral(":categoria"),    g.categoria);
+    q.bindValue(QStringLiteral(":descricao"),  naoNulo(g.descricao));
+    q.bindValue(QStringLiteral(":categoria"),    naoNulo(g.categoria));
     q.bindValue(QStringLiteral(":categoria_id"),
                 g.categoriaId > 0 ? QVariant(g.categoriaId) : QVariant(QMetaType::fromType<int>()));
-    q.bindValue(QStringLiteral(":tipo_pgto"),  g.tipoPgto);
+    q.bindValue(QStringLiteral(":tipo_pgto"),  naoNulo(g.tipoPgto));
     q.bindValue(QStringLiteral(":valor"),      g.valor);
-    q.bindValue(QStringLiteral(":obs"),        g.obs);
-    q.bindValue(QStringLiteral(":pagador"),    g.pagador);
+    q.bindValue(QStringLiteral(":obs"),        naoNulo(g.obs));
+    q.bindValue(QStringLiteral(":pagador"),    naoNulo(g.pagador));
     q.bindValue(QStringLiteral(":pagador_id"),
                 g.pagadorId > 0 ? QVariant(g.pagadorId) : QVariant(QMetaType::fromType<int>()));
     q.bindValue(QStringLiteral(":criado_em"),
@@ -88,14 +97,14 @@ bool GastoAvulsoRepository::update(const GastoAvulso &g)
     q.bindValue(QStringLiteral(":mes"),        g.mes);
     q.bindValue(QStringLiteral(":ano"),        g.ano);
     q.bindValue(QStringLiteral(":dia"),        g.dia);
-    q.bindValue(QStringLiteral(":descricao"),  g.descricao);
-    q.bindValue(QStringLiteral(":categoria"),    g.categoria);
+    q.bindValue(QStringLiteral(":descricao"),  naoNulo(g.descricao));
+    q.bindValue(QStringLiteral(":categoria"),    naoNulo(g.categoria));
     q.bindValue(QStringLiteral(":categoria_id"),
                 g.categoriaId > 0 ? QVariant(g.categoriaId) : QVariant(QMetaType::fromType<int>()));
-    q.bindValue(QStringLiteral(":tipo_pgto"),  g.tipoPgto);
+    q.bindValue(QStringLiteral(":tipo_pgto"),  naoNulo(g.tipoPgto));
     q.bindValue(QStringLiteral(":valor"),      g.valor);
-    q.bindValue(QStringLiteral(":obs"),        g.obs);
-    q.bindValue(QStringLiteral(":pagador"),    g.pagador);
+    q.bindValue(QStringLiteral(":obs"),        naoNulo(g.obs));
+    q.bindValue(QStringLiteral(":pagador"),    naoNulo(g.pagador));
     q.bindValue(QStringLiteral(":pagador_id"),
                 g.pagadorId > 0 ? QVariant(g.pagadorId) : QVariant(QMetaType::fromType<int>()));
     q.bindValue(QStringLiteral(":receipt"),    g.receipt.isEmpty() ? QVariant() : QVariant(g.receipt));

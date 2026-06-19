@@ -127,7 +127,10 @@ std::optional<PrecoAtivo> PriceRepository::findLatest(const QString &ticker) con
         "WHERE ticker = :ticker "
         "ORDER BY data DESC LIMIT 1"));
     q.bindValue(QStringLiteral(":ticker"), ticker);
-    q.exec();
+    if (!q.exec()) {
+        qWarning() << "PriceRepository::findLatest:" << q.lastError().text();
+        return std::nullopt;
+    }
     if (q.next())
         return precoFromQuery(q);
     return std::nullopt;
@@ -142,7 +145,10 @@ std::optional<PrecoAtivo> PriceRepository::findByTickerAndDate(
         "WHERE ticker = :ticker AND data = :data"));
     q.bindValue(QStringLiteral(":ticker"), ticker);
     q.bindValue(QStringLiteral(":data"),   data.toString(Qt::ISODate));
-    q.exec();
+    if (!q.exec()) {
+        qWarning() << "PriceRepository::findByTickerAndDate:" << q.lastError().text();
+        return std::nullopt;
+    }
     if (q.next())
         return precoFromQuery(q);
     return std::nullopt;
@@ -159,8 +165,11 @@ QList<PrecoAtivo> PriceRepository::findByTickerRange(
     q.bindValue(QStringLiteral(":ticker"), ticker);
     q.bindValue(QStringLiteral(":inicio"), inicio.toString(Qt::ISODate));
     q.bindValue(QStringLiteral(":fim"),    fim.toString(Qt::ISODate));
-    q.exec();
     QList<PrecoAtivo> list;
+    if (!q.exec()) {
+        qWarning() << "PriceRepository::findByTickerRange:" << q.lastError().text();
+        return list;
+    }
     while (q.next())
         list << precoFromQuery(q);
     return list;
@@ -169,9 +178,12 @@ QList<PrecoAtivo> PriceRepository::findByTickerRange(
 QStringList PriceRepository::tickersComHistorico() const
 {
     QSqlQuery q(db());
-    q.exec(QStringLiteral(
-        "SELECT DISTINCT ticker FROM precos_ativos ORDER BY ticker ASC"));
     QStringList list;
+    if (!q.exec(QStringLiteral(
+            "SELECT DISTINCT ticker FROM precos_ativos ORDER BY ticker ASC"))) {
+        qWarning() << "PriceRepository::tickersComHistorico:" << q.lastError().text();
+        return list;
+    }
     while (q.next())
         list << q.value(0).toString();
     return list;
@@ -183,7 +195,10 @@ int PriceRepository::countByTicker(const QString &ticker) const
     q.prepare(QStringLiteral(
         "SELECT COUNT(*) FROM precos_ativos WHERE ticker = :ticker"));
     q.bindValue(QStringLiteral(":ticker"), ticker);
-    q.exec();
+    if (!q.exec()) {
+        qWarning() << "PriceRepository::countByTicker:" << q.lastError().text();
+        return 0;
+    }
     if (q.next())
         return q.value(0).toInt();
     return 0;
@@ -244,7 +259,10 @@ std::optional<CotacaoRT> PriceRepository::findRT(const QString &ticker) const
     q.prepare(QStringLiteral(
         "SELECT * FROM cotacoes_tempo_real WHERE ticker = :ticker"));
     q.bindValue(QStringLiteral(":ticker"), ticker);
-    q.exec();
+    if (!q.exec()) {
+        qWarning() << "PriceRepository::findRT:" << q.lastError().text();
+        return std::nullopt;
+    }
     if (q.next())
         return rtFromQuery(q);
     return std::nullopt;

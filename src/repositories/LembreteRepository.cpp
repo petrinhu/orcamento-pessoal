@@ -98,9 +98,12 @@ bool LembreteRepository::remove(int id)
 QList<Lembrete> LembreteRepository::findAll() const
 {
     QSqlQuery q(db());
-    q.exec(QStringLiteral(
-        "SELECT * FROM lembretes ORDER BY data_venc ASC, id ASC"));
     QList<Lembrete> list;
+    if (!q.exec(QStringLiteral(
+            "SELECT * FROM lembretes ORDER BY data_venc ASC, id ASC"))) {
+        qWarning() << "LembreteRepository::findAll:" << q.lastError().text();
+        return list;
+    }
     while (q.next())
         list << fromQuery(q);
     return list;
@@ -109,11 +112,14 @@ QList<Lembrete> LembreteRepository::findAll() const
 QList<Lembrete> LembreteRepository::findAtivos() const
 {
     QSqlQuery q(db());
-    q.exec(QStringLiteral(
-        "SELECT * FROM lembretes "
-        "WHERE status IN ('pendente','nao_pago') "
-        "ORDER BY data_venc ASC, id ASC"));
     QList<Lembrete> list;
+    if (!q.exec(QStringLiteral(
+            "SELECT * FROM lembretes "
+            "WHERE status IN ('pendente','nao_pago') "
+            "ORDER BY data_venc ASC, id ASC"))) {
+        qWarning() << "LembreteRepository::findAtivos:" << q.lastError().text();
+        return list;
+    }
     while (q.next())
         list << fromQuery(q);
     return list;
@@ -124,7 +130,10 @@ std::optional<Lembrete> LembreteRepository::findById(int id) const
     QSqlQuery q(db());
     q.prepare(QStringLiteral("SELECT * FROM lembretes WHERE id = :id"));
     q.bindValue(QStringLiteral(":id"), id);
-    q.exec();
+    if (!q.exec()) {
+        qWarning() << "LembreteRepository::findById:" << q.lastError().text();
+        return std::nullopt;
+    }
     if (q.next())
         return fromQuery(q);
     return std::nullopt;

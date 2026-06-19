@@ -1,9 +1,31 @@
 #include "ParcelaService.h"
 
+#include "services/FinanceEngine.h"
+
 #include <cmath>
 #include <stdexcept>
 #include <QLocale>
 #include <QRegularExpression>
+
+// #123: PMT da tabela Price centralizado em FinanceEngine::pmt.
+//
+// Formula inline historica: PMT = PV * i / [1 - (1+i)^-n].
+// FinanceEngine::pmt segue convencao Excel/HP-12C (sinais de cashflow):
+//   pmt(pv, fv, i, n, begin) = -(pv*(1+i)^n + fv) * i / (adj*((1+i)^n - 1))
+// Com fv=0, begin=false e pv = -PV (emprestimo: principal entra como saida do
+// financiador => negativo), tem-se:
+//   pmt(-PV, 0, i, n) = PV*(1+i)^n * i / ((1+i)^n - 1)
+//                     = PV * i / (1 - (1+i)^-n)   [mult. num/den por (1+i)^-n]
+// ou seja, IDENTICO a formula inline. Helper local centraliza a chamada e o
+// arredondamento para centavos (qint64), preservando o comportamento anterior.
+// Pre-condicao: i > 0 (chamadores ja tratam i ~ 0 separadamente).
+namespace {
+qint64 pmtPriceCentavos(qint64 pv, double i, int n)
+{
+    const double pmt = FinanceEngine::pmt(-static_cast<double>(pv), 0.0, i, n);
+    return static_cast<qint64>(std::round(pmt));
+}
+} // namespace
 
 // ─── Date helpers ────────────────────────────────────────────────────────────
 
@@ -76,10 +98,8 @@ ResultadoFinanceiro ParcelaService::comJurosMensais(const Compra &c, double juro
         // Zero interest
         pmtCentavos = c.valorTotal / c.numParcelas;
     } else {
-        // Price formula: PMT = PV * i / [1 - (1+i)^-n]
-        double pmt = static_cast<double>(c.valorTotal) * i
-                     / (1.0 - std::pow(1.0 + i, -c.numParcelas));
-        pmtCentavos = static_cast<qint64>(std::round(pmt));
+        // Price formula: PMT = PV * i / [1 - (1+i)^-n]  (#123: via FinanceEngine)
+        pmtCentavos = pmtPriceCentavos(c.valorTotal, i, c.numParcelas);
     }
 
     r.totalPago = pmtCentavos * c.numParcelas;
@@ -209,9 +229,7 @@ QList<Parcela> ParcelaService::recalcularAposEdicao(
         if (vp <= 0) break;
         const double i = resolverTaxa(vp, novoValor, remaining + 1);
         if (i > 1e-9) {
-            double pmt = static_cast<double>(vp) * i
-                         / (1.0 - std::pow(1.0 + i, -(remaining + 1)));
-            const qint64 pmtC = static_cast<qint64>(std::round(pmt));
+            const qint64 pmtC = pmtPriceCentavos(vp, i, remaining + 1); // #123
             for (int k = indexParcela + 1; k < result.size(); ++k)
                 result[k].valor = pmtC;
         }
@@ -249,9 +267,7 @@ DadosFinanceiros ParcelaService::dadosFromCompra(const Compra &c)
         if (i < 1e-9) {
             d.valorParcela = d.valorTotal / d.numParcelas;
         } else {
-            double pmt = static_cast<double>(d.valorTotal) * i
-                         / (1.0 - std::pow(1.0 + i, -d.numParcelas));
-            d.valorParcela = static_cast<qint64>(std::round(pmt));
+            d.valorParcela = pmtPriceCentavos(d.valorTotal, i, d.numParcelas); // #123
         }
         d.jurosTotais = qMax(0LL, d.valorParcela * d.numParcelas - d.valorTotal);
     }
@@ -276,9 +292,7 @@ DadosFinanceiros ParcelaService::recalcular(const DadosFinanceiros &in, SolveFor
             if (i < 1e-9) {
                 d.valorParcela = d.valorTotal / d.numParcelas;
             } else {
-                double pmt = static_cast<double>(d.valorTotal) * i
-                             / (1.0 - std::pow(1.0 + i, -d.numParcelas));
-                d.valorParcela = static_cast<qint64>(std::round(pmt));
+                d.valorParcela = pmtPriceCentavos(d.valorTotal, i, d.numParcelas); // #123
             }
         }
         break;
@@ -342,9 +356,7 @@ QList<AmortizacaoRow> ParcelaService::tabelaAmortizacao(const Compra &c)
     if (i < 1e-9) {
         pmt = c.valorTotal / c.numParcelas;
     } else {
-        double pmtD = static_cast<double>(c.valorTotal) * i
-                      / (1.0 - std::pow(1.0 + i, -c.numParcelas));
-        pmt = static_cast<qint64>(std::round(pmtD));
+        pmt = pmtPriceCentavos(c.valorTotal, i, c.numParcelas); // #123
     }
 
     qint64 saldo = c.valorTotal;
