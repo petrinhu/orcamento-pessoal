@@ -12,7 +12,7 @@ Arquivo canônico de pendências, auditoria técnica e conformidade com o contra
 - **Status**: ✅ Concluído · 🔄 Em andamento · 🟡 Parcial · ⏳ Pendente · ❄️ Congelado pós-1.0 · 💡 Decisão tomada · 🎨 Pendente design · 🔍 Pendente verificação · ❌ Cancelado
 - **Estado Auditado**: `—` (não auditado) · `✓` (auditado e aprovado) · `⚠` (auditado com ressalvas)
 
-> **Convenção de ID:** `#NN` mantido como identificador estável — usado em commits (`feat(#44): ...`), branches e referências cruzadas. Próximo ID disponível: **#155**.
+> **Convenção de ID:** `#NN` mantido como identificador estável — usado em commits (`feat(#44): ...`), branches e referências cruzadas. Próximo ID disponível: **#157**.
 >
 > **Hierarquia:** itens filhos só começam após pai ✅; irmãos com mesmo prefixo numérico (ex.: `1.2.1` e `1.2.2`) são paralelos.
 
@@ -94,9 +94,11 @@ Arquivo canônico de pendências, auditoria técnica e conformidade com o contra
 
 | Onda | ID | Grupo | Descrição Técnica | Prioridade | Pré-requisito | Dificuldade | Status | Estado Auditado |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| 5 | #132 | TESTE | Testes: `CalculadoraService` (arredondamento centavos), `RecorrenciaService::proximaApos` (datas/bissexto), conversão de moeda em bordas (taxa ausente/zero) | Média | — | Média | ⏳ Pendente | — |
-| 5 | #133 | TESTE | Testes: `ImportService` parsers (parseAmount/parseDate/detect*), `ExportService` round-trip OFX/CSV/QIF, `FechamentoMensalService` (SQLite :memory:) | Média | — | Média | ⏳ Pendente | — |
-| 5 | #134 | TESTE | Plugar e testar `InvestActivityFactory::consistencyCheck` no `InvestimentoDialog` (hoje nunca chamado → validações silenciosas) | Média | #89 | Média | ⏳ Pendente | — |
+| 5 | #132 | TESTE | **Entregue:** `test_calculadora` (15), `test_recorrencia` (11), `test_currency_service` estendido (+4: moeda ausente/taxa zero/ida-volta). ctest 27/27 | Média | — | Média | ✅ Concluído | ✓ |
+| 5 | #133 | TESTE | **Entregue:** `test_import` (11, via fromCsv/fromOfx), `test_export` (7, OFX/QIF ponto decimal + round-trip). `FechamentoMensalService` já coberto por `test_fechamento` (#144) | Média | — | Média | ✅ Concluído | ✓ |
+| 5 | #155 | BUG | **Achado nos testes #133:** `ImportService::fromCsv` faz `split(sep)` ingênuo SEM respeitar aspas (RFC 4180) → CSV en-US com milhar entre aspas (`"1.234,56"`/`"1,234.56"`) é partido errado → transação descartada ou valor errado. Parser CSV quote-aware | Média | — | Média | ⏳ Pendente | — |
+| 5 | #156 | BUG | **Achado nos testes #132:** `CurrencyService::taxa` retorna fallback `1.0` SILENCIOSO quando a moeda destino/origem não está no provider → taxa FABRICADA sem erro (assimétrico: só protege origem). Deveria lançar/retornar inválido p/ moeda desconhecida. Também: import faz `std::abs` (descarta sinal — estornos viram positivos) — avaliar | Média | — | Baixa | ⏳ Pendente | — |
+| 5 | #134 | TESTE | Plugar `InvestActivityFactory::consistencyCheck` no `InvestimentoDialog`. **Entregue:** `accept()` valida via factory antes de salvar (era silencioso); mapeia 4 operações→rawTypes; **opção A** (ticker estrito só p/ share-based; CDB/Tesouro/etc por valor — não bloqueia legítimo). QMessageBox + aborta accept. Rigor B/C disponível se quiser mais estrito | Média | #89 | Média | ✅ Concluído | ✓ |
 
 ### Onda 6 — Periféricos / Mercado / Bolsa (**CONGELADO PÓS-1.0**)
 
