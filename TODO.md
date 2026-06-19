@@ -12,7 +12,7 @@ Arquivo canônico de pendências, auditoria técnica e conformidade com o contra
 - **Status**: ✅ Concluído · 🔄 Em andamento · 🟡 Parcial · ⏳ Pendente · ❄️ Congelado pós-1.0 · 💡 Decisão tomada · 🎨 Pendente design · 🔍 Pendente verificação · ❌ Cancelado
 - **Estado Auditado**: `—` (não auditado) · `✓` (auditado e aprovado) · `⚠` (auditado com ressalvas)
 
-> **Convenção de ID:** `#NN` mantido como identificador estável — usado em commits (`feat(#44): ...`), branches e referências cruzadas. Próximo ID disponível: **#148**.
+> **Convenção de ID:** `#NN` mantido como identificador estável — usado em commits (`feat(#44): ...`), branches e referências cruzadas. Próximo ID disponível: **#149**.
 >
 > **Hierarquia:** itens filhos só começam após pai ✅; irmãos com mesmo prefixo numérico (ex.: `1.2.1` e `1.2.2`) são paralelos.
 
@@ -71,7 +71,8 @@ Arquivo canônico de pendências, auditoria técnica e conformidade com o contra
 | 3 | #144 | AUDIT | Unificar `FechamentoMensalService` para consumir `ResumoService` (D1 — hoje Fechamento soma bruto e Dashboard usa líquido = 2 fontes de verdade divergentes) | Média | #115 | Média | ⏳ Pendente | — |
 | 3 | #145 | AUDIT | `PlanejamentoWidget` e `TendenciasWidget` consumirem `ResumoService` (D4 — hoje recalculam a mesma agregação inline) | Baixa | #115 | Média | ⏳ Pendente | — |
 | 3 | #146 | BUG | Repos deixam `QString()` null passar para colunas `TEXT NOT NULL` (ex.: `GastoAvulsoRepository::insert` com `categoria`/`obs`/`pagador` vazios) → INSERT falha silencioso (`qWarning`+`return false`). Normalizar null→"" no repo ou `DEFAULT ''` defensivo (achado no #120) | Média | — | Baixa | ⏳ Pendente | — |
-| 3 | #147 | INFRA | **CI Codeberg não rodava:** `.forgejo/workflows/build.yml` usava `runs-on: docker` (sem runner correspondente → runs ficavam `waiting`/cancelados). **Entregue:** 5 jobs migrados para `codeberg-medium`/`codeberg-small` (runners globais do Codeberg, padrão do `lib_hash_ans`) + `nodejs` instalado nas imagens cruas (fedora/debian/arch) para o `actions/checkout@v4`. | Alta | — | Baixa | ✅ Concluído | ✓ |
+| 3 | #147 | INFRA | **CI Codeberg estava 100% quebrado.** **Entregue (4 causas-raiz corrigidas):** (1) `runs-on: docker`→`codeberg-medium`/`small` (runs ficavam `waiting`/cancelados, nenhum runner pegava); (2) `nodejs` instalado p/ o `actions/checkout@v4` (ação JS) em imagem crua; (3) imagem `fedora:41`(Qt 6.8)→`fedora:42`(Qt 6.10) + `qt6-qtbase-private-devel`, porque QXlsx usa API privada do Qt (`QZipReader`/`GuiPrivate`), cujo cmake-config só existe no Qt ≥6.9; (4) `QT_QPA_PLATFORM=offscreen` nos testes (container headless abortava testes `QTEST_MAIN`). Matrix Debian/Arch removido (frágil c/ Qt privado) → #148. cppcheck ganhou `--library=qt`. | Alta | — | Média | ✅ Concluído | ✓ |
+| 8 | #148 | INFRA | Restaurar validação multi-distro no CI (Debian/Arch) na fase de distribuição: Debian precisa de Qt ≥6.9 (sid ou backports) + nome correto do pacote charts; Arch precisa contornar o aviso de "private module" virando erro. Depende de decisão de quais distros suportar oficialmente | Baixa | #147 | Média | ⏳ Pendente | — |
 
 ### Onda 4 — Hardening de segurança pré-release (4 IMPORTANTES, 0 crítico)
 
