@@ -12,7 +12,7 @@ Arquivo canônico de pendências, auditoria técnica e conformidade com o contra
 - **Status**: ✅ Concluído · 🔄 Em andamento · 🟡 Parcial · ⏳ Pendente · ❄️ Congelado pós-1.0 · 💡 Decisão tomada · 🎨 Pendente design · 🔍 Pendente verificação · ❌ Cancelado
 - **Estado Auditado**: `—` (não auditado) · `✓` (auditado e aprovado) · `⚠` (auditado com ressalvas)
 
-> **Convenção de ID:** `#NN` mantido como identificador estável — usado em commits (`feat(#44): ...`), branches e referências cruzadas. Próximo ID disponível: **#160**.
+> **Convenção de ID:** `#NN` mantido como identificador estável — usado em commits (`feat(#44): ...`), branches e referências cruzadas. Próximo ID disponível: **#161**.
 >
 > **Hierarquia:** itens filhos só começam após pai ✅; irmãos com mesmo prefixo numérico (ex.: `1.2.1` e `1.2.2`) são paralelos.
 
@@ -142,6 +142,15 @@ Arquivo canônico de pendências, auditoria técnica e conformidade com o contra
 | 8 | #111 | FUNC | **Renomear defaults para coloquial** — labels principais usam termo coloquial + sigla técnica entre parênteses pequena: `"Aposentadoria Antecipada (FIRE)"`, `"Renda por dividendos (DY)"`, `"Imposto de renda (IRPF)"`, `"Juros total ao ano (CET)"`. Modo Avançado (#104) inverte: mostra sigla destacada e coloquial em microcopy. Atualizar via `Glossario::labelColoquial(termo)` que respeita modo iniciante/avançado | Média | #103, #104 | Baixa | ⏳ Pendente | — |
 | 8 | #112 | FUNC | **Tradução pt-BR coloquial** modo Iniciante — strings completas reescritas para linguagem 6ª série: "Aplicação de baixo risco" em vez de "Renda Fixa"; "Quanto você quer juntar?" em vez de "Capital objetivo (FV)". Adicionar contexto `coloquial` no `peubud_pt_BR_coloquial.ts` (carregado se `AppSettings::modoIniciante()`). Manter `peubud_pt_BR.ts` técnico padrão para modo Avançado. Coexistem como tradutores em cadeia: técnico → coloquial (sobrescreve) | Baixa | #103, #104 | Média | ⏳ Pendente | — |
 | 8 | #140 | DOC | Wiki do repo (Codeberg/Forgejo wiki-native) + doc `.md` extensa para INICIANTE em computação, derivada de `docs/`; executar via technical-writer/ux-writer | Baixa | (tag v1.0) | Média | ⏳ Pendente | — |
+
+### Onda 9 — Design visual & UX (frontend-design) — **roda ANTES da Onda 8 (distribuição)**
+
+> O `frontend-design`/`ux-ui-designer` **decide e refatora** o visual; o usuário **ajusta depois**. Implementação direto no Qt (`Theme.cpp`/QSS) + screenshots (NÃO via claude.ai/design, que é web e não converte pra Qt — serve só como moodboard de direção). Centralizado: muda no `Theme`/`TabShell` → propaga pras 13 abas.
+
+| Onda | ID | Grupo | Descrição Técnica | Prioridade | Pré-requisito | Dificuldade | Status | Estado Auditado |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| 9 | #160 | FUNC | **Passada de design visual** conduzida pelo `frontend-design`: refinar `Theme`/QSS (paleta, tipografia Inter, espaçamento, hierarquia, elevação, estados), consistência dos componentes, `TabShell`, dark/light. Entrega proposta → usuário ajusta. Inclui o color-coding #159. Moodboard opcional via `claude.ai/design` (web; eu traduzo pro Qt) | Média | #158 | Alta | ⏳ Pendente | — |
+| 9 | #159 | FUNC | **Cores por sinal nos valores** (`=0` azul `Acento`, `>0` verde `Positivo`, `<0` vermelho `Negativo`) nos displays monetários — parte da passada de design #160 | Média | — | Média | ⏳ Pendente | — |
 
 ---
 
