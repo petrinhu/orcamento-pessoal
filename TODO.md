@@ -12,7 +12,7 @@ Arquivo canônico de pendências, auditoria técnica e conformidade com o contra
 - **Status**: ✅ Concluído · 🔄 Em andamento · 🟡 Parcial · ⏳ Pendente · ❄️ Congelado pós-1.0 · 💡 Decisão tomada · 🎨 Pendente design · 🔍 Pendente verificação · ❌ Cancelado
 - **Estado Auditado**: `—` (não auditado) · `✓` (auditado e aprovado) · `⚠` (auditado com ressalvas)
 
-> **Convenção de ID:** `#NN` mantido como identificador estável — usado em commits (`feat(#44): ...`), branches e referências cruzadas. Próximo ID disponível: **#146**.
+> **Convenção de ID:** `#NN` mantido como identificador estável — usado em commits (`feat(#44): ...`), branches e referências cruzadas. Próximo ID disponível: **#147**.
 >
 > **Hierarquia:** itens filhos só começam após pai ✅; irmãos com mesmo prefixo numérico (ex.: `1.2.1` e `1.2.2`) são paralelos.
 
@@ -53,10 +53,10 @@ Arquivo canônico de pendências, auditoria técnica e conformidade com o contra
 
 | Onda | ID | Grupo | Descrição Técnica | Prioridade | Pré-requisito | Dificuldade | Status | Estado Auditado |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| 2 | #118 | FUNC | Migration idempotente `ALTER TABLE … ADD COLUMN fixo` — **tabela recomendada `Categoria` (pendente ok final do usuário)** + model/repo bind/read | Alta | (decisão schema) | Baixa | ⏳ Pendente | — |
-| 2 | #119 | AUDIT | Criar `GastoService` (Mid): consolidação fixo/variável, totais por classe, % do orçamento; migra `GastosWidget`/`GastoDialog` do acesso direto a Repository | Alta | #118 | Média | ⏳ Pendente | — |
-| 2 | #120 | TESTE | Testes do `GastoService`: soma por classe, gasto sem classificação (default), recorrente=fixo, bordas de mês | Alta | #119 | Média | ⏳ Pendente | — |
-| 2 | #121 | FUNC | UI: filtro/visão fixo×variável em `GastosWidget` + indicador no Dashboard (consome `ResumoService`+`GastoService`) | Média | #120, #117 | Média | ⏳ Pendente | — |
+| 2 | #118 | FUNC | Classificação fixo/variável via `Categoria` (decisão do usuário = opção A). **Entregue:** enum `TipoDespesa {Variavel,Fixo}` + coluna `fixo` (migration idempotente) + repo bind/read; `test_categoria` (5 casos). | Alta | — | Baixa | ✅ Concluído | ✓ |
+| 2 | #119 | AUDIT | Criar `GastoService` (Mid): consolida fixo/variável, totais por classe, % (bps). **Entregue:** `GastoService` resolve via `categoria_id`→`Categoria.tipoDespesa` (NULL/órfão→Variável, sem herança); resumoDoMes/porTipo/totalPorTipo; sem interface. | Alta | #118 | Média | ✅ Concluído | ✓ |
+| 2 | #120 | TESTE | Testes do `GastoService`. **Entregue:** `test_gasto_service` (10 casos: Fixo/Variável, NULL/órfão, sem herança, soma/total, pctFixosBps, filtro mês/ano, porTipo/totalPorTipo). ctest 22/22. | Alta | #119 | Média | ✅ Concluído | ✓ |
+| 2 | #121 | FUNC | UI fixo×variável. **Entregue:** combo "Tipo de despesa" no `CategoriaDialog` (só gastos) + coluna na árvore; rodapé Fixos/Variáveis no `GastosWidget`; card no `DashboardWidget`. Consome `GastoService`. Verificação visual recomendada. | Média | #120, #117 | Média | ✅ Concluído | ✓ |
 
 ### Onda 3 — Higiene de arquitetura & código (dívida, sem feature nova)
 
@@ -70,6 +70,7 @@ Arquivo canônico de pendências, auditoria técnica e conformidade com o contra
 | 3 | #143 | INFRA | Higiene de toolchain: instalar hook `scripts/pre-commit` em `.git/hooks/`, passar `--library=qt` ao cppcheck (corrige falso-positivo no `slots`), tornar clang-tidy não-fatal/consertar crash no GCC 16, e passe global de nits clang-tidy (chaves, `std::array`) | Média | — | Média | ⏳ Pendente | — |
 | 3 | #144 | AUDIT | Unificar `FechamentoMensalService` para consumir `ResumoService` (D1 — hoje Fechamento soma bruto e Dashboard usa líquido = 2 fontes de verdade divergentes) | Média | #115 | Média | ⏳ Pendente | — |
 | 3 | #145 | AUDIT | `PlanejamentoWidget` e `TendenciasWidget` consumirem `ResumoService` (D4 — hoje recalculam a mesma agregação inline) | Baixa | #115 | Média | ⏳ Pendente | — |
+| 3 | #146 | BUG | Repos deixam `QString()` null passar para colunas `TEXT NOT NULL` (ex.: `GastoAvulsoRepository::insert` com `categoria`/`obs`/`pagador` vazios) → INSERT falha silencioso (`qWarning`+`return false`). Normalizar null→"" no repo ou `DEFAULT ''` defensivo (achado no #120) | Média | — | Baixa | ⏳ Pendente | — |
 
 ### Onda 4 — Hardening de segurança pré-release (4 IMPORTANTES, 0 crítico)
 
