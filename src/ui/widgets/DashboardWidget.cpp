@@ -195,22 +195,24 @@ void DashboardWidget::buildUi()
     lay->addWidget(lblSecMes);
 
     // Linha 1: Entradas | Gastos | Saldo | Parcelas
-    // tabIndex: Entradas=1, Gastos=2, Saldo=sem aba, Cartões=10
+    // tabIndex (ordem default de MainWindow): Entradas=1, Gastos=2, Cartões=3.
+    // NOTA: indices fixos quebram se o usuario reordenar as abas (drag & drop);
+    // refactor recomendado para navegacao por chave estavel (objectName).
     auto *row1 = new QHBoxLayout;
     row1->setSpacing(12);
     row1->addWidget(makeCard(tr("Entradas"),  &m_valEntradas, &m_subEntradas, 1));
     row1->addWidget(makeCard(tr("Gastos"),    &m_valGastos,   &m_subGastos,   2));
     row1->addWidget(makeCard(tr("Saldo"),     &m_valSaldo));
-    row1->addWidget(makeCard(tr("Parcelas"),  &m_valParcelas, &m_subParcelas, 10));
+    row1->addWidget(makeCard(tr("Parcelas"),  &m_valParcelas, &m_subParcelas, 3));
     lay->addLayout(row1);
 
     // Linha 2: Investimentos (net) | Saldo líquido
-    // tabIndex: Investimentos=4
+    // tabIndex (ordem default): Investimentos=9, Proventos=10, Gastos=2.
     auto *row2 = new QHBoxLayout;
     row2->setSpacing(12);
-    row2->addWidget(makeCard(tr("Investimentos (net)"), &m_valInvNet, &m_subInvNet, 4));
+    row2->addWidget(makeCard(tr("Investimentos (net)"), &m_valInvNet, &m_subInvNet, 9));
     row2->addWidget(makeCard(tr("Saldo líquido total"), &m_valSaldoLiq));
-    row2->addWidget(makeCard(tr("Proventos (ano)"),     &m_valProventos, &m_subProventos, 6)); // #66 aba Proventos = 6
+    row2->addWidget(makeCard(tr("Proventos (ano)"),     &m_valProventos, &m_subProventos, 10)); // #66
     // #121: gastos fixos × variáveis do mês (aba Gastos = 2)
     row2->addWidget(makeCard(tr("Gastos fixos vs variáveis"),
                              &m_valFixosVar, &m_subFixosVar, 2));

@@ -66,6 +66,8 @@ private:
     // Tab order persistence (drag & drop)
     void aplicarOrdemAbasSalva();
     void salvarOrdemAbas();
+    void resetarOrdemAbas();              // restaura ordem default (botao ↺)
+    QStringList ordemAbasDefault() const; // chaves na ordem default do codigo
 
     // Atalhos globais de teclado (#80)
     void setupShortcuts();
@@ -76,6 +78,7 @@ private:
     DashboardWidget      *m_dashboard     = nullptr;
     TendenciasWidget     *m_tendencias    = nullptr;
     ParcelasWidget       *m_parcelas      = nullptr;
+    class TabShell       *m_shellCartoes  = nullptr; // invólucro da aba Cartões
     EntradasWidget       *m_entradas      = nullptr;
     GastosWidget         *m_gastos        = nullptr;
     InvestimentosWidget  *m_investimentos  = nullptr;

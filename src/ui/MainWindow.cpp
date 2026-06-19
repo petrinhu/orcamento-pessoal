@@ -2,6 +2,7 @@
 #include "widgets/DashboardWidget.h"
 #include "widgets/TendenciasWidget.h"
 #include "widgets/ParcelasWidget.h"
+#include "widgets/TabShell.h"
 #include "widgets/EntradasWidget.h"
 #include "widgets/GastosWidget.h"
 #include "widgets/InvestimentosWidget.h"
@@ -126,6 +127,26 @@ void MainWindow::onBloquear()
 
 // ── Tab order persistence (drag & drop) ──────────────────────────────────────
 
+QStringList MainWindow::ordemAbasDefault() const
+{
+    // Mesma sequencia dos addTab em buildUi. Fonte unica para o reset.
+    return {
+        QStringLiteral("tab_dashboard"),
+        QStringLiteral("tab_entradas"),
+        QStringLiteral("tab_gastos"),
+        QStringLiteral("tab_parcelas"),
+        QStringLiteral("tab_recorrencias"),
+        QStringLiteral("tab_dividas"),
+        QStringLiteral("tab_metas"),
+        QStringLiteral("tab_planejamento"),
+        QStringLiteral("tab_tendencias"),
+        QStringLiteral("tab_investimentos"),
+        QStringLiteral("tab_proventos"),
+        QStringLiteral("tab_bolsa"),
+        QStringLiteral("tab_lembretes"),
+    };
+}
+
 void MainWindow::aplicarOrdemAbasSalva()
 {
     if (!m_tabs) return;
@@ -147,6 +168,30 @@ void MainWindow::aplicarOrdemAbasSalva()
             }
         }
     }
+}
+
+void MainWindow::resetarOrdemAbas()
+{
+    if (!m_tabs) return;
+    // Limpa a persistencia (volta ao default no proximo start) e reordena ao
+    // vivo para a ordem default, sem reiniciar o app. moveTab preserva texto e
+    // icone de cada aba; o widget atual permanece selecionado.
+    AppSettings::instance().setTabOrder({});
+
+    auto *bar = m_tabs->tabBar();
+    QWidget *atual = m_tabs->currentWidget();
+    int destino = 0;
+    for (const QString &chave : ordemAbasDefault()) {
+        for (int i = destino; i < m_tabs->count(); ++i) {
+            const QWidget *w = m_tabs->widget(i);
+            if (w && w->objectName() == chave) {
+                if (i != destino) bar->moveTab(i, destino);
+                ++destino;
+                break;
+            }
+        }
+    }
+    if (atual) m_tabs->setCurrentWidget(atual);
 }
 
 void MainWindow::salvarOrdemAbas()
@@ -204,21 +249,36 @@ void MainWindow::buildUi()
     m_dividas      ->setObjectName(QStringLiteral("tab_dividas"));
     m_metas        ->setObjectName(QStringLiteral("tab_metas"));
     m_lembretes    ->setObjectName(QStringLiteral("tab_lembretes"));
-    m_parcelas     ->setObjectName(QStringLiteral("tab_parcelas"));
 
+    // ── Piloto TabShell (#41/layout padrão): aba Cartões ───────────────────
+    // Envolve o ParcelasWidget num invólucro com título + descrição p/
+    // iniciante. A chave estavel de persistencia (tab_parcelas) passa a viver
+    // no shell, que e o widget efetivamente inserido na aba; m_parcelas segue
+    // intacto (lógica e conexões inalteradas).
+    m_shellCartoes = new TabShell(tr("Cartões"), this);
+    m_shellCartoes->setObjectName(QStringLiteral("tab_parcelas"));
+    m_shellCartoes->setDescription(tr(
+        "Cadastre suas compras parceladas no cartão. Veja as parcelas de cada "
+        "mês, os juros (CET) e a tabela de amortização. Use a calculadora 🧮 "
+        "para simular o parcelamento antes de comprar."));
+    m_shellCartoes->setContent(m_parcelas);
+
+    // Ordem default (1º start e apos reset). A chave estavel de cada aba e o
+    // objectName; a ordem real exibida pode diferir desta se o usuario
+    // reordenou por drag & drop (restaurada em aplicarOrdemAbasSalva).
     m_tabs->addTab(m_dashboard,     tr("Dashboard"));      // 0
     m_tabs->addTab(m_entradas,      tr("Entradas"));       // 1
     m_tabs->addTab(m_gastos,        tr("Gastos"));         // 2
-    m_tabs->addTab(m_tendencias,    tr("Tendências"));     // 3
-    m_tabs->addTab(m_investimentos, tr("Investimentos"));  // 4
-    m_tabs->addTab(m_bolsa,         tr("Bolsa"));          // 4b (#50)
-    m_tabs->addTab(m_proventos,     tr("Proventos"));      // 4c (#66)
-    m_tabs->addTab(m_planejamento,  tr("Planejamento"));   // 5
-    m_tabs->addTab(m_recorrencias,  tr("Recorrências"));   // 6
-    m_tabs->addTab(m_dividas,       tr("Dívidas"));        // 7
-    m_tabs->addTab(m_metas,         tr("Metas"));          // 8
-    m_tabs->addTab(m_lembretes,     tr("Lembretes"));      // 9
-    m_tabs->addTab(m_parcelas,      tr("Cartões"));        // 10
+    m_tabs->addTab(m_shellCartoes,  tr("Cartões"));        // 3 (piloto TabShell)
+    m_tabs->addTab(m_recorrencias,  tr("Recorrências"));   // 4
+    m_tabs->addTab(m_dividas,       tr("Dívidas"));        // 5
+    m_tabs->addTab(m_metas,         tr("Metas"));          // 6
+    m_tabs->addTab(m_planejamento,  tr("Planejamento"));   // 7
+    m_tabs->addTab(m_tendencias,    tr("Tendências"));     // 8
+    m_tabs->addTab(m_investimentos, tr("Investimentos"));  // 9
+    m_tabs->addTab(m_proventos,     tr("Proventos"));      // 10 (#66)
+    m_tabs->addTab(m_bolsa,         tr("Bolsa"));          // 11 (#50)
+    m_tabs->addTab(m_lembretes,     tr("Lembretes"));      // 12
 
     // Restaura ordem salva (drag & drop)
     aplicarOrdemAbasSalva();
@@ -358,7 +418,7 @@ void MainWindow::buildUi()
     // Status bar totals
     connect(m_parcelas, &ParcelasWidget::statusAtualizado,
             this, [this](const QString &msg) {
-                if (m_tabs->currentWidget() == m_parcelas)
+                if (m_tabs->currentWidget() == m_shellCartoes)
                     m_statusTotal->setText(msg + QStringLiteral("  "));
             });
     connect(m_entradas, &EntradasWidget::statusAtualizado,
@@ -407,7 +467,7 @@ void MainWindow::buildUi()
         else if (m_tabs->currentWidget() == m_dividas)        m_dividas->recarregar();
         else if (m_tabs->currentWidget() == m_metas)          m_metas->recarregar();
         else if (m_tabs->currentWidget() == m_lembretes)      m_lembretes->recarregar();
-        else if (m_tabs->currentWidget() == m_parcelas)       m_parcelas->recarregar();
+        else if (m_tabs->currentWidget() == m_shellCartoes)   m_parcelas->recarregar();
     });
 
     // ── Gerar recorrências pendentes ao abrir o app ─────────────────────────
@@ -482,7 +542,7 @@ void MainWindow::buildUi()
         auto *btnIr = dlg->addButton(tr("Ver lembretes"), QMessageBox::ActionRole);
         dlg->exec();
         if (dlg->clickedButton() == btnIr)
-            m_tabs->setCurrentIndex(9); // aba Lembretes
+            m_tabs->setCurrentWidget(m_lembretes); // aba Lembretes (índice varia)
     });
 
     // ── Auto-save timer ────────────────────────────────────────────────────
@@ -676,11 +736,14 @@ void MainWindow::buildThemeBar()
         return btn;
     };
 
+    auto *btnReset = makeNavBtn("view-refresh", QStringLiteral("↺"),
+                                tr("Restaurar ordem padrão das abas"));
     auto *btnFirst = makeNavBtn("media-skip-backward", QStringLiteral("⏮"), tr("Primeira aba"));
     auto *btnPrev  = makeNavBtn("media-seek-backward", QStringLiteral("◀"), tr("Aba anterior"));
     auto *btnNext  = makeNavBtn("media-seek-forward",  QStringLiteral("▶"), tr("Próxima aba"));
     auto *btnLast  = makeNavBtn("media-skip-forward",  QStringLiteral("⏭"), tr("Última aba"));
 
+    connect(btnReset, &QToolButton::clicked, this, &MainWindow::resetarOrdemAbas);
     connect(btnFirst, &QToolButton::clicked, this, [this]() { m_tabs->setCurrentIndex(0); });
     connect(btnPrev,  &QToolButton::clicked, this, [this]() {
         m_tabs->setCurrentIndex(qMax(0, m_tabs->currentIndex() - 1));
@@ -733,7 +796,7 @@ void MainWindow::buildThemeBar()
     connect(btnBusca, &QToolButton::clicked, this, &MainWindow::onBuscaGlobal);
     auto *btnHoje = makeBtn("go-jump-today", QStringLiteral("📅"), tr("Hoje"));
     connect(btnHoje, &QToolButton::clicked, this, [this]() {
-        if      (m_tabs->currentWidget() == m_parcelas)      m_parcelas->scrollParaMesAtual();
+        if      (m_tabs->currentWidget() == m_shellCartoes)  m_parcelas->scrollParaMesAtual();
         else if (m_tabs->currentWidget() == m_entradas)      m_entradas->scrollParaMesAtual();
         else if (m_tabs->currentWidget() == m_gastos)        m_gastos->scrollParaMesAtual();
         else if (m_tabs->currentWidget() == m_investimentos) m_investimentos->scrollParaMesAtual();
@@ -1220,7 +1283,7 @@ void MainWindow::onSobre()
 void MainWindow::onTvmParaCartoes(double pv, int n, double iMensal, double pmt)
 {
     // Switch to Cartões tab (index 3) and open AddCompraDialog pre-filled.
-    const int cartaoTabIdx = m_tabs->indexOf(m_parcelas);
+    const int cartaoTabIdx = m_tabs->indexOf(m_shellCartoes);
     if (cartaoTabIdx >= 0)
         m_tabs->setCurrentIndex(cartaoTabIdx);
     m_parcelas->novaCompraDeCalculadora(pv, n, iMensal, pmt);

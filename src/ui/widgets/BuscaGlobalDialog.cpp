@@ -17,14 +17,17 @@
 #include <QBrush>
 #include <QColor>
 
-// ── Tab indices (em sincronia com MainWindow) ──────────────────────────────────
-// 0=Dashboard 1=Entradas 2=Gastos 3=Tendências 4=Investimentos
-// 5=Planejamento 6=Recorrências 7=Dívidas 8=Metas 9=Lembretes 10=Cartões
+// ── Tab indices (em sincronia com a ordem default de MainWindow) ───────────────
+// 0=Dashboard 1=Entradas 2=Gastos 3=Cartões 4=Recorrências 5=Dívidas 6=Metas
+// 7=Planejamento 8=Tendências 9=Investimentos 10=Proventos 11=Bolsa 12=Lembretes
+// ATENCAO: indices fixos sao fragueis se o usuario reordenar as abas (drag &
+// drop). Refactor recomendado: navegar por chave estavel (objectName). Ver
+// nota de follow-up no retorno da tarefa de abas reordenaveis.
 static constexpr int kTabEntradas      = 1;
 static constexpr int kTabGastos        = 2;
-static constexpr int kTabInvestimentos = 4;
-static constexpr int kTabDividas       = 7;
-static constexpr int kTabCartoes       = 10;
+static constexpr int kTabInvestimentos = 9;
+static constexpr int kTabDividas       = 5;
+static constexpr int kTabCartoes       = 3;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 

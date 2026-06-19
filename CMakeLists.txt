@@ -142,6 +142,7 @@ set(SOURCES
     src/ui/LoginDialog.cpp
     src/ui/MainWindow.cpp
     src/ui/widgets/ParcelasWidget.cpp
+    src/ui/widgets/TabShell.cpp
     src/ui/widgets/ReceiptAttachmentWidget.cpp
     src/ui/widgets/AuditLogViewer.cpp
     src/ui/widgets/BackupConfigWidget.cpp

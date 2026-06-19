@@ -209,17 +209,21 @@ void PrefsWidget::buildUi()
     auto *rowInitTab  = new QHBoxLayout;
     auto *lblInitTab  = new QLabel(tr("Aba inicial:"), grpComport);
     m_comboInitialTab = new QComboBox(grpComport);
+    // Itens na ordem default de MainWindow. O valor (data) e o indice de
+    // posicao default; se o usuario reordenou abas, abre na N-esima posicao.
     m_comboInitialTab->addItem(tr("Dashboard"),      0);
     m_comboInitialTab->addItem(tr("Entradas"),       1);
     m_comboInitialTab->addItem(tr("Gastos"),         2);
-    m_comboInitialTab->addItem(tr("Tendências"),     3);
-    m_comboInitialTab->addItem(tr("Investimentos"),  4);
-    m_comboInitialTab->addItem(tr("Planejamento"),   5);
-    m_comboInitialTab->addItem(tr("Recorrências"),   6);
-    m_comboInitialTab->addItem(tr("Dívidas"),        7);
-    m_comboInitialTab->addItem(tr("Metas"),          8);
-    m_comboInitialTab->addItem(tr("Lembretes"),      9);
-    m_comboInitialTab->addItem(tr("Cartões"),        10);
+    m_comboInitialTab->addItem(tr("Cartões"),        3);
+    m_comboInitialTab->addItem(tr("Recorrências"),   4);
+    m_comboInitialTab->addItem(tr("Dívidas"),        5);
+    m_comboInitialTab->addItem(tr("Metas"),          6);
+    m_comboInitialTab->addItem(tr("Planejamento"),   7);
+    m_comboInitialTab->addItem(tr("Tendências"),     8);
+    m_comboInitialTab->addItem(tr("Investimentos"),  9);
+    m_comboInitialTab->addItem(tr("Proventos"),      10);
+    m_comboInitialTab->addItem(tr("Bolsa"),          11);
+    m_comboInitialTab->addItem(tr("Lembretes"),      12);
     m_comboInitialTab->setCurrentIndex(AppSettings::instance().initialTab());
     rowInitTab->addWidget(lblInitTab);
     rowInitTab->addWidget(m_comboInitialTab);
