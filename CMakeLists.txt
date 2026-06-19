@@ -177,6 +177,7 @@ set(SOURCES
     src/services/EntradaService.cpp
     src/services/CompraService.cpp
     src/services/ResumoService.cpp
+    src/services/GastoService.cpp
     src/ui/widgets/DashboardWidget.cpp
     src/ui/widgets/TendenciasWidget.cpp
     src/repositories/TransacaoRecorrenteRepository.cpp
