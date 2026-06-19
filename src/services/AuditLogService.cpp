@@ -17,14 +17,20 @@ struct TabelaAudit {
     const char *colunas; // CSV simples para json_object
 };
 
+// Colunas validadas 1:1 contra os CREATE TABLE reais em
+// DatabaseManager::createSchema() (#142). Cada nome listado EXISTE no schema.
+// Curadoria: nao logamos BLOBs (ex.: receipt) nem campos desnecessariamente
+// sensiveis; mantemos id + os campos materiais de cada operacao.
 constexpr TabelaAudit kTabelas[] = {
-    { "lancamentos_entradas",      "id, fonte_id, valor, data, descricao" },
-    { "lancamentos_gastos",        "id, categoria_id, valor, data, descricao" },
-    { "lancamentos_investimentos", "id, ticker, quantidade, preco_unitario, data" },
-    { "compras",                   "id, cartao_id, valor_total, data, n_parcelas" },
-    { "parcelas",                  "id, compra_id, numero, valor, vencimento, pago" },
-    { "dividas",                   "id, descricao, valor_total, parcelas_pagas" },
-    { "metas",                     "id, nome, valor_alvo, valor_atual, prazo" },
+    { "lancamentos_entradas",      "id, fonte_id, valor_bruto, mes, ano" },
+    { "lancamentos_gastos",        "id, valor, categoria, descricao, mes, ano" },
+    // NOTE: o schema real de investimentos nao tem ticker/quantidade/
+    // preco_unitario; usa nome/tipo_ativo/valor + mes/ano.
+    { "lancamentos_investimentos", "id, nome, tipo_ativo, valor, mes, ano" },
+    { "compras",                   "id, cartao_id, valor_total, num_parcelas, mes_inicio, ano_inicio" },
+    { "parcelas",                  "id, valor, data_fatura, modificada" },
+    { "dividas",                   "id, descricao, valor_total, valor_pago, status" },
+    { "metas",                     "id, nome, valor_meta, valor_atual, data_prazo" },
 };
 
 QString geraJsonObject(const QString &alias, const QString &colunas)
@@ -129,10 +135,24 @@ bool AuditLogService::ensureSchema(QSqlDatabase &db, QString *errorOut)
                                 "ON audit_log(tabela)"),
                  errorOut)) return false;
 
-    // Cria triggers somente em tabelas que existem (evita erro em DB jovem)
+    // Cria triggers somente em tabelas que existem (evita erro em DB jovem).
+    //
+    // (#142) Saneamento: bancos abertos pos-#92 podem ter triggers audit_*
+    // quebrados (referenciando colunas inexistentes). CREATE TRIGGER IF NOT
+    // EXISTS nao os corrige -- o trigger velho persiste e segue abortando todo
+    // INSERT/UPDATE/DELETE. Por isso DROPamos cada trigger antes de recriar, de
+    // forma que toda abertura do app reescreve os triggers para a versao
+    // correta. Idempotente (DROP IF EXISTS + recriacao deterministica).
     for (const auto &t : kTabelas) {
         const QString tab = QString::fromLatin1(t.tabela);
         if (!tabelaExiste(db, tab)) continue;
+
+        for (const char *suf : { "ins", "upd", "del" }) {
+            const QString drop = QStringLiteral("DROP TRIGGER IF EXISTS audit_%1_%2")
+                                     .arg(tab, QString::fromLatin1(suf));
+            if (!execSql(db, drop, errorOut)) return false;
+        }
+
         if (!execSql(db, geraTriggerInsert(t), errorOut)) return false;
         if (!execSql(db, geraTriggerUpdate(t), errorOut)) return false;
         if (!execSql(db, geraTriggerDelete(t), errorOut)) return false;
