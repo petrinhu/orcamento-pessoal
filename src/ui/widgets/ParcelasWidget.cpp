@@ -15,6 +15,7 @@
 #include <QTableWidgetItem>
 #include <QHeaderView>
 #include <QPushButton>
+#include <QIcon>
 #include <QLabel>
 #include <QDate>
 #include <QDialog>
@@ -68,12 +69,13 @@ void ParcelasWidget::buildUi()
 
     // ── Toolbar ────────────────────────────────────────────────────────────
     auto *toolbar = new QHBoxLayout;
-    m_btnNova = new QPushButton(tr("➕ Novo item"), this);
+    m_btnNova = new QPushButton(QIcon::fromTheme(QStringLiteral("list-add")), tr("Novo item"), this);
     m_btnNova->setObjectName(QStringLiteral("primary"));
-    m_btnExcluir = new QPushButton(tr("Excluir"), this);
+    m_btnExcluir = new QPushButton(QIcon::fromTheme(QStringLiteral("edit-delete")), tr("Excluir"), this);
     m_btnExcluir->setEnabled(false);
 
-    auto *btnOrganizar = new QPushButton(tr("Organizar por ▾"), this);
+    auto *btnOrganizar = new QPushButton(QIcon::fromTheme(QStringLiteral("view-sort"),
+                                         QIcon::fromTheme(QStringLiteral("view-sort-ascending"))), tr("Organizar por ▾"), this);
 
     // Month navigation (espelha Dashboard/Planejamento; reusa navegarMes)
     auto *btnPrevMes = new QPushButton(QStringLiteral("◀"), this);
@@ -108,7 +110,7 @@ void ParcelasWidget::buildUi()
     QFont fTitle = lblEmptyTitle->font();
     fTitle.setPointSize(14);
     lblEmptyTitle->setFont(fTitle);
-    auto *lblEmptyHint = new QLabel(tr("Clique em \"➕ Novo item\" para começar."), emptyPage);
+    auto *lblEmptyHint = new QLabel(tr("Clique em \"Novo item\" para começar."), emptyPage);
     lblEmptyHint->setObjectName(QStringLiteral("subtitle"));
     lblEmptyHint->setAlignment(Qt::AlignCenter);
     emptyLay->addWidget(lblEmptyTitle);

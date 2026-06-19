@@ -14,6 +14,7 @@
 #include <QTableWidgetItem>
 #include <QHeaderView>
 #include <QPushButton>
+#include <QIcon>
 #include <QComboBox>
 #include <QApplication>
 #include <QClipboard>
@@ -83,13 +84,15 @@ void DividasWidget::buildUi()
     toolbar->setContentsMargins(8, 8, 8, 4);
     toolbar->setSpacing(8);
 
-    auto *btnNova = new QPushButton(tr("+ Nova"), this);
+    auto *btnNova = new QPushButton(QIcon::fromTheme(QStringLiteral("list-add")), tr("Nova dívida"), this);
     btnNova->setObjectName(QStringLiteral("primary"));
-    m_btnEdit = new QPushButton(tr("Editar"), this);
+    m_btnEdit = new QPushButton(QIcon::fromTheme(QStringLiteral("document-edit"),
+                                QIcon::fromTheme(QStringLiteral("edit-rename"))), tr("Editar"), this);
     m_btnEdit->setEnabled(false);
-    m_btnDel  = new QPushButton(tr("Excluir"), this);
+    m_btnDel  = new QPushButton(QIcon::fromTheme(QStringLiteral("edit-delete")), tr("Excluir"), this);
     m_btnDel->setEnabled(false);
-    m_btnQuit = new QPushButton(tr("Quitar"), this);
+    m_btnQuit = new QPushButton(QIcon::fromTheme(QStringLiteral("dialog-ok-apply"),
+                                QIcon::fromTheme(QStringLiteral("checkmark"))), tr("Quitar"), this);
     m_btnQuit->setEnabled(false);
     m_btnQuit->setToolTip(tr("Marcar como quitado"));
 
@@ -130,7 +133,7 @@ void DividasWidget::buildUi()
     QFont fTitle = lblTitle->font();
     fTitle.setPointSize(14);
     lblTitle->setFont(fTitle);
-    auto *lblHint = new QLabel(tr("Clique em \"+ Nova\" para começar."), emptyPage);
+    auto *lblHint = new QLabel(tr("Clique em \"Nova dívida\" para começar."), emptyPage);
     lblHint->setObjectName(QStringLiteral("subtitle"));
     lblHint->setAlignment(Qt::AlignCenter);
     emptyLay->addWidget(lblTitle);

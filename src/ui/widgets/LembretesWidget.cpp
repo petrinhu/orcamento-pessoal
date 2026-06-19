@@ -15,6 +15,7 @@
 #include <QHeaderView>
 #include <QPushButton>
 #include <QComboBox>
+#include <QIcon>
 #include <QApplication>
 #include <QClipboard>
 #include <QMessageBox>
@@ -40,16 +41,6 @@ static QString fmtData(const QString &iso)
     if (iso.isEmpty()) return QStringLiteral("—");
     const QDate d = QDate::fromString(iso, Qt::ISODate);
     return d.isValid() ? d.toString(QStringLiteral("dd/MM/yyyy")) : iso;
-}
-
-// Amarelo "vence em breve" — sem token próprio no Theme; tom coerente claro/dark.
-static QColor amareloAtencao()
-{
-    return Theme::currentMode() == Theme::ThemeMode::Dark
-        || (Theme::currentMode() == Theme::ThemeMode::Auto
-            && Theme::texto() == Theme::Color::TextDark)
-        ? QColor(QStringLiteral("#8A6D00"))   // âmbar escuro (fundo escuro)
-        : QColor(QStringLiteral("#FFF3C4"));  // âmbar claro (fundo claro)
 }
 
 // Label dinâmico de prazo para lembrete NÃO resolvido.
@@ -98,12 +89,14 @@ void LembretesWidget::buildUi()
     toolbar->setContentsMargins(8, 8, 8, 4);
     toolbar->setSpacing(8);
 
-    auto *btnNovo  = new QPushButton(tr("+ Novo"), this);
-    m_btnEdit      = new QPushButton(tr("Editar"), this);
-    m_btnDel       = new QPushButton(tr("Excluir"), this);
-    m_btnPagar     = new QPushButton(tr("Pagar"), this);
-    m_btnNaoDebito = new QPushButton(tr("Não debitado"), this);
-    m_btnIgnorar   = new QPushButton(tr("Ignorar"), this);
+    auto *btnNovo  = new QPushButton(QIcon::fromTheme(QStringLiteral("list-add")),     tr("Novo"), this);
+    m_btnEdit      = new QPushButton(QIcon::fromTheme(QStringLiteral("document-edit"),
+                                     QIcon::fromTheme(QStringLiteral("edit-rename"))), tr("Editar"), this);
+    m_btnDel       = new QPushButton(QIcon::fromTheme(QStringLiteral("edit-delete")),  tr("Excluir"), this);
+    m_btnPagar     = new QPushButton(QIcon::fromTheme(QStringLiteral("dialog-ok-apply"),
+                                     QIcon::fromTheme(QStringLiteral("checkmark"))),   tr("Pagar"), this);
+    m_btnNaoDebito = new QPushButton(QIcon::fromTheme(QStringLiteral("dialog-warning")), tr("Não debitado"), this);
+    m_btnIgnorar   = new QPushButton(QIcon::fromTheme(QStringLiteral("dialog-cancel")),  tr("Ignorar"), this);
 
     m_btnEdit->setEnabled(false);
     m_btnDel->setEnabled(false);
@@ -192,7 +185,7 @@ void LembretesWidget::populateTable(const QList<Lembrete> &lista)
 
     const QColor cNegativo = QColor(Theme::negativo());
     const QColor cPositivo = QColor(Theme::positivo());
-    const QColor cAmarelo  = amareloAtencao();
+    const QColor cAmarelo  = Theme::atencao();
 
     for (int r = 0; r < lista.size(); ++r) {
         const Lembrete &l = lista[r];

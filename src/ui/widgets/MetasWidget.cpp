@@ -2,6 +2,7 @@
 #include "MetaDialog.h"
 #include "repositories/MetaRepository.h"
 #include "core/commands/UndoCommands.h"
+#include "ui/Theme.h"
 
 #include <QUndoStack>
 
@@ -15,6 +16,7 @@
 #include <QPushButton>
 #include <QProgressBar>
 #include <QComboBox>
+#include <QIcon>
 #include <QApplication>
 #include <QClipboard>
 #include <QMessageBox>
@@ -71,10 +73,11 @@ void MetasWidget::buildUi()
     toolbar->setContentsMargins(8, 8, 8, 4);
     toolbar->setSpacing(8);
 
-    auto *btnNova = new QPushButton(tr("+ Nova"), this);
-    m_btnEdit     = new QPushButton(tr("Editar"), this);
-    m_btnDel      = new QPushButton(tr("Excluir"), this);
-    m_btnAporte   = new QPushButton(tr("+ Aporte"), this);
+    auto *btnNova = new QPushButton(QIcon::fromTheme(QStringLiteral("list-add")),    tr("Nova meta"), this);
+    m_btnEdit     = new QPushButton(QIcon::fromTheme(QStringLiteral("document-edit"),
+                                    QIcon::fromTheme(QStringLiteral("edit-rename"))), tr("Editar"), this);
+    m_btnDel      = new QPushButton(QIcon::fromTheme(QStringLiteral("edit-delete")), tr("Excluir"), this);
+    m_btnAporte   = new QPushButton(QIcon::fromTheme(QStringLiteral("list-add")),    tr("Aporte"), this);
     m_btnEdit->setEnabled(false);
     m_btnDel->setEnabled(false);
     m_btnAporte->setEnabled(false);
@@ -104,7 +107,7 @@ void MetasWidget::buildUi()
     auto *emptyPage  = new QWidget(m_stack);
     auto *emptyLay   = new QVBoxLayout(emptyPage);
     emptyLay->setAlignment(Qt::AlignCenter);
-    auto *lblEmpty   = new QLabel(tr("Nenhuma meta cadastrada.\nClique em \"+ Nova\" para começar."), emptyPage);
+    auto *lblEmpty   = new QLabel(tr("Nenhuma meta cadastrada.\nClique em \"Nova meta\" para começar."), emptyPage);
     lblEmpty->setAlignment(Qt::AlignCenter);
     lblEmpty->setObjectName(QStringLiteral("subtitle"));
     emptyLay->addWidget(lblEmpty);
@@ -186,18 +189,15 @@ void MetasWidget::populateTable(const QList<Meta> &lista)
         m_table->setCellWidget(r, ColProgresso, bar);
 
         // Cor da barra por progresso
-        QString barStyle;
-        if (m.status == QStringLiteral("concluida") || pct >= 100) {
-            barStyle = QStringLiteral(
-                "QProgressBar::chunk { background: #22A367; }");
-        } else if (pct >= 50) {
-            barStyle = QStringLiteral(
-                "QProgressBar::chunk { background: #4A90D9; }");
-        } else {
-            barStyle = QStringLiteral(
-                "QProgressBar::chunk { background: #E8A020; }");
-        }
-        bar->setStyleSheet(barStyle);
+        QString barColor;
+        if (m.status == QStringLiteral("concluida") || pct >= 100)
+            barColor = Theme::positivo();
+        else if (pct >= 50)
+            barColor = Theme::acento();
+        else
+            barColor = Theme::atencao().name();
+        bar->setStyleSheet(
+            QStringLiteral("QProgressBar::chunk { background: %1; }").arg(barColor));
 
         // Prazo e dias restantes
         m_table->setItem(r, ColPrazo, roItem(fmtData(m.dataPrazo)));
@@ -208,7 +208,7 @@ void MetasWidget::populateTable(const QList<Meta> &lista)
             else if (dias == 0) diasTxt = tr("Hoje");
             else                diasTxt = tr("%1d").arg(dias);
             auto *diasItem = roItem(diasTxt, Qt::AlignVCenter | Qt::AlignRight);
-            if (dias < 0) diasItem->setForeground(QColor(0xC94040));
+            if (dias < 0) diasItem->setForeground(QColor(Theme::negativo()));
             m_table->setItem(r, ColRestam, diasItem);
         } else {
             m_table->setItem(r, ColRestam, roItem(QStringLiteral("—"),

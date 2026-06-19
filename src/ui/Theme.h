@@ -2,6 +2,7 @@
 
 #include <QString>
 #include <QFont>
+#include <QColor>
 #include <QPalette>
 
 // Forest Neutral palette + Inter font + QSS.
@@ -45,5 +46,9 @@ QString background();
 QString surface();
 QString texto();
 QString borda();
+
+// Âmbar "atenção / vence em breve" — dark-mode-aware, sem equivalente Breeze
+// direto. Usado em barras de progresso e fundos de aviso (Metas, Lembretes).
+QColor  atencao();
 
 } // namespace Theme

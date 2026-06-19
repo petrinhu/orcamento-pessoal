@@ -60,6 +60,15 @@ QString surface()    { return isDark() ? Color::SurfaceDark   : Color::SurfaceLi
 QString texto()      { return isDark() ? Color::TextDark      : Color::TextLight;      }
 QString borda()      { return isDark() ? Color::BorderDark    : Color::BorderLight;    }
 
+// Âmbar "atenção" dark-mode-aware. Mesmos tons do antigo helper local do
+// Lembretes (fundo de linha "vence em breve"); reaproveitado como fill de barra
+// de progresso < 50% no Metas. Pastel em fundo claro, âmbar escuro em dark.
+QColor  atencao()
+{
+    return isDark() ? QColor(QStringLiteral("#8A6D00"))   // âmbar escuro (dark)
+                    : QColor(QStringLiteral("#FFF3C4"));  // âmbar pastel (light)
+}
+
 // ── QSS generation ───────────────────────────────────────────────────────────
 
 static void carregarFontes()

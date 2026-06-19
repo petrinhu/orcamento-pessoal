@@ -16,6 +16,7 @@
 #include <QTableWidgetItem>
 #include <QHeaderView>
 #include <QPushButton>
+#include <QIcon>
 #include <QLabel>
 #include <QMessageBox>
 #include <QDate>
@@ -58,11 +59,12 @@ void RecorrenciaWidget::buildUi()
     toolbar->setContentsMargins(8, 8, 8, 4);
     toolbar->setSpacing(8);
 
-    auto *btnAdd = new QPushButton(tr("+ Adicionar"), this);
+    auto *btnAdd = new QPushButton(QIcon::fromTheme(QStringLiteral("list-add")), tr("Adicionar"), this);
     btnAdd->setObjectName(QStringLiteral("primary"));
-    m_btnEdit   = new QPushButton(tr("Editar"), this);
-    m_btnRem    = new QPushButton(tr("Remover"), this);
-    m_btnToggle = new QPushButton(tr("Ativar/Pausar"), this);
+    m_btnEdit   = new QPushButton(QIcon::fromTheme(QStringLiteral("document-edit"),
+                                  QIcon::fromTheme(QStringLiteral("edit-rename"))), tr("Editar"), this);
+    m_btnRem    = new QPushButton(QIcon::fromTheme(QStringLiteral("edit-delete")), tr("Excluir"), this);
+    m_btnToggle = new QPushButton(QIcon::fromTheme(QStringLiteral("media-playback-start")), tr("Ativar/Pausar"), this);
 
     m_btnEdit->setEnabled(false);
     m_btnRem->setEnabled(false);

@@ -12,6 +12,7 @@
 #include <QLocale>
 #include <QMessageBox>
 #include <QPushButton>
+#include <QIcon>
 #include <QTableWidget>
 #include <QVBoxLayout>
 
@@ -45,13 +46,14 @@ void ProventosWidget::buildUi()
     m_cbTipoFiltro->addItem(tr("Bonificação"),   QStringLiteral("bonus"));
     bar->addWidget(m_cbTipoFiltro);
 
-    auto *btnFiltrar = new QPushButton(tr("Filtrar"), this);
+    auto *btnFiltrar = new QPushButton(QIcon::fromTheme(QStringLiteral("view-filter")), tr("Filtrar"), this);
     bar->addWidget(btnFiltrar);
     bar->addStretch();
 
-    m_btnNovo    = new QPushButton(tr("Novo…"), this);
-    m_btnEditar  = new QPushButton(tr("Editar"), this);
-    m_btnRemover = new QPushButton(tr("Remover"), this);
+    m_btnNovo    = new QPushButton(QIcon::fromTheme(QStringLiteral("list-add")), tr("Novo provento"), this);
+    m_btnEditar  = new QPushButton(QIcon::fromTheme(QStringLiteral("document-edit"),
+                                   QIcon::fromTheme(QStringLiteral("edit-rename"))), tr("Editar"), this);
+    m_btnRemover = new QPushButton(QIcon::fromTheme(QStringLiteral("edit-delete")), tr("Excluir"), this);
     m_btnNovo->setObjectName(QStringLiteral("primary"));
     bar->addWidget(m_btnNovo);
     bar->addWidget(m_btnEditar);

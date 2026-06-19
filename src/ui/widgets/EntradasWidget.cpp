@@ -17,6 +17,7 @@
 #include <QTableWidgetItem>
 #include <QHeaderView>
 #include <QPushButton>
+#include <QIcon>
 #include <QApplication>
 #include <QClipboard>
 #include <QLocale>
@@ -70,12 +71,13 @@ void EntradasWidget::buildUi()
     toolbar->setContentsMargins(8, 8, 8, 4);
     toolbar->setSpacing(8);
 
-    auto *btnNova = new QPushButton(tr("+ Novo lançamento"), this);
+    auto *btnNova = new QPushButton(QIcon::fromTheme(QStringLiteral("list-add")), tr("Novo lançamento"), this);
     btnNova->setObjectName(QStringLiteral("primary"));
-    m_btnDel = new QPushButton(tr("Excluir"), this);
+    m_btnDel = new QPushButton(QIcon::fromTheme(QStringLiteral("edit-delete")), tr("Excluir"), this);
     m_btnDel->setEnabled(false);
 
-    m_btnOrg = new QPushButton(tr("Organizar por ▾"), this);
+    m_btnOrg = new QPushButton(QIcon::fromTheme(QStringLiteral("view-sort"),
+                               QIcon::fromTheme(QStringLiteral("view-sort-ascending"))), tr("Organizar por ▾"), this);
     m_btnOrg->setToolTip(tr("Ordenar lançamentos dentro de cada mês"));
 
     toolbar->addWidget(btnNova);
@@ -95,7 +97,7 @@ void EntradasWidget::buildUi()
     QFont fTitle = lblEmptyTitle->font();
     fTitle.setPointSize(14);
     lblEmptyTitle->setFont(fTitle);
-    auto *lblEmptyHint = new QLabel(tr("Clique em \"+ Novo lançamento\" para começar."), emptyPage);
+    auto *lblEmptyHint = new QLabel(tr("Clique em \"Novo lançamento\" para começar."), emptyPage);
     lblEmptyHint->setObjectName(QStringLiteral("subtitle"));
     lblEmptyHint->setAlignment(Qt::AlignCenter);
     emptyLay->addWidget(lblEmptyTitle);
