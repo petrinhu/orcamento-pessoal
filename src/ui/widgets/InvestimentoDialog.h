@@ -28,11 +28,20 @@ public:
 
     QList<LancamentoInvestimento> lancamentos() const;
 
+protected:
+    void accept() override;
+
 private slots:
     void onRecorrenciaToggled(bool recorrente);
 
 private:
     void buildUi(const QList<Categoria> &categorias);
+
+    // #134: valida o lançamento antes de fechar. Lista vazia = OK.
+    // Delega a regra share-based (ticker/qty/preço) ao IInvestActivity (#89)
+    // só quando o lançamento é de ativo negociável (ticker preenchido ou
+    // tipo Ação/FII); senão valida por valor para não bloquear CDB/Tesouro/etc.
+    QStringList validarConsistencia(const LancamentoInvestimento &l) const;
 
     LancamentoInvestimento m_original;
     int m_mes;

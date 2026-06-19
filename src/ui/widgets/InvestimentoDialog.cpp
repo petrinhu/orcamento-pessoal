@@ -2,7 +2,11 @@
 #include "CalculadoraEdit.h"
 #include "ReceiptAttachmentWidget.h"
 #include "ui/UiFormatters.h"
+#include "services/investimento/InvestActivityFactory.h"
+#include "services/investimento/IInvestActivity.h"
 
+#include <QMessageBox>
+#include <memory>
 #include <QVBoxLayout>
 #include <QStandardItemModel>
 #include <QStandardItem>
@@ -88,6 +92,30 @@ static const TipoOpEntry kTiposOp[] = {
     { TipoOperacaoInv::Rendimento, "Rendimento" },
     { TipoOperacaoInv::Dividendo,  "Dividendo"  },
 };
+
+// #134: as 4 operações do dialog mapeiam para os rawType das activities (#89).
+// aporte→buy (compra), resgate→sell (venda), rendimento→yield, dividendo→dividend.
+static QString opInvParaRawActivity(const QString &tipoOp)
+{
+    switch (tipoOpInvDeTexto(tipoOp)) {
+    case TipoOperacaoInv::Aporte:     return QStringLiteral("buy");
+    case TipoOperacaoInv::Resgate:    return QStringLiteral("sell");
+    case TipoOperacaoInv::Rendimento: return QStringLiteral("yield");
+    default:                          return QStringLiteral("dividend");
+    }
+}
+
+// #134: lançamento é de ativo negociável (share-based) quando tem ticker
+// ou o tipo de ativo é Ação/FII. Só nesse caso aplicamos a regra estrita
+// de ticker/quantidade/preço das activities #89; CDB/Tesouro/Poupança/Fundo
+// lançados por valor não devem ser bloqueados.
+static bool ehShareBased(const LancamentoInvestimento &l)
+{
+    if (!l.ticker.trimmed().isEmpty())
+        return true;
+    const TipoAtivo t = tipoAtivoDeTexto(l.tipoAtivo);
+    return t == TipoAtivo::Acao || t == TipoAtivo::Fii;
+}
 
 // ── Constructor ───────────────────────────────────────────────────────────────
 
@@ -320,4 +348,55 @@ QList<LancamentoInvestimento> InvestimentoDialog::lancamentos() const
         result.append(l);
     }
     return result;
+}
+
+// ── Validação (#134) ────────────────────────────────────────────────────────────
+
+QStringList InvestimentoDialog::validarConsistencia(const LancamentoInvestimento &l) const
+{
+    QStringList erros;
+
+    if (l.nome.trimmed().isEmpty())
+        erros << tr("Informe o nome do ativo.");
+
+    if (ehShareBased(l)) {
+        // Lançamento negociável (ação/FII ou com ticker): delega a regra
+        // estrita de ticker/quantidade/preço ao IInvestActivity (#89).
+        const std::unique_ptr<IInvestActivity> act =
+            InvestActivityFactory::create(opInvParaRawActivity(l.tipoOperacao));
+        if (act) {
+            // O dialog usa o campo Nome como identificador; espelha em ticker
+            // para a checagem caso o usuário só tenha preenchido Nome.
+            LancamentoInvestimento p = l;
+            if (p.ticker.trimmed().isEmpty())
+                p.ticker = l.nome.trimmed().toUpper();
+            erros += act->consistencyCheck(p);
+        }
+    } else {
+        // CDB/Tesouro/Poupança/Fundo/Outro sem ticker: valida por valor.
+        if (l.valor <= 0)
+            erros << tr("Valor deve ser maior que zero.");
+        // Quantidade sem preço (ou vice-versa) é inconsistente para tracking.
+        if (l.quantidade > 0.0 && l.precoUnitario <= 0)
+            erros << tr("Informe o preço unitário quando há quantidade.");
+    }
+
+    erros.removeDuplicates();
+    return erros;
+}
+
+void InvestimentoDialog::accept()
+{
+    const QList<LancamentoInvestimento> lancs = lancamentos();
+    if (!lancs.isEmpty()) {
+        const QStringList erros = validarConsistencia(lancs.first());
+        if (!erros.isEmpty()) {
+            QMessageBox::warning(
+                this, tr("Lançamento inconsistente"),
+                tr("Corrija antes de salvar:\n\n• %1")
+                    .arg(erros.join(QStringLiteral("\n• "))));
+            return; // não fecha nem emite accepted()
+        }
+    }
+    QDialog::accept();
 }

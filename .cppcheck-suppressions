@@ -16,3 +16,8 @@ unknownMacro:Q_PROPERTY
 unknownMacro:Q_INVOKABLE
 unknownMacro:Q_SIGNAL
 unknownMacro:Q_SLOT
+
+# Structs POD inicializadas por aggregate-init (sem construtor) — idioma do
+# projeto (todos os models são POD com `{...}`); cppcheck não entende aggregate-init.
+uninitMemberVarNoCtor
+uninitMemberVar
