@@ -123,3 +123,24 @@ target_link_libraries(test_categoria PRIVATE
     OpenSSL::Crypto
     ${LIBSODIUM_LIBRARIES})
 target_include_directories(test_categoria PRIVATE ${LIBSODIUM_INCLUDE_DIRS})
+
+# Teste do GastoService (#120, Onda 2): consolidacao fixo/variavel dos gastos.
+# Cadeia: GastoService + repos (Categoria, GastoAvulso) + DatabaseManager +
+# servicos puxados por createSchema/triggers + crypto.
+peubud_add_test(test_gasto_service
+    ${CMAKE_SOURCE_DIR}/src/services/GastoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/CategoriaRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/GastoAvulsoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/database/DatabaseManager.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/AuditLogService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/AjusteCorporativoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FechamentoMensalService.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/ProventoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/SodiumCryptoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/AesCryptoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/KeyDerivation.cpp)
+target_link_libraries(test_gasto_service PRIVATE
+    OpenSSL::SSL
+    OpenSSL::Crypto
+    ${LIBSODIUM_LIBRARIES})
+target_include_directories(test_gasto_service PRIVATE ${LIBSODIUM_INCLUDE_DIRS})
