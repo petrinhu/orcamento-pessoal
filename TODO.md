@@ -12,7 +12,7 @@ Arquivo canônico de pendências, auditoria técnica e conformidade com o contra
 - **Status**: ✅ Concluído · 🔄 Em andamento · 🟡 Parcial · ⏳ Pendente · ❄️ Congelado pós-1.0 · 💡 Decisão tomada · 🎨 Pendente design · 🔍 Pendente verificação · ❌ Cancelado
 - **Estado Auditado**: `—` (não auditado) · `✓` (auditado e aprovado) · `⚠` (auditado com ressalvas)
 
-> **Convenção de ID:** `#NN` mantido como identificador estável — usado em commits (`feat(#44): ...`), branches e referências cruzadas. Próximo ID disponível: **#151**.
+> **Convenção de ID:** `#NN` mantido como identificador estável — usado em commits (`feat(#44): ...`), branches e referências cruzadas. Próximo ID disponível: **#154**.
 >
 > **Hierarquia:** itens filhos só começam após pai ✅; irmãos com mesmo prefixo numérico (ex.: `1.2.1` e `1.2.2`) são paralelos.
 
@@ -75,6 +75,9 @@ Arquivo canônico de pendências, auditoria técnica e conformidade com o contra
 | 3 | #146 | BUG | Repos deixam `QString()` null passar para colunas `TEXT NOT NULL` (ex.: `GastoAvulsoRepository::insert` com `categoria`/`obs`/`pagador` vazios) → INSERT falha silencioso (`qWarning`+`return false`). Normalizar null→"" no repo ou `DEFAULT ''` defensivo (achado no #120) | Média | — | Baixa | ⏳ Pendente | — |
 | 3 | #147 | INFRA | **CI Codeberg estava 100% quebrado.** **Entregue (4 causas-raiz corrigidas):** (1) `runs-on: docker`→`codeberg-medium`/`small` (runs ficavam `waiting`/cancelados, nenhum runner pegava); (2) `nodejs` instalado p/ o `actions/checkout@v4` (ação JS) em imagem crua; (3) imagem `fedora:41`(Qt 6.8)→`fedora:42`(Qt 6.10) + `qt6-qtbase-private-devel`, porque QXlsx usa API privada do Qt (`QZipReader`/`GuiPrivate`), cujo cmake-config só existe no Qt ≥6.9; (4) `QT_QPA_PLATFORM=offscreen` nos testes (container headless abortava testes `QTEST_MAIN`). Matrix Debian/Arch removido (frágil c/ Qt privado) → #148. cppcheck ganhou `--library=qt`. | Alta | — | Média | ✅ Concluído | ✓ |
 | 8 | #148 | INFRA | Restaurar validação multi-distro no CI (Debian/Arch) na fase de distribuição: Debian precisa de Qt ≥6.9 (sid ou backports) + nome correto do pacote charts; Arch precisa contornar o aviso de "private module" virando erro. Depende de decisão de quais distros suportar oficialmente | Baixa | #147 | Média | ⏳ Pendente | — |
+| 8 | #152 | INFRA | **P0 pré-distribuição (BLOQUEADOR):** licença ainda diz `PolyForm Noncommercial` em `CMakeLists.txt:381` (CPACK_RPM) e `metainfo.xml:5`, apesar do `LICENSE` já ser **AGPL-3.0** → corrigir p/ AGPL (bloqueia Flathub + RPM com metadado errado); `#97` PKGBUILD usa `GPL3` errado→`AGPL3`; declarar `poppler-qt6` opcional nos pacotes (DEB Suggests/RPM weak); gerar ícones hicolor multi-size + SVG (pendência de #98, pré-req Flathub) | Alta | — | Baixa | ⏳ Pendente | — |
+| 8 | #153 | INFRA | Tornar QXlsx **find_package-able** no CMake (`if(NOT QXlsx_FOUND) FetchContent…`) — pré-req do build OFFLINE do flatpak (flatpak-builder não tem rede) e de reproducibilidade. Alternativa: vendorizar QXlsx como cópia/submódulo | Média | — | Média | ⏳ Pendente | — |
+| 8 | #151 | INFRA | **Empacotamento Flatpak** (reativa #77): manifesto `org.peubud.PeuBud.yml`, runtime `org.kde.Platform//6.9` + `org.kde.Sdk//6.9` (Qt≥6.9 por causa do QXlsx/GuiPrivate); módulos p/ libsodium (+poppler opcional); QXlsx como módulo git (build offline, ver #153); finish-args `--share=network` (cotações) + `--talk-name=org.freedesktop.secrets` (keyring) + portal p/ arquivos (sem `--filesystem=home`); validar c/ `flatpak-builder`+`appstreamcli`. É o ÚNICO formato com portabilidade cross-distro real (traz o Qt no runtime) | Alta | #152, #153 | Alta | ⏳ Pendente | — |
 
 ### Onda 4 — Hardening de segurança pré-release (4 IMPORTANTES, 0 crítico)
 
