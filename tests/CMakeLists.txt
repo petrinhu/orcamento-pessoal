@@ -58,3 +58,49 @@ peubud_add_test(test_glossario
     ${CMAKE_SOURCE_DIR}/src/services/GlossarioService.cpp
     ${CMAKE_SOURCE_DIR}/src/core/settings/AppSettings.cpp
     ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp)
+peubud_add_test(test_resumo
+    ${CMAKE_SOURCE_DIR}/src/services/ResumoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/EntradaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/CompraService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/GastoAvulsoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/LancamentoInvestimentoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/ProventoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/LancamentoEntradaRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/FonteRendaRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/CompraRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/ParcelaRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/CartaoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/database/DatabaseManager.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/AjusteCorporativoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FechamentoMensalService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/AuditLogService.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/SodiumCryptoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/AesCryptoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/KeyDerivation.cpp)
+# DatabaseManager puxa crypto (OpenSSL + libsodium); linkar explicitamente.
+target_link_libraries(test_resumo PRIVATE
+    OpenSSL::SSL
+    OpenSSL::Crypto
+    ${LIBSODIUM_LIBRARIES})
+target_include_directories(test_resumo PRIVATE ${LIBSODIUM_INCLUDE_DIRS})
+
+# Teste de regressao dos triggers de auditoria (#142, fase RED).
+# Exercita os triggers audit_* criados por createSchema(); prova o bug de
+# colunas inexistentes (NEW.valor / NEW.data / ...). Cadeia minima: apenas
+# DatabaseManager + AuditLogService + crypto.
+peubud_add_test(test_audit_triggers
+    ${CMAKE_SOURCE_DIR}/src/core/database/DatabaseManager.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/AuditLogService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/AjusteCorporativoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FechamentoMensalService.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/ProventoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/SodiumCryptoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/AesCryptoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/KeyDerivation.cpp)
+target_link_libraries(test_audit_triggers PRIVATE
+    OpenSSL::SSL
+    OpenSSL::Crypto
+    ${LIBSODIUM_LIBRARIES})
+target_include_directories(test_audit_triggers PRIVATE ${LIBSODIUM_INCLUDE_DIRS})
