@@ -1,5 +1,6 @@
 #include "LancamentoEntradaDialog.h"
 #include "ReceiptAttachmentWidget.h"
+#include "ui/UiFormatters.h"
 
 #include <QVBoxLayout>
 #include <QStandardItemModel>
@@ -64,32 +65,6 @@ static QStandardItemModel *buildGroupedCatModel(const QList<Categoria> &cats,
         }
     }
     return model;
-}
-
-static qint64 parseCentavos(const QString &txt)
-{
-    // Accepts "1.234,56" or "1234.56" or "1234" → centavos
-    QString s = txt.trimmed();
-    s.remove(QStringLiteral("R$")).remove(QLatin1Char(' '));
-    // BR format: dot = thousands sep, comma = decimal
-    if (s.contains(QLatin1Char(',')) && s.contains(QLatin1Char('.'))) {
-        s.remove(QLatin1Char('.')); // remove thousands sep
-        s.replace(QLatin1Char(','), QLatin1Char('.'));
-    } else if (s.contains(QLatin1Char(','))) {
-        s.replace(QLatin1Char(','), QLatin1Char('.'));
-    }
-    bool ok = false;
-    const double val = s.toDouble(&ok);
-    return ok ? static_cast<qint64>(qRound(val * 100.0)) : 0LL;
-}
-
-static QString formatCentavos(qint64 c)
-{
-    const qint64 abs_c = c < 0 ? -c : c;
-    return QStringLiteral("%1%2,%3")
-        .arg(c < 0 ? QStringLiteral("-") : QString())
-        .arg(abs_c / 100)
-        .arg(abs_c % 100, 2, 10, QLatin1Char('0'));
 }
 
 // ── Constructor ───────────────────────────────────────────────────────────────
@@ -164,7 +139,7 @@ void LancamentoEntradaDialog::buildUi(const QList<FonteRenda> &fontes,
     m_edtValor = new QLineEdit(this);
     m_edtValor->setPlaceholderText(QStringLiteral("0,00"));
     if (m_original.valorBruto > 0)
-        m_edtValor->setText(formatCentavos(m_original.valorBruto));
+        m_edtValor->setText(uifmt::formatCentavos(m_original.valorBruto));
     connect(m_edtValor, &QLineEdit::textChanged, this, &LancamentoEntradaDialog::onValoresChanged);
     form->addRow(tr("Valor bruto:"), m_edtValor);
 
@@ -191,14 +166,14 @@ void LancamentoEntradaDialog::buildUi(const QList<FonteRenda> &fontes,
     m_edtIrpf = new QLineEdit(m_grpImpostos);
     m_edtIrpf->setPlaceholderText(QStringLiteral("0,00"));
     if (m_original.irpf > 0)
-        m_edtIrpf->setText(formatCentavos(m_original.irpf));
+        m_edtIrpf->setText(uifmt::formatCentavos(m_original.irpf));
     connect(m_edtIrpf, &QLineEdit::textChanged, this, &LancamentoEntradaDialog::onValoresChanged);
     layImp->addRow(tr("IRPF retido:"), m_edtIrpf);
 
     m_edtInss = new QLineEdit(m_grpImpostos);
     m_edtInss->setPlaceholderText(QStringLiteral("0,00"));
     if (m_original.inss > 0)
-        m_edtInss->setText(formatCentavos(m_original.inss));
+        m_edtInss->setText(uifmt::formatCentavos(m_original.inss));
     connect(m_edtInss, &QLineEdit::textChanged, this, &LancamentoEntradaDialog::onValoresChanged);
     layImp->addRow(tr("INSS retido:"), m_edtInss);
 
@@ -269,11 +244,11 @@ void LancamentoEntradaDialog::buildUi(const QList<FonteRenda> &fontes,
 void LancamentoEntradaDialog::onValoresChanged()
 {
     const bool impAtivo = m_grpImpostos->isChecked();
-    const qint64 bruto  = parseCentavos(m_edtValor->text());
-    const qint64 irpf   = impAtivo ? parseCentavos(m_edtIrpf->text()) : 0LL;
-    const qint64 inss   = impAtivo ? parseCentavos(m_edtInss->text()) : 0LL;
+    const qint64 bruto  = uifmt::parseCentavos(m_edtValor->text());
+    const qint64 irpf   = impAtivo ? uifmt::parseCentavos(m_edtIrpf->text()) : 0LL;
+    const qint64 inss   = impAtivo ? uifmt::parseCentavos(m_edtInss->text()) : 0LL;
     const qint64 liq    = bruto - irpf - inss;
-    m_lblLiquido->setText(QStringLiteral("R$ %1").arg(formatCentavos(liq)));
+    m_lblLiquido->setText(QStringLiteral("R$ %1").arg(uifmt::formatCentavos(liq)));
 }
 
 void LancamentoEntradaDialog::onRecorrenciaToggled(bool recorrente)
@@ -294,10 +269,10 @@ QList<LancamentoEntrada> LancamentoEntradaDialog::lancamentos() const
     QString catNome = mi.data(Qt::UserRole + 1).toString();
     if (catId < 0) { catId = 0; catNome.clear(); } // group header guard
 
-    const qint64 bruto  = parseCentavos(m_edtValor->text());
+    const qint64 bruto  = uifmt::parseCentavos(m_edtValor->text());
     const bool impAtivo = m_grpImpostos->isChecked();
-    const qint64 irpf   = impAtivo ? parseCentavos(m_edtIrpf->text()) : 0LL;
-    const qint64 inss   = impAtivo ? parseCentavos(m_edtInss->text()) : 0LL;
+    const qint64 irpf   = impAtivo ? uifmt::parseCentavos(m_edtIrpf->text()) : 0LL;
+    const qint64 inss   = impAtivo ? uifmt::parseCentavos(m_edtInss->text()) : 0LL;
     const QString obs   = m_edtObs->text().trimmed();
     const QDate baseDate = m_dateEdit->date();
 

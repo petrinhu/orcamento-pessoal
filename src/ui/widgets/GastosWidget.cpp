@@ -6,6 +6,7 @@
 #include "services/GastoService.h"
 #include "core/settings/AppSettings.h"
 #include "core/commands/UndoCommands.h"
+#include "ui/UiFormatters.h"
 
 #include <QUndoStack>
 #include <memory>
@@ -42,15 +43,6 @@ static QString formatMesColuna(QDate d)
     s.remove(u'.');
     if (!s.isEmpty()) s[0] = s[0].toUpper();
     return s;
-}
-
-static QString formatCentavos(qint64 c)
-{
-    const qint64 abs_c = c < 0 ? -c : c;
-    return QStringLiteral("R$ %1%2,%3")
-        .arg(c < 0 ? QStringLiteral("-") : QString())
-        .arg(abs_c / 100)
-        .arg(abs_c % 100, 2, 10, QLatin1Char('0'));
 }
 
 static QTableWidgetItem *readOnlyItem(const QString &text)
@@ -300,7 +292,7 @@ void GastosWidget::recarregar()
             totalMes += g.valor;
     emit statusAtualizado(tr("Gastos %1: %2")
         .arg(cur.toString(QStringLiteral("MMM/yy")))
-        .arg(formatCentavos(totalMes)));
+        .arg(uifmt::formatCentavosBRL(totalMes)));
 
     atualizarResumoFixoVariavel();
 }
@@ -316,9 +308,9 @@ void GastosWidget::atualizarResumoFixoVariavel()
 
     m_lblResumoFV->setText(
         tr("Mês atual — Fixos: <b>%1</b> (%2%) &nbsp;·&nbsp; Variáveis: <b>%3</b>")
-            .arg(formatCentavos(r.totalFixos))
+            .arg(uifmt::formatCentavosBRL(r.totalFixos))
             .arg(QString::number(pctFixos, 'f', 1))
-            .arg(formatCentavos(r.totalVariaveis)));
+            .arg(uifmt::formatCentavosBRL(r.totalVariaveis)));
 }
 
 void GastosWidget::populateTable()
@@ -387,7 +379,7 @@ void GastosWidget::populateTable()
                     readOnlyItem(tipoPgtoLabel(g.tipoPgto)));
 
                 // Col 3: Valor
-                auto *itValor = readOnlyItem(formatCentavos(g.valor));
+                auto *itValor = readOnlyItem(uifmt::formatCentavosBRL(g.valor));
                 itValor->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
                 m_table->setItem(tableRow, baseCol + 3, itValor);
 
@@ -426,7 +418,7 @@ void GastosWidget::populateTable()
 
         qint64 sum = 0;
         for (const auto &g : m_data[k]) sum += g.valor;
-        auto *itSum = readOnlyItem(formatCentavos(sum));
+        auto *itSum = readOnlyItem(uifmt::formatCentavosBRL(sum));
         QFont fs = itSum->font(); fs.setBold(true);
         itSum->setFont(fs);
         itSum->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);

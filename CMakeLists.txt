@@ -136,6 +136,7 @@ set(SOURCES
     src/services/ExportService.cpp
 
     # UI
+    src/ui/UiFormatters.cpp
     src/ui/Theme.cpp
     src/ui/LoginDialog.cpp
     src/ui/MainWindow.cpp

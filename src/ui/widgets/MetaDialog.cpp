@@ -1,5 +1,6 @@
 #include "MetaDialog.h"
 #include "CalculadoraEdit.h"
+#include "ui/UiFormatters.h"
 
 #include <QVBoxLayout>
 #include <QFormLayout>
@@ -8,32 +9,6 @@
 #include <QComboBox>
 #include <QDialogButtonBox>
 #include <QDate>
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-static qint64 parseCentavos(const QString &txt)
-{
-    QString s = txt.trimmed();
-    s.remove(QStringLiteral("R$")).remove(QLatin1Char(' '));
-    if (s.contains(QLatin1Char(',')) && s.contains(QLatin1Char('.'))) {
-        s.remove(QLatin1Char('.'));
-        s.replace(QLatin1Char(','), QLatin1Char('.'));
-    } else if (s.contains(QLatin1Char(','))) {
-        s.replace(QLatin1Char(','), QLatin1Char('.'));
-    }
-    bool ok = false;
-    const double val = s.toDouble(&ok);
-    return ok ? static_cast<qint64>(qRound(val * 100.0)) : 0LL;
-}
-
-static QString formatCentavos(qint64 c)
-{
-    const qint64 abs_c = c < 0 ? -c : c;
-    return QStringLiteral("%1%2,%3")
-        .arg(c < 0 ? QStringLiteral("-") : QString())
-        .arg(abs_c / 100)
-        .arg(abs_c % 100, 2, 10, QLatin1Char('0'));
-}
 
 // ── Constructor ───────────────────────────────────────────────────────────────
 
@@ -74,11 +49,11 @@ void MetaDialog::buildUi(const Meta &m)
     form->addRow(tr("Categoria:"), m_cbCategoria);
 
     m_edtMeta = new CalculadoraEdit(this);
-    m_edtMeta->lineEdit()->setText(formatCentavos(m.valorMeta));
+    m_edtMeta->lineEdit()->setText(uifmt::formatCentavos(m.valorMeta));
     form->addRow(tr("Valor da meta:"), m_edtMeta);
 
     m_edtAtual = new CalculadoraEdit(this);
-    m_edtAtual->lineEdit()->setText(formatCentavos(m.valorAtual));
+    m_edtAtual->lineEdit()->setText(uifmt::formatCentavos(m.valorAtual));
     form->addRow(tr("Valor acumulado:"), m_edtAtual);
 
     m_dtInicio = new QDateEdit(this);
@@ -131,8 +106,8 @@ Meta MetaDialog::meta() const
     m.id         = m_id;
     m.nome       = m_edtNome->text().trimmed();
     m.categoria  = m_cbCategoria->currentData().toString();
-    m.valorMeta  = parseCentavos(m_edtMeta->lineEdit()->text());
-    m.valorAtual = parseCentavos(m_edtAtual->lineEdit()->text());
+    m.valorMeta  = uifmt::parseCentavos(m_edtMeta->lineEdit()->text());
+    m.valorAtual = uifmt::parseCentavos(m_edtAtual->lineEdit()->text());
     m.dataInicio = m_dtInicio->date().toString(Qt::ISODate);
     m.dataPrazo  = (m_dtPrazo->date() == m_dtPrazo->minimumDate())
                    ? QString()

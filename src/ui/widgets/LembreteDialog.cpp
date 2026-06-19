@@ -1,5 +1,6 @@
 #include "LembreteDialog.h"
 #include "CalculadoraEdit.h"
+#include "ui/UiFormatters.h"
 
 #include <QVBoxLayout>
 #include <QFormLayout>
@@ -10,33 +11,6 @@
 #include <QLabel>
 #include <QDialogButtonBox>
 #include <QDate>
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-static qint64 parseCentavos(const QString &txt)
-{
-    QString s = txt.trimmed();
-    s.remove(QStringLiteral("R$")).remove(QLatin1Char(' '));
-    if (s.contains(QLatin1Char(',')) && s.contains(QLatin1Char('.'))) {
-        s.remove(QLatin1Char('.'));
-        s.replace(QLatin1Char(','), QLatin1Char('.'));
-    } else if (s.contains(QLatin1Char(','))) {
-        s.replace(QLatin1Char(','), QLatin1Char('.'));
-    }
-    bool ok = false;
-    const double val = s.toDouble(&ok);
-    return ok ? static_cast<qint64>(qRound(val * 100.0)) : 0LL;
-}
-
-static QString formatCentavos(qint64 c)
-{
-    if (c == 0) return QString();
-    const qint64 abs_c = c < 0 ? -c : c;
-    return QStringLiteral("%1%2,%3")
-        .arg(c < 0 ? QStringLiteral("-") : QString())
-        .arg(abs_c / 100)
-        .arg(abs_c % 100, 2, 10, QLatin1Char('0'));
-}
 
 // ── Constructor ───────────────────────────────────────────────────────────────
 
@@ -63,7 +37,7 @@ void LembreteDialog::buildUi(const Lembrete &l)
     form->addRow(tr("Descrição:"), m_edtDescricao);
 
     m_edtValor = new CalculadoraEdit(this);
-    m_edtValor->lineEdit()->setText(formatCentavos(l.valor));
+    m_edtValor->lineEdit()->setText(uifmt::formatCentavos(l.valor));
     m_edtValor->lineEdit()->setPlaceholderText(tr("Opcional"));
     form->addRow(tr("Valor:"), m_edtValor);
 
@@ -147,7 +121,7 @@ Lembrete LembreteDialog::lembrete() const
     Lembrete l;
     l.id              = m_id;
     l.descricao       = m_edtDescricao->text().trimmed();
-    l.valor           = parseCentavos(m_edtValor->lineEdit()->text());
+    l.valor           = uifmt::parseCentavos(m_edtValor->lineEdit()->text());
     l.dataVenc        = m_dtVenc->date().toString(Qt::ISODate);
     l.frequencia      = m_cbFreq->currentData().toString();
     l.debitoAutomatico = m_chkDebito->isChecked();

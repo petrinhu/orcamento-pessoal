@@ -5,6 +5,7 @@
 #include "services/EntradaService.h"
 #include "services/RecorrenciaService.h"
 #include "core/commands/UndoCommands.h"
+#include "ui/UiFormatters.h"
 
 #include <QUndoStack>
 #include <memory>
@@ -21,15 +22,6 @@
 #include <QFont>
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-
-static QString formatCentavos(qint64 c)
-{
-    const qint64 abs_c = c < 0 ? -c : c;
-    return QStringLiteral("R$ %1%2,%3")
-        .arg(c < 0 ? QStringLiteral("-") : QString())
-        .arg(abs_c / 100)
-        .arg(abs_c % 100, 2, 10, QLatin1Char('0'));
-}
 
 static QString freqLabel(const QString &f)
 {
@@ -155,7 +147,7 @@ void RecorrenciaWidget::popularTabela()
                                         ? tr("Entrada") : tr("Gasto")));
 
         // Col 2: Valor
-        auto *itValor = roItem(formatCentavos(t.valor));
+        auto *itValor = roItem(uifmt::formatCentavosBRL(t.valor));
         itValor->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
         m_table->setItem(row, 2, itValor);
 

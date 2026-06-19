@@ -1,6 +1,7 @@
 #include "RecorrenciaDialog.h"
 #include "CalculadoraEdit.h"
 #include "models/GastoAvulso.h"
+#include "ui/UiFormatters.h"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -60,30 +61,6 @@ static QStandardItemModel *buildGroupedCatModel(const QList<Categoria> &cats,
         }
     }
     return model;
-}
-
-static qint64 parseCentavos(const QString &txt)
-{
-    QString s = txt.trimmed();
-    s.remove(QStringLiteral("R$")).remove(QLatin1Char(' '));
-    if (s.contains(QLatin1Char(',')) && s.contains(QLatin1Char('.'))) {
-        s.remove(QLatin1Char('.'));
-        s.replace(QLatin1Char(','), QLatin1Char('.'));
-    } else if (s.contains(QLatin1Char(','))) {
-        s.replace(QLatin1Char(','), QLatin1Char('.'));
-    }
-    bool ok = false;
-    const double val = s.toDouble(&ok);
-    return ok ? static_cast<qint64>(qRound(val * 100.0)) : 0LL;
-}
-
-static QString formatCentavos(qint64 c)
-{
-    const qint64 abs_c = c < 0 ? -c : c;
-    return QStringLiteral("%1%2,%3")
-        .arg(c < 0 ? QStringLiteral("-") : QString())
-        .arg(abs_c / 100)
-        .arg(abs_c % 100, 2, 10, QLatin1Char('0'));
 }
 
 // ── Construction ──────────────────────────────────────────────────────────────
@@ -243,7 +220,7 @@ void RecorrenciaDialog::populate(const TransacaoRecorrente &tr)
 
     // Valor
     if (tr.valor > 0)
-        m_edtValor->lineEdit()->setText(formatCentavos(tr.valor));
+        m_edtValor->lineEdit()->setText(uifmt::formatCentavos(tr.valor));
 
     // Frequência
     for (int i = 0; i < m_cbFrequencia->count(); ++i) {
@@ -301,7 +278,7 @@ TransacaoRecorrente RecorrenciaDialog::resultado() const
     TransacaoRecorrente t = m_original;
     t.descricao  = m_edtDescricao->text().trimmed();
     t.tipo       = m_cbTipo->currentData().toString();
-    t.valor      = parseCentavos(m_edtValor->lineEdit()->text());
+    t.valor      = uifmt::parseCentavos(m_edtValor->lineEdit()->text());
     t.frequencia = m_cbFrequencia->currentData().toString();
     t.dataInicio = m_dateInicio->date();
     t.dataFim    = m_chkSemFim->isChecked() ? QDate() : m_dateFim->date();

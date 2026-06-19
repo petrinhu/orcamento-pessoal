@@ -3,6 +3,7 @@
 #include "PagadorDialog.h"
 #include "ReceiptAttachmentWidget.h"
 #include "repositories/PagadorRepository.h"
+#include "ui/UiFormatters.h"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -22,30 +23,6 @@
 #include <algorithm>
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-
-static qint64 parseCentavos(const QString &txt)
-{
-    QString s = txt.trimmed();
-    s.remove(QStringLiteral("R$")).remove(QLatin1Char(' '));
-    if (s.contains(QLatin1Char(',')) && s.contains(QLatin1Char('.'))) {
-        s.remove(QLatin1Char('.'));
-        s.replace(QLatin1Char(','), QLatin1Char('.'));
-    } else if (s.contains(QLatin1Char(','))) {
-        s.replace(QLatin1Char(','), QLatin1Char('.'));
-    }
-    bool ok = false;
-    const double val = s.toDouble(&ok);
-    return ok ? static_cast<qint64>(qRound(val * 100.0)) : 0LL;
-}
-
-static QString formatCentavos(qint64 c)
-{
-    const qint64 abs_c = c < 0 ? -c : c;
-    return QStringLiteral("%1%2,%3")
-        .arg(c < 0 ? QStringLiteral("-") : QString())
-        .arg(abs_c / 100)
-        .arg(abs_c % 100, 2, 10, QLatin1Char('0'));
-}
 
 // ── Tipo entries (order matches QComboBox index) ───────────────────────────────
 
@@ -194,7 +171,7 @@ void GastoDialog::buildUi(const QList<Categoria> &categorias)
     m_edtValor = new CalculadoraEdit(this);
     m_edtValor->setPlaceholderText(QStringLiteral("0,00"));
     if (m_original.valor > 0)
-        m_edtValor->setText(formatCentavos(m_original.valor));
+        m_edtValor->setText(uifmt::formatCentavos(m_original.valor));
     form->addRow(tr("Valor:"), m_edtValor);
 
     // ── Data ───────────────────────────────────────────────────────────────
@@ -370,7 +347,7 @@ QList<GastoAvulso> GastoDialog::gastos() const
 {
     const QString descricao = m_edtDescricao->text().trimmed();
     const QString tipoPgto  = m_cbTipo->currentData().toString();
-    const qint64  valor     = parseCentavos(m_edtValor->text());
+    const qint64  valor     = uifmt::parseCentavos(m_edtValor->text());
     const QString obs       = m_edtObs->text().trimmed();
     const QDate   baseDate  = m_dateEdit->date();
     const int     nMeses    = m_rbRecorrente->isChecked() ? m_spnMeses->value() : 1;

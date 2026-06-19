@@ -4,6 +4,7 @@
 #include "services/EntradaService.h"
 #include "core/settings/AppSettings.h"
 #include "core/commands/UndoCommands.h"
+#include "ui/UiFormatters.h"
 
 #include <QUndoStack>
 #include <memory>
@@ -40,15 +41,6 @@ static QString formatMesColuna(QDate d)
     s.remove(u'.');
     if (!s.isEmpty()) s[0] = s[0].toUpper();
     return s;
-}
-
-static QString formatCentavos(qint64 c)
-{
-    const qint64 abs_c = c < 0 ? -c : c;
-    return QStringLiteral("R$ %1%2,%3")
-        .arg(c < 0 ? QStringLiteral("-") : QString())
-        .arg(abs_c / 100)
-        .arg(abs_c % 100, 2, 10, QLatin1Char('0'));
 }
 
 static QTableWidgetItem *readOnlyItem(const QString &text)
@@ -299,7 +291,7 @@ void EntradasWidget::recarregar()
             totalMes += l.valorBruto - l.irpf - l.inss;
     emit statusAtualizado(tr("Entradas %1: %2")
         .arg(cur.toString(QStringLiteral("MMM/yy")))
-        .arg(formatCentavos(totalMes)));
+        .arg(uifmt::formatCentavosBRL(totalMes)));
 }
 
 void EntradasWidget::populateTable()
@@ -366,7 +358,7 @@ void EntradasWidget::populateTable()
                     readOnlyItem(l.categoria));
 
                 // Col 2: Valor líquido
-                auto *itValor = readOnlyItem(formatCentavos(liq));
+                auto *itValor = readOnlyItem(uifmt::formatCentavosBRL(liq));
                 itValor->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
                 m_table->setItem(tableRow, baseCol + 2, itValor);
 
@@ -408,7 +400,7 @@ void EntradasWidget::populateTable()
         qint64 sum = 0;
         for (const auto &l : m_data[k])
             sum += l.valorBruto - l.irpf - l.inss;
-        auto *itSum = readOnlyItem(formatCentavos(sum));
+        auto *itSum = readOnlyItem(uifmt::formatCentavosBRL(sum));
         QFont fs = itSum->font();
         fs.setBold(true);
         itSum->setFont(fs);

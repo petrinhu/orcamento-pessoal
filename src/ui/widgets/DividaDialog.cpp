@@ -1,5 +1,6 @@
 #include "DividaDialog.h"
 #include "CalculadoraEdit.h"
+#include "ui/UiFormatters.h"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -12,32 +13,6 @@
 #include <QComboBox>
 #include <QDialogButtonBox>
 #include <QDate>
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-static qint64 parseCentavos(const QString &txt)
-{
-    QString s = txt.trimmed();
-    s.remove(QStringLiteral("R$")).remove(QLatin1Char(' '));
-    if (s.contains(QLatin1Char(',')) && s.contains(QLatin1Char('.'))) {
-        s.remove(QLatin1Char('.'));
-        s.replace(QLatin1Char(','), QLatin1Char('.'));
-    } else if (s.contains(QLatin1Char(','))) {
-        s.replace(QLatin1Char(','), QLatin1Char('.'));
-    }
-    bool ok = false;
-    const double val = s.toDouble(&ok);
-    return ok ? static_cast<qint64>(qRound(val * 100.0)) : 0LL;
-}
-
-static QString formatCentavos(qint64 c)
-{
-    const qint64 abs_c = c < 0 ? -c : c;
-    return QStringLiteral("%1%2,%3")
-        .arg(c < 0 ? QStringLiteral("-") : QString())
-        .arg(abs_c / 100)
-        .arg(abs_c % 100, 2, 10, QLatin1Char('0'));
-}
 
 // ── Constructor ───────────────────────────────────────────────────────────────
 
@@ -80,11 +55,11 @@ void DividaDialog::buildUi(const Divida &d)
     form->addRow(tr("Descrição:"), m_edtDescricao);
 
     m_edtTotal = new CalculadoraEdit(this);
-    m_edtTotal->lineEdit()->setText(formatCentavos(d.valorTotal));
+    m_edtTotal->lineEdit()->setText(uifmt::formatCentavos(d.valorTotal));
     form->addRow(tr("Valor total:"), m_edtTotal);
 
     m_edtPago = new CalculadoraEdit(this);
-    m_edtPago->lineEdit()->setText(formatCentavos(d.valorPago));
+    m_edtPago->lineEdit()->setText(uifmt::formatCentavos(d.valorPago));
     form->addRow(tr("Valor já pago:"), m_edtPago);
 
     m_spnJuros = new QDoubleSpinBox(this);
@@ -149,8 +124,8 @@ Divida DividaDialog::divida() const
                     : QStringLiteral("divida");
     d.contraparte = m_edtContraparte->text().trimmed();
     d.descricao   = m_edtDescricao->text().trimmed();
-    d.valorTotal  = parseCentavos(m_edtTotal->lineEdit()->text());
-    d.valorPago   = parseCentavos(m_edtPago->lineEdit()->text());
+    d.valorTotal  = uifmt::parseCentavos(m_edtTotal->lineEdit()->text());
+    d.valorPago   = uifmt::parseCentavos(m_edtPago->lineEdit()->text());
     d.jurosMensal = static_cast<int>(qRound(m_spnJuros->value() * 10000.0));
     d.dataInicio  = m_dtInicio->date().toString(Qt::ISODate);
     d.dataVenc    = (m_dtVenc->date() == m_dtVenc->minimumDate())

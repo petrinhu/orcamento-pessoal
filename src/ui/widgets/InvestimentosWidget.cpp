@@ -4,6 +4,7 @@
 #include "repositories/LancamentoInvestimentoRepository.h"
 #include "core/settings/AppSettings.h"
 #include "core/commands/UndoCommands.h"
+#include "ui/UiFormatters.h"
 
 #include <QUndoStack>
 #include <memory>
@@ -50,15 +51,6 @@ static QString formatMesColuna(QDate d)
     s.remove(u'.');
     if (!s.isEmpty()) s[0] = s[0].toUpper();
     return s;
-}
-
-static QString formatCentavos(qint64 c)
-{
-    const qint64 abs_c = c < 0 ? -c : c;
-    return QStringLiteral("R$ %1%2,%3")
-        .arg(c < 0 ? QStringLiteral("-") : QString())
-        .arg(abs_c / 100)
-        .arg(abs_c % 100, 2, 10, QLatin1Char('0'));
 }
 
 static QTableWidgetItem *readOnlyItem(const QString &text)
@@ -314,7 +306,7 @@ void InvestimentosWidget::recarregar()
             saldo += valorSignadoInv(l);
     emit statusAtualizado(tr("Investimentos %1: %2")
         .arg(cur.toString(QStringLiteral("MMM/yy")))
-        .arg(formatCentavos(saldo)));
+        .arg(uifmt::formatCentavosBRL(saldo)));
 
     if (m_chartPanel && m_chartPanel->isVisible())
         atualizarGraficos();
@@ -390,7 +382,7 @@ void InvestimentosWidget::populateTable()
                     readOnlyItem(tipoOpInvLabel(l.tipoOperacao)));
 
                 // Col 4: Valor
-                auto *itValor = readOnlyItem(formatCentavos(l.valor));
+                auto *itValor = readOnlyItem(uifmt::formatCentavosBRL(l.valor));
                 itValor->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
                 m_table->setItem(tableRow, baseCol + 4, itValor);
 
@@ -424,7 +416,7 @@ void InvestimentosWidget::populateTable()
 
         qint64 saldo = 0;
         for (const auto &l : m_data[k]) saldo += valorSignadoInv(l);
-        auto *itSaldo = readOnlyItem(formatCentavos(saldo));
+        auto *itSaldo = readOnlyItem(uifmt::formatCentavosBRL(saldo));
         QFont fs = itSaldo->font(); fs.setBold(true);
         itSaldo->setFont(fs);
         itSaldo->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);

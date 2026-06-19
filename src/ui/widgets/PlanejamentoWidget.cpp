@@ -8,6 +8,7 @@
 #include "services/ResumoService.h"
 #include "core/settings/AppSettings.h"
 #include "core/commands/UndoCommands.h"
+#include "ui/UiFormatters.h"
 
 #include <QUndoStack>
 #include <memory>
@@ -27,15 +28,6 @@
 #include <QColor>
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-
-static QString formatCentavos(qint64 c)
-{
-    const qint64 abs_c = c < 0 ? -c : c;
-    return QStringLiteral("R$ %1%2,%3")
-        .arg(c < 0 ? QStringLiteral("-") : QString())
-        .arg(abs_c / 100)
-        .arg(abs_c % 100, 2, 10, QLatin1Char('0'));
-}
 
 static QTableWidgetItem *roItem(const QString &text)
 {
@@ -294,10 +286,10 @@ void PlanejamentoWidget::recarregar()
         auto *itNome  = roItem(QStringLiteral("    ") + it.nome);
         itNome->setData(Qt::UserRole, it.id);
         m_table->setItem(row, 0, itNome);
-        m_table->setItem(row, 1, roItemRight(formatCentavos(plan)));
-        m_table->setItem(row, 2, roItemRight(formatCentavos(real)));
+        m_table->setItem(row, 1, roItemRight(uifmt::formatCentavosBRL(plan)));
+        m_table->setItem(row, 2, roItemRight(uifmt::formatCentavosBRL(real)));
 
-        auto *itDiff = roItemRight(formatCentavos(diff));
+        auto *itDiff = roItemRight(uifmt::formatCentavosBRL(diff));
         // Color: for despesa diff < 0 = good (spent less); for receita diff > 0 = good (earned more)
         if (diff != 0) {
             const bool good = isDespesa ? (diff < 0) : (diff > 0);
@@ -332,15 +324,15 @@ void PlanejamentoWidget::recarregar()
         itLabel->setFont(f);
         m_table->setItem(row, 0, itLabel);
 
-        auto *itPlan = roItemRight(formatCentavos(planSum));
+        auto *itPlan = roItemRight(uifmt::formatCentavosBRL(planSum));
         itPlan->setFont(f);
         m_table->setItem(row, 1, itPlan);
 
-        auto *itReal = roItemRight(formatCentavos(realSum));
+        auto *itReal = roItemRight(uifmt::formatCentavosBRL(realSum));
         itReal->setFont(f);
         m_table->setItem(row, 2, itReal);
 
-        auto *itDiff = roItemRight(formatCentavos(diff));
+        auto *itDiff = roItemRight(uifmt::formatCentavosBRL(diff));
         itDiff->setFont(f);
         m_table->setItem(row, 3, itDiff);
 
@@ -383,7 +375,7 @@ void PlanejamentoWidget::recarregar()
         m_table->setSpan(row, 0, 1, 1);
 
         auto addSaldoVal = [&](int col, qint64 val) {
-            auto *it = roItemRight(formatCentavos(val));
+            auto *it = roItemRight(uifmt::formatCentavosBRL(val));
             it->setFont(f);
             it->setForeground(QBrush(val >= 0 ? colGreen : colRed));
             m_table->setItem(row, col, it);
@@ -391,7 +383,7 @@ void PlanejamentoWidget::recarregar()
         addSaldoVal(1, planSaldo);
         addSaldoVal(2, realSaldo);
         const qint64 diffSaldo = realSaldo - planSaldo;
-        auto *itDiff = roItemRight(formatCentavos(diffSaldo));
+        auto *itDiff = roItemRight(uifmt::formatCentavosBRL(diffSaldo));
         itDiff->setFont(f);
         itDiff->setForeground(QBrush(diffSaldo >= 0 ? colGreen : colRed));
         m_table->setItem(row, 3, itDiff);
@@ -413,8 +405,8 @@ void PlanejamentoWidget::recarregar()
     emit statusAtualizado(tr("Saldo %1/%2 — planejado: %3 | real: %4")
         .arg(m_mes, 2, 10, QLatin1Char('0'))
         .arg(m_ano)
-        .arg(formatCentavos(planRec - planDesp))
-        .arg(formatCentavos(realSaldo)));
+        .arg(uifmt::formatCentavosBRL(planRec - planDesp))
+        .arg(uifmt::formatCentavosBRL(realSaldo)));
 }
 
 void PlanejamentoWidget::populateTable()

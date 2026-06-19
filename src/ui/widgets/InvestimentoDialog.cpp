@@ -1,6 +1,7 @@
 #include "InvestimentoDialog.h"
 #include "CalculadoraEdit.h"
 #include "ReceiptAttachmentWidget.h"
+#include "ui/UiFormatters.h"
 
 #include <QVBoxLayout>
 #include <QStandardItemModel>
@@ -64,30 +65,6 @@ static QStandardItemModel *buildGroupedCatModel(const QList<Categoria> &cats,
         }
     }
     return model;
-}
-
-static qint64 parseCentavos(const QString &txt)
-{
-    QString s = txt.trimmed();
-    s.remove(QStringLiteral("R$")).remove(QLatin1Char(' '));
-    if (s.contains(QLatin1Char(',')) && s.contains(QLatin1Char('.'))) {
-        s.remove(QLatin1Char('.'));
-        s.replace(QLatin1Char(','), QLatin1Char('.'));
-    } else if (s.contains(QLatin1Char(','))) {
-        s.replace(QLatin1Char(','), QLatin1Char('.'));
-    }
-    bool ok = false;
-    const double val = s.toDouble(&ok);
-    return ok ? static_cast<qint64>(qRound(val * 100.0)) : 0LL;
-}
-
-static QString formatCentavos(qint64 c)
-{
-    const qint64 abs_c = c < 0 ? -c : c;
-    return QStringLiteral("%1%2,%3")
-        .arg(c < 0 ? QStringLiteral("-") : QString())
-        .arg(abs_c / 100)
-        .arg(abs_c % 100, 2, 10, QLatin1Char('0'));
 }
 
 // ── TipoAtivo entries ─────────────────────────────────────────────────────────
@@ -209,23 +186,23 @@ void InvestimentoDialog::buildUi(const QList<Categoria> &categorias)
     m_edtPrecoUnit = new CalculadoraEdit(this);
     m_edtPrecoUnit->setPlaceholderText(QStringLiteral("0,00"));
     if (m_original.precoUnitario > 0)
-        m_edtPrecoUnit->setText(formatCentavos(m_original.precoUnitario));
+        m_edtPrecoUnit->setText(uifmt::formatCentavos(m_original.precoUnitario));
     form->addRow(tr("Preço unitário:"), m_edtPrecoUnit);
 
     // ── Valor ──────────────────────────────────────────────────────────────
     m_edtValor = new CalculadoraEdit(this);
     m_edtValor->setPlaceholderText(QStringLiteral("0,00"));
     if (m_original.valor > 0)
-        m_edtValor->setText(formatCentavos(m_original.valor));
+        m_edtValor->setText(uifmt::formatCentavos(m_original.valor));
     form->addRow(tr("Valor total:"), m_edtValor);
 
     // Auto-calculo: valor = qty * preco quando ambos preenchidos.
     auto recalcValor = [this]() {
         const double qty   = m_spnQty->value();
-        const qint64 preco = parseCentavos(m_edtPrecoUnit->text());
+        const qint64 preco = uifmt::parseCentavos(m_edtPrecoUnit->text());
         if (qty > 0.0 && preco > 0) {
             const qint64 total = static_cast<qint64>(std::round(qty * preco));
-            m_edtValor->setText(formatCentavos(total));
+            m_edtValor->setText(uifmt::formatCentavos(total));
         }
     };
     connect(m_spnQty, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
@@ -310,7 +287,7 @@ QList<LancamentoInvestimento> InvestimentoDialog::lancamentos() const
     const QString nome      = m_edtNome->text().trimmed();
     const QString tipoAtivo = m_cbTipoAtivo->currentData().toString();
     const QString tipoOp    = m_cbOperacao->currentData().toString();
-    const qint64  valor     = parseCentavos(m_edtValor->text());
+    const qint64  valor     = uifmt::parseCentavos(m_edtValor->text());
     const QString obs       = m_edtObs->text().trimmed();
     const QDate   baseDate  = m_dateEdit->date();
     const int     nMeses    = m_rbRecorrente->isChecked() ? m_spnMeses->value() : 1;
@@ -339,7 +316,7 @@ QList<LancamentoInvestimento> InvestimentoDialog::lancamentos() const
         if (i == 0) l.receipt = m_receipt->receipt();
         l.ticker        = m_edtTicker->text().trimmed().toUpper();
         l.quantidade    = m_spnQty->value();
-        l.precoUnitario = parseCentavos(m_edtPrecoUnit->text());
+        l.precoUnitario = uifmt::parseCentavos(m_edtPrecoUnit->text());
         result.append(l);
     }
     return result;
