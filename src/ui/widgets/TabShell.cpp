@@ -26,6 +26,7 @@ TabShell::TabShell(const QString &titulo, QWidget *parent)
 
     m_title = new QLabel(titulo, this);
     m_title->setObjectName(QStringLiteral("title")); // QSS: 16px / weight 600
+    m_title->setProperty("glossarioIgnore", true);   // ajuda nao e rotulo de campo
     QFont fTitle = m_title->font();
     fTitle.setPointSize(fTitle.pointSize() + 4);
     fTitle.setBold(true);
@@ -66,6 +67,7 @@ void TabShell::montarBloco(const QString &bloco, QLabel *&outLabel, QToolButton 
 
     outLabel = new QLabel(this);
     outLabel->setObjectName(QStringLiteral("subtitle")); // QSS: 12px / cinza
+    outLabel->setProperty("glossarioIgnore", true);      // ajuda nao e rotulo de campo
     outLabel->setWordWrap(true);
     outLabel->setTextFormat(Qt::RichText);
     outLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);

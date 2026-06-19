@@ -18,6 +18,7 @@ void aplicarTooltips(QWidget *root)
     if (!root) return;
     const auto labels = root->findChildren<QLabel*>();
     for (auto *lbl : labels) {
+        if (lbl->property("glossarioIgnore").toBool()) continue;
         const QString termo = GlossarioService::primeiroTermoEncontrado(lbl->text());
         if (!termo.isEmpty() && lbl->toolTip().isEmpty()) {
             lbl->setToolTip(GlossarioService::definicao(termo));
@@ -39,6 +40,7 @@ void aplicarLabelsColoquiais(QWidget *root)
 
     // Helper para widgets com text()/setText() (QLabel/QPushButton/QCheckBox/QRadioButton).
     auto aplicarText = [](auto *w) {
+        if (w->property("glossarioIgnore").toBool()) return;
         const QString termo = GlossarioService::primeiroTermoEncontrado(w->text());
         if (termo.isEmpty()) return;
         const QString coloq = GlossarioService::labelColoquial(termo);
