@@ -12,7 +12,7 @@ Arquivo canônico de pendências, auditoria técnica e conformidade com o contra
 - **Status**: ✅ Concluído · 🔄 Em andamento · 🟡 Parcial · ⏳ Pendente · ❄️ Congelado pós-1.0 · 💡 Decisão tomada · 🎨 Pendente design · 🔍 Pendente verificação · ❌ Cancelado
 - **Estado Auditado**: `—` (não auditado) · `✓` (auditado e aprovado) · `⚠` (auditado com ressalvas)
 
-> **Convenção de ID:** `#NN` mantido como identificador estável — usado em commits (`feat(#44): ...`), branches e referências cruzadas. Próximo ID disponível: **#161**.
+> **Convenção de ID:** `#NN` mantido como identificador estável — usado em commits (`feat(#44): ...`), branches e referências cruzadas. Próximo ID disponível: **#163**.
 >
 > **Hierarquia:** itens filhos só começam após pai ✅; irmãos com mesmo prefixo numérico (ex.: `1.2.1` e `1.2.2`) são paralelos.
 
@@ -151,6 +151,8 @@ Arquivo canônico de pendências, auditoria técnica e conformidade com o contra
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | 9 | #160 | FUNC | **Passada de design visual** conduzida pelo `frontend-design`: refinar `Theme`/QSS (paleta, tipografia Inter, espaçamento, hierarquia, elevação, estados), consistência dos componentes, `TabShell`, dark/light. Entrega proposta → usuário ajusta. Inclui o color-coding #159. Moodboard opcional via `claude.ai/design` (web; eu traduzo pro Qt) | Média | #158 | Alta | ⏳ Pendente | — |
 | 9 | #159 | FUNC | **Cores por sinal nos valores** (`=0` azul `Acento`, `>0` verde `Positivo`, `<0` vermelho `Negativo`) nos displays monetários — parte da passada de design #160 | Média | — | Média | ⏳ Pendente | — |
+| 9 | #161 | FUNC | **Dívidas: mostrar juros a.m. E a.a.** (decisão do usuário). a.a. = `(1+i_m)^12 − 1` (compostos). `DividaDialog`: campos a.m./a.a. sincronizados (digita um, atualiza o outro); `DividasWidget`: coluna mostra "X% a.m. (Y% a.a.)". Modelo guarda `jurosMensal` (fonte da verdade) | Média | — | Média | ⏳ Pendente | — |
+| 9 | #162 | FUNC | **Lembretes: cores + contagem dinâmica** (decisão do usuário). 🔴 vencido/não-debitado ("Vencido há X dias") · ⚪ branco "Vence hoje" · 🟡 "Vence em N dias" (N≤3, dinâmico) · 🟢 verde resolvido · futuro sem destaque. Refatorar a lógica de cor/label do `LembretesWidget` | Média | — | Média | ⏳ Pendente | — |
 
 ---
 
