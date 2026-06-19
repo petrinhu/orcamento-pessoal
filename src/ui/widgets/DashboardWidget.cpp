@@ -1,12 +1,6 @@
 #include "DashboardWidget.h"
-#include "services/EntradaService.h"
-#include "services/CompraService.h"
-#include "services/ParcelaService.h"
+#include "services/ResumoService.h"
 #include "services/FechamentoMensalService.h"
-#include "repositories/GastoAvulsoRepository.h"
-#include "repositories/LancamentoInvestimentoRepository.h"
-#include "repositories/ProventoRepository.h"
-#include "models/LancamentoInvestimento.h"
 #include "core/database/DatabaseManager.h"
 #include "core/session/UserSession.h"
 #include "core/settings/AppSettings.h"
@@ -279,79 +273,13 @@ void DashboardWidget::atualizarDados()
     const int mes = m_mes.month();
     const int ano = m_mes.year();
 
-    // ── Entradas do mês ────────────────────────────────────────────────────
-    qint64 totalEntradas = 0;
-    int    cntEntradas   = 0;
-    {
-        const auto todos = EntradaService().lancamentos();
-        for (const auto &l : todos) {
-            if (l.mes == mes && l.ano == ano) {
-                totalEntradas += l.valorBruto - l.irpf - l.inss;
-                ++cntEntradas;
-            }
-        }
-    }
-
-    // ── Gastos do mês ──────────────────────────────────────────────────────
-    qint64 totalGastos = 0;
-    int    cntGastos   = 0;
-    {
-        const auto gastos = GastoAvulsoRepository().findByMesAno(mes, ano);
-        for (const auto &g : gastos) {
-            totalGastos += g.valor;
-            ++cntGastos;
-        }
-    }
-
-    // ── Parcelas do mês ────────────────────────────────────────────────────
-    qint64 totalParcelas = 0;
-    int    cntParcelas   = 0;
-    {
-        CompraService svc;
-        const auto compras = svc.compras();
-        for (const auto &c : compras) {
-            for (const auto &p : svc.parcelasDeCompra(c.id)) {
-                const QDate d = ParcelaService::dataParaParcela(c, p.numero);
-                if (d.year() == ano && d.month() == mes) {
-                    totalParcelas += p.valor;
-                    ++cntParcelas;
-                }
-            }
-        }
-    }
-
-    // ── Investimentos do mês ───────────────────────────────────────────────
-    qint64 totalAportes  = 0;
-    qint64 totalResgates = 0;
-    {
-        const auto invs = LancamentoInvestimentoRepository().findByMesAno(mes, ano);
-        for (const auto &inv : invs) {
-            if (inv.tipoOperacao == QStringLiteral("aporte"))
-                totalAportes += inv.valor;
-            else
-                totalResgates += inv.valor;
-        }
-    }
-    const qint64 invNet = totalResgates - totalAportes;
-
-    // ── Totais anuais ──────────────────────────────────────────────────────
-    qint64 anualEntradas = 0, anualGastos = 0;
-    {
-        const auto todos = EntradaService().lancamentos();
-        for (const auto &l : todos)
-            if (l.ano == ano)
-                anualEntradas += l.valorBruto - l.irpf - l.inss;
-
-        const auto gastos = GastoAvulsoRepository().findAll();
-        for (const auto &g : gastos)
-            if (g.ano == ano)
-                anualGastos += g.valor;
-    }
-
-    // ── Saldos derivados ───────────────────────────────────────────────────
-    const qint64 saldoMes = totalEntradas - totalGastos;
-    const qint64 saldoLiq = totalEntradas - totalGastos - totalParcelas;
-    const qint64 saldoAno = anualEntradas - anualGastos;
+    // ── Agregação centralizada (camada Mid) ────────────────────────────────
+    // Toda a leitura/soma de Entradas, Gastos, Parcelas, Investimentos e
+    // Proventos vive agora em ResumoService (testado por test_resumo.cpp).
+    // Este widget apenas formata os campos pré-calculados.
+    ResumoService svc;
+    const ResumoMensal m = svc.resumoDoMes(mes, ano);
+    const ResumoAnual  a = svc.resumoDoAno(ano);
 
     // ── Atualiza labels ────────────────────────────────────────────────────
     auto setValor = [](QLabel *lbl, qint64 v, bool colored = false) {
@@ -366,39 +294,33 @@ void DashboardWidget::atualizarDados()
         }
     };
 
-    setValor(m_valEntradas,  totalEntradas);
-    setValor(m_valGastos,    totalGastos);
-    setValor(m_valSaldo,     saldoMes,  true);
-    setValor(m_valParcelas,  totalParcelas);
-    setValor(m_valInvNet,    invNet,    true);
-    setValor(m_valSaldoLiq,  saldoLiq,  true);
+    setValor(m_valEntradas,  m.entradasLiquidas);
+    setValor(m_valGastos,    m.gastos);
+    setValor(m_valSaldo,     m.saldoMes,         true);
+    setValor(m_valParcelas,  m.parcelas);
+    setValor(m_valInvNet,    m.investimentosNet, true);
+    setValor(m_valSaldoLiq,  m.saldoLiquido,     true);
 
-    setValor(m_valAnualEntradas, anualEntradas);
-    setValor(m_valAnualGastos,   anualGastos);
-    setValor(m_valAnualSaldo,    saldoAno,  true);
+    setValor(m_valAnualEntradas, a.entradasLiquidas);
+    setValor(m_valAnualGastos,   a.gastos);
+    setValor(m_valAnualSaldo,    a.saldo,            true);
 
     // Sub-labels
-    m_subEntradas->setText(tr("%n lançamento(s)", nullptr, cntEntradas));
-    m_subGastos->setText(tr("%n lançamento(s)", nullptr, cntGastos));
-    m_subParcelas->setText(tr("%n parcela(s)", nullptr, cntParcelas));
+    m_subEntradas->setText(tr("%n lançamento(s)", nullptr, m.cntEntradas));
+    m_subGastos->setText(tr("%n lançamento(s)", nullptr, m.cntGastos));
+    m_subParcelas->setText(tr("%n parcela(s)", nullptr, m.cntParcelas));
     m_subInvNet->setText(tr("Aportes: %1  Resgates: %2")
-        .arg(fmtCentavos(totalAportes))
-        .arg(fmtCentavos(totalResgates)));
+        .arg(fmtCentavos(m.aportes))
+        .arg(fmtCentavos(m.resgates)));
 
     // #66: card Proventos (acumulado ano corrente)
-    {
-        ProventoRepository repoProv;
-        const qint64 totalProvAno = repoProv.totalLiquidoAno(ano);
-        setValor(m_valProventos, totalProvAno);
-        const int qtd = repoProv.findByPeriod(QDate(ano, 1, 1),
-                                              QDate(ano, 12, 31)).size();
-        m_subProventos->setText(tr("%n evento(s) em %1", nullptr, qtd)
-            .arg(ano));
-    }
+    setValor(m_valProventos, a.proventosLiquidos);
+    m_subProventos->setText(tr("%n evento(s) em %1", nullptr, a.cntProventos)
+        .arg(ano));
 
     emit statusAtualizado(tr("Saldo %1: %2  ")
         .arg(m_mes.toString(QStringLiteral("MMM/yy")))
-        .arg(fmtCentavos(saldoMes)));
+        .arg(fmtCentavos(m.saldoMes)));
 
     atualizarGrafico();
 }
@@ -407,33 +329,22 @@ void DashboardWidget::atualizarGrafico()
 {
     const int numMeses = m_cbPeriodo->currentData().toInt();
 
-    // Collect aggregated data for the last N months ending at m_mes
+    // Collect aggregated data for the last N months ending at m_mes.
+    // A agregação mês a mês vem de ResumoService::serie (camada Mid, testada).
     QStringList labels;
     QList<double> valsEntradas, valsGastos, valsSaldo;
 
-    const EntradaService entSvc;
-    const auto todosLanc = entSvc.lancamentos();
-    const auto todosGastos = GastoAvulsoRepository().findAll();
+    const QDate ini = m_mes.addMonths(-(numMeses - 1));
+    const QDate fim = m_mes;
+    ResumoService svc;
+    const auto serie = svc.serie(ini, fim);
 
-    for (int i = numMeses - 1; i >= 0; --i) {
-        const QDate d = m_mes.addMonths(-i);
-        const int   m = d.month();
-        const int   y = d.year();
-
-        qint64 entradas = 0;
-        for (const auto &l : todosLanc)
-            if (l.mes == m && l.ano == y)
-                entradas += l.valorBruto - l.irpf - l.inss;
-
-        qint64 gastos = 0;
-        for (const auto &g : todosGastos)
-            if (g.mes == m && g.ano == y)
-                gastos += g.valor;
-
+    for (const auto &r : serie) {
+        const QDate d(r.ano, r.mes, 1);
         labels << d.toString(QStringLiteral("MMM/yy"));
-        valsEntradas << entradas / 100.0;
-        valsGastos   << gastos   / 100.0;
-        valsSaldo    << (entradas - gastos) / 100.0;
+        valsEntradas << r.entradasLiquidas / 100.0;
+        valsGastos   << r.gastos           / 100.0;
+        valsSaldo    << r.saldoMes         / 100.0;
     }
 
     // ── Bar sets ───────────────────────────────────────────────────────────
