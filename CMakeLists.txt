@@ -326,11 +326,16 @@ install(FILES resources/desktop/org.peubud.PeuBud.desktop
 install(FILES resources/desktop/org.peubud.PeuBud.metainfo.xml
     DESTINATION ${CMAKE_INSTALL_DATADIR}/metainfo)
 
-# Icon PNG real (porco verde + brotinho, 1024x1024) instalado em
-# hicolor/512x512 — KDE/GNOME escalam para tamanhos menores quando precisam.
-install(FILES resources/icon/icon.png
-    DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/512x512/apps
-    RENAME org.peubud.PeuBud.png)
+# Icone hicolor multi-size (#152). PNGs 16..512 gerados a partir do fonte
+# 1024x1024 (resources/icon/icon.png) e instalados em cada bucket hicolor.
+# Sem SVG ainda: nao ha fonte vetorial real — raster -> SVG nao agrega
+# (pendencia de design vetorial).
+foreach(_icon_size 16 22 32 48 64 128 256 512)
+    install(FILES
+        resources/icon/hicolor/${_icon_size}x${_icon_size}/apps/org.peubud.PeuBud.png
+        DESTINATION
+        ${CMAKE_INSTALL_DATADIR}/icons/hicolor/${_icon_size}x${_icon_size}/apps)
+endforeach()
 
 install(FILES resources/desktop/peubud.1
     DESTINATION ${CMAKE_INSTALL_MANDIR}/man1)
@@ -374,14 +379,20 @@ set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS   ON)
 # Fallback explicito caso shlibdeps nao seja executado
 set(CPACK_DEBIAN_PACKAGE_DEPENDS
     "libqt6core6, libqt6gui6, libqt6widgets6, libqt6charts6, libqt6sql6, libqt6network6, libqt6printsupport6, libssl3, libsecret-1-0, libsodium23")
+# poppler-qt6 e opcional (PEUBUD_HAS_POPPLER): habilita import de PDF.
+# Declarado como dependencia fraca (Suggests) — nao bloqueia instalacao.
+set(CPACK_DEBIAN_PACKAGE_SUGGESTS    "libpoppler-qt6-3")
 
 # ── RPM ─────────────────────────────────────────────────────────────────────
 set(CPACK_RPM_PACKAGE_NAME           "peubud")
 set(CPACK_RPM_PACKAGE_GROUP          "Applications/Office")
-set(CPACK_RPM_PACKAGE_LICENSE        "PolyForm Noncommercial 1.0.0")
+set(CPACK_RPM_PACKAGE_LICENSE        "AGPL-3.0-or-later")
 set(CPACK_RPM_PACKAGE_URL            "${CPACK_PACKAGE_HOMEPAGE_URL}")
 set(CPACK_RPM_PACKAGE_REQUIRES
     "qt6-qtbase, qt6-qtcharts, openssl-libs, libsecret, libsodium")
+# poppler-qt6 e opcional (PEUBUD_HAS_POPPLER): habilita import de PDF.
+# Weak dependency RPM — recomendada, mas nao obrigatoria.
+set(CPACK_RPM_PACKAGE_SUGGESTS       "poppler-qt6")
 set(CPACK_RPM_PACKAGE_AUTOREQPROV    ON)
 set(CPACK_RPM_PACKAGE_RELOCATABLE    OFF)
 
