@@ -1,5 +1,8 @@
 #include "FechamentoMensalService.h"
 
+#include "models/ResumoMensal.h"
+#include "services/ResumoService.h"
+
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QSqlError>
@@ -11,38 +14,6 @@ namespace {
 QString periodoStr(const QDate &mes)
 {
     return mes.toString(QStringLiteral("yyyy-MM"));
-}
-
-QDate primeiroDia(const QDate &mes)
-{
-    return QDate(mes.year(), mes.month(), 1);
-}
-
-QDate ultimoDia(const QDate &mes)
-{
-    return QDate(mes.year(), mes.month(), mes.daysInMonth());
-}
-
-qint64 somaCentavos(QSqlDatabase &db, const QString &sql,
-                     const QDate &ini, const QDate &fim)
-{
-    QSqlQuery q(db);
-    q.prepare(sql);
-    q.bindValue(QStringLiteral(":ini"), ini.toString(Qt::ISODate));
-    q.bindValue(QStringLiteral(":fim"), fim.toString(Qt::ISODate));
-    if (!q.exec() || !q.next()) return 0;
-    return q.value(0).toLongLong();
-}
-
-int contaLancamentos(QSqlDatabase &db, const QString &sql,
-                      const QDate &ini, const QDate &fim)
-{
-    QSqlQuery q(db);
-    q.prepare(sql);
-    q.bindValue(QStringLiteral(":ini"), ini.toString(Qt::ISODate));
-    q.bindValue(QStringLiteral(":fim"), fim.toString(Qt::ISODate));
-    if (!q.exec() || !q.next()) return 0;
-    return q.value(0).toInt();
 }
 
 }
@@ -74,39 +45,38 @@ bool FechamentoMensalService::ensureSchema(QSqlDatabase &db, QString *errorOut)
 FechamentoResumo FechamentoMensalService::simulate(QSqlDatabase &db,
                                                      const QDate  &mes)
 {
+    // #144: a versao anterior fazia SQL cru com COLUNAS INEXISTENTES
+    // (lancamentos_entradas.valor/.data, parcelas.vencimento,
+    // lancamentos_investimentos.data) e o COALESCE(...,0) mascarava o erro,
+    // produzindo SEMPRE zero. Alem disso somava entrada BRUTA, enquanto o
+    // resto do app trabalha com LIQUIDO. A correcao delega ao ResumoService,
+    // fonte unica ja testada (#116) que agrega por mes/ano com as colunas
+    // reais (valor_bruto/irpf/inss, mes/ano/dia, dataParaParcela, etc.).
+    //
+    // O parametro `db` e mantido por compatibilidade de assinatura com os
+    // chamadores (DashboardWidget). O ResumoService opera sobre o singleton
+    // DatabaseManager — que e o MESMO banco que o DashboardWidget passa aqui
+    // (DatabaseManager::instance().db()). Marcado como nao-usado de proposito.
+    Q_UNUSED(db);
+
+    const ResumoMensal rm = ResumoService().resumoDoMes(mes.month(), mes.year());
+
     FechamentoResumo r;
-    const QDate ini = primeiroDia(mes);
-    const QDate fim = ultimoDia(mes);
+    r.entradasCentavos = rm.entradasLiquidas;  // LIQUIDO (bruto - irpf - inss)
+    r.gastosCentavos   = rm.gastos;
+    r.parcelasCentavos = rm.parcelas;
 
-    r.entradasCentavos = somaCentavos(db,
-        QStringLiteral("SELECT COALESCE(SUM(valor), 0) FROM lancamentos_entradas "
-                       "WHERE data BETWEEN :ini AND :fim"),
-        ini, fim);
+    // Escolha semantica (#144): investimentos = FLUXO DE CAIXA liquido do mes
+    // (resgates - aportes), NAO patrimonio/posicao. Coerente com o card
+    // Investimentos do Dashboard e com a correcao D0 do ResumoService
+    // (rendimento/dividendo/JCP ficam em Proventos, fora do net). O calculo
+    // antigo (quantidade*preco_unitario) media posicao e estava quebrado.
+    r.investimentosCentavos = rm.investimentosNet;
 
-    r.gastosCentavos = somaCentavos(db,
-        QStringLiteral("SELECT COALESCE(SUM(valor), 0) FROM lancamentos_gastos "
-                       "WHERE data BETWEEN :ini AND :fim"),
-        ini, fim);
+    r.numLancamentos = rm.cntEntradas + rm.cntGastos + rm.cntParcelas;
 
-    r.parcelasCentavos = somaCentavos(db,
-        QStringLiteral("SELECT COALESCE(SUM(valor), 0) FROM parcelas "
-                       "WHERE vencimento BETWEEN :ini AND :fim"),
-        ini, fim);
-
-    r.investimentosCentavos = somaCentavos(db,
-        QStringLiteral("SELECT COALESCE(SUM(quantidade * preco_unitario), 0) "
-                       "FROM lancamentos_investimentos "
-                       "WHERE data BETWEEN :ini AND :fim"),
-        ini, fim);
-
-    r.numLancamentos =
-          contaLancamentos(db, QStringLiteral("SELECT COUNT(*) FROM lancamentos_entradas WHERE data BETWEEN :ini AND :fim"), ini, fim)
-        + contaLancamentos(db, QStringLiteral("SELECT COUNT(*) FROM lancamentos_gastos    WHERE data BETWEEN :ini AND :fim"), ini, fim)
-        + contaLancamentos(db, QStringLiteral("SELECT COUNT(*) FROM parcelas              WHERE vencimento BETWEEN :ini AND :fim"), ini, fim);
-
-    r.saldoLiquidoCentavos = r.entradasCentavos
-                             - r.gastosCentavos
-                             - r.parcelasCentavos;
+    // saldoLiquido = entradas liquidas - gastos - parcelas (igual a rm.saldoLiquido).
+    r.saldoLiquidoCentavos = rm.saldoLiquido;
     return r;
 }
 

@@ -86,6 +86,36 @@ target_link_libraries(test_resumo PRIVATE
     ${LIBSODIUM_LIBRARIES})
 target_include_directories(test_resumo PRIVATE ${LIBSODIUM_INCLUDE_DIRS})
 
+# Teste do FechamentoMensalService (#144). Espelha a cadeia de test_resumo:
+# simulate() delega ao ResumoService, logo precisa da mesma arvore de servicos,
+# repositorios, DatabaseManager e crypto.
+peubud_add_test(test_fechamento
+    ${CMAKE_SOURCE_DIR}/src/services/FechamentoMensalService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/ResumoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/EntradaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/CompraService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/GastoAvulsoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/LancamentoInvestimentoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/ProventoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/LancamentoEntradaRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/FonteRendaRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/CompraRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/ParcelaRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/CartaoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/database/DatabaseManager.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/AjusteCorporativoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/AuditLogService.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/SodiumCryptoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/AesCryptoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/KeyDerivation.cpp)
+target_link_libraries(test_fechamento PRIVATE
+    OpenSSL::SSL
+    OpenSSL::Crypto
+    ${LIBSODIUM_LIBRARIES})
+target_include_directories(test_fechamento PRIVATE ${LIBSODIUM_INCLUDE_DIRS})
+
 # Teste de regressao dos triggers de auditoria (#142, fase RED).
 # Exercita os triggers audit_* criados por createSchema(); prova o bug de
 # colunas inexistentes (NEW.valor / NEW.data / ...). Cadeia minima: apenas
@@ -95,6 +125,20 @@ peubud_add_test(test_audit_triggers
     ${CMAKE_SOURCE_DIR}/src/services/AuditLogService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/AjusteCorporativoService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/FechamentoMensalService.cpp
+    # #144: FechamentoMensalService::simulate delega ao ResumoService; arrastar
+    # sua cadeia para resolver o link mesmo neste teste que so exercita triggers.
+    ${CMAKE_SOURCE_DIR}/src/services/ResumoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/EntradaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/CompraService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/GastoAvulsoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/LancamentoInvestimentoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/LancamentoEntradaRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/FonteRendaRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/CompraRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/ParcelaRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/CartaoRepository.cpp
     ${CMAKE_SOURCE_DIR}/src/repositories/ProventoRepository.cpp
     ${CMAKE_SOURCE_DIR}/src/core/crypto/SodiumCryptoService.cpp
     ${CMAKE_SOURCE_DIR}/src/core/crypto/AesCryptoService.cpp
@@ -114,6 +158,19 @@ peubud_add_test(test_categoria
     ${CMAKE_SOURCE_DIR}/src/services/AuditLogService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/AjusteCorporativoService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/FechamentoMensalService.cpp
+    # #144: cadeia do ResumoService puxada por FechamentoMensalService::simulate.
+    ${CMAKE_SOURCE_DIR}/src/services/ResumoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/EntradaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/CompraService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/GastoAvulsoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/LancamentoInvestimentoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/LancamentoEntradaRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/FonteRendaRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/CompraRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/ParcelaRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/CartaoRepository.cpp
     ${CMAKE_SOURCE_DIR}/src/repositories/ProventoRepository.cpp
     ${CMAKE_SOURCE_DIR}/src/core/crypto/SodiumCryptoService.cpp
     ${CMAKE_SOURCE_DIR}/src/core/crypto/AesCryptoService.cpp
@@ -135,6 +192,19 @@ peubud_add_test(test_gasto_service
     ${CMAKE_SOURCE_DIR}/src/services/AuditLogService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/AjusteCorporativoService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/FechamentoMensalService.cpp
+    # #144: cadeia do ResumoService puxada por FechamentoMensalService::simulate
+    # (GastoAvulsoRepository ja consta acima — nao duplicar).
+    ${CMAKE_SOURCE_DIR}/src/services/ResumoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/EntradaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/CompraService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/LancamentoInvestimentoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/LancamentoEntradaRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/FonteRendaRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/CompraRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/ParcelaRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/CartaoRepository.cpp
     ${CMAKE_SOURCE_DIR}/src/repositories/ProventoRepository.cpp
     ${CMAKE_SOURCE_DIR}/src/core/crypto/SodiumCryptoService.cpp
     ${CMAKE_SOURCE_DIR}/src/core/crypto/AesCryptoService.cpp
