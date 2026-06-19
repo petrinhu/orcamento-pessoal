@@ -34,6 +34,10 @@ peubud_add_test(test_ajustes)
 peubud_add_test(test_sqlite_migrations)
 peubud_add_test(test_parcela_service
     ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp)
+peubud_add_test(test_tvm
+    ${CMAKE_SOURCE_DIR}/src/services/TvmService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp)
 peubud_add_test(test_currency_service
     ${CMAKE_SOURCE_DIR}/src/services/CurrencyService.cpp
     ${CMAKE_SOURCE_DIR}/src/core/currency/FrankfurterProvider.cpp)
