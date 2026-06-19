@@ -21,7 +21,7 @@
 #include "core/database/DatabaseManager.h"
 #include "services/BackupService.h"
 #include "services/BrapiProvider.h"
-#include "services/GlossarioService.h"
+#include "GlossarioDecorator.h"
 #include "services/MarketDataService.h"
 #include "ui/widgets/BolsaWidget.h"
 #include "ui/widgets/CurrencyPanelWidget.h"
@@ -32,6 +32,7 @@
 #include "widgets/ExportDialog.h"
 #include "repositories/CompraRepository.h"
 #include "repositories/ParcelaRepository.h"
+#include "repositories/CartaoRepository.h"
 #include "repositories/LancamentoEntradaRepository.h"
 #include "repositories/GastoAvulsoRepository.h"
 #include "repositories/LancamentoInvestimentoRepository.h"
@@ -61,7 +62,6 @@
 #include <QMessageBox>
 #include <QApplication>
 #include <QClipboard>
-#include <QSqlQuery>
 #include <QPushButton>
 #include <QTimer>
 #include <QDateTime>
@@ -229,18 +229,18 @@ void MainWindow::buildUi()
     // #103 Glossario: aplica tooltips automaticos em labels/buttons com siglas
     // financeiras conhecidas (CET, FIRE, DY, IRPF, etc). Hover mostra
     // definicao em pt-BR sem o usuario precisar saber a sigla.
-    GlossarioService::aplicarTooltips(this);
+    GlossarioDecorator::aplicarTooltips(this);
 
     // #104 Modo Iniciante: se ativo (default), renomeia labels/botoes/grupos
     // para versao coloquial cadastrada em GlossarioService::labelColoquial.
     // Ex.: "FIRE" -> "Aposentadoria Antecipada (FIRE)". No-op em modo Avancado.
-    GlossarioService::aplicarLabelsColoquiais(this);
+    GlossarioDecorator::aplicarLabelsColoquiais(this);
 
     // #105 Microcopy: para cada QFormLayout descendente cujo label tem sigla
     // cadastrada, insere abaixo do campo uma linha cinza pequena explicando
     // em pt-BR plain (ex.: "CET" -> "= juros total ao ano (com IOF e tarifas)").
     // Idempotente. Roda apos labels coloquiais para nao quebrar lookup do termo.
-    GlossarioService::aplicarMicrocopies(this);
+    GlossarioDecorator::aplicarMicrocopies(this);
 
     // Persiste ordem ao soltar aba arrastada
     connect(m_tabs->tabBar(), &QTabBar::tabMoved,
@@ -1101,18 +1101,12 @@ void MainWindow::onExportar(const QString &format)
     if (selected.contains(tr("Cartões"))) {
         CompraRepository  cr;
         ParcelaRepository pr;
+        CartaoRepository  cartaoRepo;
         ExportService::Dataset d;
         d.compras = cr.findAll();
         for (const auto &c : d.compras)
             d.parcelas.append(pr.findByCompra(c.id));
-        QSqlQuery qc(QStringLiteral("SELECT id, apelido FROM cartoes ORDER BY apelido"),
-                     DatabaseManager::instance().db());
-        while (qc.next()) {
-            Cartao ct;
-            ct.id      = qc.value(0).toInt();
-            ct.apelido = qc.value(1).toString();
-            d.cartoes.append(ct);
-        }
+        d.cartoes = cartaoRepo.findAll();
         sections.append({ tr("Cartões"), ExportService::buildTable(d) });
         if (needsTxs) txs += ExportService::ofxFromDataset(d);
     }

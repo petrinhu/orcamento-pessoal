@@ -3,8 +3,6 @@
 #include <QString>
 #include <QStringList>
 
-class QWidget;
-
 // GlossarioService (#103) - dicionario pt-BR de termos financeiros.
 //
 // Resolve o problema: app tem 50+ siglas que pessoa nao-tecnica nao entende.
@@ -38,20 +36,8 @@ public:
     // por word-boundaries). Util para varrer labels existentes.
     [[nodiscard]] static QString primeiroTermoEncontrado(const QString &texto);
 
-    // Helper: percorre `findChildren<QLabel*>` e aplica tooltip automatico
-    // quando o texto bate com algum termo do glossario. Chamar uma vez apos
-    // construir o widget.
-    static void aplicarTooltips(QWidget *root);
-
-    // Aplica labelColoquial em QLabel/QPushButton/QGroupBox/QCheckBox/QRadioButton
-    // se modo iniciante ativo. Texto original "FIRE" -> "Aposentadoria Antecipada (FIRE)".
-    // Chamar apos aplicarTooltips em MainWindow::buildUi. (#104)
-    static void aplicarLabelsColoquiais(QWidget *root);
-
-    // (#105) Inspeciona QFormLayout em todos descendentes; para cada linha cujo
-    // label contem sigla cadastrada e que tem microcopy nao-vazio, insere uma
-    // linha logo abaixo com QLabel cinza pequeno (11px) explicando em pt-BR
-    // plain. Idempotente: chamadas repetidas nao adicionam duplicatas (marca
-    // o QLabel inserido com property "microcopy" = true).
-    static void aplicarMicrocopies(QWidget *root);
+    // NOTA (#125): a aplicacao em arvore de QWidget (tooltips, labels coloquiais,
+    // microcopy) foi movida para a camada Front em ui/GlossarioDecorator.{h,cpp}
+    // para eliminar o furo de camada Mid->Front. Este servico mantem apenas os
+    // DADOS puros do glossario (acima).
 };

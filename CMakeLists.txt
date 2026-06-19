@@ -138,6 +138,7 @@ set(SOURCES
     # UI
     src/ui/UiFormatters.cpp
     src/ui/Theme.cpp
+    src/ui/GlossarioDecorator.cpp
     src/ui/LoginDialog.cpp
     src/ui/MainWindow.cpp
     src/ui/widgets/ParcelasWidget.cpp

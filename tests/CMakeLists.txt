@@ -58,6 +58,7 @@ peubud_add_test(test_external_process
     ${CMAKE_SOURCE_DIR}/src/services/external/ExternalProcessProvider.cpp)
 peubud_add_test(test_glossario
     ${CMAKE_SOURCE_DIR}/src/services/GlossarioService.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/GlossarioDecorator.cpp
     ${CMAKE_SOURCE_DIR}/src/core/settings/AppSettings.cpp
     ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp
     # #123: ParcelaService usa FinanceEngine::pmt.

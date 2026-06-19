@@ -7,6 +7,7 @@
 #include <QWidget>
 #include "core/settings/AppSettings.h"
 #include "services/GlossarioService.h"
+#include "ui/GlossarioDecorator.h"
 
 class TestGlossario : public QObject
 {
@@ -99,7 +100,7 @@ void TestGlossario::aplicarLabelsColoquiaisRenomeia()
     AppSettings::instance().setModoIniciante(true);
     QWidget root;
     auto *lbl = new QLabel(QStringLiteral("Calcular FIRE"), &root);
-    GlossarioService::aplicarLabelsColoquiais(&root);
+    GlossarioDecorator::aplicarLabelsColoquiais(&root);
     QVERIFY(lbl->text().contains(QStringLiteral("Aposentadoria")));
     QVERIFY(lbl->text().contains(QStringLiteral("(FIRE)")));
 }
@@ -109,7 +110,7 @@ void TestGlossario::aplicarLabelsRespeitaModoAvancado()
     AppSettings::instance().setModoIniciante(false);
     QWidget root;
     auto *lbl = new QLabel(QStringLiteral("Calcular FIRE"), &root);
-    GlossarioService::aplicarLabelsColoquiais(&root);
+    GlossarioDecorator::aplicarLabelsColoquiais(&root);
     QCOMPARE(lbl->text(), QStringLiteral("Calcular FIRE"));
     AppSettings::instance().setModoIniciante(true); // restaura default
 }
@@ -120,7 +121,7 @@ void TestGlossario::aplicarMicrocopiesAdicionaLabelCinza()
     auto *form = new QFormLayout(&root);
     form->addRow(new QLabel(QStringLiteral("CET (% a.a.):"), &root),
                  new QLineEdit(&root));
-    GlossarioService::aplicarMicrocopies(&root);
+    GlossarioDecorator::aplicarMicrocopies(&root);
     // 1 linha original + 1 linha microcopy = 2.
     QCOMPARE(form->rowCount(), 2);
     auto *fieldItem = form->itemAt(1, QFormLayout::FieldRole);
@@ -138,8 +139,8 @@ void TestGlossario::aplicarMicrocopiesIdempotente()
     auto *form = new QFormLayout(&root);
     form->addRow(new QLabel(QStringLiteral("CET"), &root),
                  new QLineEdit(&root));
-    GlossarioService::aplicarMicrocopies(&root);
-    GlossarioService::aplicarMicrocopies(&root); // 2a chamada nao duplica
+    GlossarioDecorator::aplicarMicrocopies(&root);
+    GlossarioDecorator::aplicarMicrocopies(&root); // 2a chamada nao duplica
     QCOMPARE(form->rowCount(), 2);
 }
 
