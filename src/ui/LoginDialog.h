@@ -15,6 +15,7 @@ class LoginDialog final : public QDialog {
     Q_OBJECT
 public:
     explicit LoginDialog(QWidget *parent = nullptr);
+    ~LoginDialog() override;   // (#128) zera o material de chave em memória
 
     QString    nome()     const;
     QByteArray chave()    const; // Argon2id-derived key (empty in debug)

@@ -60,9 +60,14 @@ peubud_add_test(test_glossario
     ${CMAKE_SOURCE_DIR}/src/services/GlossarioService.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/GlossarioDecorator.cpp
     ${CMAKE_SOURCE_DIR}/src/core/settings/AppSettings.cpp
+    # #129: AppSettings::brapiToken usa SecretStoreService (libsecret).
+    ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp
     # #123: ParcelaService usa FinanceEngine::pmt.
     ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp)
+# SecretStoreService puxa libsecret; linkar explicitamente.
+target_link_libraries(test_glossario PRIVATE ${LIBSECRET_LIBRARIES})
+target_include_directories(test_glossario PRIVATE ${LIBSECRET_INCLUDE_DIRS})
 peubud_add_test(test_resumo
     ${CMAKE_SOURCE_DIR}/src/services/ResumoService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/EntradaService.cpp

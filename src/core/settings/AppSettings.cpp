@@ -1,7 +1,13 @@
 #include "AppSettings.h"
 #include "services/ParcelaService.h"
+#include "core/secret/SecretStoreService.h"
 
 #include <QStandardPaths>
+
+// App name compartilhado com o cofre do sistema (mesmo usado para o salt
+// no LoginDialog). Mantém os segredos do PeuBud agrupados na mesma coleção.
+static const QString kSecretAppName = QStringLiteral("orcamento-pessoal");
+static const QString kBrapiTokenKey = QStringLiteral("market/brapi_token");
 
 AppSettings &AppSettings::instance()
 {
@@ -151,13 +157,40 @@ void AppSettings::setMarketDefaultProvider(const QString &providerName)
 
 QString AppSettings::brapiToken() const
 {
-    return m_s.value(QStringLiteral("market/brapi_token")).toString();
+    // Backend: cofre do sistema (libsecret). API key não deve ficar em claro
+    // em ~/.config. Migração transparente de valores antigos persistidos em
+    // QSettings (versões anteriores guardavam em texto claro).
+    SecretStoreService store(kSecretAppName);
+    const QByteArray fromVault = store.retrieve(kBrapiTokenKey);
+    if (!fromVault.isEmpty())
+        return QString::fromUtf8(fromVault);
+
+    // Migração lazy: se ainda houver valor legado no QSettings, move-o para o
+    // cofre e limpa o QSettings, retornando o valor já migrado.
+    const QString legacy =
+        m_s.value(kBrapiTokenKey).toString();
+    if (!legacy.isEmpty()) {
+        if (store.store(kBrapiTokenKey, legacy.toUtf8()))
+            m_s.remove(kBrapiTokenKey);   // só apaga após gravar no cofre
+        return legacy;
+    }
+
+    return {};
 }
 
 void AppSettings::setBrapiToken(const QString &token)
 {
-    if (m_s.value(QStringLiteral("market/brapi_token")).toString() == token) return;
-    m_s.setValue(QStringLiteral("market/brapi_token"), token);
+    if (brapiToken() == token) return;
+
+    SecretStoreService store(kSecretAppName);
+    if (token.isEmpty())
+        store.remove(kBrapiTokenKey);
+    else
+        store.store(kBrapiTokenKey, token.toUtf8());
+
+    // Garante que não sobre cópia legada em claro no QSettings.
+    m_s.remove(kBrapiTokenKey);
+
     emit marketSettingsChanged();
 }
 

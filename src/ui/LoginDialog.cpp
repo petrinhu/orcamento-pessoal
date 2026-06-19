@@ -15,6 +15,8 @@
 #include <QRegularExpression>
 #include <QMessageBox>
 
+#include <sodium.h>  // sodium_memzero — apaga chaves derivadas no destrutor
+
 static const QString APP_NAME   = QStringLiteral("orcamento-pessoal");
 static const QString SALT_SUFFIX = QStringLiteral("/salt");
 
@@ -31,6 +33,17 @@ LoginDialog::LoginDialog(QWidget *parent)
     const QString last = UserSession::instance().loadLastName();
     if (!last.isEmpty())
         m_nome->setText(last);
+}
+
+LoginDialog::~LoginDialog()
+{
+    // (#128) Zera as chaves derivadas mantidas pelo dialog. O chamador (main)
+    // já copiou os valores para variáveis locais antes de usá-los; estas são as
+    // cópias COW residentes no dialog, vivas enquanto o objeto existir.
+    if (!m_chave.isEmpty())
+        sodium_memzero(m_chave.data(), static_cast<size_t>(m_chave.size()));
+    if (!m_chaveOld.isEmpty())
+        sodium_memzero(m_chaveOld.data(), static_cast<size_t>(m_chaveOld.size()));
 }
 
 QString    LoginDialog::nome()     const { return m_nome->text().trimmed(); }

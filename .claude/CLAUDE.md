@@ -18,7 +18,7 @@ Debian e Arch como alvos secundários de distribuição).
 - **Linguagem:** C++20
 - **UI:** Qt6 (Widgets, Charts)
 - **Banco de dados:** SQLite via QSQLITE (built-in no Qt6)
-- **Criptografia:** OpenSSL — AES-256-CBC, PBKDF2-SHA256 (600.000 iterações)
+- **Criptografia:** libsodium — AEAD AES-256-GCM (com AES-NI) ou XChaCha20-Poly1305 (fallback), chave derivada por Argon2id (MODERATE: ops=3, mem=256 MB). Formato `.pbd` v1 (magic `PBD\x01`). Legado AES-256-CBC + PBKDF2-SHA256 (600k iter, OpenSSL) só para **leitura** de arquivos antigos — migrado de forma transparente para o formato novo no próximo save/close.
 - **Segredos do sistema:** libsecret (Secret Service API → KWallet/GNOME Keyring)
 - **Build:** CMake 3.16+
 - **Plataforma:** Fedora 43 / KDE Plasma (primário)
@@ -57,8 +57,9 @@ src/
       ISecretStore.h         # SRP: só armazenamento de segredos
       IRepository.h          # Repositório genérico (template)
     crypto/
-      AesCryptoService.h/cpp # AES-256-CBC (debug: sem crypto)
-      KeyDerivation.h/cpp    # PBKDF2-SHA256, 600k iter
+      SodiumCryptoService.h/cpp # ATIVO: AEAD AES-GCM/XChaCha20 + Argon2id (debug: sem crypto)
+      AesCryptoService.h/cpp # LEGACY (só leitura): AES-256-CBC
+      KeyDerivation.h/cpp    # LEGACY (só leitura): PBKDF2-SHA256, 600k iter
     secret/
       SecretStoreService.h/cpp # libsecret → KWallet/GNOME Keyring
     database/

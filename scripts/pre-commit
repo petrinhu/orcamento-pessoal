@@ -19,13 +19,13 @@ if [ ${#CPP_FILES[@]} -gt 0 ]; then
   echo "▶ pre-commit: ${#CPP_FILES[@]} arquivo(s) C++ staged"
 
   # cppcheck nos arquivos staged
-  # GATE só de bugs reais: --enable=warning (+performance). NÃO incluir 'style'
-  # (vira ruído de NIT) nem 'portability' (idem). --library=qt evita falso-positivo
-  # 'unknownMacro: slots/signals'. --language=c++ --std=c++20 força parse correto de
-  # headers (sem isso, cppcheck trata .h como C e gera syntaxError espúrio).
+  # GATE só de BUGS reais: --enable=warning. NÃO incluir 'performance' (nit tipo
+  # returnByReference), 'style' nem 'portability' (viram ruído e barram commit bom).
+  # --library=qt evita falso-positivo 'unknownMacro: slots/signals'. --language=c++
+  # --std=c++20 força parse correto de headers (sem isso, .h vira C → syntaxError).
   if command -v cppcheck >/dev/null 2>&1; then
-    echo "  ▸ cppcheck (gate: warning,performance) …"
-    cppcheck --enable=warning,performance \
+    echo "  ▸ cppcheck (gate: warning) …"
+    cppcheck --enable=warning \
              --library=qt \
              --language=c++ --std=c++20 \
              --inline-suppr \

@@ -14,6 +14,26 @@
 #include <QDebug>
 #include <stdexcept>
 
+#include <sys/stat.h>   // chmod — restringe o diretório de dados a 0700
+#include <sodium.h>     // sodium_memzero — apaga a chave após o último uso
+
+namespace {
+
+// Garante que o diretório `data/` exista e tenha permissões 0700 (apenas o
+// dono lê/escreve/entra). O `.db` em claro vive aqui durante a sessão; em um
+// sistema multiusuário, 0700 impede que outros usuários locais leiam o SQLite
+// decifrado. Não altera onde o `.pbd` é procurado (mesmo diretório relativo).
+void ensureDataDirSecure()
+{
+    const QString dataDir = QStringLiteral("data");
+    QDir().mkpath(dataDir);
+    // chmod 0700 é idempotente; ignora falha silenciosamente (ex.: FS sem
+    // suporte a permissões POSIX). Best-effort hardening, não bloqueante.
+    ::chmod(QFile::encodeName(dataDir).constData(), S_IRWXU);
+}
+
+} // namespace
+
 DatabaseManager &DatabaseManager::instance()
 {
     static DatabaseManager inst;
@@ -29,7 +49,7 @@ bool DatabaseManager::open(const QString &slug,
                            const QByteArray &keyNew,
                            const QByteArray &keyLegacy)
 {
-    QDir().mkpath(QStringLiteral("data"));
+    ensureDataDirSecure();   // mkpath + chmod 0700 no diretório de dados
 
     m_slug        = slug;
     m_key         = keyNew;
@@ -38,6 +58,14 @@ bool DatabaseManager::open(const QString &slug,
     m_dbPath      = QStringLiteral("data/.%1.db").arg(slug);
 
 #ifndef QT_DEBUG
+    // (#127c) Limpa `.db` em claro órfão de uma sessão anterior que não fechou
+    // limpo (ex.: crash/kill — o close() normal já remove o `.db`). Em release a
+    // fonte de verdade é sempre o `.pbd`; o `.db` é puramente derivado, então é
+    // seguro descartá-lo aqui. Reduz a janela de exposição do banco em claro.
+    // (Em QT_DEBUG NÃO se remove: lá o `.db` É a fonte de verdade — sem `.pbd`.)
+    if (QFile::exists(m_dbPath))
+        QFile::remove(m_dbPath);
+
     const QString pbdPath = QStringLiteral("data/%1.pbd").arg(slug);
     if (QFile::exists(pbdPath)) {
         if (!decryptAndLoad(pbdPath, m_dbPath, keyNew, keyLegacy))
@@ -88,6 +116,18 @@ void DatabaseManager::close()
 #endif
 
     QFile::remove(dbPath);
+
+    // (#128) A partir daqui a sessão está encerrada e a chave não é mais
+    // necessária (a re-cifragem acima foi o último uso). Zera o material da
+    // chave nesta cópia COW antes de soltá-la. close() só é chamado no fim do
+    // app / destrutor — import/export NÃO passam por aqui, então não há risco
+    // de zerar uma chave ainda em uso.
+    if (!m_key.isEmpty())
+        sodium_memzero(m_key.data(), static_cast<size_t>(m_key.size()));
+    if (!m_keyLegacy.isEmpty())
+        sodium_memzero(m_keyLegacy.data(), static_cast<size_t>(m_keyLegacy.size()));
+    m_key.clear();
+    m_keyLegacy.clear();
 }
 
 bool DatabaseManager::isOpen() const
@@ -589,5 +629,10 @@ bool DatabaseManager::decryptAndLoad(const QString &encPath,
     QFile out(dbPath);
     if (!out.open(QIODevice::WriteOnly)) return false;
     out.write(plain);
+    out.close();
+
+    // (#127a) Restringe o `.db` em claro a 0600 (somente o dono lê/escreve).
+    // Best-effort; complementa o 0700 do diretório.
+    out.setPermissions(QFileDevice::ReadOwner | QFileDevice::WriteOwner);
     return true;
 }

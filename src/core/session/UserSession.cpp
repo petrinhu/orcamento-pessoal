@@ -3,6 +3,8 @@
 #include <QSettings>
 #include <QRegularExpression>
 
+#include <sodium.h>   // sodium_memzero — apaga a chave em memória no logout
+
 UserSession &UserSession::instance()
 {
     static UserSession inst;
@@ -19,6 +21,16 @@ void UserSession::login(const QString &name, const QByteArray &key)
 void UserSession::logout()
 {
     m_name.clear();
+
+    // (#128) Zera o material da chave em memória antes de soltar o buffer.
+    // QByteArray::clear() apenas dessacia o ponteiro (COW) — não apaga os bytes.
+    // sodium_memzero(data()) força o detach e apaga ESTE buffer. Só executa
+    // quando há chave (em QT_DEBUG a chave é vazia).
+    // Limitação conhecida: se a chave foi copiada por valor para outras
+    // instâncias COW (ex.: DatabaseManager::m_key), aquelas cópias têm seu
+    // próprio wipe nos respectivos pontos de destruição — ver close().
+    if (!m_key.isEmpty())
+        sodium_memzero(m_key.data(), static_cast<size_t>(m_key.size()));
     m_key.clear();
 }
 

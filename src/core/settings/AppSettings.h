@@ -88,5 +88,7 @@ signals:
 
 private:
     explicit AppSettings();
-    QSettings m_s;
+    // mutable: getters const (ex.: brapiToken) podem migrar/limpar segredos
+    // legados do QSettings de forma transparente.
+    mutable QSettings m_s;
 };

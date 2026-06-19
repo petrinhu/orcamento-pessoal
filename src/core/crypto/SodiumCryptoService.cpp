@@ -164,7 +164,10 @@ QByteArray SodiumCryptoService::deriveKey(const QString &password, const QByteAr
     if (salt.size() != static_cast<int>(crypto_pwhash_SALTBYTES))
         throw std::runtime_error("Salt must be crypto_pwhash_SALTBYTES (16) bytes");
 
-    const QByteArray passBytes = password.toUtf8();
+    // Cópia mutável da senha em bytes, para podermos zerá-la após derivar.
+    // QByteParray::data() força o detach (cópia única, COW), garantindo que o
+    // sodium_memzero abaixo apague ESTE buffer e não um compartilhado.
+    QByteArray passBytes = password.toUtf8();
     QByteArray key(32, '\0');
 
     const int ret = crypto_pwhash(
@@ -173,6 +176,11 @@ QByteArray SodiumCryptoService::deriveKey(const QString &password, const QByteAr
         reinterpret_cast<const unsigned char *>(salt.constData()),
         ARGON2ID_OPS, ARGON2ID_MEM,
         crypto_pwhash_ALG_ARGON2ID13);
+
+    // (#128) Zera a senha em claro assim que não é mais necessária (após a
+    // derivação), independentemente de sucesso/falha. Reduz a janela em que a
+    // senha do usuário fica residente em memória.
+    sodium_memzero(passBytes.data(), static_cast<size_t>(passBytes.size()));
 
     if (ret != 0)
         throw std::runtime_error("Argon2id key derivation failed — out of memory?");

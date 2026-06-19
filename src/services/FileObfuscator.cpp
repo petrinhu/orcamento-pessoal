@@ -4,7 +4,6 @@
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QSqlRecord>
-#include <QCryptographicHash>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QFile>
@@ -39,9 +38,11 @@ QString anonimizar(const QString &original, const char *prefixoDummy, int seqId)
     if (original.isEmpty()) return {};
     const QString prefixo = QString::fromLatin1(prefixoDummy);
     if (prefixo == QStringLiteral("d_")) {
-        const QByteArray h = QCryptographicHash::hash(
-            original.toUtf8(), QCryptographicHash::Md5);
-        return prefixo + QString::fromLatin1(h.toHex().left(10));
+        // Mapeamento sequencial irreversível ("d_1", "d_2", ...). Substitui o
+        // antigo hash MD5: hash do texto original é REVERSÍVEL na prática
+        // (dicionário/rainbow para descrições curtas) e dava falsa sensação de
+        // anonimato. O índice sequencial não carrega informação do original.
+        return prefixo + QString::number(seqId);
     }
     return QStringLiteral("%1 %2").arg(prefixo).arg(seqId);
 }

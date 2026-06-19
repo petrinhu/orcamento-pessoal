@@ -17,7 +17,13 @@ class QSqlDatabase;
 //   - Pagadores            -> "Pessoa 1", "Pessoa 2", ...
 //   - Categorias           -> "Categoria 1", "Categoria 2", ...
 //   - Cartoes              -> "Cartao 1", "Cartao 2", ...
-//   - Descricoes livres    -> hash MD5 truncado (10 chars) prefixado por "d_"
+//   - Descricoes livres    -> "d_1", "d_2", ... (sequencial irreversível)
+//
+// ATENCAO (escopo de seguranca): este export NAO mascara valores monetarios,
+// datas nem IDs (por design — preservam a forma do bug). Portanto NAO e
+// anonimizacao forte: padroes de gasto/data ainda sao observaveis. Use apenas
+// para bug reports onde o texto livre e o que precisa ser ocultado. Sem
+// consumidor na UI no momento.
 //
 // Padrao de grisbi/src/file_obfuscate.c.
 class FileObfuscator
