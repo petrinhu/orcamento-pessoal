@@ -12,7 +12,7 @@ Arquivo canônico de pendências, auditoria técnica e conformidade com o contra
 - **Status**: ✅ Concluído · 🔄 Em andamento · 🟡 Parcial · ⏳ Pendente · ❄️ Congelado pós-1.0 · 💡 Decisão tomada · 🎨 Pendente design · 🔍 Pendente verificação · ❌ Cancelado
 - **Estado Auditado**: `—` (não auditado) · `✓` (auditado e aprovado) · `⚠` (auditado com ressalvas)
 
-> **Convenção de ID:** `#NN` mantido como identificador estável — usado em commits (`feat(#44): ...`), branches e referências cruzadas. Próximo ID disponível: **#142**.
+> **Convenção de ID:** `#NN` mantido como identificador estável — usado em commits (`feat(#44): ...`), branches e referências cruzadas. Próximo ID disponível: **#146**.
 >
 > **Hierarquia:** itens filhos só começam após pai ✅; irmãos com mesmo prefixo numérico (ex.: `1.2.1` e `1.2.2`) são paralelos.
 
@@ -44,8 +44,9 @@ Arquivo canônico de pendências, auditoria técnica e conformidade com o contra
 
 | Onda | ID | Grupo | Descrição Técnica | Prioridade | Pré-requisito | Dificuldade | Status | Estado Auditado |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| 1 | #115 | AUDIT | Extrair `ResumoService`/`DashboardService` (camada Mid) agregando entradas+gastos+parcelas+investimentos+proventos+saldos; remove lógica inline de `DashboardWidget.cpp:275-404` | Alta | #113 | Alta | ⏳ Pendente | — |
-| 1 | #116 | TESTE | Testes do `ResumoService`: consolidação mensal/anual, mês vazio, sinais receita−despesa, líquido de IR/INSS, bordas de período | Alta | #115 | Média | ⏳ Pendente | — |
+| 1 | #115 | AUDIT | Extrair `ResumoService` (camada Mid) agregando entradas+gastos+parcelas+investimentos+proventos+saldos; remove lógica inline de `DashboardWidget.cpp:275-404`. **Entregue:** `ResumoService` (resumoDoMes/resumoDoAno/serie) + structs POD `ResumoMensal`/`ResumoAnual` em models/; D0 aplicado (dividendo/rendimento fora de aportes/resgates — sem dupla contagem); sem interface (1 impl). Verificado por #116. | Alta | #113 | Alta | ✅ Concluído | ✓ |
+| 1 | #116 | TESTE | Testes do `ResumoService`: consolidação mensal/anual, mês vazio, sinais D0, líquido de IR/INSS, virada de mês, série. **Entregue:** `tests/test_resumo.cpp` (12 casos, SQLite de teste), ctest 20/20 verde. | Alta | #115 | Média | ✅ Concluído | ✓ |
+| 1 | #142 | BUG | **CRÍTICO (achado em #116):** triggers `audit_*` (#92) referenciavam colunas inexistentes → SQLite cria o trigger mas falha no disparo, **abortando INSERT/UPDATE/DELETE nas 7 tabelas financeiras** em qualquer banco aberto pós-#92. **Entregue:** `kTabelas` corrigido p/ colunas reais + `ensureSchema` dropa/recria triggers a cada abertura (sanea bancos quebrados); `tests/test_audit_triggers.cpp` (7 INSERTs com triggers ativos). ctest 20/20. | Crítica | — | Média | ✅ Concluído | ✓ |
 | 1 | #117 | FUNC | Migrar `DashboardWidget` para consumir `ResumoService` (UI burra); cards dependentes de preço RT (#45/#58) exibem placeholder explícito; integrar card de proventos (#66 follow-up) | Alta | #116 | Média | ⏳ Pendente | — |
 
 ### Onda 2 — Gastos fixos vs variáveis (prioridade 2 do usuário)
@@ -66,6 +67,9 @@ Arquivo canônico de pendências, auditoria técnica e conformidade com o contra
 | 3 | #124 | BUG | Checar retorno de `q.exec()` em PriceRepository/Compra/Lembrete/Meta/Divida (falha silenciosa) | Alta | — | Baixa | ⏳ Pendente | — |
 | 3 | #125 | AUDIT | Migrar QtSql inline em `MainWindow.cpp:64,1108` → `CartaoRepository`; mover `GlossarioService::aplicarTooltips` (Mid→Front) para helper de UI | Média | — | Média | ⏳ Pendente | — |
 | 3 | #126 | AUDIT | Concluir extração #34: 16 widgets que instanciam Repository direto (exceto os de Gastos, já na Onda 2) | Média | — | Média | ⏳ Pendente | — |
+| 3 | #143 | INFRA | Higiene de toolchain: instalar hook `scripts/pre-commit` em `.git/hooks/`, passar `--library=qt` ao cppcheck (corrige falso-positivo no `slots`), tornar clang-tidy não-fatal/consertar crash no GCC 16, e passe global de nits clang-tidy (chaves, `std::array`) | Média | — | Média | ⏳ Pendente | — |
+| 3 | #144 | AUDIT | Unificar `FechamentoMensalService` para consumir `ResumoService` (D1 — hoje Fechamento soma bruto e Dashboard usa líquido = 2 fontes de verdade divergentes) | Média | #115 | Média | ⏳ Pendente | — |
+| 3 | #145 | AUDIT | `PlanejamentoWidget` e `TendenciasWidget` consumirem `ResumoService` (D4 — hoje recalculam a mesma agregação inline) | Baixa | #115 | Média | ⏳ Pendente | — |
 
 ### Onda 4 — Hardening de segurança pré-release (4 IMPORTANTES, 0 crítico)
 
