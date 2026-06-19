@@ -14,7 +14,7 @@
 //   acima de 7.786,02     -> teto R$ 908,85
 qint64 FiscalService::inssMensal2024(qint64 brutoCentavos)
 {
-    if (brutoCentavos <= 0) return 0;
+    if (brutoCentavos <= 0) { return 0; }
 
     constexpr qint64 F1 = 141200;   // R$ 1.412,00
     constexpr qint64 F2 = 266668;   // R$ 2.666,68
@@ -23,14 +23,20 @@ qint64 FiscalService::inssMensal2024(qint64 brutoCentavos)
     constexpr qint64 TETO = 90885;  // R$ 908,85
 
     const qint64 b = std::min<qint64>(brutoCentavos, F4);
-    double inss = 0.0;
-    inss += std::min<qint64>(b, F1) * 0.075;
-    if (b > F1) inss += (std::min<qint64>(b, F2) - F1) * 0.090;
-    if (b > F2) inss += (std::min<qint64>(b, F3) - F2) * 0.120;
-    if (b > F3) inss += (std::min<qint64>(b, F4) - F3) * 0.140;
 
-    qint64 result = static_cast<qint64>(std::round(inss));
-    if (brutoCentavos > F4) result = TETO;
+    // Aritmetica inteira em centavos (convencao nº1: NUNCA double em
+    // caminho monetario). Aliquotas expressas em permilagem (base 1000):
+    //   7,5% -> 75 ; 9% -> 90 ; 12% -> 120 ; 14% -> 140.
+    // Acumula o tributo de cada faixa em milesimos de centavo e arredonda
+    // half-up uma unica vez no fim: (num + 500) / 1000.
+    // Numerador maximo ~ F4*140 = 1,09e8, folga enorme em qint64.
+    qint64 num = std::min<qint64>(b, F1) * 75;
+    if (b > F1) { num += (std::min<qint64>(b, F2) - F1) * 90; }
+    if (b > F2) { num += (std::min<qint64>(b, F3) - F2) * 120; }
+    if (b > F3) { num += (std::min<qint64>(b, F4) - F3) * 140; }
+
+    qint64 result = (num + 500) / 1000;
+    if (brutoCentavos > F4) { result = TETO; }
     return std::min<qint64>(result, TETO);
 }
 
@@ -44,17 +50,22 @@ qint64 FiscalService::inssMensal2024(qint64 brutoCentavos)
 //   acima de 4.664,68       -> 27,5% - 896,00
 qint64 FiscalService::irpfMensal2024(qint64 baseCentavos)
 {
-    if (baseCentavos <= 225920) return 0;
+    if (baseCentavos <= 225920) { return 0; }
 
-    double irpf = 0.0;
-    const double base = static_cast<double>(baseCentavos);
+    // Aritmetica inteira em centavos (convencao nº1). Aliquota em
+    // permilagem (base 1000) e parcela a deduzir (PD) ja em centavos
+    // inteiros, multiplicada por 1000 para o mesmo denominador.
+    //   numerador = base * aliqPermil - PD * 1000  (milesimos de centavo)
+    //   resultado = (numerador + 500) / 1000        (half-up)
+    // Numerador maximo p/ base R$1M ~ 2,75e11, folga enorme em qint64.
+    qint64 num = 0;
+    if      (baseCentavos > 466468) { num = (baseCentavos * 275) - (89600 * 1000); }
+    else if (baseCentavos > 375105) { num = (baseCentavos * 225) - (66277 * 1000); }
+    else if (baseCentavos > 282665) { num = (baseCentavos * 150) - (38144 * 1000); }
+    else                            { num = (baseCentavos * 75)  - (16944 * 1000); }
 
-    if      (base > 466468) irpf = base * 0.275 - 89600.0;
-    else if (base > 375105) irpf = base * 0.225 - 66277.0;
-    else if (base > 282665) irpf = base * 0.150 - 38144.0;
-    else                    irpf = base * 0.075 - 16944.0;
-
-    return static_cast<qint64>(std::round(std::max(0.0, irpf)));
+    if (num <= 0) { return 0; }
+    return (num + 500) / 1000;
 }
 
 // ── Simples Nacional - tabelas LC 123/2006 com Lei Complementar 155/2016 ────
@@ -70,52 +81,57 @@ qint64 FiscalService::irpfMensal2024(qint64 baseCentavos)
 //             pode migrar para Anexo III via Fator R >= 28%)
 double FiscalService::simplesAliquotaEfetiva(int anexo, qint64 rbt12Centavos)
 {
-    if (rbt12Centavos <= 0) return 0.0;
-    const double rbt12 = static_cast<double>(rbt12Centavos);
+    if (rbt12Centavos <= 0) { return 0.0; }
+    const qint64 rbt12 = rbt12Centavos;
 
-    // Faixas em centavos (limites superiores) e {aliquotaNominal, PD em centavos}
-    struct Faixa { qint64 limite; double aliq; double pd; };
+    // Caminho monetario em inteiros (convencao nº1): aliquota nominal em
+    // permilagem (base 1000; nominais tem ate 1 casa de %, ex 11,2% -> 112)
+    // e PD em centavos inteiros. A divisao final produz a ALIQUOTA EFETIVA,
+    // que e uma fracao adimensional (0..1) consumida como multiplicador
+    // pelos chamadores -> por isso o retorno permanece double (nao e
+    // valor monetario em centavos).
+    struct Faixa { qint64 limite; qint64 aliqPermil; qint64 pd; };
 
     // Tabelas LC 123 atualizadas (2018+):
     static const Faixa anexoI[] = {
-        { 18000000,  0.040,        0.0 },
-        { 36000000,  0.073,    597600.0 },
-        { 72000000,  0.095,   1390800.0 },
-        {192000000,  0.107,   2236800.0 },
-        {360000000,  0.143,  13986800.0 },
-        {480000000,  0.190,  37856800.0 },
+        { 18000000,   40,         0 },
+        { 36000000,   73,    597600 },
+        { 72000000,   95,   1390800 },
+        {192000000,  107,   2236800 },
+        {360000000,  143,  13986800 },
+        {480000000,  190,  37856800 },
     };
     static const Faixa anexoII[] = {
-        { 18000000,  0.045,        0.0 },
-        { 36000000,  0.078,    597600.0 },
-        { 72000000,  0.100,   1390800.0 },
-        {192000000,  0.112,   2236800.0 },
-        {360000000,  0.147,  13986800.0 },
-        {480000000,  0.300,  72000000.0 },
+        { 18000000,   45,         0 },
+        { 36000000,   78,    597600 },
+        { 72000000,  100,   1390800 },
+        {192000000,  112,   2236800 },
+        {360000000,  147,  13986800 },
+        {480000000,  300,  72000000 },
     };
     static const Faixa anexoIII[] = {
-        { 18000000,  0.060,        0.0 },
-        { 36000000,  0.112,    936000.0 },
-        { 72000000,  0.135,   1764000.0 },
-        {192000000,  0.160,   3564000.0 },
-        {360000000,  0.210,  12564000.0 },
-        {480000000,  0.330,  54000000.0 },
+        { 18000000,   60,         0 },
+        { 36000000,  112,    936000 },
+        { 72000000,  135,   1764000 },
+        {192000000,  160,   3564000 },
+        {360000000,  210,  12564000 },
+        {480000000,  330,  54000000 },
     };
     static const Faixa anexoIV[] = {
-        { 18000000,  0.045,        0.0 },
-        { 36000000,  0.090,    810000.0 },
-        { 72000000,  0.102,   1242000.0 },
-        {192000000,  0.140,   3978000.0 },
-        {360000000,  0.220,  18378000.0 },
-        {480000000,  0.330,  72780000.0 },
+        { 18000000,   45,         0 },
+        { 36000000,   90,    810000 },
+        { 72000000,  102,   1242000 },
+        {192000000,  140,   3978000 },
+        {360000000,  220,  18378000 },
+        {480000000,  330,  72780000 },
     };
     static const Faixa anexoV[] = {
-        { 18000000,  0.155,        0.0 },
-        { 36000000,  0.180,    450000.0 },
-        { 72000000,  0.195,    990000.0 },
-        {192000000,  0.205,   1719000.0 },
-        {360000000,  0.230,   4860000.0 },
-        {480000000,  0.305,  31530000.0 },
+        { 18000000,  155,         0 },
+        { 36000000,  180,    450000 },
+        { 72000000,  195,    990000 },
+        {192000000,  205,   1719000 },
+        {360000000,  230,   4860000 },
+        {480000000,  305,  31530000 },
     };
 
     const Faixa *tab = nullptr;
@@ -130,13 +146,16 @@ double FiscalService::simplesAliquotaEfetiva(int anexo, qint64 rbt12Centavos)
     }
 
     for (int i = 0; i < len; ++i) {
-        if (rbt12 <= static_cast<double>(tab[i].limite)) {
-            const double aliqEf = (rbt12 * tab[i].aliq - tab[i].pd) / rbt12;
-            return std::max(0.0, aliqEf);
+        if (rbt12 <= tab[i].limite) {
+            // tributo (centavos*1000) = rbt12*aliqPermil - pd*1000
+            const qint64 num = (rbt12 * tab[i].aliqPermil) - (tab[i].pd * 1000);
+            if (num <= 0) { return 0.0; }
+            return static_cast<double>(num)
+                 / (static_cast<double>(rbt12) * 1000.0);
         }
     }
     // Acima do teto: nao se enquadra mais no Simples.
-    return tab[len - 1].aliq;
+    return static_cast<double>(tab[len - 1].aliqPermil) / 1000.0;
 }
 
 double FiscalService::lucroPresumidoServicosAliquota()

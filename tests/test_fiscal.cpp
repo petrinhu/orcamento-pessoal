@@ -15,16 +15,29 @@ private slots:
     void inssPrimeiraFaixa();
     void inssQuartaFaixa();
     void inssAcimaDoTeto();
+    // INSS - ancoras de precisao (aritmetica inteira #113):
+    // valores EXATOS conferidos contra oraculo Decimal half-up da
+    // tabela oficial 2024 (Portaria MTP 2/2024).
+    void inssAncoraExataPorFaixa_data();
+    void inssAncoraExataPorFaixa();
 
     // IRPF
     void irpfIsento();
     void irpfPrimeiraFaixa();
     void irpfFaixaMaxima();
+    // IRPF - ancoras de precisao (#113): valores EXATOS vs tabela
+    // oficial 2024 (Lei 14.663/2023, vigencia 02/2024).
+    void irpfAncoraExataPorFaixa_data();
+    void irpfAncoraExataPorFaixa();
 
     // Simples Nacional
     void simplesAnexoIPrimeiraFaixa();
     void simplesAnexoIIIIntermediaria();
     void simplesForaDoSimples();
+    // Simples - ancoras de precisao (#113): aliquota efetiva por
+    // anexo/RBT12 vs formula oficial LC 123/2006.
+    void simplesAncoraExataPorAnexo_data();
+    void simplesAncoraExataPorAnexo();
 
     // Lucro Presumido
     void lucroPresumido();
@@ -152,6 +165,101 @@ void TestFiscal::iofRegressivoAteJanela()
     QCOMPARE(FiscalService::iofRendaFixaPorDias(29), 0.03);
     QCOMPARE(FiscalService::iofRendaFixaPorDias(30), 0.0);
     QCOMPARE(FiscalService::iofRendaFixaPorDias(60), 0.0);
+}
+
+// ── Ancoras de precisao (#113) ───────────────────────────────────────────────
+// Estas tabelas fixam o resultado CORRETO esperado (centavos qint64),
+// calculado com aritmetica exata (Decimal half-up) sobre as tabelas
+// oficiais 2024. Comparacao EXATA (QCOMPARE), sem tolerancia, para
+// blindar a refatoracao integer e impedir regressao de +-1 centavo.
+
+void TestFiscal::inssAncoraExataPorFaixa_data()
+{
+    QTest::addColumn<qint64>("bruto");
+    QTest::addColumn<qint64>("esperado");
+
+    // bordas e interior de cada faixa (Portaria MTP 2/2024)
+    QTest::newRow("zero")                << qint64(0)       << qint64(0);
+    QTest::newRow("abaixo R$1 -> 0,08")  << qint64(100)     << qint64(8);
+    QTest::newRow("1k 1a faixa 7,5%")    << qint64(100000)  << qint64(7500);
+    QTest::newRow("borda F1 1412,00")    << qint64(141200)  << qint64(10590);
+    QTest::newRow("acima F1 (2a faixa)") << qint64(141201)  << qint64(10590);
+    QTest::newRow("2k 2a faixa")         << qint64(200000)  << qint64(15882);
+    QTest::newRow("borda F2 2666,68")    << qint64(266668)  << qint64(21882);
+    QTest::newRow("3k 3a faixa")         << qint64(300000)  << qint64(25882);
+    QTest::newRow("borda F3 4000,03")    << qint64(400003)  << qint64(37882);
+    QTest::newRow("5k 4a faixa")         << qint64(500000)  << qint64(51882);
+    QTest::newRow("borda F4 7786,02")    << qint64(778602)  << qint64(90885);
+    QTest::newRow("acima F4 (teto)")     << qint64(778603)  << qint64(90885);
+    QTest::newRow("10k teto fixo")       << qint64(1000000) << qint64(90885);
+}
+
+void TestFiscal::inssAncoraExataPorFaixa()
+{
+    QFETCH(qint64, bruto);
+    QFETCH(qint64, esperado);
+    QCOMPARE(FiscalService::inssMensal2024(bruto), esperado);
+}
+
+void TestFiscal::irpfAncoraExataPorFaixa_data()
+{
+    QTest::addColumn<qint64>("base");
+    QTest::addColumn<qint64>("esperado");
+
+    // Lei 14.663/2023 (vigencia 02/2024): faixas com parcela a deduzir
+    QTest::newRow("abaixo isencao")      << qint64(200000)  << qint64(0);
+    QTest::newRow("borda isencao 2259,20") << qint64(225920) << qint64(0);
+    QTest::newRow("logo acima isencao")  << qint64(225921)  << qint64(0);
+    QTest::newRow("2,5k 1a faixa 7,5%")  << qint64(250000)  << qint64(1806);
+    QTest::newRow("borda f1/f2 2826,65") << qint64(282665)  << qint64(4256);
+    QTest::newRow("3k 2a faixa 15%")     << qint64(300000)  << qint64(6856);
+    QTest::newRow("borda f2/f3 3751,05") << qint64(375105)  << qint64(18122);
+    QTest::newRow("4k 3a faixa 22,5%")   << qint64(400000)  << qint64(23723);
+    QTest::newRow("borda f3/f4 4664,68") << qint64(466468)  << qint64(38678);
+    QTest::newRow("5k 4a faixa 27,5%")   << qint64(500000)  << qint64(47900);
+    QTest::newRow("10k faixa maxima")    << qint64(1000000) << qint64(185400);
+}
+
+void TestFiscal::irpfAncoraExataPorFaixa()
+{
+    QFETCH(qint64, base);
+    QFETCH(qint64, esperado);
+    QCOMPARE(FiscalService::irpfMensal2024(base), esperado);
+}
+
+void TestFiscal::simplesAncoraExataPorAnexo_data()
+{
+    QTest::addColumn<int>("anexo");
+    QTest::addColumn<qint64>("rbt12");
+    QTest::addColumn<double>("esperado");
+
+    // Efetiva = (RBT12 * aliqNominal - PD) / RBT12  (LC 123/2006)
+    // Anexo I 1a faixa (ate 180k): 4% nominal, PD=0 -> 4%
+    QTest::newRow("AnexoI 100k -> 4%")
+        << 1 << qint64(10000000) << 0.040;
+    // Anexo III 2a faixa (180k-360k): 11,2% nom, PD 9.360,00
+    // (300000*0,112 - 9360)/300000 = 0,0808
+    QTest::newRow("AnexoIII 300k -> 8,08%")
+        << 3 << qint64(30000000) << 0.0808;
+    // Anexo V 4a faixa (720k-1,92M): 20,5% nom, PD 17.190,00
+    // (1.000.000*0,205 - 17.190)/1.000.000 = 0,18781
+    QTest::newRow("AnexoV 1M -> 18,781%")
+        << 5 << qint64(100000000) << 0.18781;
+    // Anexo I 6a faixa (3,6M-4,8M): 19% nom, PD 378.568,00
+    // (4.000.000*0,19 - 378.568)/4.000.000 = 0,095358
+    QTest::newRow("AnexoI 4M -> 9,5358%")
+        << 1 << qint64(400000000) << 0.095358;
+}
+
+void TestFiscal::simplesAncoraExataPorAnexo()
+{
+    QFETCH(int, anexo);
+    QFETCH(qint64, rbt12);
+    QFETCH(double, esperado);
+    const double aliq = FiscalService::simplesAliquotaEfetiva(anexo, rbt12);
+    QVERIFY2(qAbs(aliq - esperado) < 1e-9,
+        qPrintable(QStringLiteral("aliq=%1 esperado=%2")
+                       .arg(aliq, 0, 'g', 12).arg(esperado, 0, 'g', 12)));
 }
 
 QTEST_GUILESS_MAIN(TestFiscal)
