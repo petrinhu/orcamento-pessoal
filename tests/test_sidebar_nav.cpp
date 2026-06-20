@@ -69,10 +69,18 @@ void TestSidebarNav::footerItemERegistrado()
 void TestSidebarNav::setUsuarioNaoQuebra()
 {
     SidebarNav nav;
-    // Nao deve crashar com nome vazio nem nome normal.
+
+    // Nome vazio: avatar exibe "?" como fallback.
     nav.setUsuario("");
+    QCOMPARE(nav.avatarTexto(), QStringLiteral("?"));
+
+    // Nome preenchido: avatar exibe a inicial maiuscula.
     nav.setUsuario("Petrus");
-    QVERIFY(true);
+    QCOMPARE(nav.avatarTexto(), QStringLiteral("P"));
+
+    // Inicial minuscula deve ser convertida para maiuscula.
+    nav.setUsuario("joana");
+    QCOMPARE(nav.avatarTexto(), QStringLiteral("J"));
 }
 
 QTEST_MAIN(TestSidebarNav)

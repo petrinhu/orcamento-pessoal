@@ -49,12 +49,18 @@ public:
     // Cobre tanto itens normais quanto footer items.
     QPushButton *itemParaTeste(const QString &chave) const;
 
+    // Acessor minimo para testes: texto exibido no circulo de avatar.
+    // Retorna a inicial maiuscula do nome atual, ou "?" se vazio.
+    QString avatarTexto() const;
+
 signals:
     void navegou(const QString &chave);
 
 private:
+    // indice == -1 (default): addWidget; >= 0: insertWidget na posicao dada.
     void registrarItem(const QString &chave, const QString &emoji,
-                       const QString &titulo, QVBoxLayout *layout);
+                       const QString &titulo, QVBoxLayout *layout,
+                       int indice = -1);
 
     QVBoxLayout *m_mainLayout   = nullptr; // layout de itens + grupos
     QVBoxLayout *m_footerLayout = nullptr; // layout de footer items + usuario

@@ -56,7 +56,7 @@ SidebarNav::SidebarNav(QWidget *parent)
     usuarioLayout->setContentsMargins(4, 4, 4, 4);
     usuarioLayout->setSpacing(8);
 
-    m_avatarLabel = new QLabel(this);
+    m_avatarLabel = new QLabel(usuarioWidget);
     m_avatarLabel->setObjectName(QStringLiteral("sidebarAvatar"));
     m_avatarLabel->setFixedSize(28, 28);
     m_avatarLabel->setAlignment(Qt::AlignCenter);
@@ -64,7 +64,7 @@ SidebarNav::SidebarNav(QWidget *parent)
     m_avatarLabel->setStyleSheet(
         QStringLiteral("background:#3B82F6; color:white; border-radius:14px; font-weight:600;"));
 
-    m_nomeLabel = new QLabel(this);
+    m_nomeLabel = new QLabel(usuarioWidget);
     m_nomeLabel->setObjectName(QStringLiteral("sidebarNome"));
 
     usuarioLayout->addWidget(m_avatarLabel);
@@ -96,24 +96,7 @@ void SidebarNav::addFooterItem(const QString &chave, const QString &emoji,
     // Footer items ficam acima do bloco de usuario; insere antes do ultimo widget
     // (que e o usuarioWidget). Count() - 1 = indice do usuarioWidget.
     const int posAntesDaUsuario = m_footerLayout->count() - 1;
-
-    auto *btn = new QPushButton(titulo, this);
-    btn->setObjectName(QStringLiteral("navItem"));
-    btn->setIcon(Theme::emojiIcon(emoji));
-    btn->setFlat(true);
-    btn->setProperty("ativo", false);
-    btn->setCursor(Qt::PointingHandCursor);
-
-    m_itens.insert(chave, btn);
-
-    // Posicao fixada antes do bloco de usuario.
-    m_footerLayout->insertWidget(posAntesDaUsuario, btn);
-
-    const QString chaveCapturada = chave;
-    connect(btn, &QPushButton::clicked, this, [this, chaveCapturada]() {
-        setAtivo(chaveCapturada);
-        emit navegou(chaveCapturada);
-    });
+    registrarItem(chave, emoji, titulo, m_footerLayout, posAntesDaUsuario);
 }
 
 void SidebarNav::setUsuario(const QString &nome)
@@ -142,10 +125,16 @@ QPushButton *SidebarNav::itemParaTeste(const QString &chave) const
     return m_itens.value(chave, nullptr);
 }
 
+QString SidebarNav::avatarTexto() const
+{
+    return m_avatarLabel ? m_avatarLabel->text() : QString();
+}
+
 // ── registrarItem (privado) ───────────────────────────────────────────────────
 
 void SidebarNav::registrarItem(const QString &chave, const QString &emoji,
-                               const QString &titulo, QVBoxLayout *layout)
+                               const QString &titulo, QVBoxLayout *layout,
+                               int indice)
 {
     auto *btn = new QPushButton(titulo, this);
     btn->setObjectName(QStringLiteral("navItem"));
@@ -155,7 +144,12 @@ void SidebarNav::registrarItem(const QString &chave, const QString &emoji,
     btn->setCursor(Qt::PointingHandCursor);
 
     m_itens.insert(chave, btn);
-    layout->addWidget(btn);
+
+    // indice == -1: append ao final; caso contrario: insere na posicao especificada.
+    if (indice < 0)
+        layout->addWidget(btn);
+    else
+        layout->insertWidget(indice, btn);
 
     const QString chaveCapturada = chave;
     connect(btn, &QPushButton::clicked, this, [this, chaveCapturada]() {
