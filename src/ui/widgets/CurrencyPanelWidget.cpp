@@ -1,50 +1,41 @@
 #include "CurrencyPanelWidget.h"
 
 #include "core/settings/AppSettings.h"
+#include "ui/Theme.h"
 
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QLocale>
-#include <QVBoxLayout>
 
 namespace {
 
-// QSS emulando display LED DSEG7: fundo escuro, fonte monoespaçada larga,
-// glow verde para o valor e laranja para o código (sub-label).
-constexpr const char *kQssCode =
-    "QLabel { "
-    "background-color: #1a1a1a; "
-    "color: #ffae42; "
-    "font-family: \"DejaVu Sans Mono\", monospace; "
-    "font-size: 12px; "
-    "font-weight: bold; "
-    "padding: 4px 12px 0 12px; "
-    "border-top-left-radius: 6px; "
-    "border-top-right-radius: 6px; "
-    "border: 1px solid #333; "
-    "border-bottom: 0; "
-    "}";
-
-constexpr const char *kQssValue =
-    "QLabel { "
-    "background-color: #1a1a1a; "
-    "color: #00ff88; "
-    "font-family: \"DejaVu Sans Mono\", monospace; "
-    "font-size: 24px; "
-    "font-weight: bold; "
-    "padding: 0 12px 6px 12px; "
-    "border-bottom-left-radius: 6px; "
-    "border-bottom-right-radius: 6px; "
-    "border: 1px solid #333; "
-    "border-top: 0; "
-    "}";
-
+// Formata taxa: "--" quando ausente, 4 casas para < 1000, 2 casas para >= 1000.
 QString formatarTaxa(double valor)
 {
     if (valor <= 0.0)
         return QStringLiteral("--");
     return QLocale(QLocale::Portuguese, QLocale::Brazil)
            .toString(valor, 'f', valor >= 1000.0 ? 2 : 4);
+}
+
+// Indicador inline moderno: "PAR  VALOR" em UMA linha, sem caixa preta.
+// Mantém altura compatível com a statusbar navy (~24px de texto, ~32px total).
+// Par: cinza-claro (sidebarText). Valor: verde (positivo) ou subtexto quando "--".
+// Separador entre os dois slots: "·" em subtexto. Estilo via Theme:: (tokens).
+void aplicarEstiloModerno(QLabel *lblPar, QLabel *lblValor, bool semValor)
+{
+    // Par sempre em sidebarText (legível sobre navy, discreto).
+    lblPar->setStyleSheet(
+        QStringLiteral("QLabel { color: %1; font-size: 12px; font-weight: 500;"
+                       " background: transparent; }")
+        .arg(Theme::sidebarText()));
+
+    // Valor: verde quando presente, subtexto quando "--".
+    const QString corValor = semValor ? Theme::subtexto() : Theme::positivo();
+    lblValor->setStyleSheet(
+        QStringLiteral("QLabel { color: %1; font-size: 13px; font-weight: 600;"
+                       " background: transparent; }")
+        .arg(corValor));
 }
 
 } // anon namespace
@@ -59,27 +50,40 @@ CurrencyPanelWidget::CurrencyPanelWidget(QWidget *parent)
 void CurrencyPanelWidget::buildUi()
 {
     auto *root = new QHBoxLayout(this);
-    root->setContentsMargins(4, 4, 4, 4);
-    root->setSpacing(8);
+    // Margens mínimas: o widget fica embutido na statusbar navy.
+    root->setContentsMargins(4, 0, 8, 0);
+    root->setSpacing(6);
 
-    auto buildSlot = [](QLabel *&lblCode, QLabel *&lblValue) {
-        auto *col = new QVBoxLayout;
-        col->setContentsMargins(0, 0, 0, 0);
-        col->setSpacing(0);
-        lblCode  = new QLabel(QStringLiteral("---"));
-        lblValue = new QLabel(QStringLiteral("--"));
-        lblCode->setStyleSheet(QString::fromLatin1(kQssCode));
-        lblValue->setStyleSheet(QString::fromLatin1(kQssValue));
-        lblCode->setAlignment(Qt::AlignCenter);
-        lblValue->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
-        col->addWidget(lblCode);
-        col->addWidget(lblValue);
-        return col;
-    };
+    // Slot 1: par + valor lado a lado
+    m_lblCode1  = new QLabel(QStringLiteral("---"), this);
+    m_lblValue1 = new QLabel(QStringLiteral("--"),  this);
+    m_lblCode1->setObjectName(QStringLiteral("cambioPar"));
+    m_lblValue1->setObjectName(QStringLiteral("cambioValor"));
+    m_lblCode1->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
+    m_lblValue1->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
 
-    root->addLayout(buildSlot(m_lblCode1, m_lblValue1));
-    root->addLayout(buildSlot(m_lblCode2, m_lblValue2));
-    root->addStretch();
+    // Separador discreto entre os slots
+    auto *sep = new QLabel(QStringLiteral("·"), this);
+    sep->setStyleSheet(
+        QStringLiteral("QLabel { color: %1; font-size: 13px; background: transparent; }")
+        .arg(Theme::subtexto()));
+    sep->setAlignment(Qt::AlignVCenter | Qt::AlignHCenter);
+
+    // Slot 2: par + valor lado a lado
+    m_lblCode2  = new QLabel(QStringLiteral("---"), this);
+    m_lblValue2 = new QLabel(QStringLiteral("--"),  this);
+    m_lblCode2->setObjectName(QStringLiteral("cambioPar"));
+    m_lblValue2->setObjectName(QStringLiteral("cambioValor"));
+    m_lblCode2->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
+    m_lblValue2->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
+
+    root->addWidget(m_lblCode1);
+    root->addWidget(m_lblValue1);
+    root->addSpacing(4);
+    root->addWidget(sep);
+    root->addSpacing(4);
+    root->addWidget(m_lblCode2);
+    root->addWidget(m_lblValue2);
 }
 
 void CurrencyPanelWidget::setRates(const QMap<QString, double> &rates)
@@ -104,7 +108,10 @@ void CurrencyPanelWidget::renderSlot(QLabel *lblCode,
     const QString par = codigo.isEmpty()
                         ? QStringLiteral("---")
                         : QStringLiteral("%1/BRL").arg(codigo);
-    lblCode->setText(par);
+    lblCode->setText(par + QStringLiteral("  "));
     const double taxa = m_rates.value(codigo, 0.0);
-    lblValue->setText(formatarTaxa(taxa));
+    const QString valorTexto = formatarTaxa(taxa);
+    lblValue->setText(valorTexto);
+    // Reaplica estilos para refletir presença/ausência de taxa.
+    aplicarEstiloModerno(lblCode, lblValue, taxa <= 0.0);
 }

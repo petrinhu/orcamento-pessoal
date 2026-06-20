@@ -278,11 +278,8 @@ void MainWindow::buildUi()
     buildUtilBar();   // cluster utilidades topo-direito
 
     // ── Status bar ─────────────────────────────────────────────────────────
-    m_statusUser = new QLabel(this);
-    const QString name = UserSession::instance().name();
-    m_statusUser->setText(tr("  Usuário: %1").arg(name));
-    statusBar()->addWidget(m_statusUser);
-
+    // m_statusUser removido (#165): redundante com o rodapé da sidebar que
+    // já exibe o nome do usuário logado.
     m_statusTotal = new QLabel(this);
     m_statusTotal->setObjectName(QStringLiteral("subtitle"));
     statusBar()->addPermanentWidget(m_statusTotal);

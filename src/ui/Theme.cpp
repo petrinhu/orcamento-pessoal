@@ -467,20 +467,20 @@ static QString gerarQss()
             font-weight: 500;
             background: transparent;
         }
-        /* ── Status bar integrada ao tema (#165 fix bug 2 — faixa clara) ───────
+        /* ── Status bar navy (#165 fix bug 2 + #47 moderniza câmbio) ───────────
            QStatusBar fica full-width ABAIXO do centralWidget (sidebar+stack).
-           Com background @@BG@@ (claro) ela criava faixa clara sob o navy da
-           sidebar. Correcao: fundo @@SURF@@/escuro coerente com o tema; texto
-           em @@SUB@@ (discreto); borda top sutil. Nao remove nem esconde a
-           statusbar — apenas harmoniza visualmente. */
+           Fundo @@SIDEBAR2@@ (navy idêntico à sidebar) elimina a faixa clara
+           no canto inferior esquerdo — continuidade visual com a sidebar.
+           Texto em @@SIDEBARTXT@@ (claro sobre navy). Borda top em @@SIDEBAR1@@
+           (linha sutil entre conteúdo e rodapé, coerente com a paleta navy). */
         QStatusBar {
-            background-color: @@SURF@@;
-            color: @@SUB@@;
-            border-top: 1px solid @@BRD@@;
+            background-color: @@SIDEBAR2@@;
+            color: @@SIDEBARTXT@@;
+            border-top: 1px solid @@SIDEBAR1@@;
             font-size: 12px;
         }
         QStatusBar QLabel {
-            color: @@SUB@@;
+            color: @@SIDEBARTXT@@;
             background: transparent;
         }
     )");

@@ -317,12 +317,23 @@ peubud_add_test(test_sidebar_render
 set_tests_properties(test_sidebar_render PROPERTIES
     ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 
-# Reproducao offscreen dos bugs #165: clip horizontal + scroll vertical + statusbar.
-# Salva /tmp/repro_full.png (1100x690) e /tmp/repro_short.png (1100x470).
+# Reproducao offscreen dos bugs #165 + rodape navy/cambio moderno (#47, #165).
+# Salva /tmp/repro_full.png (1100x690), /tmp/repro_short.png (1100x470),
+# e /tmp/rodape_navy.png (alias de repro_full para verificacao do rodape).
+# CurrencyPanelWidget + AppSettings + SecretStoreService sao necessarios
+# para o painel de cambio real (usa AppSettings::currencySlot1/2).
 peubud_add_test(test_sidebar_repro
     ${CMAKE_SOURCE_DIR}/src/ui/widgets/SidebarNav.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/widgets/CurrencyPanelWidget.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/Theme.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp
-    ${CMAKE_SOURCE_DIR}/src/ui/NavRegistry.cpp)
+    ${CMAKE_SOURCE_DIR}/src/ui/NavRegistry.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/settings/AppSettings.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp
+    # AppSettings::currencySymbol() chama ParcelaService::simboloMoeda().
+    ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp)
+target_link_libraries(test_sidebar_repro PRIVATE ${LIBSECRET_LIBRARIES})
+target_include_directories(test_sidebar_repro PRIVATE ${LIBSECRET_INCLUDE_DIRS})
 set_tests_properties(test_sidebar_repro PROPERTIES
     ENVIRONMENT "QT_QPA_PLATFORM=offscreen")

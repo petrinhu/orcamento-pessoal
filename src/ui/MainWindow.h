@@ -108,7 +108,6 @@ private:
     QStackedWidget *m_stack      = nullptr;
     SidebarNav     *m_sidebar    = nullptr;
     QMap<QString, QWidget *> m_paginas;
-    QLabel         *m_statusUser  = nullptr;
     QLabel         *m_statusTotal = nullptr;
 
     bool         m_dirty         = false;

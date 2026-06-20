@@ -6,9 +6,11 @@
 
 class QLabel;
 
-// CurrencyPanelWidget (#47) - painel câmbio LED estilo DSEG7 emulado via QSS.
+// CurrencyPanelWidget (#47) - painel câmbio inline moderno na statusbar navy.
 // Exibe dois slots de moeda configuráveis (lidos de AppSettings::currencySlot1/2)
-// relativos a BRL. Provider real (Brapi/Frankfurter/CoinGecko) entra em #58.
+// relativos a BRL. Layout horizontal "PAR  VALOR · PAR  VALOR" em UMA linha,
+// sem caixa preta — compatível com a statusbar de ~32px de altura.
+// Provider real (Brapi/Frankfurter/CoinGecko) entra em #58.
 //
 // SRP: apenas renderização. Alimentação de taxas via setRates() injetado pelo
 // MarketDataService (futuro) ou por mock em testes.

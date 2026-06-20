@@ -1,9 +1,12 @@
-// Teste de reproducao dos bugs #165: clip horizontal, scroll vertical e statusbar.
-// Salva /tmp/repro_full.png (1100x690) e /tmp/repro_short.png (1100x470).
+// Teste de reproducao dos bugs #165 + modernizacao rodape navy (#47, #165).
+// Salva /tmp/repro_full.png (1100x690), /tmp/repro_short.png (1100x470),
+// e /tmp/rodape_navy.png (1100x690, alias de repro_full para verificacao do rodape).
 // Verifica:
 //   1. "Planejamento/Orcamento" aparece completo (sem clip).
 //   2. Janela curta: rodape nao some (fixo) e a area de itens rola.
-//   3. Statusbar nao tem faixa clara berrante no rodape (cor coerente com tema).
+//   3. Statusbar NAVY: pixel sob a sidebar e escuro (navy, lum < 0.30),
+//      continuo com a sidebar — sem faixa clara no canto inferior esquerdo.
+//   4. CurrencyPanelWidget moderno: sem caixa preta LED, inline com a statusbar.
 
 #include <QtTest>
 #include <QApplication>
@@ -20,6 +23,7 @@
 #include <QImage>
 
 #include "ui/widgets/SidebarNav.h"
+#include "ui/widgets/CurrencyPanelWidget.h"
 #include "ui/Theme.h"
 #include "ui/NavRegistry.h"
 
@@ -73,11 +77,19 @@ static QMainWindow *criarJanela(int w, int h)
 
     win->setCentralWidget(central);
 
-    // Status bar como no MainWindow real
-    auto *lblUser = new QLabel(QStringLiteral("  Usuário: petrus"));
-    win->statusBar()->addWidget(lblUser);
-    auto *lblCambio = new QLabel(QStringLiteral("USD/BRL 5,12  EUR/BRL 5,61  "));
-    win->statusBar()->addPermanentWidget(lblCambio);
+    // Status bar como no MainWindow real (apos #47+#165 fix):
+    // sem lblUser (removido como redundante com o rodape da sidebar),
+    // m_statusTotal com saldo + CurrencyPanelWidget moderno (sem LED).
+    auto *lblTotal = new QLabel(QStringLiteral("  Saldo: R$ 0,00"));
+    lblTotal->setObjectName(QStringLiteral("subtitle"));
+    win->statusBar()->addWidget(lblTotal);
+
+    auto *currencyPanel = new CurrencyPanelWidget();
+    QMap<QString, double> rates;
+    rates.insert(QStringLiteral("USD"), 5.12);
+    rates.insert(QStringLiteral("EUR"), 5.61);
+    currencyPanel->setRates(rates);
+    win->statusBar()->addPermanentWidget(currencyPanel);
 
     return win;
 }
@@ -112,6 +124,9 @@ void TestSidebarRepro::reproFull()
     const bool saved = px.save(QStringLiteral("/tmp/repro_full.png"));
     QVERIFY2(saved, "Falha ao salvar /tmp/repro_full.png");
 
+    // Alias exigido pela spec do fix: /tmp/rodape_navy.png
+    px.save(QStringLiteral("/tmp/rodape_navy.png"));
+
     const QImage img = px.toImage();
 
     // ── Verificacao 1: pixel central da sidebar e navy (escuro) ─────────────
@@ -121,23 +136,17 @@ void TestSidebarRepro::reproFull()
         qPrintable(QStringLiteral("FAIL: sidebar nao e navy em full. Cor: %1 lum=%2")
             .arg(pixSidebar.name()).arg(luminancia(pixSidebar))));
 
-    // ── Verificacao 2: statusbar (linha inferior) nao e branca/clara berrante ─
-    // Pega pixel na statusbar: y = height - 10 = 680, x = 126 (sob a sidebar).
+    // ── Verificacao 2: statusbar NAVY (#47+#165 fix) ──────────────────────────
+    // Apos o fix, a statusbar usa SIDEBAR2 (#16233A = R22 G35 B58, lum ~0.095).
+    // O pixel sob a sidebar (x=126, y=680) DEVE ser escuro (navy): lum < 0.30.
+    // Isso confirma continuidade navy sidebar -> statusbar sem faixa clara.
     const QColor pixStatus = img.pixelColor(126, 680);
-    // A statusbar agora usa @@SURF@@ (#FFFFFF light) — mas qualquer cor != navy esta ok
-    // desde que seja coerente com o tema (nao o problema original era BG claro #EEF3F9).
-    // O que verificamos: o pixel NAO e o BG claro original (#EEF3F9 = R238 G243 B249).
-    // Se a statusbar estiver usando SURF (#FFFFFF) isso ainda e aceitavel — o problema
-    // era o constraste BRUTAL navy vs BG claro. Aqui verificamos que a lum da statusbar
-    // e consistente (nao ha dois valores drasticamente diferentes entre o que esta em
-    // cima e o que esta embaixo na sidebar — ambos sao ou escuros ou claros do tema).
-    // Verifica apenas que nao e o BG exato #EEF3F9.
-    const bool isBgClaro = (pixStatus.red()   >= 235 && pixStatus.red()   <= 241
-                         && pixStatus.green() >= 240 && pixStatus.green() <= 246
-                         && pixStatus.blue()  >= 246 && pixStatus.blue()  <= 252);
-    QVERIFY2(!isBgClaro,
-        qPrintable(QStringLiteral("FAIL: statusbar ainda usa BG claro #EEF3F9 sob a sidebar. Cor: %1")
-            .arg(pixStatus.name())));
+    QVERIFY2(luminancia(pixStatus) < 0.30,
+        qPrintable(QStringLiteral(
+            "FAIL: statusbar nao e navy sob a sidebar (#47+#165 fix). "
+            "Esperado escuro (lum < 0.30), obtido: %1 lum=%2. "
+            "Provavel causa: QSS QStatusBar ainda usa @@SURF@@ em vez de @@SIDEBAR2@@.")
+            .arg(pixStatus.name()).arg(luminancia(pixStatus))));
 
     win->deleteLater();
 }
