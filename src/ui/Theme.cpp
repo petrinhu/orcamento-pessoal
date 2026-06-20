@@ -137,30 +137,33 @@ static QString gerarQss()
     // Hover background — mais suave que o accent
     const QString hov  = dark ? QStringLiteral("#222D3D") : QStringLiteral("#DCE8FA");
     // Accent tints para feedback de botão: hover = acento mais claro, pressed = mais escuro.
-    // Valores fixos derivados do #3B82F6 da nova paleta.
-    const QString accHover   = QStringLiteral("#5CC6FA");  // accent +light
-    const QString accPressed = QStringLiteral("#1F7AAD");  // accent +dark
+    // Tons coerentes com o accent #3B82F6 da nova paleta (#164 Fase 1 fix):
+    //   hover   = #60A5FA (blue-400 Tailwind — mais claro que o base)
+    //   pressed = #2563EB (blue-600 Tailwind — mais escuro que o base)
+    const QString accHover   = QStringLiteral("#60A5FA");  // accent +light
+    const QString accPressed = QStringLiteral("#2563EB");  // accent +dark
 
-    // %1=txt  %2=bg  %3=surf  %4=acc  %5=sub  %6=brd  %7=alt  %8=hov  %9=hov(menu/tab)
-    // (neg é substituído nomeadamente, não via %N — brd agora é %6 para manter posições)
-    // Botões accent usam @@ACC_HOVER@@ / @@ACC_PRESSED@@: sem colisão com %10/%11.
+    // Tokens nomeados: eliminam o esquema posicional %N que causou 2 bugs
+    // (hover e agora neg/brd trocados). Cada @@TOKEN@@ tem semântica inequívoca.
+    // @@TXT@@ @@BG@@ @@SURF@@ @@ACC@@ @@SUB@@ @@NEG@@ @@BRD@@ @@ALT@@ @@HOV@@
+    // @@ACC_HOVER@@ @@ACC_PRESSED@@ (fixos, não dependem do tema)
     // Raio de cards: 14px; inputs/botões: 9px (#164 Fase 1).
     QString qss = QStringLiteral(R"(
         /* ── Base ── */
         QWidget {
             font-family: "Inter";
             font-size: 13px;
-            color: %1;
-            background-color: %2;
+            color: @@TXT@@;
+            background-color: @@BG@@;
             outline: 0;
         }
         QMainWindow, QDialog {
-            background-color: %2;
+            background-color: @@BG@@;
         }
         /* ── Menu bar ── */
         QMenuBar {
-            background-color: %2;
-            border-bottom: 1px solid %7;
+            background-color: @@BG@@;
+            border-bottom: 1px solid @@BRD@@;
             padding: 1px 0;
         }
         QMenuBar::item {
@@ -168,12 +171,12 @@ static QString gerarQss()
             background: transparent;
             border-radius: 4px;
         }
-        QMenuBar::item:selected { background-color: %9; }
-        QMenuBar::item:pressed  { background-color: %7; }
+        QMenuBar::item:selected { background-color: @@HOV@@; }
+        QMenuBar::item:pressed  { background-color: @@ALT@@; }
         /* ── Menus ── */
         QMenu {
-            background-color: %3;
-            border: 1px solid %6;
+            background-color: @@SURF@@;
+            border: 1px solid @@BRD@@;
             border-radius: 6px;
             padding: 4px 0;
         }
@@ -182,15 +185,15 @@ static QString gerarQss()
             border-radius: 4px;
             margin: 1px 4px;
         }
-        QMenu::item:selected { background-color: %4; color: white; }
-        QMenu::item:disabled { color: %5; }
-        QMenu::separator { height: 1px; background: %6; margin: 3px 8px; }
+        QMenu::item:selected { background-color: @@ACC@@; color: white; }
+        QMenu::item:disabled { color: @@SUB@@; }
+        QMenu::separator { height: 1px; background: @@BRD@@; margin: 3px 8px; }
         QMenu::indicator { width: 14px; height: 14px; }
         /* ── Frames / surfaces (cards) — raio 14px (#164) ── */
         QFrame#surface {
-            background-color: %3;
+            background-color: @@SURF@@;
             border-radius: 14px;
-            border: 1px solid %6;
+            border: 1px solid @@BRD@@;
         }
         /* ── Buttons ──────────────────────────────────────────────────────────
            Depth + click feedback ("Shadow" style). O raio passa de 6 → 9px
@@ -198,7 +201,7 @@ static QString gerarQss()
            fornece o *sink* no press — padding assimétrico + fill escurece.
         ── */
         QPushButton#primary {
-            background-color: %4;
+            background-color: @@ACC@@;
             color: white;
             border: none;
             border-radius: 9px;
@@ -211,45 +214,45 @@ static QString gerarQss()
             padding-top: 8px;
             padding-bottom: 4px;
         }
-        QPushButton#primary:disabled { background-color: %6; color: %5; }
+        QPushButton#primary:disabled { background-color: @@BRD@@; color: @@SUB@@; }
         QPushButton {
-            background-color: %3;
-            border: 1px solid %6;
+            background-color: @@SURF@@;
+            border: 1px solid @@BRD@@;
             border-radius: 9px;
             padding: 5px 14px;
-            color: %1;
+            color: @@TXT@@;
         }
-        QPushButton:hover   { border-color: %4; color: %4; }
+        QPushButton:hover   { border-color: @@ACC@@; color: @@ACC@@; }
         QPushButton:pressed {
-            background-color: %9;
-            border-color: %4;
+            background-color: @@HOV@@;
+            border-color: @@ACC@@;
             padding-top: 7px;
             padding-bottom: 3px;
         }
-        QPushButton:disabled { color: %5; border-color: %6; }
+        QPushButton:disabled { color: @@SUB@@; border-color: @@BRD@@; }
         /* ── Theme cycle button ── */
         QToolButton#themeBtn {
             border: none;
             padding: 4px 8px;
             border-radius: 4px;
-            color: %5;
+            color: @@SUB@@;
             font-size: 14px;
             background: transparent;
         }
-        QToolButton#themeBtn:hover   { background-color: %9; color: %1; }
-        QToolButton#themeBtn:pressed { background-color: %7; }
+        QToolButton#themeBtn:hover   { background-color: @@HOV@@; color: @@TXT@@; }
+        QToolButton#themeBtn:pressed { background-color: @@ALT@@; }
         /* ── Inputs — raio 9px (#164) ── */
         QLineEdit, QSpinBox, QDoubleSpinBox, QComboBox, QDateEdit {
-            background-color: %3;
-            border: 1px solid %6;
+            background-color: @@SURF@@;
+            border: 1px solid @@BRD@@;
             border-radius: 9px;
             padding: 5px 8px;
-            color: %1;
-            selection-background-color: %4;
+            color: @@TXT@@;
+            selection-background-color: @@ACC@@;
         }
         QLineEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus,
         QComboBox:focus, QDateEdit:focus {
-            border-color: %4;
+            border-color: @@ACC@@;
         }
         QComboBox::drop-down {
             border: none;
@@ -260,17 +263,17 @@ static QString gerarQss()
             height: 10px;
         }
         QComboBox QAbstractItemView {
-            background: %3;
-            border: 1px solid %6;
-            selection-background-color: %4;
+            background: @@SURF@@;
+            border: 1px solid @@BRD@@;
+            selection-background-color: @@ACC@@;
             selection-color: white;
         }
         /* ── Table ── */
         QTableWidget {
-            background-color: %3;
-            alternate-background-color: %8;
-            gridline-color: %6;
-            border: 1px solid %6;
+            background-color: @@SURF@@;
+            alternate-background-color: @@ALT@@;
+            gridline-color: @@BRD@@;
+            border: 1px solid @@BRD@@;
             border-radius: 0px;
         }
         QTableWidget::item {
@@ -279,70 +282,70 @@ static QString gerarQss()
             border: none;
         }
         QTableWidget::item:selected {
-            background-color: %4;
+            background-color: @@ACC@@;
             color: white;
         }
         QHeaderView {
-            background-color: %2;
+            background-color: @@BG@@;
         }
         QHeaderView::section {
-            background-color: %2;
+            background-color: @@BG@@;
             border: none;
-            border-right: 1px solid %6;
-            border-bottom: 2px solid %4;
+            border-right: 1px solid @@BRD@@;
+            border-bottom: 2px solid @@ACC@@;
             padding: 6px 8px;
             font-weight: 600;
-            color: %1;
+            color: @@TXT@@;
             font-size: 12px;
         }
-        QHeaderView::section:hover { color: %4; }
+        QHeaderView::section:hover { color: @@ACC@@; }
         /* ── Labels ── */
         QLabel#title    { font-size: 16px; font-weight: 600; }
-        QLabel#subtitle { font-size: 12px; color: %5; }
-        QLabel#error    { font-size: 12px; color: %6; }
+        QLabel#subtitle { font-size: 12px; color: @@SUB@@; }
+        QLabel#error    { font-size: 12px; color: @@NEG@@; }
         /* ── Status bar ── */
-        QStatusBar { background-color: %2; color: %5; border-top: 1px solid %6; }
+        QStatusBar { background-color: @@BG@@; color: @@SUB@@; border-top: 1px solid @@BRD@@; }
         /* ── Tabs ─────────────────────────────────────────────────────────────
            Inactive tabs use bg (recessed); selected tab uses surf (elevated).
            A 2px accent line on top of the selected tab gives clear affordance.
            No gradients — pure colour-contrast depth (BreezeStyleSheets pattern).
         ── */
         QTabWidget::pane {
-            background-color: %2;
-            border: 1px solid %6;
+            background-color: @@BG@@;
+            border: 1px solid @@BRD@@;
             border-top: none;
         }
         QTabBar::tab {
-            background-color: %2;
-            color: %5;
+            background-color: @@BG@@;
+            color: @@SUB@@;
             padding: 7px 20px;
-            border: 1px solid %6;
+            border: 1px solid @@BRD@@;
             border-bottom: none;
             border-top-left-radius: 5px;
             border-top-right-radius: 5px;
             margin-right: 2px;
         }
         QTabBar::tab:selected {
-            background-color: %2;
-            color: %1;
-            border-top: 2px solid %4;
+            background-color: @@BG@@;
+            color: @@TXT@@;
+            border-top: 2px solid @@ACC@@;
             margin-top: -1px;
         }
-        QTabBar::tab:hover:!selected { background-color: %9; color: %1; }
+        QTabBar::tab:hover:!selected { background-color: @@HOV@@; color: @@TXT@@; }
         /* ── Scroll bars ── */
         QScrollBar:vertical {
-            background: %2; width: 8px; margin: 0;
+            background: @@BG@@; width: 8px; margin: 0;
         }
         QScrollBar:horizontal {
-            background: %2; height: 8px; margin: 0;
+            background: @@BG@@; height: 8px; margin: 0;
         }
-        QScrollBar::handle:vertical   { background: %6; border-radius: 4px; min-height: 20px; }
-        QScrollBar::handle:horizontal { background: %6; border-radius: 4px; min-width:  20px; }
-        QScrollBar::handle:hover { background: %5; }
+        QScrollBar::handle:vertical   { background: @@BRD@@; border-radius: 4px; min-height: 20px; }
+        QScrollBar::handle:horizontal { background: @@BRD@@; border-radius: 4px; min-width:  20px; }
+        QScrollBar::handle:hover { background: @@SUB@@; }
         QScrollBar::add-line, QScrollBar::sub-line { height: 0; width: 0; }
         /* ── GroupBox ── */
         QGroupBox {
-            border: 1px solid %6;
+            border: 1px solid @@BRD@@;
             border-radius: 6px;
             margin-top: 1.2em;
             padding-top: 8px;
@@ -351,19 +354,39 @@ static QString gerarQss()
             subcontrol-origin: margin;
             subcontrol-position: top left;
             padding: 0 6px;
-            color: %5;
+            color: @@SUB@@;
             font-size: 11px;
             font-weight: 600;
         }
         /* ── Dialog button boxes ── */
         QDialogButtonBox QPushButton { min-width: 80px; }
-    )")
-    .arg(txt, bg, surf, acc, sub, neg, brd, alt, hov);
+    )");
 
-    qss.replace(QStringLiteral("@@ACC_HOVER@@"),   accHover);
-    qss.replace(QStringLiteral("@@ACC_PRESSED@@"), accPressed);
+    // Substituição de tokens nomeados → valores da paleta. Ordem não importa
+    // (cada token é único no literal). Eliminado o .arg() posicional que causou
+    // bugs de troca neg↔brd e alt↔hov (#164 fix).
+    qss.replace(QStringLiteral("@@TXT@@"),          txt);
+    qss.replace(QStringLiteral("@@BG@@"),           bg);
+    qss.replace(QStringLiteral("@@SURF@@"),         surf);
+    qss.replace(QStringLiteral("@@ACC@@"),          acc);
+    qss.replace(QStringLiteral("@@SUB@@"),          sub);
+    qss.replace(QStringLiteral("@@NEG@@"),          neg);
+    qss.replace(QStringLiteral("@@BRD@@"),          brd);
+    qss.replace(QStringLiteral("@@ALT@@"),          alt);
+    qss.replace(QStringLiteral("@@HOV@@"),          hov);
+    qss.replace(QStringLiteral("@@ACC_HOVER@@"),    accHover);
+    qss.replace(QStringLiteral("@@ACC_PRESSED@@"),  accPressed);
 
     return qss;
+}
+
+// ── qssParaTeste ─────────────────────────────────────────────────────────────
+// Acessor mínimo que expõe o QSS gerado para testes de regressão de tokens.
+// Não chama aplicar() — só depende de setMode() ter sido chamado antes.
+// Garante que testes de regressão pegam a classe de bug: troca neg↔brd.
+QString qssParaTeste()
+{
+    return gerarQss();
 }
 
 // ── QPalette generation ───────────────────────────────────────────────────────

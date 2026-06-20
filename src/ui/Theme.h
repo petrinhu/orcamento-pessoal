@@ -76,4 +76,9 @@ QColor  atencao();
 // confiável.
 QIcon   emojiIcon(const QString &emoji, int px = 16);
 
+// Expõe o QSS gerado para testes de regressão de tokens. Garante que os
+// tokens de borda nunca recebam a cor negativa (e vice-versa). Não chamar
+// aplicar() antes — só setMode() é suficiente.
+QString qssParaTeste();
+
 } // namespace Theme

@@ -1,8 +1,8 @@
-# Relatório — Fase 1 Redesign UI: Paleta Azul-Confiável (#164)
+# Relatório — Fase 1 Redesign UI: Paleta Azul-Confiável (#164) + Fix Bug Tokens QSS
 
 **Branch:** redesign-ui
 **Data:** 2026-06-20
-**Status:** DONE
+**Status:** DONE (inclui fix crítico de tokens 2026-06-20)
 
 ---
 
@@ -107,6 +107,72 @@ set_tests_properties(test_theme_tokens PROPERTIES
 - `cmake --build build -j$(nproc)`: limpo, sem warnings
 - `test_theme_tokens`: **8/8 PASS** (3ms)
 - `ctest --test-dir build`: **28/28 PASS** (1.05s total; `test_theme_tokens` é o #27)
+
+---
+
+---
+
+## Fix crítico de tokens QSS (2026-06-20)
+
+### Causa raiz
+
+Em `gerarQss()`, o `.arg(txt, bg, surf, acc, sub, neg, brd, alt, hov)` posicionava:
+
+| Posição | Variável injetada | Variável esperada pelo seletor |
+|---------|-------------------|-------------------------------|
+| `%6`    | `neg` (#EA3943 vermelho) | `brd` (#E4EAF2 cinza) |
+| `%7`    | `brd`             | `alt` (alternating row)       |
+| `%8`    | `alt`             | `hov` (hover background)      |
+
+Resultado: ~15 regras de borda (QMenu, QFrame#surface, QPushButton, inputs, gridline-color, QScrollBar handle, QStatusBar, QGroupBox, QTabWidget, etc.) recebiam `#EA3943` (vermelho) — bordas do app visualmente vermelhas.
+
+### Solução
+
+Migração completa do esquema posicional `%N` para tokens nomeados `@@TOKEN@@` + `qss.replace(...)`. Cada token tem semântica inequívoca:
+
+```
+@@TXT@@  @@BG@@  @@SURF@@  @@ACC@@  @@SUB@@
+@@NEG@@  @@BRD@@  @@ALT@@  @@HOV@@
+@@ACC_HOVER@@  @@ACC_PRESSED@@
+```
+
+- Bordas → `@@BRD@@` (15+ seletores)
+- Erro → `@@NEG@@` (apenas `QLabel#error`)
+- Alternating row → `@@ALT@@`
+- Hover → `@@HOV@@`
+
+### Correção menor — accent hover/pressed
+
+Ajustados para tons coerentes com o accent base `#3B82F6`:
+- `accHover`: `#5CC6FA` → `#60A5FA` (blue-400, mais claro)
+- `accPressed`: `#1F7AAD` → `#2563EB` (blue-600, mais escuro)
+
+### Acessor de teste
+
+Adicionado `Theme::qssParaTeste()` (declarado no header, implementado no `.cpp`) — expõe o QSS gerado sem precisar de `aplicar()`. Permite testes de regressão isolados.
+
+### Novos casos de teste em `test_theme_tokens.cpp`
+
+| Caso | Verifica |
+|------|---------|
+| `scrollbarHandle_usaBordaNaoNegativa` | handle = `@@BRD@@`, não `@@NEG@@` |
+| `labelError_usaNegativaCorreto` | `QLabel#error` = `@@NEG@@`, não `@@BRD@@` |
+| `inputBorder_usaBordaNaoNegativa` | borda inputs = `@@BRD@@` |
+| `gridline_usaBordaNaoNegativa` | gridline-color = `@@BRD@@` |
+| `menuBarBorder_usaBordaNaoNegativa` | border-bottom = `@@BRD@@` |
+| `borda_light` | `Theme::borda()` = `#E4EAF2` |
+| `accHover_tomClaroCoerente` | QSS contém `#60A5FA` |
+| `accPressed_tomEscuroCoerente` | QSS contém `#2563EB` |
+
+### Resultado
+
+```
+cmake --build build -j$(nproc)      → 100% Built (sem erros)
+ctest --test-dir build              → 28/28 Passed
+cmake --build build-rel -j$(nproc) → 100% Built Release
+```
+
+Screenshot `/tmp/f1_fix_shot.png`: LoginDialog com borda `#E4EAF2` (cinza-azulado neutro), fundo branco, botão "Entrar" em azul `#3B82F6`. Nenhum elemento vermelho nos contornos — bug confirmado corrigido.
 
 ---
 
