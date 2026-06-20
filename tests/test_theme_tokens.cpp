@@ -7,7 +7,7 @@
 // Executar com QT_QPA_PLATFORM=offscreen.
 
 #include <QtTest/QtTest>
-#include <QCoreApplication>
+#include <QApplication>
 
 #include "ui/Theme.h"
 
@@ -150,6 +150,10 @@ void TestThemeTokens::labelError_usaNegativaCorreto()
              qPrintable(QStringLiteral("QLabel#error não contém cor negativa (%1)").arg(corNegativa)));
     QVERIFY2(!bloco.contains(corBorda),
              qPrintable(QStringLiteral("QLabel#error contém cor de borda (%1) em vez da negativa!").arg(corBorda)));
+
+    // A cor negativa deve aparecer em UMA única posição no QSS inteiro (só
+    // QLabel#error). Pega regressão futura de @@NEG@@ vazando p/ outro seletor.
+    QCOMPARE(qss.count(corNegativa), 1);
 }
 
 void TestThemeTokens::inputBorder_usaBordaNaoNegativa()
