@@ -1,4 +1,5 @@
 #include "BolsaWidget.h"
+#include "ui/Theme.h"
 
 #include "core/settings/AppSettings.h"
 #include "services/MarketDataService.h"
@@ -50,7 +51,8 @@ void BolsaWidget::buildUi()
     m_edtBusca->setClearButtonEnabled(true);
     bar->addWidget(m_edtBusca, 1);
 
-    m_btnBuscar = new QPushButton(tr("🔍 Buscar"), this);
+    m_btnBuscar = new QPushButton(tr("Buscar"), this);
+    m_btnBuscar->setIcon(Theme::emojiIcon(QStringLiteral("🔍")));
     m_btnBuscar->setObjectName(QStringLiteral("primary"));
     bar->addWidget(m_btnBuscar);
 

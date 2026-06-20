@@ -69,18 +69,23 @@ void ParcelasWidget::buildUi()
 
     // ── Toolbar ────────────────────────────────────────────────────────────
     auto *toolbar = new QHBoxLayout;
-    m_btnNova = new QPushButton(tr("➕ Novo item"), this);
+    m_btnNova = new QPushButton(tr("Novo item"), this);
+    m_btnNova->setIcon(Theme::emojiIcon(QStringLiteral("➕")));
     m_btnNova->setObjectName(QStringLiteral("primary"));
-    m_btnExcluir = new QPushButton(tr("🗑️ Excluir"), this);
+    m_btnExcluir = new QPushButton(tr("Excluir"), this);
+    m_btnExcluir->setIcon(Theme::emojiIcon(QStringLiteral("🗑️")));
     m_btnExcluir->setEnabled(false);
 
-    auto *btnOrganizar = new QPushButton(tr("🔃 Organizar por ▾"), this);
+    auto *btnOrganizar = new QPushButton(tr("Organizar por ▾"), this);
+    btnOrganizar->setIcon(Theme::emojiIcon(QStringLiteral("🔃")));
 
     // Month navigation (espelha Dashboard/Planejamento; reusa navegarMes)
-    auto *btnPrevMes = new QPushButton(QStringLiteral("◀️"), this);
-    auto *btnNextMes = new QPushButton(QStringLiteral("▶️"), this);
-    btnPrevMes->setFixedWidth(28);
-    btnNextMes->setFixedWidth(28);
+    auto *btnPrevMes = new QPushButton(this);
+    btnPrevMes->setIcon(Theme::emojiIcon(QStringLiteral("◀️")));
+    auto *btnNextMes = new QPushButton(this);
+    btnNextMes->setIcon(Theme::emojiIcon(QStringLiteral("▶️")));
+    btnPrevMes->setFixedWidth(32);
+    btnNextMes->setFixedWidth(32);
     btnPrevMes->setToolTip(tr("Mês anterior"));
     btnNextMes->setToolTip(tr("Próximo mês"));
     connect(btnPrevMes, &QPushButton::clicked, this, [this]() { navegarMes(-1); });

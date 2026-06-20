@@ -1,4 +1,5 @@
 #include "InvestimentosWidget.h"
+#include "ui/Theme.h"
 #include "InvestimentoDialog.h"
 #include "repositories/CategoriaRepository.h"
 #include "repositories/LancamentoInvestimentoRepository.h"
@@ -80,13 +81,17 @@ void InvestimentosWidget::buildUi()
     toolbar->setContentsMargins(8, 8, 8, 4);
     toolbar->setSpacing(8);
 
-    auto *btnNovo = new QPushButton(tr("➕ Novo investimento"), this);
+    auto *btnNovo = new QPushButton(tr("Novo investimento"), this);
+    btnNovo->setIcon(Theme::emojiIcon(QStringLiteral("➕")));
     btnNovo->setObjectName(QStringLiteral("primary"));
-    m_btnDel = new QPushButton(tr("🗑️ Excluir"), this);
+    m_btnDel = new QPushButton(tr("Excluir"), this);
+    m_btnDel->setIcon(Theme::emojiIcon(QStringLiteral("🗑️")));
     m_btnDel->setEnabled(false);
-    m_btnOrg = new QPushButton(tr("🔃 Organizar por ▾"), this);
+    m_btnOrg = new QPushButton(tr("Organizar por ▾"), this);
+    m_btnOrg->setIcon(Theme::emojiIcon(QStringLiteral("🔃")));
     m_btnOrg->setToolTip(tr("Ordenar lançamentos dentro de cada mês"));
-    m_btnGrafico = new QPushButton(tr("📊 Gráfico ▾"), this);
+    m_btnGrafico = new QPushButton(tr("Gráfico ▾"), this);
+    m_btnGrafico->setIcon(Theme::emojiIcon(QStringLiteral("📊")));
     m_btnGrafico->setCheckable(true);
     m_btnGrafico->setToolTip(tr("Mostrar/ocultar painel de gráficos"));
 

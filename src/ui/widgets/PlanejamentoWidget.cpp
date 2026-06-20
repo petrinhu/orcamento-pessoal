@@ -66,16 +66,20 @@ void PlanejamentoWidget::buildUi()
     toolbar->setContentsMargins(8, 8, 8, 4);
     toolbar->setSpacing(8);
 
-    auto *btnNovo = new QPushButton(tr("➕ Novo item"), this);
+    auto *btnNovo = new QPushButton(tr("Novo item"), this);
+    btnNovo->setIcon(Theme::emojiIcon(QStringLiteral("➕")));
     btnNovo->setObjectName(QStringLiteral("primary"));
-    m_btnDel = new QPushButton(tr("🗑️ Excluir"), this);
+    m_btnDel = new QPushButton(tr("Excluir"), this);
+    m_btnDel->setIcon(Theme::emojiIcon(QStringLiteral("🗑️")));
     m_btnDel->setEnabled(false);
 
     // Month navigation
-    auto *btnPrev = new QPushButton(QStringLiteral("◀️"), this);
-    auto *btnNext = new QPushButton(QStringLiteral("▶️"), this);
-    btnPrev->setFixedWidth(28);
-    btnNext->setFixedWidth(28);
+    auto *btnPrev = new QPushButton(this);
+    btnPrev->setIcon(Theme::emojiIcon(QStringLiteral("◀️")));
+    auto *btnNext = new QPushButton(this);
+    btnNext->setIcon(Theme::emojiIcon(QStringLiteral("▶️")));
+    btnPrev->setFixedWidth(32);
+    btnNext->setFixedWidth(32);
     m_lblMes = new QLabel(this);
     m_lblMes->setMinimumWidth(120);
     m_lblMes->setAlignment(Qt::AlignCenter);

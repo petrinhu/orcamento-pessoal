@@ -1,4 +1,5 @@
 #include "EntradasWidget.h"
+#include "ui/Theme.h"
 #include "LancamentoEntradaDialog.h"
 #include "repositories/CategoriaRepository.h"
 #include "services/EntradaService.h"
@@ -70,12 +71,15 @@ void EntradasWidget::buildUi()
     toolbar->setContentsMargins(8, 8, 8, 4);
     toolbar->setSpacing(8);
 
-    auto *btnNova = new QPushButton(tr("➕ Novo lançamento"), this);
+    auto *btnNova = new QPushButton(tr("Novo lançamento"), this);
+    btnNova->setIcon(Theme::emojiIcon(QStringLiteral("➕")));
     btnNova->setObjectName(QStringLiteral("primary"));
-    m_btnDel = new QPushButton(tr("🗑️ Excluir"), this);
+    m_btnDel = new QPushButton(tr("Excluir"), this);
+    m_btnDel->setIcon(Theme::emojiIcon(QStringLiteral("🗑️")));
     m_btnDel->setEnabled(false);
 
-    m_btnOrg = new QPushButton(tr("🔃 Organizar por ▾"), this);
+    m_btnOrg = new QPushButton(tr("Organizar por ▾"), this);
+    m_btnOrg->setIcon(Theme::emojiIcon(QStringLiteral("🔃")));
     m_btnOrg->setToolTip(tr("Ordenar lançamentos dentro de cada mês"));
 
     toolbar->addWidget(btnNova);

@@ -2,7 +2,9 @@
 
 #include <QApplication>
 #include <QFontDatabase>
+#include <QGuiApplication>
 #include <QPainter>
+#include <QPixmap>
 #include <QProxyStyle>
 #include <QStyleFactory>
 #include <QStyleHints>
@@ -67,6 +69,24 @@ QColor  atencao()
 {
     return isDark() ? QColor(QStringLiteral("#8A6D00"))   // âmbar escuro (dark)
                     : QColor(QStringLiteral("#FFF3C4"));  // âmbar pastel (light)
+}
+
+// ── Emoji → QIcon ─────────────────────────────────────────────────────────────
+
+QIcon emojiIcon(const QString &emoji, int px)
+{
+    const qreal dpr = qApp ? qApp->devicePixelRatio() : 1.0;
+    QPixmap pm(QSize(px, px) * dpr);
+    pm.setDevicePixelRatio(dpr);
+    pm.fill(Qt::transparent);
+    QPainter p(&pm);
+    p.setRenderHint(QPainter::Antialiasing, true);
+    QFont f(QStringLiteral("Noto Color Emoji"));
+    f.setPixelSize(int(px * 0.86));
+    p.setFont(f);
+    p.drawText(QRectF(0, 0, px, px), Qt::AlignCenter, emoji);
+    p.end();
+    return QIcon(pm);
 }
 
 // ── QSS generation ───────────────────────────────────────────────────────────

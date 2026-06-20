@@ -727,10 +727,10 @@ void MainWindow::buildThemeBar()
         auto *btn = new QToolButton(navCorner);
         btn->setAutoRaise(true);
         btn->setToolTip(tip);
-        // Emoji colorido como texto (Noto Color Emoji) — sem QIcon::fromTheme,
-        // que renderiza ícone de linha monocromático invisível no tema escuro.
-        btn->setText(glyph);
-        btn->setToolButtonStyle(Qt::ToolButtonTextOnly);
+        // Emoji colorido renderizado num QIcon (Noto Color Emoji): QSS não
+        // renderiza fonte colorida no texto de botão de forma confiável.
+        btn->setIcon(Theme::emojiIcon(glyph));
+        btn->setToolButtonStyle(Qt::ToolButtonIconOnly);
         navLay->addWidget(btn);
         return btn;
     };
@@ -767,10 +767,10 @@ void MainWindow::buildThemeBar()
         btn->setAutoRaise(true);
         btn->setEnabled(enabled);
         btn->setToolTip(tip);
-        // Emoji colorido como texto (Noto Color Emoji) — sem QIcon::fromTheme,
-        // que renderiza ícone de linha monocromático invisível no tema escuro.
-        btn->setText(glyph);
-        btn->setToolButtonStyle(Qt::ToolButtonTextOnly);
+        // Emoji colorido renderizado num QIcon (Noto Color Emoji): QSS não
+        // renderiza fonte colorida no texto de botão de forma confiável.
+        btn->setIcon(Theme::emojiIcon(glyph, 20));
+        btn->setToolButtonStyle(Qt::ToolButtonIconOnly);
         toolbar->addWidget(btn);
         return btn;
     };
@@ -842,9 +842,9 @@ void MainWindow::updateThemeButton()
     };
     // enum ThemeMode { Auto=0, Light=1, Dark=2 }
     const auto &d = defs[static_cast<int>(Theme::currentMode())];
-    // Emoji colorido como texto (Noto Color Emoji) — sem QIcon::fromTheme.
-    m_btnTheme->setText(d.glyph);
-    m_btnTheme->setToolButtonStyle(Qt::ToolButtonTextOnly);
+    // Emoji colorido renderizado num QIcon (Noto Color Emoji).
+    m_btnTheme->setIcon(Theme::emojiIcon(d.glyph, 20));
+    m_btnTheme->setToolButtonStyle(Qt::ToolButtonIconOnly);
     m_btnTheme->setToolTip(d.tip);
 }
 

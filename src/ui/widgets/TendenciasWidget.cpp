@@ -1,4 +1,5 @@
 #include "TendenciasWidget.h"
+#include "ui/Theme.h"
 #include "models/Categoria.h"
 #include "models/GastoAvulso.h"
 #include "repositories/GastoAvulsoRepository.h"
@@ -71,7 +72,8 @@ void TendenciasWidget::buildUi()
     m_cbCategoria->addItem(tr("Todas"));
     m_cbCategoria->setMinimumWidth(160);
 
-    auto *btnAplicar = new QPushButton(tr("🔄 Aplicar"), this);
+    auto *btnAplicar = new QPushButton(tr("Aplicar"), this);
+    btnAplicar->setIcon(Theme::emojiIcon(QStringLiteral("🔄")));
     btnAplicar->setObjectName(QStringLiteral("primary"));
 
     ctrlBar->addWidget(lblDe);

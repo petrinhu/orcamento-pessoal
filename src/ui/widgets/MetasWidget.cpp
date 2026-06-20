@@ -72,10 +72,14 @@ void MetasWidget::buildUi()
     toolbar->setContentsMargins(8, 8, 8, 4);
     toolbar->setSpacing(8);
 
-    auto *btnNova = new QPushButton(tr("➕ Nova meta"), this);
-    m_btnEdit     = new QPushButton(tr("✏️ Editar"), this);
-    m_btnDel      = new QPushButton(tr("🗑️ Excluir"), this);
-    m_btnAporte   = new QPushButton(tr("💰 Aporte"), this);
+    auto *btnNova = new QPushButton(tr("Nova meta"), this);
+    btnNova->setIcon(Theme::emojiIcon(QStringLiteral("➕")));
+    m_btnEdit     = new QPushButton(tr("Editar"), this);
+    m_btnEdit->setIcon(Theme::emojiIcon(QStringLiteral("✏️")));
+    m_btnDel      = new QPushButton(tr("Excluir"), this);
+    m_btnDel->setIcon(Theme::emojiIcon(QStringLiteral("🗑️")));
+    m_btnAporte   = new QPushButton(tr("Aporte"), this);
+    m_btnAporte->setIcon(Theme::emojiIcon(QStringLiteral("💰")));
     m_btnEdit->setEnabled(false);
     m_btnDel->setEnabled(false);
     m_btnAporte->setEnabled(false);

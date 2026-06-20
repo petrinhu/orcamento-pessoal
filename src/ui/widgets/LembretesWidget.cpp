@@ -88,12 +88,18 @@ void LembretesWidget::buildUi()
     toolbar->setContentsMargins(8, 8, 8, 4);
     toolbar->setSpacing(8);
 
-    auto *btnNovo  = new QPushButton(tr("➕ Novo"), this);
-    m_btnEdit      = new QPushButton(tr("✏️ Editar"), this);
-    m_btnDel       = new QPushButton(tr("🗑️ Excluir"), this);
-    m_btnPagar     = new QPushButton(tr("✅ Pagar"), this);
-    m_btnNaoDebito = new QPushButton(tr("⚠️ Não debitado"), this);
-    m_btnIgnorar   = new QPushButton(tr("🚫 Ignorar"), this);
+    auto *btnNovo  = new QPushButton(tr("Novo"), this);
+    btnNovo->setIcon(Theme::emojiIcon(QStringLiteral("➕")));
+    m_btnEdit      = new QPushButton(tr("Editar"), this);
+    m_btnEdit->setIcon(Theme::emojiIcon(QStringLiteral("✏️")));
+    m_btnDel       = new QPushButton(tr("Excluir"), this);
+    m_btnDel->setIcon(Theme::emojiIcon(QStringLiteral("🗑️")));
+    m_btnPagar     = new QPushButton(tr("Pagar"), this);
+    m_btnPagar->setIcon(Theme::emojiIcon(QStringLiteral("✅")));
+    m_btnNaoDebito = new QPushButton(tr("Não debitado"), this);
+    m_btnNaoDebito->setIcon(Theme::emojiIcon(QStringLiteral("⚠️")));
+    m_btnIgnorar   = new QPushButton(tr("Ignorar"), this);
+    m_btnIgnorar->setIcon(Theme::emojiIcon(QStringLiteral("🚫")));
 
     m_btnEdit->setEnabled(false);
     m_btnDel->setEnabled(false);

@@ -188,7 +188,9 @@ void AddCompraDialog::buildTabJuros(QWidget *tab)
         h->setContentsMargins(0, 0, 0, 0);
         h->setSpacing(4);
         h->addWidget(field, 1);
-        lockBtn = new QPushButton(locked ? QStringLiteral("✏️") : QStringLiteral("🚫"), w);
+        lockBtn = new QPushButton(w);
+        lockBtn->setIcon(Theme::emojiIcon(locked ? QStringLiteral("✏️")
+                                                 : QStringLiteral("🚫")));
         lockBtn->setCheckable(true);
         lockBtn->setChecked(locked);
         lockBtn->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
@@ -246,7 +248,8 @@ void AddCompraDialog::buildTabJuros(QWidget *tab)
         eqLbl->setToolTip(tr("Juros mensais e CET são equivalentes — alterar um atualiza o outro."));
         taxaH->addWidget(eqLbl);
         taxaH->addWidget(m_cet_j, 1);
-        m_lockTaxa = new QPushButton(QStringLiteral("✏️"), taxaWidget);
+        m_lockTaxa = new QPushButton(taxaWidget);
+        m_lockTaxa->setIcon(Theme::emojiIcon(QStringLiteral("✏️")));
         m_lockTaxa->setCheckable(true);
         m_lockTaxa->setChecked(true);
         m_lockTaxa->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
@@ -342,25 +345,25 @@ void AddCompraDialog::atualizarEstadoCamposJ()
     const QString ttCalculado = tr("Campo calculado automaticamente. Clique para editá-lo manualmente.");
 
     m_lockTotal->setChecked(!totalOut);
-    m_lockTotal->setText(totalOut ? QStringLiteral("🚫") : QStringLiteral("✏️"));
+    m_lockTotal->setIcon(Theme::emojiIcon(totalOut ? QStringLiteral("🚫") : QStringLiteral("✏️")));
     m_lockTotal->setToolTip(totalOut ? ttCalculado : ttEditable);
 
     m_lockN->setChecked(!nOut);
-    m_lockN->setText(nOut ? QStringLiteral("🚫") : QStringLiteral("✏️"));
+    m_lockN->setIcon(Theme::emojiIcon(nOut ? QStringLiteral("🚫") : QStringLiteral("✏️")));
     m_lockN->setToolTip(nOut ? ttCalculado : ttEditable);
 
     m_lockTaxa->setChecked(!taxaOut);
-    m_lockTaxa->setText(taxaOut ? QStringLiteral("🚫") : QStringLiteral("✏️"));
+    m_lockTaxa->setIcon(Theme::emojiIcon(taxaOut ? QStringLiteral("🚫") : QStringLiteral("✏️")));
     m_lockTaxa->setToolTip(taxaOut ? ttCalculado : ttEditable);
 
     m_lockParcela->setChecked(!parcelaOut);
-    m_lockParcela->setText(parcelaOut ? QStringLiteral("🚫") : QStringLiteral("✏️"));
+    m_lockParcela->setIcon(Theme::emojiIcon(parcelaOut ? QStringLiteral("🚫") : QStringLiteral("✏️")));
     m_lockParcela->setToolTip(parcelaOut ? ttCalculado : ttEditable);
 
     // TotalPago: independent lock (not part of SolveFor)
     m_valorTotalPago_j->setReadOnly(!m_totalPagoIsInput);
     m_lockTotalPago->setChecked(m_totalPagoIsInput);
-    m_lockTotalPago->setText(m_totalPagoIsInput ? QStringLiteral("✏️") : QStringLiteral("🚫"));
+    m_lockTotalPago->setIcon(Theme::emojiIcon(m_totalPagoIsInput ? QStringLiteral("✏️") : QStringLiteral("🚫")));
     m_lockTotalPago->setToolTip(m_totalPagoIsInput ? ttEditable : ttCalculado);
 }
 

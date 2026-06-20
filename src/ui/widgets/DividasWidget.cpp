@@ -1,4 +1,5 @@
 #include "DividasWidget.h"
+#include "ui/Theme.h"
 #include "DividaDialog.h"
 #include "repositories/DividaRepository.h"
 #include "core/commands/UndoCommands.h"
@@ -83,13 +84,17 @@ void DividasWidget::buildUi()
     toolbar->setContentsMargins(8, 8, 8, 4);
     toolbar->setSpacing(8);
 
-    auto *btnNova = new QPushButton(tr("➕ Nova dívida"), this);
+    auto *btnNova = new QPushButton(tr("Nova dívida"), this);
+    btnNova->setIcon(Theme::emojiIcon(QStringLiteral("➕")));
     btnNova->setObjectName(QStringLiteral("primary"));
-    m_btnEdit = new QPushButton(tr("✏️ Editar"), this);
+    m_btnEdit = new QPushButton(tr("Editar"), this);
+    m_btnEdit->setIcon(Theme::emojiIcon(QStringLiteral("✏️")));
     m_btnEdit->setEnabled(false);
-    m_btnDel  = new QPushButton(tr("🗑️ Excluir"), this);
+    m_btnDel  = new QPushButton(tr("Excluir"), this);
+    m_btnDel->setIcon(Theme::emojiIcon(QStringLiteral("🗑️")));
     m_btnDel->setEnabled(false);
-    m_btnQuit = new QPushButton(tr("✅ Quitar"), this);
+    m_btnQuit = new QPushButton(tr("Quitar"), this);
+    m_btnQuit->setIcon(Theme::emojiIcon(QStringLiteral("✅")));
     m_btnQuit->setEnabled(false);
     m_btnQuit->setToolTip(tr("Marcar como quitado"));
 

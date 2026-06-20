@@ -1,4 +1,5 @@
 #include "CalculadoraDialog.h"
+#include "ui/Theme.h"
 #include "services/TvmService.h"
 #include "services/ParcelaService.h"
 #include "services/FinanceEngine.h"
@@ -190,7 +191,8 @@ void CalculadoraDialog::buildTabComum(QWidget *tab)
         m_display->setMinimumHeight(48);
 
         auto *btnCopy = new QToolButton(tab);
-        btnCopy->setText(QStringLiteral("📋"));
+        btnCopy->setIcon(Theme::emojiIcon(QStringLiteral("📋")));
+        btnCopy->setToolButtonStyle(Qt::ToolButtonIconOnly);
         btnCopy->setToolTip(tr("Copiar para área de transferência"));
         btnCopy->setFixedSize(32, 48);
         connect(btnCopy, &QToolButton::clicked, this, [this]() {

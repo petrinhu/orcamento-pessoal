@@ -1,4 +1,5 @@
 #include "ProventosWidget.h"
+#include "ui/Theme.h"
 #include "ProventoDialog.h"
 
 #include "repositories/ProventoRepository.h"
@@ -45,13 +46,17 @@ void ProventosWidget::buildUi()
     m_cbTipoFiltro->addItem(tr("Bonificação"),   QStringLiteral("bonus"));
     bar->addWidget(m_cbTipoFiltro);
 
-    auto *btnFiltrar = new QPushButton(tr("🔎 Filtrar"), this);
+    auto *btnFiltrar = new QPushButton(tr("Filtrar"), this);
+    btnFiltrar->setIcon(Theme::emojiIcon(QStringLiteral("🔎")));
     bar->addWidget(btnFiltrar);
     bar->addStretch();
 
-    m_btnNovo    = new QPushButton(tr("➕ Novo provento"), this);
-    m_btnEditar  = new QPushButton(tr("✏️ Editar"), this);
-    m_btnRemover = new QPushButton(tr("🗑️ Excluir"), this);
+    m_btnNovo    = new QPushButton(tr("Novo provento"), this);
+    m_btnNovo->setIcon(Theme::emojiIcon(QStringLiteral("➕")));
+    m_btnEditar  = new QPushButton(tr("Editar"), this);
+    m_btnEditar->setIcon(Theme::emojiIcon(QStringLiteral("✏️")));
+    m_btnRemover = new QPushButton(tr("Excluir"), this);
+    m_btnRemover->setIcon(Theme::emojiIcon(QStringLiteral("🗑️")));
     m_btnNovo->setObjectName(QStringLiteral("primary"));
     bar->addWidget(m_btnNovo);
     bar->addWidget(m_btnEditar);

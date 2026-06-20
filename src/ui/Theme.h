@@ -3,6 +3,7 @@
 #include <QString>
 #include <QFont>
 #include <QColor>
+#include <QIcon>
 #include <QPalette>
 
 // Forest Neutral palette + Inter font + QSS.
@@ -50,5 +51,11 @@ QString borda();
 // Âmbar "atenção / vence em breve" — dark-mode-aware, sem equivalente Breeze
 // direto. Usado em barras de progresso e fundos de aviso (Metas, Lembretes).
 QColor  atencao();
+
+// Renderiza um glifo de emoji da fonte embutida "Noto Color Emoji" num QIcon
+// colorido (pixmap transparente, HiDPI-aware). Usar em QPushButton/QToolButton
+// via setIcon — QSS não renderiza fonte colorida no texto de botão de forma
+// confiável.
+QIcon   emojiIcon(const QString &emoji, int px = 16);
 
 } // namespace Theme

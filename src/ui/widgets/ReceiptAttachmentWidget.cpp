@@ -1,4 +1,5 @@
 #include "ReceiptAttachmentWidget.h"
+#include "ui/Theme.h"
 
 #include <QBuffer>
 #include <QDialog>
@@ -27,7 +28,8 @@ ReceiptAttachmentWidget::ReceiptAttachmentWidget(QWidget *parent)
     lay->setContentsMargins(0, 0, 0, 0);
     lay->setSpacing(6);
 
-    m_btnAttach = new QPushButton(tr("📎 Anexar"), this);
+    m_btnAttach = new QPushButton(tr("Anexar"), this);
+    m_btnAttach->setIcon(Theme::emojiIcon(QStringLiteral("📎")));
     m_btnAttach->setToolTip(tr("Anexar foto/scan do comprovante (PNG/JPG/PDF até 5 MB)"));
     connect(m_btnAttach, &QPushButton::clicked, this, &ReceiptAttachmentWidget::onAttach);
 
@@ -41,7 +43,8 @@ ReceiptAttachmentWidget::ReceiptAttachmentWidget(QWidget *parent)
     connect(m_thumbnail, &QLabel::linkActivated, this,
             &ReceiptAttachmentWidget::onViewExpanded);
 
-    m_btnRemove = new QPushButton(tr("🗑️"), this);
+    m_btnRemove = new QPushButton(this);
+    m_btnRemove->setIcon(Theme::emojiIcon(QStringLiteral("🗑️")));
     m_btnRemove->setToolTip(tr("Remover comprovante anexado"));
     m_btnRemove->setFixedWidth(32);
     m_btnRemove->setVisible(false);
@@ -142,7 +145,7 @@ void ReceiptAttachmentWidget::refreshThumbnail()
     const bool hasReceipt = !m_receipt.isEmpty();
     m_thumbnail->setVisible(hasReceipt);
     m_btnRemove->setVisible(hasReceipt);
-    m_btnAttach->setText(hasReceipt ? tr("📎 Trocar") : tr("📎 Anexar"));
+    m_btnAttach->setText(hasReceipt ? tr("Trocar") : tr("Anexar"));
 
     if (!hasReceipt) {
         m_thumbnail->clear();

@@ -1,4 +1,5 @@
 #include "RecorrenciaWidget.h"
+#include "ui/Theme.h"
 #include "RecorrenciaDialog.h"
 #include "repositories/CategoriaRepository.h"
 #include "repositories/TransacaoRecorrenteRepository.h"
@@ -58,11 +59,15 @@ void RecorrenciaWidget::buildUi()
     toolbar->setContentsMargins(8, 8, 8, 4);
     toolbar->setSpacing(8);
 
-    auto *btnAdd = new QPushButton(tr("➕ Adicionar"), this);
+    auto *btnAdd = new QPushButton(tr("Adicionar"), this);
+    btnAdd->setIcon(Theme::emojiIcon(QStringLiteral("➕")));
     btnAdd->setObjectName(QStringLiteral("primary"));
-    m_btnEdit   = new QPushButton(tr("✏️ Editar"), this);
-    m_btnRem    = new QPushButton(tr("🗑️ Excluir"), this);
-    m_btnToggle = new QPushButton(tr("⏯️ Ativar/Pausar"), this);
+    m_btnEdit   = new QPushButton(tr("Editar"), this);
+    m_btnEdit->setIcon(Theme::emojiIcon(QStringLiteral("✏️")));
+    m_btnRem    = new QPushButton(tr("Excluir"), this);
+    m_btnRem->setIcon(Theme::emojiIcon(QStringLiteral("🗑️")));
+    m_btnToggle = new QPushButton(tr("Ativar/Pausar"), this);
+    m_btnToggle->setIcon(Theme::emojiIcon(QStringLiteral("⏯️")));
 
     m_btnEdit->setEnabled(false);
     m_btnRem->setEnabled(false);

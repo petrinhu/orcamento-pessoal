@@ -1,5 +1,6 @@
 #include "TabShell.h"
 #include "ui/TabHelp.h"
+#include "ui/Theme.h"
 #include "core/settings/AppSettings.h"
 
 #include <QLabel>
@@ -106,7 +107,10 @@ void TabShell::aplicarColapso(QLabel *label, QToolButton *toggle, bool expandido
 {
     label->setVisible(expandido);
     // 🔼 = recolher (está expandido), 🔽 = expandir (está recolhido).
-    toggle->setText(expandido ? QStringLiteral("🔼") : QStringLiteral("🔽"));
+    toggle->setText(QString());
+    toggle->setIcon(Theme::emojiIcon(expandido ? QStringLiteral("🔼")
+                                                : QStringLiteral("🔽")));
+    toggle->setToolButtonStyle(Qt::ToolButtonIconOnly);
     toggle->setToolTip(expandido ? tr("Recolher") : tr("Expandir"));
     toggle->setAccessibleName(expandido ? tr("Recolher bloco") : tr("Expandir bloco"));
 }

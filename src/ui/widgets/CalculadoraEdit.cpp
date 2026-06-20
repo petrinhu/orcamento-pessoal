@@ -1,4 +1,5 @@
 #include "CalculadoraEdit.h"
+#include "ui/Theme.h"
 #include "core/CalculadoraHub.h"
 
 #include <QLineEdit>
@@ -26,7 +27,8 @@ CalculadoraEdit::CalculadoraEdit(QWidget *parent) : QWidget(parent)
         m_btn->setIcon(icon);
         m_btn->setIconSize(QSize(22, 22));
     } else {
-        m_btn->setText(QStringLiteral("🧮"));
+        m_btn->setIcon(Theme::emojiIcon(QStringLiteral("🧮"), 22));
+        m_btn->setToolButtonStyle(Qt::ToolButtonIconOnly);
     }
 
     lay->addWidget(m_btn);

@@ -1,4 +1,5 @@
 #include "DashboardWidget.h"
+#include "ui/Theme.h"
 #include "services/ResumoService.h"
 #include "services/GastoService.h"
 #include "services/FechamentoMensalService.h"
@@ -153,12 +154,14 @@ void DashboardWidget::buildUi()
     m_lblMes->setAlignment(Qt::AlignCenter);
 
     // Botão Imprimir (#94)
-    auto *btnPrint = new QPushButton(QStringLiteral("🖨️"), this);
+    auto *btnPrint = new QPushButton(this);
+    btnPrint->setIcon(Theme::emojiIcon(QStringLiteral("🖨️")));
     btnPrint->setFixedWidth(32);
     btnPrint->setToolTip(tr("Imprimir Dashboard (visualização prévia)"));
 
     // Botão Fechar mês (#88)
-    auto *btnFechar = new QPushButton(QStringLiteral("🔒"), this);
+    auto *btnFechar = new QPushButton(this);
+    btnFechar->setIcon(Theme::emojiIcon(QStringLiteral("🔒")));
     btnFechar->setFixedWidth(32);
     btnFechar->setToolTip(tr("Fechar mês contábil (snapshot imutável)"));
 
