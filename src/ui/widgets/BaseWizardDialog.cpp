@@ -50,7 +50,9 @@ void BaseWizardDialog::buildUi()
     root->addWidget(btnSep);
 
     auto *btnBar = new QHBoxLayout;
-    btnBar->setContentsMargins(12, 8, 12, 8);
+    // Margem inferior ≥ extensão da sombra dos botões (#176): blur=8+offset=1 → ~9px.
+    // 12px lateral/inferior garante folga sem clip na borda do diálogo.
+    btnBar->setContentsMargins(12, 8, 12, 12);
 
     m_btnCancel = new QPushButton(tr("Cancelar"), this);
     m_btnPrev   = new QPushButton(tr("Anterior"), this);

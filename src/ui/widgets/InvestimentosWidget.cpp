@@ -310,7 +310,7 @@ void InvestimentosWidget::recarregar()
         for (const auto &l : m_data[kCur])
             saldo += valorSignadoInv(l);
     emit statusAtualizado(tr("Investimentos %1: %2")
-        .arg(cur.toString(QStringLiteral("MMM/yy")))
+        .arg(formatMesColuna(cur))
         .arg(uifmt::formatCentavosBRL(saldo)));
 
     if (m_chartPanel && m_chartPanel->isVisible())

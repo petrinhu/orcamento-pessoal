@@ -56,6 +56,20 @@ static QString nomeMes(const QDate &d)
     return s;
 }
 
+// Formato curto "Mmm/aa" (ex.: "Jan/25") respeitando locale do app (#175).
+static QString nomeMesAbrev(const QDate &d)
+{
+    const bool enIntl =
+        AppSettings::instance().language() == AppSettings::Language::EnIntl;
+    const QLocale loc = enIntl
+        ? QLocale(QLocale::English,    QLocale::UnitedStates)
+        : QLocale(QLocale::Portuguese, QLocale::Brazil);
+    QString s = loc.toString(d, QStringLiteral("MMM/yy"));
+    s.remove(u'.');
+    if (!s.isEmpty()) s[0] = s[0].toUpper();
+    return s;
+}
+
 // ── Construction ──────────────────────────────────────────────────────────────
 
 DashboardWidget::DashboardWidget(QWidget *parent)
@@ -339,7 +353,7 @@ void DashboardWidget::atualizarDados()
         .arg(QString::number(pctFixos, 'f', 1)));
 
     emit statusAtualizado(tr("Saldo %1: %2  ")
-        .arg(m_mes.toString(QStringLiteral("MMM/yy")))
+        .arg(nomeMesAbrev(m_mes))
         .arg(fmtCentavos(m.saldoMes)));
 
     atualizarGrafico();
@@ -361,7 +375,7 @@ void DashboardWidget::atualizarGrafico()
 
     for (const auto &r : serie) {
         const QDate d(r.ano, r.mes, 1);
-        labels << d.toString(QStringLiteral("MMM/yy"));
+        labels << nomeMesAbrev(d);
         valsEntradas << r.entradasLiquidas / 100.0;
         valsGastos   << r.gastos           / 100.0;
         valsSaldo    << r.saldoMes         / 100.0;

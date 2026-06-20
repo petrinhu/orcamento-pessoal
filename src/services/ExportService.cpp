@@ -8,6 +8,7 @@
 #include <QJsonObject>
 #include <QDate>
 #include <QDateTime>
+#include <QLocale>
 #include <QPdfWriter>
 #include <QPainter>
 #include <QTextDocument>
@@ -65,8 +66,15 @@ ExportService::TableData ExportService::buildTable(const Dataset &d)
     td.headers << QCoreApplication::translate("ExportService", "Descrição")
                << QCoreApplication::translate("ExportService", "Cartão")
                << QCoreApplication::translate("ExportService", "Total");
-    for (int k = 0; k < totalMonths; ++k)
-        td.headers << first.addMonths(k).toString(QStringLiteral("MMM/yy"));
+    // Cabeçalhos de coluna de mês em pt-BR (QDate::toString usa locale C = inglês, #175).
+    const QLocale ptBR(QLocale::Portuguese, QLocale::Brazil);
+    for (int k = 0; k < totalMonths; ++k) {
+        const QDate col = first.addMonths(k);
+        QString h = ptBR.toString(col, QStringLiteral("MMM/yy"));
+        h.remove(u'.');
+        if (!h.isEmpty()) h[0] = h[0].toUpper();
+        td.headers << h;
+    }
 
     // Data rows
     QList<qint64> monthTotals(totalMonths, 0LL);

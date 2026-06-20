@@ -6,6 +6,7 @@
 #include "services/GastoService.h"
 #include "services/ParcelaService.h"
 #include "services/ResumoService.h"
+#include "core/settings/AppSettings.h"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -15,6 +16,7 @@
 #include <QPushButton>
 #include <QTabWidget>
 #include <QDate>
+#include <QLocale>
 #include <QSet>
 #include <QPainter>
 #include <algorithm>
@@ -27,6 +29,22 @@
 #include <QPieSlice>
 #include <QBarCategoryAxis>
 #include <QValueAxis>
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+// Formato curto "Mmm/aa" ou "Mmm/aaaa" respeitando locale do app (#175).
+static QString fmtMesAbrev(const QDate &d, const QString &fmt = QStringLiteral("MMM/yy"))
+{
+    const bool enIntl =
+        AppSettings::instance().language() == AppSettings::Language::EnIntl;
+    const QLocale loc = enIntl
+        ? QLocale(QLocale::English,    QLocale::UnitedStates)
+        : QLocale(QLocale::Portuguese, QLocale::Brazil);
+    QString s = loc.toString(d, fmt);
+    s.remove(u'.');
+    if (!s.isEmpty()) s[0] = s[0].toUpper();
+    return s;
+}
 
 // ── Palette for pie slices ────────────────────────────────────────────────────
 namespace {
@@ -249,7 +267,7 @@ void TendenciasWidget::buildGraficoMensal()
     QStringList labels;
     for (const auto &m : m_meses) {
         barSet->append(m_porMes.value(m, 0) / 100.0);
-        labels << QDate(m.first, m.second, 1).toString(QStringLiteral("MMM/yy"));
+        labels << fmtMesAbrev(QDate(m.first, m.second, 1));
     }
 
     auto *series = new QBarSeries;
@@ -398,7 +416,7 @@ void TendenciasWidget::atualizarResumo(qint64 total, int numMeses,
         ParcelaService::formatarValor(numMeses > 0 ? total / numMeses : 0)));
 
     if (picoAno > 0) {
-        const QString mNome = QDate(picoAno, picoMes, 1).toString(QStringLiteral("MMM/yyyy"));
+        const QString mNome = fmtMesAbrev(QDate(picoAno, picoMes, 1), QStringLiteral("MMM/yyyy"));
         m_lblPico->setText(tr("Pico: %1 (%2)").arg(mNome, ParcelaService::formatarValor(picoVal)));
     } else {
         m_lblPico->setText(tr("Pico: —"));

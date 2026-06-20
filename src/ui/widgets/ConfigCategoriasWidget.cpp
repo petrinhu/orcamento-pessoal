@@ -30,7 +30,9 @@ ConfigCategoriasWidget::ConfigCategoriasWidget(QWidget *parent)
 void ConfigCategoriasWidget::buildUi()
 {
     auto *root = new QVBoxLayout(this);
-    root->setContentsMargins(0, 0, 0, 0);
+    // Margem inferior ≥ extensão da sombra dos botões (#176): blur=8 + offset=1
+    // → ~9px abaixo do botão. 12px garante folga sem clip.
+    root->setContentsMargins(0, 0, 0, 12);
 
     m_tree = new QTreeWidget(this);
     m_tree->setColumnCount(ColCount);

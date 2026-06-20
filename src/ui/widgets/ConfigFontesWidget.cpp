@@ -21,7 +21,9 @@ ConfigFontesWidget::ConfigFontesWidget(QWidget *parent)
 void ConfigFontesWidget::buildUi()
 {
     auto *root = new QVBoxLayout(this);
-    root->setContentsMargins(0, 0, 0, 0);
+    // Margem inferior ≥ extensão da sombra dos botões (#176): blur=8 + offset=1
+    // → a sombra ocupa ~9px abaixo do botão. 12px garante folga sem clip.
+    root->setContentsMargins(0, 0, 0, 12);
     root->setSpacing(8);
 
     auto *subtitle = new QLabel(

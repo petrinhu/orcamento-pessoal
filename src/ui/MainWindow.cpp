@@ -1153,6 +1153,9 @@ void MainWindow::onConfiguracoes()
     dlg.setWindowTitle(tr("Configurações"));
     dlg.setMinimumSize(520, 480);
     auto *lay   = new QVBoxLayout(&dlg);
+    // Margem inferior dá folga para a sombra do botão "✕ Fechar" não clipar
+    // na borda do diálogo (#176): blur=8 + offset=1 → ~9px; 16px = folga segura.
+    lay->setContentsMargins(12, 12, 12, 16);
     auto *prefs = new PrefsWidget(&dlg);
     lay->addWidget(prefs);
     auto *btns = new QDialogButtonBox(QDialogButtonBox::Close, &dlg);

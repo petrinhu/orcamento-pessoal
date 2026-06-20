@@ -265,7 +265,7 @@ void ParcelasWidget::recarregar()
     }
     emit statusAtualizado(tr("%1 compra(s)  •  %2: %3")
         .arg(m_compras.size())
-        .arg(m_currentMonth.toString(QStringLiteral("MMM/yy")))
+        .arg(formatMesColuna(m_currentMonth))
         .arg(ParcelaService::formatarValor(totalMes)));
 }
 

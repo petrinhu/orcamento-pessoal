@@ -337,3 +337,16 @@ target_link_libraries(test_sidebar_repro PRIVATE ${LIBSECRET_LIBRARIES})
 target_include_directories(test_sidebar_repro PRIVATE ${LIBSECRET_INCLUDE_DIRS})
 set_tests_properties(test_sidebar_repro PROPERTIES
     ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
+# Regressão #175: siglas de mês em pt-BR (QLocale pt-BR vs locale C = inglês).
+# Puro Qt::Core + Qt::Test — sem UI, DB, crypto ou rede.
+peubud_add_test(test_locale_meses)
+
+# Render offscreen fix #176: sombra dos botoes nao clipa na borda dos containers.
+# Verifica que Theme::aplicar() + ButtonShadowFilter nao quebram render offscreen
+# e gera /tmp/shadow_fix.png para inspecao visual.
+peubud_add_test(test_shadow_render
+    ${CMAKE_SOURCE_DIR}/src/ui/Theme.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp)
+set_tests_properties(test_shadow_render PROPERTIES
+    ENVIRONMENT "QT_QPA_PLATFORM=offscreen")

@@ -8,15 +8,16 @@
 
 namespace {
 
-// Rest state: the button floats a couple of px above the surface.
-constexpr int    kRestBlur     = 12;
-constexpr int    kRestOffsetY  = 2;
+// Rest state: sombra discreta, moderna — blur menor reduz extensão além do
+// botão e minimiza clip em containers com margem apertada (#176).
+constexpr int    kRestBlur     = 8;
+constexpr int    kRestOffsetY  = 1;
 // Pressed state: shadow collapses toward the button — it sinks into the surface.
-constexpr int    kPressBlur    = 4;
+constexpr int    kPressBlur    = 3;
 constexpr int    kPressOffsetY = 1;
 
-QColor restColor()  { return QColor(0, 0, 0, 110); }
-QColor pressColor() { return QColor(0, 0, 0, 140); }
+QColor restColor()  { return QColor(0, 0, 0, 70);  }
+QColor pressColor() { return QColor(0, 0, 0, 110); }
 
 void applyShadow(QGraphicsDropShadowEffect *fx, int blur, int offsetY, const QColor &c)
 {
