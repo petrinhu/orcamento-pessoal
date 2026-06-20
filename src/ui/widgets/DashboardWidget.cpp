@@ -115,12 +115,9 @@ QWidget *DashboardWidget::makeCard(const QString &title,
         rowTitle->setSpacing(4);
         lay->removeWidget(lblTitle); // re-add in row
         rowTitle->addWidget(lblTitle);
-        // U+25B8 triângulo pequeno sólido SEM VS16 — monocromático, herda @@SUB@@
-        // do objectName "subtitle". Consistente com ◀▶ da nav de mês (#165).
-        auto *lblArrow = new QLabel(QString(QChar(0x25B8)), frame);
-        lblArrow->setObjectName(QStringLiteral("subtitle"));
-        QFont fa = lblArrow->font(); fa.setPointSize(10);
-        lblArrow->setFont(fa);
+        // ➡️ emoji laranja via emojiIcon — consistente com padrão de ícones do app (#165).
+        auto *lblArrow = new QLabel(frame);
+        lblArrow->setPixmap(Theme::emojiIcon(QStringLiteral("➡️")).pixmap(14, 14));
         rowTitle->addWidget(lblArrow);
         rowTitle->addStretch();
         lay->addLayout(rowTitle);
@@ -157,11 +154,13 @@ void DashboardWidget::buildUi()
     auto *navBar = new QHBoxLayout;
     navBar->setContentsMargins(16, 12, 16, 8);
 
-    // U+25C0 / U+25B6 — triângulo sólido SEM VS16 (️): render monocromático
-    // via QSS (@@SUB@@ repouso → @@ACC@@ hover). NÃO usar ◀️▶️ (caixa laranja).
-    // font-size 17px vem do QSS #iconButton; remover setFont manual (#165).
-    auto *btnPrev = new QPushButton(QString(QChar(0x25C0)), this);  // ◀
-    auto *btnNext = new QPushButton(QString(QChar(0x25B6)), this);  // ▶
+    // ◀️ ▶️ com VS16 (U+FE0F) — emoji laranja via emojiIcon, padrão do app (#165).
+    // Botão transparente via #iconButton (sem box/borda). Mesmo estilo dos
+    // toggles 🔼/🔽 do TabShell.
+    auto *btnPrev = new QPushButton(this);
+    auto *btnNext = new QPushButton(this);
+    btnPrev->setIcon(Theme::emojiIcon(QStringLiteral("◀️")));
+    btnNext->setIcon(Theme::emojiIcon(QStringLiteral("▶️")));
     btnPrev->setObjectName(QStringLiteral("iconButton"));
     btnNext->setObjectName(QStringLiteral("iconButton"));
 

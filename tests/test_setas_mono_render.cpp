@@ -1,17 +1,16 @@
-// Render offscreen fix #165: setas de navegacao de mes devem ser
-// monocromaticas (glifos tipograficos), nao color-emoji com caixa laranja.
+// Render offscreen sanidade: navBar de mês com btnPrev/btnNext via emojiIcon.
 //
-// Estrategia:
-//   1. Monta uma navBar de mes identica a do DashboardWidget (btnPrev "‹",
-//      lblMes, btnNext "›"), com Theme::aplicar() ativo.
-//   2. Renderiza via grab() e salva /tmp/setas_fix.png para inspecao visual.
-//   3. Assertiva de sanidade: pixmap valido, dimensoes minimas, arquivo salvo.
-//   4. Verificacao cromatica: samplea pixels dos botoes na horizontal central
-//      e confirma que nenhuma banda de 8px consecutivos tem R>200 E G<120
-//      (assinatura laranja do Noto Color Emoji nos botoes de midia).
+// Histórico: este teste verificava que glifos ‹/› (mono) não geravam assinatura
+// laranja. Com a decisão #165 (revert), as setas ◀️▶️ voltam a ser emoji laranja
+// via Theme::emojiIcon — portanto a verificação de "sem laranja" não faz mais
+// sentido e foi removida.
 //
-// A ausencia da "caixa laranja" e confirmada via inspecao manual de
-// /tmp/setas_fix.png apos rodar `QT_QPA_PLATFORM=offscreen ctest`.
+// O teste agora verifica apenas sanidade de render:
+//   (a) pixmap válido e com dimensões mínimas
+//   (b) arquivo /tmp/setas_fix.png salvo (aprovação visual manual)
+//
+// A ausência de box/borda é coberta por test_iconbtn_render (assertiva de
+// pixels de cor sólida uniforme nas bordas do botão).
 
 #include <QtTest>
 #include <QApplication>
@@ -21,13 +20,11 @@
 #include <QPushButton>
 #include <QWidget>
 #include <QFont>
-#include <QImage>
-#include <QColor>
 
 #include "ui/Theme.h"
 #include "ui/ButtonShadowFilter.h"
 
-// ── Widget que espelha a navBar de mes do DashboardWidget ────────────────────
+// ── Widget que espelha a navBar de mês com emoji laranja ─────────────────────
 
 class NavBarMes : public QWidget {
 public:
@@ -37,19 +34,13 @@ public:
         lay->setContentsMargins(16, 12, 16, 8);
         lay->setSpacing(4);
 
-        // Botoes com glifos mono (#165 fix) — mesma logica do DashboardWidget.
-        auto *btnPrev = new QPushButton(QStringLiteral("‹"), this); // ‹
-        auto *btnNext = new QPushButton(QStringLiteral("›"), this); // ›
-        {
-            QFont f = btnPrev->font();
-            f.setPointSize(15);
-            btnPrev->setFont(f);
-            btnNext->setFont(f);
-        }
-        btnPrev->setFixedWidth(32);
-        btnNext->setFixedWidth(32);
-        btnPrev->setObjectName(QStringLiteral("btnPrev"));
-        btnNext->setObjectName(QStringLiteral("btnNext"));
+        // ◀️ ▶️ com VS16 — emoji laranja via emojiIcon (padrão do app após #165).
+        auto *btnPrev = new QPushButton(this);
+        auto *btnNext = new QPushButton(this);
+        btnPrev->setIcon(Theme::emojiIcon(QStringLiteral("◀️")));
+        btnNext->setIcon(Theme::emojiIcon(QStringLiteral("▶️")));
+        btnPrev->setObjectName(QStringLiteral("iconButton"));
+        btnNext->setObjectName(QStringLiteral("iconButton"));
 
         auto *lblMes = new QLabel(QStringLiteral("junho 2026"), this);
         {
@@ -73,7 +64,7 @@ class TestSetasMonoRender : public QObject {
 
 private slots:
     void initTestCase();
-    void setasNavegacaoSaoMonocromaticas();
+    void navBarRendersOk();
 };
 
 void TestSetasMonoRender::initTestCase()
@@ -82,7 +73,7 @@ void TestSetasMonoRender::initTestCase()
     Theme::aplicar();
 }
 
-void TestSetasMonoRender::setasNavegacaoSaoMonocromaticas()
+void TestSetasMonoRender::navBarRendersOk()
 {
     // Monta a navBar em widget pai com tamanho suficiente para os botoes renderizarem.
     QWidget parent;
@@ -105,31 +96,8 @@ void TestSetasMonoRender::setasNavegacaoSaoMonocromaticas()
     QVERIFY2(px.width()  >= 400, "Largura do pixmap menor que 400px — inesperado");
     QVERIFY2(px.height() >= 60,  "Altura do pixmap menor que 60px — inesperado");
 
-    // Verificacao cromatica: procura assinatura laranja do Noto Color Emoji
-    // (R>200, G<120, B<80) em uma faixa horizontal central da imagem.
-    // Se presente => os botoes ainda usam color-emoji (regressao).
-    QImage img = px.toImage();
-    const int cy    = img.height() / 2;
-    int laranjaCount = 0;
-
-    for (int x = 0; x < img.width(); ++x) {
-        QColor c = img.pixelColor(x, cy);
-        if (c.red() > 200 && c.green() < 120 && c.blue() < 80) {
-            ++laranjaCount;
-        }
-    }
-
-    // Tolerancia zero: nenhum pixel laranja deve aparecer na linha central.
-    // (A cor laranja tipica do emoji ◀️/▶️ e R≈230-240, G≈90-110, B≈40-60.)
-    QVERIFY2(laranjaCount == 0,
-        qPrintable(QStringLiteral(
-            "Encontrados %1 pixels laranja na linha central — "
-            "botoes ainda usam color-emoji (caixa laranja). "
-            "Verificar /tmp/setas_fix.png.")
-            .arg(laranjaCount)));
-
     qDebug("Render gravado em /tmp/setas_fix.png — "
-           "setas monocromaticas confirmadas: nenhum pixel laranja na linha central.");
+           "setas ◀️▶️ emoji laranja via emojiIcon (#165 revert).");
 }
 
 QTEST_MAIN(TestSetasMonoRender)

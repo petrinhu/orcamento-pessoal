@@ -1,8 +1,17 @@
-// Render offscreen #165 iconButton: navBar de mês (◀ Junho/2026 ▶ 🔒 🖨️)
+// Render offscreen #165 iconButton: navBar de mês (◀️ Junho/2026 ▶️ 🔒 🖨️)
 // Verifica:
-//   (a) nenhuma borda/box ao redor dos ícones no estado normal (QSS transparent)
-//   (b) glifos ◀ ▶ são triângulos sólidos monocromáticos (NÃO laranja)
-//   (c) 🔒 🖨️ sem caixa tampoco (QPushButton#iconButton: border:none)
+//   (a) pixmap válido e com dimensões mínimas (render não falhou)
+//   (b) arquivo salvo para aprovação visual manual
+//
+// Histórico: a versão anterior verificava AUSÊNCIA de laranja nos botões ◀▶
+// (glifos mono). Com a decisão #165 (revert), as setas voltam a ser emoji
+// laranja via Theme::emojiIcon — a assertiva de "sem laranja" foi removida pois
+// agora as setas SÃO intencionalmente laranjas.
+//
+// A ausência de box/borda é garantida pelo QSS #iconButton (border:none;
+// background:transparent) — verificado via aprovação visual de
+// /tmp/iconbtn_light.png e /tmp/iconbtn_dark.png.
+//
 // Salva /tmp/iconbtn_light.png e /tmp/iconbtn_dark.png para inspeção visual.
 
 #include <QtTest>
@@ -29,9 +38,11 @@ public:
         lay->setContentsMargins(16, 12, 16, 8);
         lay->setSpacing(4);
 
-        // U+25C0 / U+25B6 — triângulo sólido SEM VS16. objectName "iconButton" (#165).
-        auto *btnPrev = new QPushButton(QString(QChar(0x25C0)), this);  // ◀
-        auto *btnNext = new QPushButton(QString(QChar(0x25B6)), this);  // ▶
+        // ◀️ ▶️ com VS16 — emoji laranja via emojiIcon. objectName "iconButton" (#165).
+        auto *btnPrev = new QPushButton(this);
+        auto *btnNext = new QPushButton(this);
+        btnPrev->setIcon(Theme::emojiIcon(QStringLiteral("◀️")));
+        btnNext->setIcon(Theme::emojiIcon(QStringLiteral("▶️")));
         btnPrev->setObjectName(QStringLiteral("iconButton"));
         btnNext->setObjectName(QStringLiteral("iconButton"));
         btnPrev->setToolTip(QStringLiteral("Mês anterior"));
@@ -96,11 +107,11 @@ class TestIconBtnRender : public QObject {
     Q_OBJECT
 
 private slots:
-    void iconButtonLightSemBordaSemLaranja();
-    void iconButtonDarkSemBordaSemLaranja();
+    void iconButtonLightRendersOk();
+    void iconButtonDarkRendersOk();
 };
 
-void TestIconBtnRender::iconButtonLightSemBordaSemLaranja()
+void TestIconBtnRender::iconButtonLightRendersOk()
 {
     QPixmap px = renderNavBar(Theme::ThemeMode::Light);
     QVERIFY2(!px.isNull(), "grab() retornou pixmap nulo (light)");
@@ -111,25 +122,13 @@ void TestIconBtnRender::iconButtonLightSemBordaSemLaranja()
     QVERIFY2(px.width() >= 400, "Largura do pixmap menor que 400px (light)");
     QVERIFY2(px.height() >= 50, "Altura do pixmap menor que 50px (light)");
 
-    // Verifica ausência de assinatura laranja (R>200, G<120, B<80) — indica VS16/emoji-color.
-    QImage img = px.toImage();
-    const int cy = img.height() / 2;
-    int laranjaCount = 0;
-    for (int x = 0; x < img.width(); ++x) {
-        QColor c = img.pixelColor(x, cy);
-        if (c.red() > 200 && c.green() < 120 && c.blue() < 80)
-            ++laranjaCount;
-    }
-    QVERIFY2(laranjaCount == 0,
-        qPrintable(QStringLiteral(
-            "[light] %1 pixel(s) laranja encontrado(s) — setas com VS16 ou caixa laranja. "
-            "Ver /tmp/iconbtn_light.png.").arg(laranjaCount)));
-
-    qDebug("Light render OK → /tmp/iconbtn_light.png (sem laranja, %d px escaneados)",
-           img.width());
+    // Nota: ◀️▶️ agora são emoji laranja intencionais — não há assertiva de cor.
+    // Aprovação visual: /tmp/iconbtn_light.png deve mostrar setas laranjas sem box.
+    qDebug("Light render OK → /tmp/iconbtn_light.png (setas ◀️▶️ laranjas, %d px largura)",
+           px.width());
 }
 
-void TestIconBtnRender::iconButtonDarkSemBordaSemLaranja()
+void TestIconBtnRender::iconButtonDarkRendersOk()
 {
     QPixmap px = renderNavBar(Theme::ThemeMode::Dark);
     QVERIFY2(!px.isNull(), "grab() retornou pixmap nulo (dark)");
@@ -140,21 +139,10 @@ void TestIconBtnRender::iconButtonDarkSemBordaSemLaranja()
     QVERIFY2(px.width() >= 400, "Largura do pixmap menor que 400px (dark)");
     QVERIFY2(px.height() >= 50, "Altura do pixmap menor que 50px (dark)");
 
-    QImage img = px.toImage();
-    const int cy = img.height() / 2;
-    int laranjaCount = 0;
-    for (int x = 0; x < img.width(); ++x) {
-        QColor c = img.pixelColor(x, cy);
-        if (c.red() > 200 && c.green() < 120 && c.blue() < 80)
-            ++laranjaCount;
-    }
-    QVERIFY2(laranjaCount == 0,
-        qPrintable(QStringLiteral(
-            "[dark] %1 pixel(s) laranja encontrado(s) — setas com VS16 ou caixa laranja. "
-            "Ver /tmp/iconbtn_dark.png.").arg(laranjaCount)));
-
-    qDebug("Dark render OK → /tmp/iconbtn_dark.png (sem laranja, %d px escaneados)",
-           img.width());
+    // Nota: ◀️▶️ agora são emoji laranja intencionais — não há assertiva de cor.
+    // Aprovação visual: /tmp/iconbtn_dark.png deve mostrar setas laranjas sem box.
+    qDebug("Dark render OK → /tmp/iconbtn_dark.png (setas ◀️▶️ laranjas, %d px largura)",
+           px.width());
 }
 
 QTEST_MAIN(TestIconBtnRender)
