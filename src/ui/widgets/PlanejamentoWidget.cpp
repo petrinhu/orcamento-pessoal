@@ -73,11 +73,15 @@ void PlanejamentoWidget::buildUi()
     m_btnDel->setIcon(Theme::emojiIcon(QStringLiteral("🗑️")));
     m_btnDel->setEnabled(false);
 
-    // Month navigation
-    auto *btnPrev = new QPushButton(this);
-    btnPrev->setIcon(Theme::emojiIcon(QStringLiteral("◀️")));
-    auto *btnNext = new QPushButton(this);
-    btnNext->setIcon(Theme::emojiIcon(QStringLiteral("▶️")));
+    // Month navigation — glifos mono ‹/› (U+2039/203A), sem color-emoji (#165 fix)
+    auto *btnPrev = new QPushButton(QStringLiteral("‹"), this);
+    auto *btnNext = new QPushButton(QStringLiteral("›"), this);
+    {
+        QFont f = btnPrev->font();
+        f.setPointSize(15);
+        btnPrev->setFont(f);
+        btnNext->setFont(f);
+    }
     btnPrev->setFixedWidth(32);
     btnNext->setFixedWidth(32);
     m_lblMes = new QLabel(this);

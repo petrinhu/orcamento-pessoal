@@ -56,9 +56,9 @@ void BaseWizardDialog::buildUi()
 
     m_btnCancel = new QPushButton(tr("Cancelar"), this);
     m_btnPrev   = new QPushButton(tr("Anterior"), this);
-    m_btnPrev->setIcon(Theme::emojiIcon(QStringLiteral("◀️")));
+    // Sem ícone color-emoji: botões de wizard usam texto descritivo,
+    // ícone ◀️/▶️ eram decorativos e causavam caixa laranja (#165 fix).
     m_btnNext   = new QPushButton(tr("Próximo"), this);
-    m_btnNext->setIcon(Theme::emojiIcon(QStringLiteral("▶️")));
     m_btnNext->setObjectName(QStringLiteral("primary"));
 
     btnBar->addWidget(m_btnCancel);
@@ -159,6 +159,6 @@ void BaseWizardDialog::atualizarBotoes()
         m_btnNext->setIcon(Theme::emojiIcon(QStringLiteral("✅")));
     } else {
         m_btnNext->setText(tr("Próximo"));
-        m_btnNext->setIcon(Theme::emojiIcon(QStringLiteral("▶️")));
+        // Sem ícone color-emoji (#165 fix) — texto basta aqui.
     }
 }

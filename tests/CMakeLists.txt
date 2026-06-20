@@ -355,6 +355,16 @@ peubud_add_test(test_shadow_render
 set_tests_properties(test_shadow_render PROPERTIES
     ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 
+# Render offscreen fix #165: setas de navegacao de mes devem ser monocromaticas.
+# Verifica que glifos ‹/› (U+2039/203A) nao geram assinatura laranja do
+# Noto Color Emoji (regressao dos antigos ◀️/▶️ que causavam "caixa laranja").
+# Salva /tmp/setas_fix.png para inspecao visual.
+peubud_add_test(test_setas_mono_render
+    ${CMAKE_SOURCE_DIR}/src/ui/Theme.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp)
+set_tests_properties(test_setas_mono_render PROPERTIES
+    ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
 # Regressão #174: Enter no login dispara Entrar, nao Cancelar.
 # Verifica m_btnEntrar->isDefault()==true, m_btnCancelar->autoDefault()==false
 # e returnPressed no campo nome aceita o dialog quando form valido.

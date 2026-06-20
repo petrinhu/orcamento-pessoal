@@ -79,11 +79,15 @@ void ParcelasWidget::buildUi()
     auto *btnOrganizar = new QPushButton(tr("Organizar por ▾"), this);
     btnOrganizar->setIcon(Theme::emojiIcon(QStringLiteral("🔃")));
 
-    // Month navigation (espelha Dashboard/Planejamento; reusa navegarMes)
-    auto *btnPrevMes = new QPushButton(this);
-    btnPrevMes->setIcon(Theme::emojiIcon(QStringLiteral("◀️")));
-    auto *btnNextMes = new QPushButton(this);
-    btnNextMes->setIcon(Theme::emojiIcon(QStringLiteral("▶️")));
+    // Month navigation — glifos mono ‹/› (U+2039/203A), sem color-emoji (#165 fix)
+    auto *btnPrevMes = new QPushButton(QStringLiteral("‹"), this);
+    auto *btnNextMes = new QPushButton(QStringLiteral("›"), this);
+    {
+        QFont f = btnPrevMes->font();
+        f.setPointSize(15);
+        btnPrevMes->setFont(f);
+        btnNextMes->setFont(f);
+    }
     btnPrevMes->setFixedWidth(32);
     btnNextMes->setFixedWidth(32);
     btnPrevMes->setToolTip(tr("Mês anterior"));

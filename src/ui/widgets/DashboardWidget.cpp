@@ -155,10 +155,16 @@ void DashboardWidget::buildUi()
     auto *navBar = new QHBoxLayout;
     navBar->setContentsMargins(16, 12, 16, 8);
 
-    auto *btnPrev = new QPushButton(this);
-    btnPrev->setIcon(Theme::emojiIcon(QStringLiteral("◀️")));
-    auto *btnNext = new QPushButton(this);
-    btnNext->setIcon(Theme::emojiIcon(QStringLiteral("▶️")));
+    auto *btnPrev = new QPushButton(QStringLiteral("‹"), this);
+    auto *btnNext = new QPushButton(QStringLiteral("›"), this);
+    // Glifos tipográficos monocromáticos (U+2039/203A) — não são color-emoji;
+    // herdarm a cor @@TXT@@/@@SUB@@ do QSS do botão sem caixa laranja (#165 fix).
+    {
+        QFont f = btnPrev->font();
+        f.setPointSize(15);
+        btnPrev->setFont(f);
+        btnNext->setFont(f);
+    }
     btnPrev->setFixedWidth(32);
     btnNext->setFixedWidth(32);
 
