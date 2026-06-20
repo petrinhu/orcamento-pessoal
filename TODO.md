@@ -12,7 +12,7 @@ Arquivo canônico de pendências, auditoria técnica e conformidade com o contra
 - **Status**: ✅ Concluído · 🔄 Em andamento · 🟡 Parcial · ⏳ Pendente · ❄️ Congelado pós-1.0 · 💡 Decisão tomada · 🎨 Pendente design · 🔍 Pendente verificação · ❌ Cancelado
 - **Estado Auditado**: `—` (não auditado) · `✓` (auditado e aprovado) · `⚠` (auditado com ressalvas)
 
-> **Convenção de ID:** `#NN` mantido como identificador estável — usado em commits (`feat(#44): ...`), branches e referências cruzadas. Próximo ID disponível: **#174**.
+> **Convenção de ID:** `#NN` mantido como identificador estável — usado em commits (`feat(#44): ...`), branches e referências cruzadas. Próximo ID disponível: **#181**.
 >
 > **Hierarquia:** itens filhos só começam após pai ✅; irmãos com mesmo prefixo numérico (ex.: `1.2.1` e `1.2.2`) são paralelos.
 
@@ -155,15 +155,29 @@ Arquivo canônico de pendências, auditoria técnica e conformidade com o contra
 | 9 | #162 | FUNC | **Lembretes: cores + contagem dinâmica**. 🔴 vencido/não-debitado · ⚪ vence hoje · 🟡 "Vence em N dias" (N≤3) · 🟢 resolvido | Média | — | Média | ✅ Concluído | ✓ |
 | 9 | #163 | DOC | **Design doc do redesign** (spec): brainstorm + mockups aprovados (amigável + azuis + sidebar agrupada). Salvar em `docs/superpowers/specs/`; base da implementação. **Escrito + commitado** (`docs/superpowers/specs/2026-06-19-redesign-ui-design.md`) | Alta | — | Baixa | ✅ Concluído | ✓ |
 | 9 | #164 | FUNC | **Design system / tokens** no `Theme`: paleta azul/navy, tipografia Inter (hierarquia), raios (cards 14/botões 9), sombras, espaçamento, dark/light. **Feito na branch `redesign-ui` (5299125..6f409aa); review pegou bug crítico (cor negativa virava borda → bordas vermelhas), corrigido migrando QSS p/ tokens nomeados `@@BRD@@`/`@@NEG@@`; ctest 28/28** | Alta | #163 | Média | ✅ Concluído | ✓ |
-| 9 | #165 | FUNC | **Sidebar agrupada à esquerda** (substitui QTabWidget no topo): grupos Dia a dia/Planejar/Investir, colapsável, item ativo em pill, rodapé (Preferências/Ajuda/Tema/usuário). **Navegação por chave estável (resolve #157)** | Alta | #164 | Alta | ⏳ Pendente | — |
+| 9 | #165 | FUNC | **Sidebar agrupada à esquerda** (substitui QTabWidget no topo): grupos Dia a dia/Planejar/Investir, colapsável, item ativo em pill, rodapé (Preferências/Ajuda/Tema/usuário). **Navegação por chave estável (resolve #157)**. **Fase 2 entregue (df2d135..0434164): SidebarNav + QStackedWidget + NavRegistry; navy via paintEvent (QSS não pinta no KDE/Wayland); scroll + labels sem clip; statusbar navy + câmbio modernizado (#47); ctest 32/32; navy confirmado pelo usuário** | Alta | #164 | Alta | ✅ Concluído | ✓ |
 | 9 | #166 | FUNC | **Componentes base**: cards arredondados, tags coloridas, banner de ajuda azul recolhível (refina TabShell), tooltips de glossário no hover, empty states guiados | Média | #164 | Média | ⏳ Pendente | — |
 | 9 | #167 | FUNC | **Tabelas novo estilo**: densidade confortável (~48px), só divisórias horizontais, hover de linha, tags em categoria/tipo, rodapé-resumo com mini-barra | Média | #166 | Média | ⏳ Pendente | — |
 | 9 | #168 | FUNC | **Gráficos novo estilo**: linha/área com degradê, donut com centro, barras arredondadas; refatorar charts (Dashboard/Tendências/Investimentos) | Média | #164 | Média | ⏳ Pendente | — |
 | 9 | #169 | FUNC | **Redesign por aba** (13): Cartões (cartões visuais+limite), Recorrências (switch), Lembretes (status-cards), Planejamento (barras aderência), Metas (anel), Dívidas (barra quitação), Investimentos (donut), Proventos (barras+tickers), Bolsa (cards cotação) | Média | #166,#167,#168 | Alta | ⏳ Pendente | — |
-| 9 | #170 | FUNC | **Menus**: aposentar QMenuBar → rodapé da sidebar + "⋯ Mais" (Importar/Exportar/Reconciliar/Imprimir/Sobre) + cluster utilidades topo-direito (busca/calculadora) | Média | #165 | Média | 🔍 Pendente verificação | — |
+| 9 | #170 | FUNC | **Menus**: aposentar QMenuBar → rodapé da sidebar + "⋯ Mais" (Importar/Exportar/Reconciliar/Imprimir/Sobre) + cluster utilidades topo-direito (busca/calculadora) | Média | #165 | Média | ✅ Concluído | ✓ |
 | 9 | #171 | FUNC | **Tela de detalhe do ativo (Bolsa)**: candlestick dark + book de ofertas + ferramentas de traçado (LTA/LTB, S/R, canal, Fibonacci) + indicadores (MM/Bollinger/RSI/MACD; reusa #52/#53). Dados: candlestick via brapi/yfinance; **book nível 2 = fonte a definir** (corretora/B3 paga/crawling). **PÓS-1.0 (placeholder); Investimentos e Bolsa ficam como abas-placeholder no 1.0** | Baixa | #168 | Alta | 🔵 Pós-1.0 | — |
 | — | #172 | EPIC | **Assistente de IA 🪄 — PÓS-1.0 (placeholder, criar depois do 1.0).** Sub-itens: **(a) 🪄 per-aba** — alto: Dashboard (resumo do mês), Gastos (categorizar auto), Planejamento (sugerir orçamento), Dívidas (estratégia de quitação), Bolsa (ler gráfico); médio: Entradas (imposto), Cartões (vale parcelar?), Tendências (explicar padrões), Metas (quanto poupar/mês), Investimentos (diversificação), Proventos (projeção/tributação). **(b) 🪄 global** (chat "pergunte qualquer coisa sobre suas finanças"). **(c) Ler arquivos** (PDF/CSV/OFX/XLSX/imagem) → IA **extrai e preenche** dados (entradas/gastos/cartões). **(d) Provedores** Claude/GPT/Gemini/Grok/Ollama/OpenRouter/DeepSeek/Mistral + **"sem IA"**; radio; chaves no keystore. **(e) Aviso de privacidade** (dados vão pro provedor; Ollama=local). **(f) Disclaimer educativo** (Dívidas/Investimentos/Bolsa ≠ consultoria). Spec própria | Baixa | #173 | Alta | 🔵 Pós-1.0 | — |
 | 9 | #173 | FUNC | **Tela de Configurações redesenhada**: sub-navegação (Aparência/Moeda/Categorias/Fontes/Cartões/Mercado/IA/Backup/Segurança/Sobre) + seções no novo estilo; inclui aba Assistente de IA (#172) | Média | #164 | Média | ⏳ Pendente | — |
+
+### Onda 10 — Bugs & robustez (achados testando o redesign no app real, KDE)
+
+> Levantados durante os testes manuais da Fase 2. **#174 já corrigido** nos testes; **#175-#178 = bugs/robustez a corrigir**; **#179-#180 = pipelines de autenticação a desenhar** (precisam decisão do usuário).
+
+| Onda | ID | Grupo | Descrição Técnica | Prioridade | Pré-requisito | Dificuldade | Status | Estado Auditado |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| 10 | #174 | UX | **Login UX** (achados no teste): re-tentativa ao errar a senha (não fecha o app) + botão Cancelar/Esc + contraste do diálogo (claro/escuro) + anti-clip + **botão 👁 hold-to-reveal** na senha. Commits 405314c, d80fd9c; usuário logou OK | Alta | — | Média | ✅ Concluído | ✓ |
+| 10 | #175 | BUG | **Siglas dos meses em inglês** na dashboard (devem ser pt-BR) — usar `QLocale(Portuguese, Brazil)` no formato de mês curto, não o locale C/system | Alta | — | Baixa | ⏳ Pendente | — |
+| 10 | #176 | BUG | **Sombra dos botões clipando** nas bordas (`ButtonShadowFilter`/`QGraphicsDropShadowEffect` extrapola e é cortado): config "Fechar", CRUD de Fontes de Renda (Adicionar/Remover) e Categorias (Adicionar/Editar/Remover) — provavelmente global. Ajustar sombra + folga, sem clipar | Média | — | Média | ⏳ Pendente | — |
+| 10 | #177 | BUG | **Configurações não-modal e sem parent**: não bloqueia a janela principal e não minimiza junto dela. Tornar modal + parent = MainWindow | Média | — | Baixa | ⏳ Pendente | — |
+| 10 | #178 | ROBUSTEZ | **Pasta de salvar/autosave inexistente** → hoje falha silenciosa. Ao salvar/autosave, se a pasta não existir, abrir **warning com [Cancelar] / [Criar pasta]**. (Precisão financeira/robustez > UX) | Alta | — | Média | ⏳ Pendente | — |
+| 10 | #179 | FEATURE | **Pipeline de cadastro de usuário/senha** (signup explícito; hoje o 1º login cria o cofre implícito). Tela de criação com checklist + confirmação de senha | Média | — | Média | 🔵 Backlog (desenhar) | — |
+| 10 | #180 | FEATURE | **Pipeline de recuperação de senha**. ⚠️ Cofre cifrado (Argon2id+AEAD): **sem mecanismo embutido, senha perdida = dados irrecuperáveis por design**. Decidir abordagem (recovery key/seed gerado na criação, ou aviso explícito de "sem recuperação"). Precisa design + decisão do usuário | Média | #179 | Alta | 🔵 Backlog (desenhar) | — |
 
 ---
 
