@@ -178,7 +178,7 @@ void PrefsWidget::buildUi()
     auto *rowSaves = new QHBoxLayout;
     m_edtSavesFolder = new QLineEdit(AppSettings::instance().savesFolder(), grpSave);
     auto *btnBrowseSaves = new QPushButton(QStringLiteral("…"), grpSave);
-    btnBrowseSaves->setFixedWidth(32);
+    btnBrowseSaves->setObjectName(QStringLiteral("iconButton")); // glifo browse, sem borda (#165)
     rowSaves->addWidget(m_edtSavesFolder);
     rowSaves->addWidget(btnBrowseSaves);
     laySave->addLayout(rowSaves);
@@ -192,7 +192,7 @@ void PrefsWidget::buildUi()
     auto *rowAutosaves = new QHBoxLayout;
     m_edtAutosavesFolder = new QLineEdit(AppSettings::instance().autosavesFolder(), grpSave);
     auto *btnBrowseAutosaves = new QPushButton(QStringLiteral("…"), grpSave);
-    btnBrowseAutosaves->setFixedWidth(32);
+    btnBrowseAutosaves->setObjectName(QStringLiteral("iconButton")); // glifo browse, sem borda (#165)
     rowAutosaves->addWidget(m_edtAutosavesFolder);
     rowAutosaves->addWidget(btnBrowseAutosaves);
     laySave->addLayout(rowAutosaves);

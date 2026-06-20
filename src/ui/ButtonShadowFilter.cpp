@@ -60,6 +60,13 @@ bool ButtonShadowFilter::eventFilter(QObject *obj, QEvent *ev)
     if (btn->objectName() == QLatin1String("navItem"))
         return QObject::eventFilter(obj, ev);
 
+    // Botões só-ícone (#iconButton) não recebem sombra: em repouso devem ser
+    // invisíveis sobre o fundo (border:none, background:transparent). A sombra
+    // criaria um contorno/caixa ao redor do quadrado de 32px — exatamente o
+    // "chrome que compete com o conteúdo" que a spec #165 quer eliminar.
+    if (btn->objectName() == QLatin1String("iconButton"))
+        return QObject::eventFilter(obj, ev);
+
     switch (ev->type()) {
     case QEvent::Polish:
     case QEvent::Show:

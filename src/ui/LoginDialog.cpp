@@ -128,9 +128,10 @@ void LoginDialog::buildUi()
     // usuário. Usa emojiIcon para renderizar o glifo colorido via Noto Emoji —
     // consistent com a política do projeto (emoji nunca em texto de botão).
     m_btnOlho = new QToolButton(this);
+    m_btnOlho->setObjectName(QStringLiteral("iconButton")); // sem borda (#165)
     m_btnOlho->setIcon(Theme::emojiIcon(QStringLiteral("👁"), 18));
     m_btnOlho->setToolTip(tr("Segure para ver a senha"));
-    m_btnOlho->setFixedSize(32, 32);
+    m_btnOlho->setFixedSize(32, 32); // quadrado mantido (spec §5 item 7)
     m_btnOlho->setFocusPolicy(Qt::NoFocus);  // não entra no Tab order de auth
     rowSenha->addWidget(m_btnOlho);
 

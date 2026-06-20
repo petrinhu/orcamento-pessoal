@@ -76,6 +76,7 @@ void TabShell::montarBloco(const QString &bloco, QLabel *&outLabel, QToolButton 
 
     // Toggle ▲/▼ alinhado ao topo-direita, na mesma linha do cabeçalho do bloco.
     outToggle = new QToolButton(this);
+    outToggle->setObjectName(QStringLiteral("iconButton")); // variante sem borda (#165)
     outToggle->setAutoRaise(true);
     outToggle->setCursor(Qt::PointingHandCursor);
     outToggle->setFocusPolicy(Qt::TabFocus);

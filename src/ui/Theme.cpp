@@ -236,6 +236,43 @@ static QString gerarQss()
             padding-bottom: 3px;
         }
         QPushButton:disabled { color: @@SUB@@; border-color: @@BRD@@; }
+
+        /* ── Botão só-ícone (nav de mês, fechar/imprimir, toggles) ──────────
+           Sem chrome em repouso: sem borda, sem fundo. Realce só no hover/press.
+           Some sobre qualquer fundo (header @@BG@@, surface, sidebar). #165.
+           QToolButton#iconButton: gêmeo para o toggle 🔼/🔽 do TabShell. */
+        QPushButton#iconButton,
+        QToolButton#iconButton {
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            padding: 0;
+            min-width: 32px;
+            min-height: 32px;
+            color: @@SUB@@;
+            font-size: 17px;
+        }
+        QPushButton#iconButton:hover,
+        QToolButton#iconButton:hover {
+            background: @@HOV@@;
+            color: @@ACC@@;
+        }
+        QPushButton#iconButton:pressed,
+        QToolButton#iconButton:pressed {
+            background: @@ALT@@;
+            color: @@ACC@@;
+        }
+        QPushButton#iconButton:disabled,
+        QToolButton#iconButton:disabled {
+            color: @@BRD@@;
+            background: transparent;
+        }
+        QPushButton#iconButton:focus,
+        QToolButton#iconButton:focus {
+            background: @@HOV@@;
+            border: 1px solid @@ACC@@;
+        }
+
         /* ── Theme cycle button ── */
         QToolButton#themeBtn {
             border: none;

@@ -115,7 +115,9 @@ QWidget *DashboardWidget::makeCard(const QString &title,
         rowTitle->setSpacing(4);
         lay->removeWidget(lblTitle); // re-add in row
         rowTitle->addWidget(lblTitle);
-        auto *lblArrow = new QLabel(QStringLiteral("➡️"), frame);
+        // U+25B8 triângulo pequeno sólido SEM VS16 — monocromático, herda @@SUB@@
+        // do objectName "subtitle". Consistente com ◀▶ da nav de mês (#165).
+        auto *lblArrow = new QLabel(QString(QChar(0x25B8)), frame);
         lblArrow->setObjectName(QStringLiteral("subtitle"));
         QFont fa = lblArrow->font(); fa.setPointSize(10);
         lblArrow->setFont(fa);
@@ -155,18 +157,13 @@ void DashboardWidget::buildUi()
     auto *navBar = new QHBoxLayout;
     navBar->setContentsMargins(16, 12, 16, 8);
 
-    auto *btnPrev = new QPushButton(QStringLiteral("‹"), this);
-    auto *btnNext = new QPushButton(QStringLiteral("›"), this);
-    // Glifos tipográficos monocromáticos (U+2039/203A) — não são color-emoji;
-    // herdarm a cor @@TXT@@/@@SUB@@ do QSS do botão sem caixa laranja (#165 fix).
-    {
-        QFont f = btnPrev->font();
-        f.setPointSize(15);
-        btnPrev->setFont(f);
-        btnNext->setFont(f);
-    }
-    btnPrev->setFixedWidth(32);
-    btnNext->setFixedWidth(32);
+    // U+25C0 / U+25B6 — triângulo sólido SEM VS16 (️): render monocromático
+    // via QSS (@@SUB@@ repouso → @@ACC@@ hover). NÃO usar ◀️▶️ (caixa laranja).
+    // font-size 17px vem do QSS #iconButton; remover setFont manual (#165).
+    auto *btnPrev = new QPushButton(QString(QChar(0x25C0)), this);  // ◀
+    auto *btnNext = new QPushButton(QString(QChar(0x25B6)), this);  // ▶
+    btnPrev->setObjectName(QStringLiteral("iconButton"));
+    btnNext->setObjectName(QStringLiteral("iconButton"));
 
     m_lblMes = new QLabel(this);
     QFont fmes = m_lblMes->font();
@@ -175,16 +172,16 @@ void DashboardWidget::buildUi()
     m_lblMes->setFont(fmes);
     m_lblMes->setAlignment(Qt::AlignCenter);
 
-    // Botão Imprimir (#94)
+    // Botão Imprimir (#94) — icon-only, sem borda (#165).
     auto *btnPrint = new QPushButton(this);
     btnPrint->setIcon(Theme::emojiIcon(QStringLiteral("🖨️")));
-    btnPrint->setFixedWidth(32);
+    btnPrint->setObjectName(QStringLiteral("iconButton"));
     btnPrint->setToolTip(tr("Imprimir Dashboard (visualização prévia)"));
 
-    // Botão Fechar mês (#88)
+    // Botão Fechar mês (#88) — icon-only, sem borda (#165).
     auto *btnFechar = new QPushButton(this);
     btnFechar->setIcon(Theme::emojiIcon(QStringLiteral("🔒")));
-    btnFechar->setFixedWidth(32);
+    btnFechar->setObjectName(QStringLiteral("iconButton"));
     btnFechar->setToolTip(tr("Fechar mês contábil (snapshot imutável)"));
 
     navBar->addWidget(btnPrev);

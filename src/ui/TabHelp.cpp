@@ -19,7 +19,7 @@ const QMap<QString, TabHelpEntry> &tabHelp()
                 "investimentos. É o panorama geral, sem precisar abrir cada aba."),
             QStringList{
                 QCoreApplication::translate("TabHelp",
-                    "Use as setas ◀️ ▶️ no topo pra trocar o mês."),
+                    "Use as setas no topo da tela pra trocar o mês."),
                 QCoreApplication::translate("TabHelp",
                     "Veja os cartões de \"Este mês\" e os de \"Acumulado no "
                     "ano\"."),
@@ -95,7 +95,7 @@ const QMap<QString, TabHelpEntry> &tabHelp()
                     "<b>CET</b> e a <b>tabela de amortização</b> (Price)."),
                 QCoreApplication::translate("TabHelp",
                     "📅 As parcelas aparecem <b>por mês</b> na tabela; navegue com "
-                    "as setas <b>◀️ ▶️</b>."),
+                    "as setas <b>no topo</b>."),
                 QCoreApplication::translate("TabHelp",
                     "Quer simular antes de comprar? Use a <b>calculadora 🧮</b> "
                     "na barra superior do app."),
@@ -180,7 +180,7 @@ const QMap<QString, TabHelpEntry> &tabHelp()
                 "realmente aconteceu."),
             QStringList{
                 QCoreApplication::translate("TabHelp",
-                    "Setas ◀️ ▶️ escolhem o 📅 mês."),
+                    "As setas no topo escolhem o 📅 mês."),
                 QCoreApplication::translate("TabHelp",
                     "\"➕ Novo item\": linha de Receita ou Despesa com o valor "
                     "planejado."),

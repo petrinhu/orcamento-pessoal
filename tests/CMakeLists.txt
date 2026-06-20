@@ -365,6 +365,14 @@ peubud_add_test(test_setas_mono_render
 set_tests_properties(test_setas_mono_render PROPERTIES
     ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 
+# Render offscreen #165 iconButton: navBar (◀ mês ▶ 🔒 🖨️) sem borda, triângulo mono.
+# Salva /tmp/iconbtn_light.png e /tmp/iconbtn_dark.png para aprovação visual.
+peubud_add_test(test_iconbtn_render
+    ${CMAKE_SOURCE_DIR}/src/ui/Theme.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp)
+set_tests_properties(test_iconbtn_render PROPERTIES
+    ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
 # Regressão #174: Enter no login dispara Entrar, nao Cancelar.
 # Verifica m_btnEntrar->isDefault()==true, m_btnCancelar->autoDefault()==false
 # e returnPressed no campo nome aceita o dialog quando form valido.
