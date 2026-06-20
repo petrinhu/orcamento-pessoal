@@ -6,7 +6,7 @@
 #include <QIcon>
 #include <QPalette>
 
-// Forest Neutral palette + Inter font + QSS.
+// Paleta azul-confiável (redesign Fase 1, #164) + Inter font + QSS.
 // Light/dark: respects OS setting (Auto) or overridden via setMode().
 namespace Theme {
 
@@ -20,6 +20,7 @@ ThemeMode currentMode();
 namespace Color {
     // Light
     extern const QString BgLight;
+    extern const QString Surface2Light;   // novo (#164)
     extern const QString SurfaceLight;
     extern const QString BorderLight;
     extern const QString TextLight;
@@ -27,9 +28,14 @@ namespace Color {
     extern const QString AccentLight;
     extern const QString PositiveLight;
     extern const QString NegativeLight;
+    extern const QString DouradoLight;    // novo (#164)
+    extern const QString Sidebar1Light;   // novo (#164)
+    extern const QString Sidebar2Light;   // novo (#164)
+    extern const QString SidebarTextLight; // novo (#164)
 
     // Dark
     extern const QString BgDark;
+    extern const QString Surface2Dark;    // novo (#164)
     extern const QString SurfaceDark;
     extern const QString BorderDark;
     extern const QString TextDark;
@@ -37,6 +43,10 @@ namespace Color {
     extern const QString AccentDark;
     extern const QString PositiveDark;
     extern const QString NegativeDark;
+    extern const QString DouradoDark;     // novo (#164)
+    extern const QString Sidebar1Dark;    // novo (#164)
+    extern const QString Sidebar2Dark;    // novo (#164)
+    extern const QString SidebarTextDark; // novo (#164)
 }
 
 // Convenience getters — return the correct token for the active scheme
@@ -47,6 +57,14 @@ QString background();
 QString surface();
 QString texto();
 QString borda();
+QString subtexto(); // alias de subtext para consumidores Qt
+
+// Getters novos (#164 redesign fase 1)
+QString bg2();          // Surface2: fundo de cartão secundário
+QString dourado();      // âmbar/dourado (avisos e destaques)
+QString sidebar1();     // fundo primário da sidebar
+QString sidebar2();     // fundo secundário/hover da sidebar
+QString sidebarText();  // texto na sidebar
 
 // Âmbar "atenção / vence em breve" — dark-mode-aware, sem equivalente Breeze
 // direto. Usado em barras de progresso e fundos de aviso (Metas, Lembretes).

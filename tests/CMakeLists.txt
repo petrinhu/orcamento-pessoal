@@ -248,6 +248,15 @@ target_link_libraries(test_categoria PRIVATE
     ${LIBSODIUM_LIBRARIES})
 target_include_directories(test_categoria PRIVATE ${LIBSODIUM_INCLUDE_DIRS})
 
+# Teste de tokens de paleta do Theme (#164 redesign fase 1).
+# Verifica valores da nova paleta azul-confiavel e getters adicionados.
+# Usa QT_QPA_PLATFORM=offscreen (setMode chama setPalette que precisa de GUI).
+peubud_add_test(test_theme_tokens
+    ${CMAKE_SOURCE_DIR}/src/ui/Theme.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp)
+set_tests_properties(test_theme_tokens PROPERTIES
+    ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
 # Teste do GastoService (#120, Onda 2): consolidacao fixo/variavel dos gastos.
 # Cadeia: GastoService + repos (Categoria, GastoAvulso) + DatabaseManager +
 # servicos puxados por createSchema/triggers + crypto.
