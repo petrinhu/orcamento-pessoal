@@ -19,6 +19,7 @@
 #include <QHBoxLayout>
 #include <QPixmap>
 #include <QColor>
+#include <QPushButton>
 #include <QWidget>
 
 #include "ui/widgets/SidebarNav.h"
@@ -32,6 +33,7 @@ private slots:
     void initTestCase();
     void fundoNavyContextoReal();
     void textoSidebarLegivel();
+    void pillAtivoComInset();
 };
 
 // ── helper ──────────────────────────────────────────────────────────────────
@@ -158,6 +160,73 @@ void TestSidebarRender::textoSidebarLegivel()
                  "Texto claro sobre navy escuro e requisito de contraste WCAG.")
                  .arg(sidebarTxt.name())
                  .arg(lum)));
+}
+
+// ── Pill ativo com inset (#165 fix Bug 2) ────────────────────────────────────
+// Renderiza sidebar em contexto completo, gera /tmp/sidebar_hover_fix.png.
+// Verifica que:
+//   (a) pixel da borda direita do pill ativo nao tem a cor accent (folga lateral OK).
+//   (b) nenhum navItem tem graphicsEffect (drop-shadow removido).
+//   (c) render nao crasha e o pixmap e valido.
+
+void TestSidebarRender::pillAtivoComInset()
+{
+    QWidget parent;
+    parent.resize(900, 560);
+    auto *hbox = new QHBoxLayout(&parent);
+    hbox->setContentsMargins(0, 0, 0, 0);
+    hbox->setSpacing(0);
+
+    SidebarNav *nav = criarNavCompleto(&parent);
+    auto *conteudo = new QWidget(&parent);
+    conteudo->setAutoFillBackground(true);
+    hbox->addWidget(nav);
+    hbox->addWidget(conteudo, 1);
+
+    parent.show();
+    QApplication::processEvents();
+    parent.repaint();
+    QApplication::processEvents();
+
+    QPixmap px = parent.grab();
+    QVERIFY2(!px.isNull(), "grab() retornou pixmap nulo — render offscreen falhou");
+    px.save(QStringLiteral("/tmp/sidebar_hover_fix.png"));
+
+    // (b) Nenhum navItem deve ter graphicsEffect (drop-shadow removido pelo fix Bug 1).
+    const QStringList chaves = {
+        QStringLiteral("tab_gastos"), QStringLiteral("tab_entradas"),
+        QStringLiteral("tab_resumo"), QStringLiteral("tab_prefs"),
+        QStringLiteral("tab_ajuda")
+    };
+    for (const QString &chave : chaves) {
+        QPushButton *btn = nav->itemParaTeste(chave);
+        if (!btn) continue; // item pode nao existir neste helper
+        QVERIFY2(btn->graphicsEffect() == nullptr,
+                 qPrintable(QStringLiteral(
+                     "FAIL: navItem '%1' ainda tem graphicsEffect (drop-shadow). "
+                     "ButtonShadowFilter deve pular objectName='navItem'.")
+                     .arg(chave)));
+    }
+
+    // (a) Pixel na borda direita da sidebar (x=251 = ultimo pixel, y=80) deve ser
+    // navy/escuro — nao accent (#3B82F6, R=59 G=130 B=246). Isso confirma folga.
+    const QImage img = px.toImage();
+    if (img.width() > 252 && img.height() > 80) {
+        const QColor pixBordaDir = img.pixelColor(251, 80);
+        // Accent blue tem azul dominante (B > 200, R < 100). Navy tem todos < 80.
+        // Se o pill tocar a borda, o pixel seria accent. Se houver folga, sera navy.
+        const bool eNavy = (pixBordaDir.red() < 100 && pixBordaDir.green() < 100
+                            && pixBordaDir.blue() < 100);
+        QVERIFY2(eNavy,
+                 qPrintable(QStringLiteral(
+                     "FAIL: pixel da borda direita (x=251) e claro/accent: %1 "
+                     "(R=%2 G=%3 B=%4). Pill ativo esta tocando a borda — folga insuficiente.")
+                     .arg(pixBordaDir.name())
+                     .arg(pixBordaDir.red()).arg(pixBordaDir.green()).arg(pixBordaDir.blue())));
+    }
+
+    qDebug("Render gravado em /tmp/sidebar_hover_fix.png — verificar visualmente: "
+           "pill ativo com folga lateral, sem sombra retangular, cantos arredondados visiveis.");
 }
 
 QTEST_MAIN(TestSidebarRender)

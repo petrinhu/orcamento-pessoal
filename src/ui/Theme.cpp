@@ -444,13 +444,21 @@ static QString gerarQss()
             font-size: 13px;
         }
         QWidget#sidebarNav QPushButton#navItem:hover {
-            background: rgba(255,255,255,0.06);
-            color: white;
+            background: rgba(255,255,255,0.10);
+            color: #ffffff;
         }
-        /* Pill ativo: accent + sombra azul (property dinamica setada por setAtivo()) */
+        /* Foco: sem outline nem borda — NoFocusStyle ja suprime o dotted-rect
+           do Fusion, mas navItem pode receber foco de teclado; garantir ausencia
+           de qualquer indicador retangular sobre o navy (#165 fix Bug 1). */
+        QWidget#sidebarNav QPushButton#navItem:focus {
+            outline: none;
+            border: none;
+        }
+        /* Pill ativo: accent solido + cantos arredondados (radius 9 herdado do base).
+           Sem box-shadow (QSS widget nao suporta); sem artefato retangular. */
         QWidget#sidebarNav QPushButton#navItem[ativo="true"] {
             background: @@ACC@@;
-            color: white;
+            color: #ffffff;
             font-weight: 600;
         }
         /* Avatar (circulo inicial) e nome do usuario no rodape */

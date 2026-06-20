@@ -75,7 +75,10 @@ SidebarNav::SidebarNav(QWidget *parent)
     mainWidget->setAttribute(Qt::WA_NoSystemBackground, true);
     mainWidget->setAutoFillBackground(false);
     m_mainLayout = new QVBoxLayout(mainWidget);
-    m_mainLayout->setContentsMargins(0, 0, 0, 0);
+    // Folga lateral 8px: garante que o pill (border-radius:9) mostre os 4 cantos
+    // sem encostar na borda esquerda/direita nem no scrollbar (4px, fixo a direita).
+    // Sem essa margem o scrollbar sobrepoe o pill quando a area rola (#165 fix).
+    m_mainLayout->setContentsMargins(8, 0, 8, 4);
     m_mainLayout->setSpacing(2);
     // Stretch final: mantido permanentemente como ultimo item no m_mainLayout.
     // addItem() usa insertWidget(count()-1) para inserir antes deste stretch,
@@ -96,6 +99,10 @@ SidebarNav::SidebarNav(QWidget *parent)
     footerWidget->setAttribute(Qt::WA_NoSystemBackground, true);
     footerWidget->setAutoFillBackground(false);
     m_footerLayout = new QVBoxLayout(footerWidget);
+    // Mesma folga lateral do m_mainLayout: pill do footer nao encosta na borda.
+    // rootLayout ja tem 8px laterais, entao 0 aqui bastaria; mas como footerWidget
+    // e filho direto do rootLayout (nao dentro do scroll area), o rootLayout ja
+    // aplica os 8px. Mantemos 0 lateral aqui para nao duplicar — apenas top/bottom.
     m_footerLayout->setContentsMargins(0, 4, 0, 0);
     m_footerLayout->setSpacing(2);
     rootLayout->addWidget(footerWidget);

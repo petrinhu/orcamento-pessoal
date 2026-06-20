@@ -54,6 +54,12 @@ bool ButtonShadowFilter::eventFilter(QObject *obj, QEvent *ev)
     if (btn->isFlat())
         return QObject::eventFilter(obj, ev);
 
+    // Itens da sidebar nao recebem drop-shadow: o pill colorido sobre o fundo navy
+    // nao tem superfície de elevacao — sombra retangular seria visualmente errada.
+    // Cobre objectName "navItem" (itens normais e footer items do SidebarNav).
+    if (btn->objectName() == QLatin1String("navItem"))
+        return QObject::eventFilter(obj, ev);
+
     switch (ev->type()) {
     case QEvent::Polish:
     case QEvent::Show:
