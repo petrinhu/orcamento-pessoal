@@ -1,0 +1,9 @@
+porte=early
+variante=Pipeline-Lean
+data=2026-06-20
+modo=redesign-imerso
+c_levels_ativos=Caetano(CTO),Capitolino(CPO)
+c_levels_dormentes=Celso,Camilo,Cosmo,Narciso,Confucio,Cicero,Claudio,Candido,Caio
+cerimonia=kanban
+classificado_por=cosimo-chief-of-staff
+gatilho_re_roteamento=ao fechar #183; e antes da Onda 8 (distribuicao)
