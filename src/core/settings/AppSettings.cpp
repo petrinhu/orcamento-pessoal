@@ -119,6 +119,48 @@ void AppSettings::setAutosavesFolder(const QString &path)
 
 // ── Startup tab ───────────────────────────────────────────────────────────────
 
+// Tabela de migração: índice da ordem ANTIGA (pré-NavRegistry) → chave estável.
+// Usada uma única vez ao migrar dados legados de int para chave.
+static const QStringList kLegacyIndexToKey = {
+    QStringLiteral("tab_dashboard"),    // 0
+    QStringLiteral("tab_entradas"),     // 1
+    QStringLiteral("tab_gastos"),       // 2
+    QStringLiteral("tab_cartoes"),      // 3
+    QStringLiteral("tab_recorrencias"), // 4
+    QStringLiteral("tab_dividas"),      // 5
+    QStringLiteral("tab_metas"),        // 6
+    QStringLiteral("tab_planejamento"), // 7
+    QStringLiteral("tab_tendencias"),   // 8
+    QStringLiteral("tab_investimentos"),// 9
+    QStringLiteral("tab_proventos"),    // 10
+    QStringLiteral("tab_bolsa"),        // 11
+    QStringLiteral("tab_lembretes"),    // 12
+};
+
+QString AppSettings::initialTabKey() const
+{
+    // Chave nova já gravada? Retorna diretamente.
+    if (m_s.contains(QStringLiteral("ui/initial_tab_key")))
+        return m_s.value(QStringLiteral("ui/initial_tab_key"),
+                         QStringLiteral("tab_dashboard")).toString();
+
+    // Migração one-time: converte int legado → chave e persiste.
+    const int legacyIdx = m_s.value(QStringLiteral("initial_tab"), 0).toInt();
+    const QString chave = (legacyIdx >= 0 && legacyIdx < kLegacyIndexToKey.size())
+                          ? kLegacyIndexToKey[legacyIdx]
+                          : QStringLiteral("tab_dashboard");
+    m_s.setValue(QStringLiteral("ui/initial_tab_key"), chave);
+    return chave;
+}
+
+void AppSettings::setInitialTabKey(const QString &chave)
+{
+    if (m_s.value(QStringLiteral("ui/initial_tab_key")).toString() == chave) return;
+    m_s.setValue(QStringLiteral("ui/initial_tab_key"), chave);
+}
+
+// Legado — usado apenas pela migração one-time acima.
+
 int AppSettings::initialTab() const
 {
     return m_s.value(QStringLiteral("initial_tab"), 0).toInt();
@@ -128,16 +170,6 @@ void AppSettings::setInitialTab(int index)
 {
     if (m_s.value(QStringLiteral("initial_tab"), 0).toInt() == index) return;
     m_s.setValue(QStringLiteral("initial_tab"), index);
-}
-
-QStringList AppSettings::tabOrder() const
-{
-    return m_s.value(QStringLiteral("tab_order")).toStringList();
-}
-
-void AppSettings::setTabOrder(const QStringList &keys)
-{
-    m_s.setValue(QStringLiteral("tab_order"), keys);
 }
 
 // ── Market data (#46) ────────────────────────────────────────────────────────

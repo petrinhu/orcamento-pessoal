@@ -48,14 +48,14 @@ public:
     void    setAutosavesFolder(const QString &path);
 
     // ── Startup tab ───────────────────────────────────────────────────────
-    int  initialTab() const;          // default: 0 (Dashboard)
-    void setInitialTab(int index);
+    // Persistência por chave estável (ex.: "tab_dashboard"). Migra
+    // automaticamente dados legados de int → chave na primeira leitura.
+    QString initialTabKey() const;                  // default: "tab_dashboard"
+    void    setInitialTabKey(const QString &chave);
 
-    // ── Tab order (drag & drop persistence) ───────────────────────────────
-    // Lista de chaves (objectName de cada widget) na ordem desejada.
-    // Vazia = ordem default do código (sem persistência aplicada).
-    QStringList tabOrder() const;
-    void        setTabOrder(const QStringList &keys);
+    // Legado — mantido apenas para a migração one-time. Não usar em código novo.
+    int  initialTab() const;
+    void setInitialTab(int index);
 
     // ── Painel câmbio (#46/#47): slots de moeda para o painel LED ────────
     QString currencySlot1() const;            // default: USD

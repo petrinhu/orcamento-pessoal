@@ -167,9 +167,9 @@ void MainWindow::buildUi()
         shell->setContent(conteudo);
     };
 
-    // objectName = chave de persistência de ordem (ordemAbasDefault). A aba
-    // Cartões mantém tab_parcelas (compat. com ordem já salva); a tabKey de
-    // ajuda é tab_cartoes — as duas strings são independentes.
+    // objectName do shell de Cartões é "tab_parcelas" por compat. histórica
+    // (dados gravados antes do redesign usavam essa string). A chave de
+    // navegação e ajuda é "tab_cartoes" — as duas strings são independentes.
     montarShell(m_shellDashboard,     QStringLiteral("tab_dashboard"),     QStringLiteral("tab_dashboard"),     m_dashboard);
     montarShell(m_shellEntradas,      QStringLiteral("tab_entradas"),      QStringLiteral("tab_entradas"),      m_entradas);
     montarShell(m_shellGastos,        QStringLiteral("tab_gastos"),        QStringLiteral("tab_gastos"),        m_gastos);
@@ -233,14 +233,12 @@ void MainWindow::buildUi()
 
     connect(m_sidebar, &SidebarNav::navegou, this, &MainWindow::navegarParaChave);
 
-    // ── Aba inicial: mapear índice salvo para chave ───────────────────────────
+    // ── Aba inicial: lê chave estável (migra legado int → chave se necessário)
     {
-        const int idx = AppSettings::instance().initialTab();
-        const auto &itens = navItens();
-        const QString chaveInicial = (idx >= 0 && idx < itens.size())
-                                     ? itens[idx].chave
-                                     : QStringLiteral("tab_dashboard");
-        navegarParaChave(chaveInicial);
+        const QString chaveInicial = AppSettings::instance().initialTabKey();
+        navegarParaChave(m_paginas.contains(chaveInicial)
+                         ? chaveInicial
+                         : QStringLiteral("tab_dashboard"));
     }
 
     // #103 Glossario: aplica tooltips automaticos em labels/buttons com siglas
