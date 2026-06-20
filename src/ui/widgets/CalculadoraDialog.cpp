@@ -398,7 +398,8 @@ void CalculadoraDialog::buildTabFinanceira(QWidget *tab)
         row.fld->setPlaceholderText(QStringLiteral("0"));
         row.fld->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
 
-        auto *btn = new QPushButton(QStringLiteral("▶️"), tab);
+        auto *btn = new QPushButton(tab);
+        btn->setIcon(Theme::emojiIcon(QStringLiteral("▶️")));
         btn->setFixedWidth(28);
         btn->setToolTip(tr("Calcular %1").arg(row.lbl));
         const int idx = row.idx;

@@ -141,8 +141,10 @@ void DashboardWidget::buildUi()
     auto *navBar = new QHBoxLayout;
     navBar->setContentsMargins(16, 12, 16, 8);
 
-    auto *btnPrev = new QPushButton(QStringLiteral("◀️"), this);
-    auto *btnNext = new QPushButton(QStringLiteral("▶️"), this);
+    auto *btnPrev = new QPushButton(this);
+    btnPrev->setIcon(Theme::emojiIcon(QStringLiteral("◀️")));
+    auto *btnNext = new QPushButton(this);
+    btnNext->setIcon(Theme::emojiIcon(QStringLiteral("▶️")));
     btnPrev->setFixedWidth(32);
     btnNext->setFixedWidth(32);
 
