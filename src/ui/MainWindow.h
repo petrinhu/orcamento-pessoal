@@ -36,10 +36,9 @@ protected:
 
 private:
     void buildUi();
-    void buildMenuBar();
-    void buildThemeBar();
+    void buildMenuBar();   // mantida vazia — preserva atalhos via this->addAction()
+    void buildUtilBar();   // cluster utilidades topo-direito (Busca/Calc/Mais)
     void applyThemeMode(Theme::ThemeMode mode);
-    void updateThemeButton();
     void resetAutosaveTimer();
     void onAutosave();
 
@@ -111,9 +110,6 @@ private:
     QMap<QString, QWidget *> m_paginas;
     QLabel         *m_statusUser  = nullptr;
     QLabel         *m_statusTotal = nullptr;
-
-    // Theme cycle button (Auto → Light → Dark → Auto)
-    QToolButton *m_btnTheme = nullptr;
 
     bool         m_dirty         = false;
     QTimer      *m_autosaveTimer = nullptr;

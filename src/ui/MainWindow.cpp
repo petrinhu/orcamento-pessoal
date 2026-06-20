@@ -213,6 +213,12 @@ void MainWindow::buildUi()
         m_sidebar->addItem(item.chave, item.emoji, item.titulo);
     }
 
+    // ── Rodapé da sidebar: ações de utilidade (#170) ─────────────────────────
+    m_sidebar->addFooterItem(QStringLiteral("act_prefs"), QStringLiteral("⚙️"), tr("Preferências"));
+    m_sidebar->addFooterItem(QStringLiteral("act_ajuda"), QStringLiteral("❓"), tr("Ajuda"));
+    m_sidebar->addFooterItem(QStringLiteral("act_tema"),  QStringLiteral("🌗"), tr("Tema"));
+    m_sidebar->setUsuario(UserSession::instance().name());
+
     // ── QStackedWidget: páginas na ordem de navItens() ───────────────────────
     m_stack = new QStackedWidget(this);
     for (const NavItem &item : navItens()) {
@@ -268,8 +274,8 @@ void MainWindow::buildUi()
     m_metas->setUndoStack(m_undoStack);
     m_lembretes->setUndoStack(m_undoStack);
 
-    buildMenuBar();
-    buildThemeBar();
+    buildMenuBar();   // QMenuBar aposentada; reconfigura atalhos via addAction()
+    buildUtilBar();   // cluster utilidades topo-direito
 
     // ── Status bar ─────────────────────────────────────────────────────────
     m_statusUser = new QLabel(this);
@@ -541,31 +547,160 @@ void MainWindow::buildUi()
     });
 }
 
-// ── Menu bar ──────────────────────────────────────────────────────────────────
+// ── Menu bar (aposentada em #170) ────────────────────────────────────────────
+// QMenuBar removida visualmente via setVisible(false). Atalhos de teclado
+// são re-registrados via this->addAction() para continuar funcionando sem
+// a barra. Ações de navegação foram para o rodapé da sidebar e para o
+// cluster de utilidades (buildUtilBar).
 
 void MainWindow::buildMenuBar()
 {
-    QMenuBar *mb = menuBar();
+    // Ocultar a barra de menu nativa — ações visuais foram para sidebar/toolbar.
+    menuBar()->setVisible(false);
 
-    // ── Arquivo ────────────────────────────────────────────────────────────
-    QMenu *mArquivo = mb->addMenu(tr("&Arquivo"));
-
-    auto *aAbrir = mArquivo->addAction(tr("📁 &Abrir…"));
+    // ── Atalhos de Arquivo (preservados via QAction no MainWindow) ──────────
+    auto *aAbrir = new QAction(tr("Abrir…"), this);
     aAbrir->setShortcut(QKeySequence::Open);
     connect(aAbrir, &QAction::triggered, this, &MainWindow::onAbrir);
+    addAction(aAbrir);
 
-    auto *aSalvar = mArquivo->addAction(tr("💾 &Salvar"));
+    auto *aSalvar = new QAction(tr("Salvar"), this);
     aSalvar->setShortcut(QKeySequence::Save);
     connect(aSalvar, &QAction::triggered, this, &MainWindow::onSalvar);
+    addAction(aSalvar);
 
-    auto *aSalvarComo = mArquivo->addAction(tr("💾 Salvar &como…"));
+    auto *aSalvarComo = new QAction(tr("Salvar como…"), this);
     aSalvarComo->setShortcut(QKeySequence::SaveAs);
     connect(aSalvarComo, &QAction::triggered, this, &MainWindow::onSalvarComo);
+    addAction(aSalvarComo);
 
-    mArquivo->addSeparator();
+    auto *aSair = new QAction(tr("Sair"), this);
+    aSair->setShortcut(QKeySequence::Quit);
+    connect(aSair, &QAction::triggered, qApp, &QApplication::quit);
+    addAction(aSair);
+
+    // ── Atalhos de Edição ──────────────────────────────────────────────────
+    auto *aUndo = m_undoStack->createUndoAction(this, tr("Desfazer"));
+    aUndo->setShortcut(QKeySequence::Undo);
+    addAction(aUndo);
+
+    auto *aRedo = m_undoStack->createRedoAction(this, tr("Refazer"));
+    aRedo->setShortcut(QKeySequence::Redo);
+    addAction(aRedo);
+
+    auto *aCopiar = new QAction(tr("Copiar"), this);
+    aCopiar->setShortcut(QKeySequence::Copy);
+    connect(aCopiar, &QAction::triggered, this, &MainWindow::onCopiar);
+    addAction(aCopiar);
+
+    auto *aColar = new QAction(tr("Colar"), this);
+    aColar->setShortcut(QKeySequence::Paste);
+    connect(aColar, &QAction::triggered, this, &MainWindow::onColar);
+    addAction(aColar);
+
+    auto *aSelAll = new QAction(tr("Selecionar tudo"), this);
+    aSelAll->setShortcut(QKeySequence::SelectAll);
+    connect(aSelAll, &QAction::triggered, this, &MainWindow::onSelecionarTudo);
+    addAction(aSelAll);
+
+    auto *aBusca = new QAction(tr("Buscar transação…"), this);
+    aBusca->setShortcut(QKeySequence::Find);
+    connect(aBusca, &QAction::triggered, this, &MainWindow::onBuscaGlobal);
+    addAction(aBusca);
+
+    // ── Atalhos de Ajuda ──────────────────────────────────────────────────
+    auto *aAjuda = new QAction(tr("Ajuda"), this);
+    aAjuda->setShortcut(QKeySequence::HelpContents);
+    connect(aAjuda, &QAction::triggered, this, &MainWindow::onAjuda);
+    addAction(aAjuda);
+
+    auto *aGlossario = new QAction(tr("Glossário financeiro…"), this);
+    aGlossario->setShortcut(QKeySequence(Qt::Key_F2));
+    connect(aGlossario, &QAction::triggered, this, &MainWindow::onGlossario);
+    addAction(aGlossario);
+}
+
+// ── Cluster de utilidades (topo direito) — #170 ──────────────────────────────
+// Substitui buildThemeBar: toolbar fina no topo com Busca, Calculadora e
+// o menu "⋯ Mais" (Abrir/Salvar/Importar/Exportar/Reconciliar/Glossário/Sobre/Sair).
+// Botão de Tema e Preferências foram para o rodapé da sidebar (act_tema / act_prefs).
+
+void MainWindow::buildUtilBar()
+{
+    auto *toolbar = new QToolBar(this);
+    toolbar->setMovable(false);
+    toolbar->setFloatable(false);
+    toolbar->setIconSize({20, 20});
+    addToolBar(Qt::TopToolBarArea, toolbar);
+
+    auto makeBtn = [&](const QString &glyph, const QString &tip) -> QToolButton * {
+        auto *btn = new QToolButton(toolbar);
+        btn->setAutoRaise(true);
+        btn->setIcon(Theme::emojiIcon(glyph, 20));
+        btn->setToolButtonStyle(Qt::ToolButtonIconOnly);
+        btn->setToolTip(tip);
+        toolbar->addWidget(btn);
+        return btn;
+    };
+
+    // Busca global
+    auto *btnBusca = makeBtn(QStringLiteral("🔍"), tr("Buscar transação… (Ctrl+F)"));
+    connect(btnBusca, &QToolButton::clicked, this, &MainWindow::onBuscaGlobal);
+
+    // Calculadora
+    auto *btnCalc = makeBtn(QStringLiteral("🧮"), tr("Calculadora"));
+    connect(btnCalc, &QToolButton::clicked, this, [this]() {
+        CalculadoraHub::instance().mostrarGlobal(this);
+    });
+
+    // Hoje (navega tabela para mês atual)
+    auto *btnHoje = makeBtn(QStringLiteral("📅"), tr("Hoje"));
+    connect(btnHoje, &QToolButton::clicked, this, [this]() {
+        if      (m_stack->currentWidget() == m_shellCartoes)       m_parcelas->scrollParaMesAtual();
+        else if (m_stack->currentWidget() == m_shellEntradas)      m_entradas->scrollParaMesAtual();
+        else if (m_stack->currentWidget() == m_shellGastos)        m_gastos->scrollParaMesAtual();
+        else if (m_stack->currentWidget() == m_shellInvestimentos) m_investimentos->scrollParaMesAtual();
+    });
+
+    toolbar->addSeparator();
+
+    // ── "⋯ Mais" — menu de utilidades (InstantPopup) ──────────────────────
+    auto *btnMais = new QToolButton(toolbar);
+    btnMais->setAutoRaise(true);
+    btnMais->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+    btnMais->setIcon(Theme::emojiIcon(QStringLiteral("⋯"), 20));
+    btnMais->setText(tr(" Mais"));
+    btnMais->setToolTip(tr("Mais opções"));
+    btnMais->setPopupMode(QToolButton::InstantPopup);
+    toolbar->addWidget(btnMais);
+
+    auto *menuMais = new QMenu(btnMais);
+    btnMais->setMenu(menuMais);
+
+    // Arquivo
+    {
+        auto *a = menuMais->addAction(
+            Theme::emojiIcon(QStringLiteral("📂"), 16), tr("Abrir…"));
+        a->setShortcut(QKeySequence::Open);
+        connect(a, &QAction::triggered, this, &MainWindow::onAbrir);
+    }
+    {
+        auto *a = menuMais->addAction(
+            Theme::emojiIcon(QStringLiteral("💾"), 16), tr("Salvar"));
+        a->setShortcut(QKeySequence::Save);
+        connect(a, &QAction::triggered, this, &MainWindow::onSalvar);
+    }
+    {
+        auto *a = menuMais->addAction(
+            Theme::emojiIcon(QStringLiteral("💾"), 16), tr("Salvar como…"));
+        a->setShortcut(QKeySequence::SaveAs);
+        connect(a, &QAction::triggered, this, &MainWindow::onSalvarComo);
+    }
+
+    menuMais->addSeparator();
 
     // Importar submenu
-    QMenu *mImportar = mArquivo->addMenu(tr("📁 &Importar de"));
+    auto *mImportar = menuMais->addMenu(tr("📁 Importar de"));
     const QList<QPair<QString,QString>> importFormats = {
         { QStringLiteral("CSV (.csv)…"),        QStringLiteral("csv")  },
         { QStringLiteral("OFX / QFX (.ofx)…"),  QStringLiteral("ofx")  },
@@ -585,7 +720,7 @@ void MainWindow::buildMenuBar()
     }
 
     // Exportar submenu
-    QMenu *mExportar = mArquivo->addMenu(tr("💾 &Exportar"));
+    auto *mExportar = menuMais->addMenu(tr("💾 Exportar"));
     const QList<QPair<QString,QString>> exportFormats = {
         { QStringLiteral("CSV (.csv)…"),        QStringLiteral("csv")  },
         { QStringLiteral("OFX (.ofx)…"),        QStringLiteral("ofx")  },
@@ -605,175 +740,73 @@ void MainWindow::buildMenuBar()
         connect(act, &QAction::triggered, this, [this, f]() { onExportar(f); });
     }
 
-    mArquivo->addSeparator();
+    menuMais->addSeparator();
 
-    auto *aReconciliar = mArquivo->addAction(tr("🔄 Reconciliar &extrato…"));
-    connect(aReconciliar, &QAction::triggered, this, &MainWindow::onReconciliar);
+    {
+        auto *a = menuMais->addAction(
+            Theme::emojiIcon(QStringLiteral("🔄"), 16), tr("Reconciliar extrato…"));
+        connect(a, &QAction::triggered, this, &MainWindow::onReconciliar);
+    }
 
-    mArquivo->addSeparator();
+    menuMais->addSeparator();
 
-    auto *aSair = mArquivo->addAction(tr("&Sair"));
-    aSair->setShortcut(QKeySequence::Quit);
-    connect(aSair, &QAction::triggered, qApp, &QApplication::quit);
+    {
+        auto *a = menuMais->addAction(
+            Theme::emojiIcon(QStringLiteral("📝"), 16), tr("Glossário financeiro…"));
+        a->setShortcut(QKeySequence(Qt::Key_F2));
+        connect(a, &QAction::triggered, this, &MainWindow::onGlossario);
+    }
+    {
+        auto *a = menuMais->addAction(
+            Theme::emojiIcon(QStringLiteral("ℹ️"), 16), tr("Sobre PeuBud…"));
+        connect(a, &QAction::triggered, this, &MainWindow::onSobre);
+    }
 
-    // ── Editar ─────────────────────────────────────────────────────────────
-    QMenu *mEditar = mb->addMenu(tr("&Editar"));
+    menuMais->addSeparator();
 
-    auto *aUndo = m_undoStack->createUndoAction(this, tr("&Desfazer"));
-    aUndo->setShortcut(QKeySequence::Undo);
-    mEditar->addAction(aUndo);
-
-    auto *aRedo = m_undoStack->createRedoAction(this, tr("&Refazer"));
-    aRedo->setShortcut(QKeySequence::Redo);
-    mEditar->addAction(aRedo);
-
-    mEditar->addSeparator();
-
-    auto *aCopiar = mEditar->addAction(tr("&Copiar"));
-    aCopiar->setShortcut(QKeySequence::Copy);
-    connect(aCopiar, &QAction::triggered, this, &MainWindow::onCopiar);
-
-    auto *aColar = mEditar->addAction(tr("Co&lar"));
-    aColar->setShortcut(QKeySequence::Paste);
-    connect(aColar, &QAction::triggered, this, &MainWindow::onColar);
-
-    mEditar->addSeparator();
-
-    auto *aSelAll = mEditar->addAction(tr("Selecionar &tudo"));
-    aSelAll->setShortcut(QKeySequence::SelectAll);
-    connect(aSelAll, &QAction::triggered, this, &MainWindow::onSelecionarTudo);
-
-    mEditar->addSeparator();
-
-    auto *aBusca = mEditar->addAction(tr("🔍 &Buscar transação…"));
-    aBusca->setShortcut(QKeySequence::Find);
-    connect(aBusca, &QAction::triggered, this, &MainWindow::onBuscaGlobal);
-
-    // ── Configurações ──────────────────────────────────────────────────────
-    QMenu *mConfig = mb->addMenu(tr("&Configurações"));
-
-    auto *aPrefs = mConfig->addAction(tr("⚙️ &Preferências…"));
-    connect(aPrefs, &QAction::triggered, this, &MainWindow::onConfiguracoes);
-
-    // ── Ajuda ──────────────────────────────────────────────────────────────
-    QMenu *mAjuda = mb->addMenu(tr("A&juda"));
-
-    auto *aAjuda = mAjuda->addAction(tr("❓ &Ajuda"));
-    aAjuda->setShortcut(QKeySequence::HelpContents);
-    connect(aAjuda, &QAction::triggered, this, &MainWindow::onAjuda);
-
-    auto *aGlossario = mAjuda->addAction(tr("📝 &Glossário financeiro…"));
-    aGlossario->setShortcut(QKeySequence(Qt::Key_F2));
-    connect(aGlossario, &QAction::triggered, this, &MainWindow::onGlossario);
-
-    mAjuda->addSeparator();
-
-    auto *aSobre = mAjuda->addAction(tr("ℹ️ &Sobre PeuBud…"));
-    connect(aSobre, &QAction::triggered, this, &MainWindow::onSobre);
-}
-
-// ── Theme bar ─────────────────────────────────────────────────────────────────
-
-void MainWindow::buildThemeBar()
-{
-    // ── Toolbar principal — abaixo dos menus ──────────────────────────────
-    auto *toolbar = new QToolBar(this);
-    toolbar->setMovable(false);
-    toolbar->setFloatable(false);
-    toolbar->setIconSize({20, 20});
-    addToolBar(Qt::TopToolBarArea, toolbar);
-
-    auto makeBtn = [&](const QString &glyph, const QString &tip,
-                       bool enabled = true) -> QToolButton * {
-        auto *btn = new QToolButton(toolbar);
-        btn->setAutoRaise(true);
-        btn->setEnabled(enabled);
-        btn->setToolTip(tip);
-        // Emoji colorido renderizado num QIcon (Noto Color Emoji): QSS não
-        // renderiza fonte colorida no texto de botão de forma confiável.
-        btn->setIcon(Theme::emojiIcon(glyph, 20));
-        btn->setToolButtonStyle(Qt::ToolButtonIconOnly);
-        toolbar->addWidget(btn);
-        return btn;
-    };
-
-    // Arquivo
-    auto *btnAbrir      = makeBtn(QStringLiteral("📂"),  tr("Abrir…"));
-    auto *btnSalvar     = makeBtn(QStringLiteral("💾"),  tr("Salvar"));
-    auto *btnSalvarComo = makeBtn(QStringLiteral("💾➕"), tr("Salvar como…"));
-    connect(btnAbrir,      &QToolButton::clicked, this, &MainWindow::onAbrir);
-    connect(btnSalvar,     &QToolButton::clicked, this, &MainWindow::onSalvar);
-    connect(btnSalvarComo, &QToolButton::clicked, this, &MainWindow::onSalvarComo);
-
-    toolbar->addSeparator();
-
-    // Funcionalidades (pendentes)
-    auto *btnBusca = makeBtn(QStringLiteral("🔍"), tr("Buscar transação…"));
-    connect(btnBusca, &QToolButton::clicked, this, &MainWindow::onBuscaGlobal);
-    auto *btnHoje = makeBtn(QStringLiteral("📅"), tr("Hoje"));
-    connect(btnHoje, &QToolButton::clicked, this, [this]() {
-        if      (m_stack->currentWidget() == m_shellCartoes)       m_parcelas->scrollParaMesAtual();
-        else if (m_stack->currentWidget() == m_shellEntradas)      m_entradas->scrollParaMesAtual();
-        else if (m_stack->currentWidget() == m_shellGastos)        m_gastos->scrollParaMesAtual();
-        else if (m_stack->currentWidget() == m_shellInvestimentos) m_investimentos->scrollParaMesAtual();
-        // PlanejamentoWidget has its own month navigation — no scroll needed
-    });
-    auto *btnCalc = makeBtn(QStringLiteral("🧮"), tr("Calculadora"));
-    connect(btnCalc, &QToolButton::clicked, this, [this]() {
-        CalculadoraHub::instance().mostrarGlobal(this);
-    });
-
-    toolbar->addSeparator();
-
-    // Configurações / Tema / Bloquear
-    auto *btnConfig = makeBtn(QStringLiteral("⚙️"),  tr("Configurações"));
-    connect(btnConfig, &QToolButton::clicked, this, &MainWindow::onConfiguracoes);
-
-    m_btnTheme = new QToolButton(toolbar);
-    m_btnTheme->setObjectName(QStringLiteral("themeBtn"));
-    m_btnTheme->setAutoRaise(true);
-    toolbar->addWidget(m_btnTheme);
-    connect(m_btnTheme, &QToolButton::clicked, this, [this]() {
-        Theme::ThemeMode next;
-        switch (Theme::currentMode()) {
-            case Theme::ThemeMode::Auto:  next = Theme::ThemeMode::Light; break;
-            case Theme::ThemeMode::Light: next = Theme::ThemeMode::Dark;  break;
-            case Theme::ThemeMode::Dark:  next = Theme::ThemeMode::Auto;  break;
-        }
-        applyThemeMode(next);
-    });
-
-    makeBtn(QStringLiteral("🔒"), tr("Bloquear  (em breve)"), false);
-
-    updateThemeButton();
+    {
+        auto *a = menuMais->addAction(
+            Theme::emojiIcon(QStringLiteral("🔒"), 16), tr("Bloquear (fechar)"));
+        connect(a, &QAction::triggered, this, &MainWindow::onBloquear);
+    }
+    {
+        auto *a = menuMais->addAction(tr("Sair"));
+        a->setShortcut(QKeySequence::Quit);
+        connect(a, &QAction::triggered, qApp, &QApplication::quit);
+    }
 }
 
 void MainWindow::applyThemeMode(Theme::ThemeMode mode)
 {
     Theme::setMode(mode);
-    updateThemeButton();
+    // Sem m_btnTheme para atualizar — o emoji do rodapé é fixo (🌗 = cicla).
 }
 
-void MainWindow::updateThemeButton()
-{
-    struct Def { QString glyph; QString tip; };
-    static const Def defs[] = {
-        { QStringLiteral("🌗"),  tr("Modo: automático  (clique → claro)") },
-        { QStringLiteral("☀️"), tr("Modo: claro  (clique → escuro)")      },
-        { QStringLiteral("🌙"),  tr("Modo: escuro  (clique → automático)") },
-    };
-    // enum ThemeMode { Auto=0, Light=1, Dark=2 }
-    const auto &d = defs[static_cast<int>(Theme::currentMode())];
-    // Emoji colorido renderizado num QIcon (Noto Color Emoji).
-    m_btnTheme->setIcon(Theme::emojiIcon(d.glyph, 20));
-    m_btnTheme->setToolButtonStyle(Qt::ToolButtonIconOnly);
-    m_btnTheme->setToolTip(d.tip);
-}
-
-// ── Navegação por chave estável (#165) ───────────────────────────────────────
+// ── Navegação por chave estável (#165 / #170) ────────────────────────────────
+// Chaves "act_*" são ações de utilidade (rodapé da sidebar), não páginas.
+// Roteadas aqui antes de consultar m_paginas.
 
 void MainWindow::navegarParaChave(const QString &chave)
 {
+    // Dispatcher de ações do rodapé (#170)
+    if (chave.startsWith(QStringLiteral("act_"))) {
+        if (chave == QStringLiteral("act_prefs")) {
+            onConfiguracoes();
+        } else if (chave == QStringLiteral("act_ajuda")) {
+            onAjuda();
+        } else if (chave == QStringLiteral("act_tema")) {
+            // Cicla: Auto → Light → Dark → Auto
+            Theme::ThemeMode next = Theme::ThemeMode::Auto;
+            switch (Theme::currentMode()) {
+                case Theme::ThemeMode::Auto:  next = Theme::ThemeMode::Light; break;
+                case Theme::ThemeMode::Light: next = Theme::ThemeMode::Dark;  break;
+                case Theme::ThemeMode::Dark:  next = Theme::ThemeMode::Auto;  break;
+            }
+            applyThemeMode(next);
+        }
+        return; // ações de rodapé não alteram o stack nem o item ativo
+    }
+
     auto it = m_paginas.constFind(chave);
     if (it == m_paginas.constEnd()) return;
     m_stack->setCurrentWidget(it.value());
