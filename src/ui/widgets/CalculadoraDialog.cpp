@@ -396,7 +396,7 @@ void CalculadoraDialog::buildTabFinanceira(QWidget *tab)
         row.fld->setPlaceholderText(QStringLiteral("0"));
         row.fld->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
 
-        auto *btn = new QPushButton(QStringLiteral("▶"), tab);
+        auto *btn = new QPushButton(QStringLiteral("▶️"), tab);
         btn->setFixedWidth(28);
         btn->setToolTip(tr("Calcular %1").arg(row.lbl));
         const int idx = row.idx;
@@ -1293,9 +1293,9 @@ void CalculadoraDialog::buildTabWizards(QWidget *tab)
             }
             const double pct = pmt / rend * 100.0;
             *resVal = pct;
-            const QString semaforo = (pct < 30.0) ? tr("✔ Saudável (< 30 %)")
-                                   : (pct < 40.0) ? tr("⚠ Atenção (30–40 %)")
-                                                  : tr("✘ Comprometido (> 40 %)");
+            const QString semaforo = (pct < 30.0) ? tr("✅ Saudável (< 30 %)")
+                                   : (pct < 40.0) ? tr("⚠️ Atenção (30–40 %)")
+                                                  : tr("🚫 Comprometido (> 40 %)");
             lblRes->setText(
                 tr("Comprometimento: <b>%1 %</b><br>%2<br>Disponível: R$ %3")
                 .arg(fmtF(pct, 2), semaforo, fmtF(rend - pmt, 2)));

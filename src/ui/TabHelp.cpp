@@ -19,18 +19,18 @@ const QMap<QString, TabHelpEntry> &tabHelp()
                 "investimentos. É o panorama geral, sem precisar abrir cada aba."),
             QStringList{
                 QCoreApplication::translate("TabHelp",
-                    "Use as setas ◀ ▶ no topo pra trocar o mês."),
+                    "Use as setas ◀️ ▶️ no topo pra trocar o mês."),
                 QCoreApplication::translate("TabHelp",
                     "Veja os cartões de \"Este mês\" e os de \"Acumulado no "
                     "ano\"."),
                 QCoreApplication::translate("TabHelp",
-                    "Clique num cartão com a setinha → pra pular pra aquela aba."),
+                    "Clique num cartão com a setinha ➡️ pra pular pra aquela aba."),
                 QCoreApplication::translate("TabHelp",
                     "No gráfico 📊 \"Entradas × Gastos\", escolha o período (3/6/12/"
                     "24 meses)."),
                 QCoreApplication::translate("TabHelp",
                     "Toque em 🔒 pra fechar o mês (congela os números; dá pra "
-                    "reabrir). Use 🖨 pra imprimir/PDF."),
+                    "reabrir). Use 🖨️ pra imprimir/PDF."),
             }
         });
 
@@ -95,7 +95,7 @@ const QMap<QString, TabHelpEntry> &tabHelp()
                     "<b>CET</b> e a <b>tabela de amortização</b> (Price)."),
                 QCoreApplication::translate("TabHelp",
                     "📅 As parcelas aparecem <b>por mês</b> na tabela; navegue com "
-                    "as setas <b>◀ ▶</b>."),
+                    "as setas <b>◀️ ▶️</b>."),
                 QCoreApplication::translate("TabHelp",
                     "Quer simular antes de comprar? Use a <b>calculadora 🧮</b> "
                     "na barra superior do app."),
@@ -180,7 +180,7 @@ const QMap<QString, TabHelpEntry> &tabHelp()
                 "realmente aconteceu."),
             QStringList{
                 QCoreApplication::translate("TabHelp",
-                    "Setas ◀ ▶ escolhem o 📅 mês."),
+                    "Setas ◀️ ▶️ escolhem o 📅 mês."),
                 QCoreApplication::translate("TabHelp",
                     "\"➕ Novo item\": linha de Receita ou Despesa com o valor "
                     "planejado."),

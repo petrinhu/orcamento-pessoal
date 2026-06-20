@@ -723,30 +723,24 @@ void MainWindow::buildThemeBar()
     navLay->setContentsMargins(0, 0, 4, 0);
     navLay->setSpacing(1);
 
-    auto makeNavBtn = [&](const char *themeIcon, const QString &fallback,
-                          const QString &tip) -> QToolButton * {
+    auto makeNavBtn = [&](const QString &glyph, const QString &tip) -> QToolButton * {
         auto *btn = new QToolButton(navCorner);
         btn->setAutoRaise(true);
         btn->setToolTip(tip);
-        const QIcon icon = QIcon::fromTheme(QLatin1String(themeIcon));
-        if (icon.isNull()) {
-            btn->setText(fallback);
-            btn->setToolButtonStyle(Qt::ToolButtonTextOnly);
-        } else {
-            btn->setIcon(icon);
-            btn->setIconSize({16, 16});
-            btn->setToolButtonStyle(Qt::ToolButtonIconOnly);
-        }
+        // Emoji colorido como texto (Noto Color Emoji) — sem QIcon::fromTheme,
+        // que renderiza ícone de linha monocromático invisível no tema escuro.
+        btn->setText(glyph);
+        btn->setToolButtonStyle(Qt::ToolButtonTextOnly);
         navLay->addWidget(btn);
         return btn;
     };
 
-    auto *btnReset = makeNavBtn("view-refresh", QStringLiteral("↺"),
+    auto *btnReset = makeNavBtn(QStringLiteral("🔄"),
                                 tr("Restaurar ordem padrão das abas"));
-    auto *btnFirst = makeNavBtn("media-skip-backward", QStringLiteral("⏮"), tr("Primeira aba"));
-    auto *btnPrev  = makeNavBtn("media-seek-backward", QStringLiteral("◀"), tr("Aba anterior"));
-    auto *btnNext  = makeNavBtn("media-seek-forward",  QStringLiteral("▶"), tr("Próxima aba"));
-    auto *btnLast  = makeNavBtn("media-skip-forward",  QStringLiteral("⏭"), tr("Última aba"));
+    auto *btnFirst = makeNavBtn(QStringLiteral("⏮️"), tr("Primeira aba"));
+    auto *btnPrev  = makeNavBtn(QStringLiteral("◀️"), tr("Aba anterior"));
+    auto *btnNext  = makeNavBtn(QStringLiteral("▶️"), tr("Próxima aba"));
+    auto *btnLast  = makeNavBtn(QStringLiteral("⏭️"), tr("Última aba"));
 
     connect(btnReset, &QToolButton::clicked, this, &MainWindow::resetarOrdemAbas);
     connect(btnFirst, &QToolButton::clicked, this, [this]() { m_tabs->setCurrentIndex(0); });
@@ -767,29 +761,24 @@ void MainWindow::buildThemeBar()
     toolbar->setIconSize({20, 20});
     addToolBar(Qt::TopToolBarArea, toolbar);
 
-    auto makeBtn = [&](const char *themeIcon, const QString &fallback,
-                       const QString &tip, bool enabled = true) -> QToolButton * {
+    auto makeBtn = [&](const QString &glyph, const QString &tip,
+                       bool enabled = true) -> QToolButton * {
         auto *btn = new QToolButton(toolbar);
         btn->setAutoRaise(true);
         btn->setEnabled(enabled);
         btn->setToolTip(tip);
-        const QIcon icon = QIcon::fromTheme(QLatin1String(themeIcon));
-        if (icon.isNull()) {
-            btn->setText(fallback);
-            btn->setToolButtonStyle(Qt::ToolButtonTextOnly);
-        } else {
-            btn->setIcon(icon);
-            btn->setIconSize({20, 20});
-            btn->setToolButtonStyle(Qt::ToolButtonIconOnly);
-        }
+        // Emoji colorido como texto (Noto Color Emoji) — sem QIcon::fromTheme,
+        // que renderiza ícone de linha monocromático invisível no tema escuro.
+        btn->setText(glyph);
+        btn->setToolButtonStyle(Qt::ToolButtonTextOnly);
         toolbar->addWidget(btn);
         return btn;
     };
 
     // Arquivo
-    auto *btnAbrir      = makeBtn("document-open",    QStringLiteral("📂"),  tr("Abrir…"));
-    auto *btnSalvar     = makeBtn("document-save",    QStringLiteral("💾"),  tr("Salvar"));
-    auto *btnSalvarComo = makeBtn("document-save-as", QStringLiteral("💾+"), tr("Salvar como…"));
+    auto *btnAbrir      = makeBtn(QStringLiteral("📂"),  tr("Abrir…"));
+    auto *btnSalvar     = makeBtn(QStringLiteral("💾"),  tr("Salvar"));
+    auto *btnSalvarComo = makeBtn(QStringLiteral("💾➕"), tr("Salvar como…"));
     connect(btnAbrir,      &QToolButton::clicked, this, &MainWindow::onAbrir);
     connect(btnSalvar,     &QToolButton::clicked, this, &MainWindow::onSalvar);
     connect(btnSalvarComo, &QToolButton::clicked, this, &MainWindow::onSalvarComo);
@@ -797,9 +786,9 @@ void MainWindow::buildThemeBar()
     toolbar->addSeparator();
 
     // Funcionalidades (pendentes)
-    auto *btnBusca = makeBtn("edit-find", QStringLiteral("🔍"), tr("Buscar transação…"));
+    auto *btnBusca = makeBtn(QStringLiteral("🔍"), tr("Buscar transação…"));
     connect(btnBusca, &QToolButton::clicked, this, &MainWindow::onBuscaGlobal);
-    auto *btnHoje = makeBtn("go-jump-today", QStringLiteral("📅"), tr("Hoje"));
+    auto *btnHoje = makeBtn(QStringLiteral("📅"), tr("Hoje"));
     connect(btnHoje, &QToolButton::clicked, this, [this]() {
         if      (m_tabs->currentWidget() == m_shellCartoes)       m_parcelas->scrollParaMesAtual();
         else if (m_tabs->currentWidget() == m_shellEntradas)      m_entradas->scrollParaMesAtual();
@@ -807,7 +796,7 @@ void MainWindow::buildThemeBar()
         else if (m_tabs->currentWidget() == m_shellInvestimentos) m_investimentos->scrollParaMesAtual();
         // PlanejamentoWidget has its own month navigation — no scroll needed
     });
-    auto *btnCalc = makeBtn("accessories-calculator", QStringLiteral("🧮"), tr("Calculadora"));
+    auto *btnCalc = makeBtn(QStringLiteral("🧮"), tr("Calculadora"));
     connect(btnCalc, &QToolButton::clicked, this, [this]() {
         CalculadoraHub::instance().mostrarGlobal(this);
     });
@@ -815,7 +804,7 @@ void MainWindow::buildThemeBar()
     toolbar->addSeparator();
 
     // Configurações / Tema / Bloquear
-    auto *btnConfig = makeBtn("preferences-system", QStringLiteral("⚙"),  tr("Configurações"));
+    auto *btnConfig = makeBtn(QStringLiteral("⚙️"),  tr("Configurações"));
     connect(btnConfig, &QToolButton::clicked, this, &MainWindow::onConfiguracoes);
 
     m_btnTheme = new QToolButton(toolbar);
@@ -832,7 +821,7 @@ void MainWindow::buildThemeBar()
         applyThemeMode(next);
     });
 
-    makeBtn("system-lock-screen", QStringLiteral("🔒"), tr("Bloquear  (em breve)"), false);
+    makeBtn(QStringLiteral("🔒"), tr("Bloquear  (em breve)"), false);
 
     updateThemeButton();
 }
@@ -845,23 +834,17 @@ void MainWindow::applyThemeMode(Theme::ThemeMode mode)
 
 void MainWindow::updateThemeButton()
 {
-    struct Def { const char *themeIcon; QString fallback; QString tip; };
+    struct Def { QString glyph; QString tip; };
     static const Def defs[] = {
-        { "weather-partly-cloudy", QStringLiteral("◑"), tr("Modo: automático  (clique → claro)") },
-        { "weather-clear",         QStringLiteral("☀"), tr("Modo: claro  (clique → escuro)")      },
-        { "weather-clear-night",   QStringLiteral("☾"), tr("Modo: escuro  (clique → automático)") },
+        { QStringLiteral("🌗"),  tr("Modo: automático  (clique → claro)") },
+        { QStringLiteral("☀️"), tr("Modo: claro  (clique → escuro)")      },
+        { QStringLiteral("🌙"),  tr("Modo: escuro  (clique → automático)") },
     };
     // enum ThemeMode { Auto=0, Light=1, Dark=2 }
     const auto &d = defs[static_cast<int>(Theme::currentMode())];
-    const QIcon icon = QIcon::fromTheme(QLatin1String(d.themeIcon));
-    if (icon.isNull()) {
-        m_btnTheme->setText(d.fallback);
-        m_btnTheme->setToolButtonStyle(Qt::ToolButtonTextOnly);
-    } else {
-        m_btnTheme->setIcon(icon);
-        m_btnTheme->setIconSize({20, 20});
-        m_btnTheme->setToolButtonStyle(Qt::ToolButtonIconOnly);
-    }
+    // Emoji colorido como texto (Noto Color Emoji) — sem QIcon::fromTheme.
+    m_btnTheme->setText(d.glyph);
+    m_btnTheme->setToolButtonStyle(Qt::ToolButtonTextOnly);
     m_btnTheme->setToolTip(d.tip);
 }
 

@@ -77,8 +77,8 @@ void ParcelasWidget::buildUi()
     auto *btnOrganizar = new QPushButton(tr("🔃 Organizar por ▾"), this);
 
     // Month navigation (espelha Dashboard/Planejamento; reusa navegarMes)
-    auto *btnPrevMes = new QPushButton(QStringLiteral("◀"), this);
-    auto *btnNextMes = new QPushButton(QStringLiteral("▶"), this);
+    auto *btnPrevMes = new QPushButton(QStringLiteral("◀️"), this);
+    auto *btnNextMes = new QPushButton(QStringLiteral("▶️"), this);
     btnPrevMes->setFixedWidth(28);
     btnNextMes->setFixedWidth(28);
     btnPrevMes->setToolTip(tr("Mês anterior"));

@@ -72,8 +72,8 @@ void PlanejamentoWidget::buildUi()
     m_btnDel->setEnabled(false);
 
     // Month navigation
-    auto *btnPrev = new QPushButton(QStringLiteral("◀"), this);
-    auto *btnNext = new QPushButton(QStringLiteral("▶"), this);
+    auto *btnPrev = new QPushButton(QStringLiteral("◀️"), this);
+    auto *btnNext = new QPushButton(QStringLiteral("▶️"), this);
     btnPrev->setFixedWidth(28);
     btnNext->setFixedWidth(28);
     m_lblMes = new QLabel(this);

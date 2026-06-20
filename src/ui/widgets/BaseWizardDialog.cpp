@@ -51,8 +51,8 @@ void BaseWizardDialog::buildUi()
     btnBar->setContentsMargins(12, 8, 12, 8);
 
     m_btnCancel = new QPushButton(tr("Cancelar"), this);
-    m_btnPrev   = new QPushButton(tr("◀ Anterior"), this);
-    m_btnNext   = new QPushButton(tr("Próximo ▶"), this);
+    m_btnPrev   = new QPushButton(tr("◀️ Anterior"), this);
+    m_btnNext   = new QPushButton(tr("Próximo ▶️"), this);
     m_btnNext->setObjectName(QStringLiteral("primary"));
 
     btnBar->addWidget(m_btnCancel);
@@ -151,6 +151,6 @@ void BaseWizardDialog::atualizarBotoes()
     if (idx == total - 1 && total > 0) {
         m_btnNext->setText(tr("Concluir"));
     } else {
-        m_btnNext->setText(tr("Próximo ▶"));
+        m_btnNext->setText(tr("Próximo ▶️"));
     }
 }

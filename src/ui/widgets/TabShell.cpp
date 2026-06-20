@@ -105,8 +105,8 @@ void TabShell::montarBloco(const QString &bloco, QLabel *&outLabel, QToolButton 
 void TabShell::aplicarColapso(QLabel *label, QToolButton *toggle, bool expandido)
 {
     label->setVisible(expandido);
-    // ▲ = recolher (está expandido), ▼ = expandir (está recolhido).
-    toggle->setText(expandido ? QStringLiteral("▲") : QStringLiteral("▼"));
+    // 🔼 = recolher (está expandido), 🔽 = expandir (está recolhido).
+    toggle->setText(expandido ? QStringLiteral("🔼") : QStringLiteral("🔽"));
     toggle->setToolTip(expandido ? tr("Recolher") : tr("Expandir"));
     toggle->setAccessibleName(expandido ? tr("Recolher bloco") : tr("Expandir bloco"));
 }

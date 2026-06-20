@@ -100,7 +100,7 @@ QWidget *DashboardWidget::makeCard(const QString &title,
         rowTitle->setSpacing(4);
         lay->removeWidget(lblTitle); // re-add in row
         rowTitle->addWidget(lblTitle);
-        auto *lblArrow = new QLabel(QStringLiteral("→"), frame);
+        auto *lblArrow = new QLabel(QStringLiteral("➡️"), frame);
         lblArrow->setObjectName(QStringLiteral("subtitle"));
         QFont fa = lblArrow->font(); fa.setPointSize(10);
         lblArrow->setFont(fa);
@@ -140,8 +140,8 @@ void DashboardWidget::buildUi()
     auto *navBar = new QHBoxLayout;
     navBar->setContentsMargins(16, 12, 16, 8);
 
-    auto *btnPrev = new QPushButton(QStringLiteral("◀"), this);
-    auto *btnNext = new QPushButton(QStringLiteral("▶"), this);
+    auto *btnPrev = new QPushButton(QStringLiteral("◀️"), this);
+    auto *btnNext = new QPushButton(QStringLiteral("▶️"), this);
     btnPrev->setFixedWidth(32);
     btnNext->setFixedWidth(32);
 
@@ -153,7 +153,7 @@ void DashboardWidget::buildUi()
     m_lblMes->setAlignment(Qt::AlignCenter);
 
     // Botão Imprimir (#94)
-    auto *btnPrint = new QPushButton(QStringLiteral("🖨"), this);
+    auto *btnPrint = new QPushButton(QStringLiteral("🖨️"), this);
     btnPrint->setFixedWidth(32);
     btnPrint->setToolTip(tr("Imprimir Dashboard (visualização prévia)"));
 

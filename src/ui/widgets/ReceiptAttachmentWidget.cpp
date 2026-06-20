@@ -41,7 +41,7 @@ ReceiptAttachmentWidget::ReceiptAttachmentWidget(QWidget *parent)
     connect(m_thumbnail, &QLabel::linkActivated, this,
             &ReceiptAttachmentWidget::onViewExpanded);
 
-    m_btnRemove = new QPushButton(tr("🗑"), this);
+    m_btnRemove = new QPushButton(tr("🗑️"), this);
     m_btnRemove->setToolTip(tr("Remover comprovante anexado"));
     m_btnRemove->setFixedWidth(32);
     m_btnRemove->setVisible(false);
