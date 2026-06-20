@@ -1234,6 +1234,12 @@ void MainWindow::onConfiguracoes()
     QDialog dlg(this);
     dlg.setWindowTitle(tr("Configurações"));
     dlg.setMinimumSize(520, 480);
+    // ApplicationModal: bloqueia a principal enquanto Configurações está aberta.
+    // Necessário explicitamente no Wayland/KDE Plasma — exec() bloqueia o event
+    // loop mas sem esta flag o compositor pode não enforçar a relação parent-child
+    // visualmente (usuário consegue clicar na principal). Combinado com parent=this
+    // (acima), o dialog também minimiza junto com a MainWindow (#177).
+    dlg.setWindowModality(Qt::ApplicationModal);
     auto *lay   = new QVBoxLayout(&dlg);
     // Margem inferior dá folga para a sombra do botão "✕ Fechar" não clipar
     // na borda do diálogo (#176): blur=8 + offset=1 → ~9px; 16px = folga segura.
