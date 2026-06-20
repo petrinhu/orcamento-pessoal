@@ -305,3 +305,14 @@ set_tests_properties(test_sidebar_nav PROPERTIES
 # Fonte unica da ordem e agrupamento das abas. Sem dependencias externas (puro Qt::Core).
 peubud_add_test(test_nav_registry
     ${CMAKE_SOURCE_DIR}/src/ui/NavRegistry.cpp)
+
+# Render offscreen do SidebarNav (#165 contraste fix, task 6).
+# Verifica H1 (QSS + palette) e H2 (palette sozinha como fallback).
+# Salva PNGs em /tmp para inspecao manual.
+peubud_add_test(test_sidebar_render
+    ${CMAKE_SOURCE_DIR}/src/ui/widgets/SidebarNav.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/Theme.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/NavRegistry.cpp)
+set_tests_properties(test_sidebar_render PROPERTIES
+    ENVIRONMENT "QT_QPA_PLATFORM=offscreen")

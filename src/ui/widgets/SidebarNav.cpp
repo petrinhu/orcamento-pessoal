@@ -5,6 +5,7 @@
 #include <QFrame>
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QPalette>
 #include <QPushButton>
 #include <QStyle>
 #include <QVBoxLayout>
@@ -32,6 +33,15 @@ SidebarNav::SidebarNav(QWidget *parent)
     // nao pinta o proprio fundo com background-color definido via QSS).
     setAutoFillBackground(true);
 
+    // Piso de seguranca: cor navy solida via QPalette (#165 contraste fix).
+    // Garante fundo escuro mesmo se o gradiente QSS nao propagar (ex.: Fusion
+    // em alguns contextos de layout nao re-pinta QWidget filhos com background
+    // do ancestral via QSS). O QPalette::Window e aplicado ANTES do QSS;
+    // o gradiente fica por cima quando funciona — este e o fallback.
+    QPalette pal = palette();
+    pal.setColor(QPalette::Window, QColor(Theme::sidebar1()));
+    setPalette(pal);
+
     // Layout raiz — empilha itens (top), stretch e footer (bottom).
     auto *rootLayout = new QVBoxLayout(this);
     rootLayout->setContentsMargins(8, 12, 8, 8);
@@ -39,6 +49,8 @@ SidebarNav::SidebarNav(QWidget *parent)
 
     // Zona de itens: grupos + navItems na ordem de insercao.
     auto *mainWidget = new QWidget(this);
+    // Transparente: nao pintar fundo claro por cima do navy do widget raiz.
+    mainWidget->setAutoFillBackground(false);
     m_mainLayout = new QVBoxLayout(mainWidget);
     m_mainLayout->setContentsMargins(0, 0, 0, 0);
     m_mainLayout->setSpacing(2);
@@ -52,6 +64,8 @@ SidebarNav::SidebarNav(QWidget *parent)
 
     // Zona de footer: footerItems + bloco de usuario.
     auto *footerWidget = new QWidget(this);
+    // Transparente: nao pintar fundo claro por cima do navy do widget raiz.
+    footerWidget->setAutoFillBackground(false);
     m_footerLayout = new QVBoxLayout(footerWidget);
     m_footerLayout->setContentsMargins(0, 4, 0, 0);
     m_footerLayout->setSpacing(2);
@@ -60,6 +74,8 @@ SidebarNav::SidebarNav(QWidget *parent)
     // Bloco de usuario (avatar inicial + nome) — fica sempre no fim do footer.
     auto *usuarioWidget = new QWidget(this);
     usuarioWidget->setObjectName(QStringLiteral("sidebarUsuario"));
+    // Transparente: nao pintar fundo claro por cima do navy do widget raiz.
+    usuarioWidget->setAutoFillBackground(false);
     auto *usuarioLayout = new QHBoxLayout(usuarioWidget);
     usuarioLayout->setContentsMargins(4, 4, 4, 4);
     usuarioLayout->setSpacing(8);

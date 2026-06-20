@@ -29,7 +29,7 @@ namespace Color {
     const QString DouradoLight    = QStringLiteral("#E8A93B");
     const QString Sidebar1Light   = QStringLiteral("#1B2A41");
     const QString Sidebar2Light   = QStringLiteral("#16233A");
-    const QString SidebarTextLight = QStringLiteral("#AFBDD0");
+    const QString SidebarTextLight = QStringLiteral("#D6DEEA");
 
     // Dark
     const QString BgDark          = QStringLiteral("#0F172A");
@@ -45,7 +45,7 @@ namespace Color {
     // Sidebar dark = mesmo navy do light (tom próprio, não inverte com o tema)
     const QString Sidebar1Dark    = QStringLiteral("#1B2A41");
     const QString Sidebar2Dark    = QStringLiteral("#16233A");
-    const QString SidebarTextDark = QStringLiteral("#AFBDD0");
+    const QString SidebarTextDark = QStringLiteral("#D6DEEA");
 }
 
 // ── ThemeMode state ───────────────────────────────────────────────────────────
@@ -388,9 +388,9 @@ static QString gerarQss()
             max-height: 1px;
             border: none;
         }
-        /* Rotulo de grupo: dim em relacao ao sidebarText; maiusculas via codigo */
+        /* Rotulo de grupo: intermediario entre navy e sidebarText; dim mas legivel */
         QWidget#sidebarNav QLabel#grupo {
-            color: rgba(175,189,208,0.55);
+            color: #8595AC;
             font-size: 10px;
             font-weight: 600;
             letter-spacing: 1px;

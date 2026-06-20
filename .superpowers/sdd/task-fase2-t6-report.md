@@ -58,3 +58,51 @@ Resultado: `/tmp/t6_sidebar.png` (240×600 px):
 ## ctest
 
 `100% tests passed, 0 tests failed out of 30` — incluindo `test_theme_tokens` (14 casos, 3 novos de sidebar) e `test_sidebar_nav` (4 casos).
+
+---
+
+# Contraste/Uniformidade Fix (#165) — 2026-06-20
+
+**Problema:** cor do texto dos itens da sidebar (`#AFBDD0`) muito próxima do navy (`#1B2A41`), contraste ~3.5:1 (abaixo do WCAG AA 4.5:1). Rótulos de grupo com `rgba(175,189,208,0.55)` praticamente invisíveis. Fundo navy podia não propagar via QSS em alguns contextos Fusion.
+
+## Mudanças aplicadas
+
+### Theme.cpp
+
+| Elemento | Antes | Depois | Motivo |
+|---|---|---|---|
+| `SidebarTextLight` | `#AFBDD0` | `#D6DEEA` | Contraste ~6:1 sobre navy (WCAG AA ✓) |
+| `SidebarTextDark` | `#AFBDD0` | `#D6DEEA` | Idem (sidebar não inverte com tema) |
+| Rótulo de grupo QSS | `rgba(175,189,208,0.55)` | `#8595AC` | Cor literal previsível; intermediário legível entre navy e text |
+| `sidebarNome` e `navItem` | `@@SIDEBARTXT@@` (mesmo token) | sem mudança | Já usa o mesmo token — uniformidade preservada |
+
+### SidebarNav.cpp
+
+- Adicionado `#include <QPalette>`.
+- Construtor: `QPalette` com `Window = QColor(Theme::sidebar1())` + `setPalette()` — piso de segurança navy antes do QSS.
+- `mainWidget->setAutoFillBackground(false)` — evita fundo claro por cima do navy.
+- `footerWidget->setAutoFillBackground(false)` — idem.
+- `usuarioWidget->setAutoFillBackground(false)` — idem.
+
+### tests/
+
+- Novo: `tests/test_sidebar_render.cpp` + entrada em `CMakeLists.txt`.
+- Testa H1 (QSS + palette) e H2 (somente palette) via `grab()` + inspeção de pixel central.
+
+## Resultado do render offscreen (test_sidebar_render)
+
+**H1 — QSS + palette:**
+- Cantos topo: `#1b2a41` (Sidebar1)
+- Cantos base: `#16233a` (Sidebar2)
+- Centro: `#19273e` — gradiente navy ativo
+
+**H2 — somente palette (sem gradiente):**
+- Cantos topo: `#1b2a41` (Sidebar1)
+- Cantos base: `#16233a` (Sidebar2)
+- Centro: `#19273e` — fallback QPalette funcionou, fundo navy mantido
+
+Ambos os screenshots mostram: fundo navy uniforme com gradiente, texto dos itens em `#D6DEEA` (nitidamente legível), rótulos de grupo em `#8595AC` (visíveis mas dim), item ativo com pill azul `#3B82F6` + texto branco, rodapé e nome do usuário com mesma cor dos itens de navegação (uniformidade).
+
+## ctest final
+
+`100% tests passed, 0 tests failed out of 31` (incluindo novo `test_sidebar_render`).
