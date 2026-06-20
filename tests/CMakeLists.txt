@@ -300,3 +300,8 @@ peubud_add_test(test_sidebar_nav
     ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp)
 set_tests_properties(test_sidebar_nav PROPERTIES
     ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
+# Teste do NavRegistry (#165 redesign fase 2 task 2).
+# Fonte unica da ordem e agrupamento das abas. Sem dependencias externas (puro Qt::Core).
+peubud_add_test(test_nav_registry
+    ${CMAKE_SOURCE_DIR}/src/ui/NavRegistry.cpp)
