@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="pt-br" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PeuBud — Tipografia dos blocos de ajuda (Descrição + Instruções)</title>
+<style>
+  /* ───────────────────────── TOKENS (espelham src/ui/Theme.cpp) ─────────────────────────
+     Light + dark no mesmo arquivo. Dark é redesenho com hex próprios, não inversão. */
+  :root{
+    --bg:#EEF3F9; --surface:#FFFFFF; --border:#E4EAF2;
+    --text-1:#15233B; --text-2:#67768D;
+    --accent:#3B82F6; --positivo:#16C784; --dourado:#E8A93B; --navy:#1B2A41;
+    /* derivados do callout de ajuda (tints do accent) */
+    --help-bg:#EAF1FE;          /* fundo azul muito claro do bloco Descrição */
+    --help-border:#3B82F6;      /* faixa de acento à esquerda */
+    --instr-bg:#F4F8FE;         /* fundo das Instruções, ainda mais sutil */
+    --instr-num-bg:#E2ECFD;     /* "pílula" do número do passo */
+    --eyebrow:#1D4ED8;          /* eyebrow/rótulo: blue-700 p/ contraste AA sobre tint azul */
+    --num-fg:#1D4ED8;           /* número da pílula: idem (3B82F6 reprova AA aqui) */
+    --radius-card:14px; --radius-inner:9px;
+    --font:"Inter","Inter Display",system-ui,sans-serif;
+  }
+  [data-theme="dark"]{
+    --bg:#0F172A; --surface:#1B2430; --border:#2A3340;
+    --text-1:#EAF0F8; --text-2:#8A97A8;
+    --accent:#3B82F6; --positivo:#16C784; --dourado:#E8A93B; --navy:#1B2A41;
+    --help-bg:#16243D;          /* azul-escuro dessaturado, nao preto invertido */
+    --help-border:#5B9BFF;      /* acento mais claro pra brilhar no escuro */
+    --instr-bg:#141E2E;
+    --instr-num-bg:#21344F;
+    --eyebrow:#7FB0FF;          /* eyebrow clareado p/ contraste AA no escuro */
+    --num-fg:#5B9BFF;           /* número da pílula no dark (AA sobre num-bg) */
+  }
+
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:var(--bg); color:var(--text-1);
+    font-family:var(--font); line-height:1.5;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    padding:28px; display:flex; gap:28px; flex-wrap:wrap; align-items:flex-start;
+  }
+
+  /* Painel que simula uma aba dentro do TabShell */
+  .tab{
+    background:var(--bg); width:560px; border-radius:18px; padding:20px 22px 24px;
+    border:1px solid var(--border);
+  }
+  .tab__head{display:flex; align-items:center; gap:10px; margin:2px 0 4px}
+  .tab__title{font-size:19px; font-weight:700; letter-spacing:-.01em; margin:0}
+  .tab__title .ico{font-size:20px}
+  .tab__sep{height:1px; background:var(--border); border:0; margin:12px 0}
+
+  /* ════════════════════════ BLOCO 1 — DESCRIÇÃO (prosa acolhedora) ════════════════════════
+     Voz: "o que e isto". Leitura passiva. Callout com faixa de acento + fundo azul claro.
+     Corpo em tamanho confortavel (15px), peso regular, primeira oracao com leve enfase. */
+  .desc{
+    position:relative;
+    background:var(--help-bg);
+    border:1px solid color-mix(in srgb, var(--help-border) 22%, transparent);
+    border-left:3px solid var(--help-border);
+    border-radius:var(--radius-inner);
+    padding:13px 16px 14px 16px;
+  }
+  .block__bar{display:flex; align-items:center; justify-content:space-between; gap:8px}
+  .eyebrow{
+    font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--eyebrow); display:flex; align-items:center; gap:7px; margin:0;
+  }
+  .eyebrow .dot{width:5px; height:5px; border-radius:50%; background:currentColor; opacity:.7}
+  .toggle{
+    border:0; background:transparent; cursor:pointer; color:var(--text-2);
+    font-size:15px; line-height:1; padding:4px; border-radius:7px;
+  }
+  .toggle:hover{color:var(--accent); background:color-mix(in srgb,var(--accent) 12%,transparent)}
+  .desc__body{
+    margin:7px 0 0; font-size:15px; line-height:1.6; color:var(--text-1);
+    max-width:62ch;
+  }
+  .desc__body .lead{font-weight:600}            /* abre a frase com leve peso = "ancora" */
+  .desc__body .ico{font-size:16px; margin-right:2px}
+  .desc__body strong{font-weight:600; color:var(--text-1)}
+
+  /* ════════════════════════ BLOCO 2 — INSTRUÇÕES (escaneavel, "faca isto") ════════════════════════
+     Voz imperativa. Leitura ativa. Mesmos tokens (irmao), mas:
+     - passos numerados em PILULAS azuis (ancora visual de sequencia)
+     - corpo 14px (menor que a Descricao => hierarquia: ler primeiro o "o que", depois o "como")
+     - termos-chave em medium weight pra escanear (Atlassian: medium ao lado de icone/destaque) */
+  .instr{
+    margin-top:12px;
+    background:var(--instr-bg);
+    border:1px solid color-mix(in srgb, var(--help-border) 16%, transparent);
+    border-radius:var(--radius-inner);
+    padding:13px 16px 12px;
+  }
+  .instr .eyebrow{color:var(--eyebrow)}
+  ol.steps{list-style:none; counter-reset:step; margin:9px 0 2px; padding:0}
+  ol.steps li{
+    counter-increment:step; position:relative;
+    padding:5px 0 5px 34px; font-size:14px; line-height:1.5; color:var(--text-1);
+  }
+  ol.steps li::before{
+    content:counter(step);
+    position:absolute; left:0; top:4px;
+    width:22px; height:22px; border-radius:50%;
+    background:var(--instr-num-bg); color:var(--num-fg);
+    font-size:12px; font-weight:600; line-height:22px; text-align:center;
+  }
+  ol.steps li + li{border-top:1px dashed color-mix(in srgb,var(--border) 80%,transparent)}
+  ol.steps b, ol.steps strong{font-weight:600; color:var(--text-1)}
+  .kbd{
+    font-family:"Inter",monospace; font-size:12px; font-weight:600;
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:5px; padding:1px 6px; color:var(--text-2);
+  }
+  .quote{font-weight:600; color:var(--text-1)}  /* nomes de botao citados, ex.: "Novo item" */
+
+  /* conteudo principal abaixo (so pra dar contexto de hierarquia) */
+  .content-hint{
+    margin-top:16px; border:1px dashed var(--border); border-radius:var(--radius-card);
+    padding:22px; text-align:center; color:var(--text-2); font-size:13px;
+    background:var(--surface);
+  }
+
+  .label{
+    width:100%; font-size:12px; font-weight:600; letter-spacing:.06em;
+    text-transform:uppercase; color:var(--text-2); margin:0 0 -10px; text-align:center;
+  }
+  @media (prefers-reduced-motion: no-preference){
+    .tab{animation:rise .5s cubic-bezier(.22,.61,.36,1) both}
+    .tab:nth-of-type(2){animation-delay:.06s}
+    @keyframes rise{from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:none}}
+  }
+</style>
+</head>
+<body>
+
+  <p class="label">Light &nbsp;&middot;&nbsp; PeuBud, blocos de ajuda</p>
+
+  <!-- ════════════ TELA 1: CARTOES (conteudo REAL de TabHelp.cpp, citacao literal) ════════════ -->
+  <section class="tab">
+    <div class="tab__head"><span class="ico">💳</span><h1 class="tab__title">Cartões</h1></div>
+    <hr class="tab__sep">
+
+    <!-- DESCRICAO -->
+    <div class="desc">
+      <div class="block__bar">
+        <p class="eyebrow"><span class="dot"></span>O que é esta aba</p>
+        <button class="toggle" title="Recolher">🔼</button>
+      </div>
+      <p class="desc__body">
+        <span class="ico">💳</span><span class="lead">Aqui você registra as compras feitas no cartão de crédito</span>
+        &mdash; à vista ou parceladas. O app distribui as parcelas por mês e calcula os
+        <strong>juros</strong> e a <strong>tabela de amortização</strong>.
+      </p>
+    </div>
+
+    <!-- INSTRUCOES -->
+    <div class="instr">
+      <div class="block__bar">
+        <p class="eyebrow"><span class="dot"></span>Como usar, passo a passo</p>
+        <button class="toggle" title="Recolher">🔼</button>
+      </div>
+      <ol class="steps">
+        <li>Clique em <span class="quote">➕ Novo item</span> para adicionar uma compra.</li>
+        <li>Escolha o <b>cartão</b>, a <b>descrição</b>, o <b>valor total</b> e o <b>nº de parcelas</b>.</li>
+        <li>💰 Se houver <b>juros</b>, informe a taxa &mdash; o app calcula o <b>CET</b> e a <b>tabela de amortização</b> (Price).</li>
+        <li>📅 As parcelas aparecem <b>por mês</b> na tabela; navegue com as setas <b>no topo</b>.</li>
+        <li>Quer simular antes de comprar? Use a <b>calculadora 🧮</b> na barra superior do app.</li>
+      </ol>
+    </div>
+
+    <div class="content-hint">tabela de parcelas do mês (conteúdo principal da aba)</div>
+  </section>
+
+  <!-- ════════════ TELA 2: ENTRADAS (conteudo REAL de TabHelp.cpp, citacao literal) ════════════ -->
+  <section class="tab">
+    <div class="tab__head"><span class="ico">💵</span><h1 class="tab__title">Entradas</h1></div>
+    <hr class="tab__sep">
+
+    <div class="desc">
+      <div class="block__bar">
+        <p class="eyebrow"><span class="dot"></span>O que é esta aba</p>
+        <button class="toggle" title="Recolher">🔼</button>
+      </div>
+      <p class="desc__body">
+        <span class="ico">💵</span><span class="lead">Aqui você registra o dinheiro que recebe</span>
+        &mdash; salário, freela, aluguel e outras fontes. O app calcula o líquido descontando
+        <strong>IRPF</strong> (imposto de renda) e <strong>INSS</strong> (previdência), se você informar.
+      </p>
+    </div>
+
+    <div class="instr">
+      <div class="block__bar">
+        <p class="eyebrow"><span class="dot"></span>Como usar, passo a passo</p>
+        <button class="toggle" title="Recolher">🔼</button>
+      </div>
+      <ol class="steps">
+        <li>Clique em <span class="quote">➕ Novo lançamento</span>.</li>
+        <li>Escolha a <b>Fonte</b>, a <b>Categoria</b> e o <b>Valor bruto</b> em reais.</li>
+        <li>Em <span class="quote">Impostos retidos</span>, preencha IRPF e INSS &mdash; o líquido aparece automático.</li>
+        <li>Em <span class="quote">Recorrência</span>, escolha “Somente este mês” ou “Recorrente por X meses”.</li>
+        <li><span class="kbd">Ctrl</span>+<span class="kbd">←</span> / <span class="kbd">Ctrl</span>+<span class="kbd">→</span> navegam meses; <b>🔃 Organizar por ▾</b> ordena.</li>
+      </ol>
+    </div>
+
+    <div class="content-hint">tabela de entradas do mês (conteúdo principal da aba)</div>
+  </section>
+
+</body>
+</html>

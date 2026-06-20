@@ -47,6 +47,22 @@ namespace Color {
     extern const QString Sidebar1Dark;    // novo (#164)
     extern const QString Sidebar2Dark;    // novo (#164)
     extern const QString SidebarTextDark; // novo (#164)
+
+    // ── Tokens de ajuda (#166 tipografia dos blocos de ajuda) ────────────────
+    // Light
+    extern const QString HelpDescBgLight;   // fundo callout Descrição
+    extern const QString HelpDescBarLight;  // faixa de acento à esquerda (3px)
+    extern const QString HelpInstrBgLight;  // fundo callout Instruções (mais sutil)
+    extern const QString HelpNumBgLight;    // fundo da pílula do número do passo
+    extern const QString HelpNumFgLight;    // número dentro da pílula (blue-700 AA)
+    extern const QString HelpEyebrowLight;  // rótulo/eyebrow maiúsculo (blue-700 AA)
+    // Dark
+    extern const QString HelpDescBgDark;
+    extern const QString HelpDescBarDark;
+    extern const QString HelpInstrBgDark;
+    extern const QString HelpNumBgDark;
+    extern const QString HelpNumFgDark;
+    extern const QString HelpEyebrowDark;
 }
 
 // Convenience getters — return the correct token for the active scheme
@@ -80,5 +96,13 @@ QIcon   emojiIcon(const QString &emoji, int px = 16);
 // tokens de borda nunca recebam a cor negativa (e vice-versa). Não chamar
 // aplicar() antes — só setMode() é suficiente.
 QString qssParaTeste();
+
+// Getters de ajuda (#166) — retornam o token correto para o tema ativo.
+QString helpDescBg();    // fundo do callout Descrição
+QString helpDescBar();   // faixa de acento à esquerda
+QString helpInstrBg();   // fundo do callout Instruções
+QString helpNumBg();     // fundo da pílula numerada
+QString helpNumFg();     // cor do número na pílula (blue-700 no light, AA garantido)
+QString helpEyebrow();   // cor do eyebrow/rótulo (blue-700 no light, AA garantido)
 
 } // namespace Theme

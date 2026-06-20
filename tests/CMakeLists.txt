@@ -373,6 +373,24 @@ peubud_add_test(test_iconbtn_render
 set_tests_properties(test_iconbtn_render PROPERTIES
     ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 
+# Render offscreen dos callouts de ajuda (#166 tipografia dos blocos de ajuda).
+# Verifica tokens de ajuda no QSS, callouts com objectNames corretos, pílulas
+# numeradas e render em light+dark. Salva /tmp/tipo_impl_{light,dark}.png.
+peubud_add_test(test_ajuda_render
+    ${CMAKE_SOURCE_DIR}/src/ui/widgets/TabShell.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/TabHelp.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/Theme.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/settings/AppSettings.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp
+    # AppSettings::brapiToken usa SecretStoreService (libsecret).
+    ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp)
+target_link_libraries(test_ajuda_render PRIVATE ${LIBSECRET_LIBRARIES})
+target_include_directories(test_ajuda_render PRIVATE ${LIBSECRET_INCLUDE_DIRS})
+set_tests_properties(test_ajuda_render PROPERTIES
+    ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
 # Regressão #174: Enter no login dispara Entrar, nao Cancelar.
 # Verifica m_btnEntrar->isDefault()==true, m_btnCancelar->autoDefault()==false
 # e returnPressed no campo nome aceita o dialog quando form valido.

@@ -13,24 +13,31 @@ class QFrame;
 // De cima para baixo:
 //   [ Título ............................. (Barra de ações) ]
 //   ───────────────────────────────────────────────────────  (separador)
-//   Descrição (word-wrap, cinza) ....................... [▲/▼]  ← toggle direita
+//   ┌─ Callout Descrição (eyebrow + corpo) ────── [▲/▼] ─┐
+//   │ faixa de acento 3px │ "O QUE É ESTA ABA"           │
+//   │                     │ texto 15px / 1ª oração Medium  │
+//   └────────────────────────────────────────────────────-─┘
 //   ───────────────────────────────────────────────────────  (separador)
-//   Instruções (passo a passo) ......................... [▲/▼]  ← toggle direita
+//   ┌─ Callout Instruções (eyebrow + passos-pílula) ─ [▲/▼] ─┐
+//   │ "COMO USAR, PASSO A PASSO"                               │
+//   │ 1 passo (pílula azul + texto 14px / divisória tracejada)  │
+//   └──────────────────────────────────────────────────────────┘
 //   ───────────────────────────────────────────────────────  (separador)
 //   [ Conteúdo — a tabela/widget principal da aba ]
 //
-// Os dois blocos (Descrição e Instruções) colapsam de forma independente; o
-// toggle permanece visível mesmo recolhido. O estado é persistido por aba e
-// por bloco em AppSettings (chaves ui/tabhelp/<tabKey>/desc | instr).
+// Os dois callouts colapsam de forma independente; o toggle (no eyebrow)
+// permanece visível mesmo recolhido. Estado persistido por aba + bloco em
+// AppSettings (chaves ui/tabhelp/<tabKey>/desc | instr).
 //
-// Uso típico (texto vem do registro central TabHelp):
+// Uso típico:
 //   auto *shell = new TabShell(tr("Cartões"));
 //   shell->setTabKey("tab_cartoes");
 //   shell->setContent(parcelasWidget);
 //   shell->actionsLayout()->addWidget(btnNovo);
 //   shell->applyHelp();   // lê descrição+instruções de tabHelp()
 //
-// Estilo segue o Theme atual: usa os objectNames "title"/"subtitle" do QSS.
+// Estilo via QSS — objectNames: helpDescBox, helpInstrBox, helpEyebrow,
+// helpDescBody, helpInstrBody, helpPill, helpStepSep (#166).
 class TabShell final : public QWidget {
     Q_OBJECT
 public:
@@ -44,16 +51,16 @@ public:
     void setTabKey(const QString &tabKey);
     QString tabKey() const { return m_tabKey; }
 
-    // Descrição (texto corrido, rich-text permitido). Vazia = bloco oculto.
+    // Descrição (texto corrido, rich-text para ênfases inline). Vazia = bloco oculto.
     void setDescription(const QString &texto);
 
-    // Instruções passo a passo (rich-text; ex.: "<ol><li>…</li></ol>" ou texto
-    // com <br>). Vazia = bloco oculto.
-    void setInstructions(const QString &textoRich);
+    // Instruções passo a passo: lista de strings (cada item = 1 passo).
+    // Vazia = bloco oculto. Substitui a assinatura antiga de rich-text <ol>.
+    void setInstructions(const QStringList &passos);
 
     // Atalho DRY: preenche título + descrição + instruções a partir do
-    // registro central tabHelp() usando o tabKey atual. Formata os passos como
-    // lista ordenada <ol>. No-op se a key não existir no registro.
+    // registro central tabHelp() usando o tabKey atual.
+    // No-op se a key não existir no registro.
     void applyHelp();
 
     // Conteúdo principal (tabela/widget existente). Substitui o anterior.
@@ -66,22 +73,38 @@ public:
     void setActions(QWidget *actions);
 
 private:
-    // Cria um bloco colapsável (texto + toggle ▲/▼ alinhado à direita + um
-    // separador abaixo). bloco = "desc" | "instr" (sufixo da chave QSettings).
-    void montarBloco(const QString &bloco, QLabel *&outLabel, QToolButton *&outToggle,
-                     QFrame *&outSep, QVBoxLayout *root);
-    void aplicarColapso(QLabel *label, QToolButton *toggle, bool expandido);
+    // Monta o contêiner callout de um bloco (eyebrow + toggle + corpo colapsável).
+    // bloco = "desc" | "instr" (sufixo da chave QSettings).
+    // Retorna o QFrame callout (helpDescBox ou helpInstrBox).
+    QFrame *montarCallout(const QString &bloco,
+                          QLabel *&outEyebrow,
+                          QToolButton *&outToggle,
+                          QWidget *&outBody,
+                          QFrame *&outSep,
+                          QVBoxLayout *root);
+
+    void aplicarColapso(QWidget *body, QToolButton *toggle, bool expandido);
+
+    // Reconstrói o conteúdo do callout de Instruções com a lista de passos.
+    void reconstruirPassos(const QStringList &passos);
 
     QString      m_tabKey;
 
-    QLabel      *m_title        = nullptr;
+    QLabel      *m_title         = nullptr;
     QHBoxLayout *m_actionsLayout = nullptr;
 
-    QLabel      *m_description   = nullptr;
+    // ── Bloco Descrição ──────────────────────────────────────────────────────
+    QFrame      *m_descBox       = nullptr;
+    QLabel      *m_descEyebrow   = nullptr;
+    QLabel      *m_descBody      = nullptr; // QLabel rich-text (15px)
     QToolButton *m_descToggle    = nullptr;
     QFrame      *m_sepDesc       = nullptr;
 
-    QLabel      *m_instructions  = nullptr;
+    // ── Bloco Instruções ─────────────────────────────────────────────────────
+    QFrame      *m_instrBox      = nullptr;
+    QLabel      *m_instrEyebrow  = nullptr;
+    QWidget     *m_instrBody     = nullptr; // contêiner dos passos-pílula
+    QVBoxLayout *m_instrPassosLayout = nullptr;
     QToolButton *m_instrToggle   = nullptr;
     QFrame      *m_sepInstr      = nullptr;
 

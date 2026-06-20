@@ -46,6 +46,25 @@ namespace Color {
     const QString Sidebar1Dark    = QStringLiteral("#1B2A41");
     const QString Sidebar2Dark    = QStringLiteral("#16233A");
     const QString SidebarTextDark = QStringLiteral("#D6DEEA");
+
+    // ── Tokens de ajuda (#166 tipografia dos blocos de ajuda) ────────────────
+    // Derivados do accent #3B82F6 (tints azuis).
+    // No light, eyebrow e número usam blue-700 #1D4ED8 — o accent #3B82F6 reprova
+    // WCAG AA sobre o tint azul-claro (3.24:1 falha; #1D4ED8 = 5.91:1 PASS).
+    // Light
+    const QString HelpDescBgLight   = QStringLiteral("#EAF1FE");
+    const QString HelpDescBarLight  = QStringLiteral("#3B82F6");
+    const QString HelpInstrBgLight  = QStringLiteral("#F4F8FE");
+    const QString HelpNumBgLight    = QStringLiteral("#E2ECFD");
+    const QString HelpNumFgLight    = QStringLiteral("#1D4ED8"); // blue-700 (AA sobre tint)
+    const QString HelpEyebrowLight  = QStringLiteral("#1D4ED8"); // blue-700 (AA sobre tint)
+    // Dark
+    const QString HelpDescBgDark    = QStringLiteral("#16243D");
+    const QString HelpDescBarDark   = QStringLiteral("#5B9BFF");
+    const QString HelpInstrBgDark   = QStringLiteral("#141E2E");
+    const QString HelpNumBgDark     = QStringLiteral("#21344F");
+    const QString HelpNumFgDark     = QStringLiteral("#5B9BFF"); // AA sobre num-bg dark
+    const QString HelpEyebrowDark   = QStringLiteral("#7FB0FF"); // AA sobre desc-bg dark
 }
 
 // ── ThemeMode state ───────────────────────────────────────────────────────────
@@ -82,6 +101,14 @@ QString dourado()    { return isDark() ? Color::DouradoDark     : Color::Dourado
 QString sidebar1()   { return isDark() ? Color::Sidebar1Dark    : Color::Sidebar1Light;    }
 QString sidebar2()   { return isDark() ? Color::Sidebar2Dark    : Color::Sidebar2Light;    }
 QString sidebarText(){ return isDark() ? Color::SidebarTextDark : Color::SidebarTextLight; }
+
+// ── Getters de ajuda (#166) ───────────────────────────────────────────────────
+QString helpDescBg()  { return isDark() ? Color::HelpDescBgDark  : Color::HelpDescBgLight;  }
+QString helpDescBar() { return isDark() ? Color::HelpDescBarDark : Color::HelpDescBarLight; }
+QString helpInstrBg() { return isDark() ? Color::HelpInstrBgDark : Color::HelpInstrBgLight; }
+QString helpNumBg()   { return isDark() ? Color::HelpNumBgDark   : Color::HelpNumBgLight;   }
+QString helpNumFg()   { return isDark() ? Color::HelpNumFgDark   : Color::HelpNumFgLight;   }
+QString helpEyebrow() { return isDark() ? Color::HelpEyebrowDark : Color::HelpEyebrowLight; }
 
 // Âmbar "atenção" dark-mode-aware. Mesmos tons do antigo helper local do
 // Lembretes (fundo de linha "vence em breve"); reaproveitado como fill de barra
@@ -148,11 +175,21 @@ static QString gerarQss()
     const QString sb2  = sidebar2();
     const QString sbtx = sidebarText();
 
+    // Tokens de ajuda (#166): callouts da Descrição + Instruções
+    const QString helpDescBgTok  = dark ? Color::HelpDescBgDark  : Color::HelpDescBgLight;
+    const QString helpDescBarTok = dark ? Color::HelpDescBarDark : Color::HelpDescBarLight;
+    const QString helpInstrBgTok = dark ? Color::HelpInstrBgDark : Color::HelpInstrBgLight;
+    const QString helpNumBgTok   = dark ? Color::HelpNumBgDark   : Color::HelpNumBgLight;
+    const QString helpNumFgTok   = dark ? Color::HelpNumFgDark   : Color::HelpNumFgLight;
+    const QString helpEyebrowTok = dark ? Color::HelpEyebrowDark : Color::HelpEyebrowLight;
+
     // Tokens nomeados: eliminam o esquema posicional %N que causou 2 bugs
     // (hover e agora neg/brd trocados). Cada @@TOKEN@@ tem semântica inequívoca.
     // @@TXT@@ @@BG@@ @@SURF@@ @@ACC@@ @@SUB@@ @@NEG@@ @@BRD@@ @@ALT@@ @@HOV@@
     // @@ACC_HOVER@@ @@ACC_PRESSED@@
     // @@SIDEBAR1@@ @@SIDEBAR2@@ @@SIDEBARTXT@@ (sidebar, fixos independente de tema)
+    // @@HELP_DESC_BG@@ @@HELP_DESC_BAR@@ @@HELP_INSTR_BG@@
+    // @@HELP_NUM_BG@@ @@HELP_NUM_FG@@ @@HELP_EYEBROW@@
     // Raio de cards: 14px; inputs/botões: 9px (#164 Fase 1).
     QString qss = QStringLiteral(R"(
         /* ── Base ── */
@@ -349,6 +386,58 @@ static QString gerarQss()
         QLabel#title    { font-size: 16px; font-weight: 600; color: @@TXT@@; }
         QLabel#subtitle { font-size: 12px; color: @@SUB@@; }
         QLabel#error    { font-size: 12px; color: @@NEG@@; }
+
+        /* ── Callouts de ajuda — Descrição + Instruções (#166 tipografia) ─────
+           helpDescBox: callout azul com faixa de acento à esquerda (Descrição).
+           helpInstrBox: callout irmão, fundo mais sutil, sem faixa (Instruções).
+           helpEyebrow: rótulo/eyebrow maiúsculo (11px, 600, letter-spacing 0.08em).
+           helpDescBody: corpo da Descrição (15px / Regular / linha 1.6).
+           helpInstrBody: corpo de cada passo (14px / Regular / linha 1.5).
+           helpPill: pílula numerada (22x22, SemiBold 12px, circulo).
+        ── */
+        QFrame#helpDescBox {
+            background-color: @@HELP_DESC_BG@@;
+            border: 1px solid rgba(59, 130, 246, 0.22);
+            border-left: 3px solid @@HELP_DESC_BAR@@;
+            border-radius: 9px;
+        }
+        QFrame#helpInstrBox {
+            background-color: @@HELP_INSTR_BG@@;
+            border: 1px solid rgba(59, 130, 246, 0.16);
+            border-radius: 9px;
+        }
+        QLabel#helpEyebrow {
+            font-size: 11px;
+            font-weight: 600;
+            color: @@HELP_EYEBROW@@;
+            background-color: transparent;
+        }
+        QLabel#helpDescBody {
+            font-size: 15px;
+            color: @@TXT@@;
+            background-color: transparent;
+        }
+        QLabel#helpInstrBody {
+            font-size: 14px;
+            color: @@TXT@@;
+            background-color: transparent;
+        }
+        QLabel#helpPill {
+            font-size: 12px;
+            font-weight: 600;
+            color: @@HELP_NUM_FG@@;
+            background-color: @@HELP_NUM_BG@@;
+            border-radius: 11px;
+            min-width: 22px;
+            max-width: 22px;
+            min-height: 22px;
+            max-height: 22px;
+        }
+        QFrame#helpStepSep {
+            background-color: @@BRD@@;
+            max-height: 1px;
+            border: none;
+        }
         /* ── Status bar — ver seletor completo na secao sidebar (#165 fix) ── */
         /* ── Tabs ─────────────────────────────────────────────────────────────
            Inactive tabs use bg (recessed); selected tab uses surf (elevated).
@@ -550,6 +639,13 @@ static QString gerarQss()
     qss.replace(QStringLiteral("@@SIDEBAR1@@"),     sb1);
     qss.replace(QStringLiteral("@@SIDEBAR2@@"),     sb2);
     qss.replace(QStringLiteral("@@SIDEBARTXT@@"),   sbtx);
+    // Tokens de ajuda (#166): callouts Descrição + Instruções.
+    qss.replace(QStringLiteral("@@HELP_DESC_BG@@"),  helpDescBgTok);
+    qss.replace(QStringLiteral("@@HELP_DESC_BAR@@"), helpDescBarTok);
+    qss.replace(QStringLiteral("@@HELP_INSTR_BG@@"), helpInstrBgTok);
+    qss.replace(QStringLiteral("@@HELP_NUM_BG@@"),   helpNumBgTok);
+    qss.replace(QStringLiteral("@@HELP_NUM_FG@@"),   helpNumFgTok);
+    qss.replace(QStringLiteral("@@HELP_EYEBROW@@"),  helpEyebrowTok);
 
     return qss;
 }
