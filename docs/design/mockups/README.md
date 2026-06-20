@@ -2,6 +2,7 @@
 
 Mockups HTML de alta fidelidade da exploracao visual do redesign, abertos no Brave durante o brainstorm. Sao **referencia de design** (nao codigo de producao); as decisoes finais estao no spec.
 
+> **Manual de estilo (canonico):** [`../../manual_estilo.md`](../../manual_estilo.md). Consolida TODAS as decisoes de design (paleta, tipografia, formas, componentes, icones, estados, a11y, dark/light). E a referencia unica daqui pra frente; estes mockups sao a referencia VISUAL que o alimenta.
 > Spec: [`../../superpowers/specs/2026-06-19-redesign-ui-design.md`](../../superpowers/specs/2026-06-19-redesign-ui-design.md)
 > Plano: [`../../superpowers/plans/2026-06-19-redesign-ui.md`](../../superpowers/plans/2026-06-19-redesign-ui.md)
 
@@ -20,3 +21,4 @@ Abrir local: `xdg-open docs/design/mockups/<arquivo>.html` (precisa de internet 
 | `peubud_redesign_config.html` | **Configuracoes**: todas as secoes + aba **Assistente de IA** (Claude/GPT/Gemini/Grok/Ollama/OpenRouter/DeepSeek/Mistral/sem-IA). |
 | `peubud_botoes.html` | Comparacao de estilos de **botao** (bevel x shadow x misto) com feedback de clique. |
 | `peubud_currency_symbols.html` | Simbolos de **moeda** (Unicode): decisao foi que a Inter ja cobre, sem embutir fonte extra. |
+| `peubud_tipografia_ajuda_no_mdash.html` | **Tipografia dos blocos de ajuda** do TabShell (Descricao + Instrucoes), light+dark, conteudo real (Cartoes/Entradas). Spec: [`../typography-help-blocks.md`](../typography-help-blocks.md). Sufixo `no_mdash` = contem em-dash literal da microcopy canonica de `TabHelp.cpp`. |
