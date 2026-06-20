@@ -229,6 +229,9 @@ set(SOURCES
 
     # Wizards guiados pergunta-a-pergunta (#108)
     src/ui/widgets/WizardGuiadoDialog.cpp
+
+    # Sidebar de navegacao agrupada (#165 redesign Fase 2 Task 1)
+    src/ui/widgets/SidebarNav.cpp
 )
 
 set(RESOURCES

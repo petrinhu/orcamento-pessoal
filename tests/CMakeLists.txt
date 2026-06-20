@@ -290,3 +290,13 @@ target_link_libraries(test_gasto_service PRIVATE
     OpenSSL::Crypto
     ${LIBSODIUM_LIBRARIES})
 target_include_directories(test_gasto_service PRIVATE ${LIBSODIUM_INCLUDE_DIRS})
+
+# Teste do SidebarNav (#165 redesign fase 2 task 1).
+# Widget puro (QWidget + QPushButton): sem DB, sem cripto, sem network.
+# Precisa de display offscreen para construcao de QWidget + QPushButton.
+peubud_add_test(test_sidebar_nav
+    ${CMAKE_SOURCE_DIR}/src/ui/widgets/SidebarNav.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/Theme.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp)
+set_tests_properties(test_sidebar_nav PROPERTIES
+    ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
