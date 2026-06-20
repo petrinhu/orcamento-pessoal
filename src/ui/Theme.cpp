@@ -312,8 +312,7 @@ static QString gerarQss()
         QLabel#title    { font-size: 16px; font-weight: 600; color: @@TXT@@; }
         QLabel#subtitle { font-size: 12px; color: @@SUB@@; }
         QLabel#error    { font-size: 12px; color: @@NEG@@; }
-        /* ── Status bar ── */
-        QStatusBar { background-color: @@BG@@; color: @@SUB@@; border-top: 1px solid @@BRD@@; }
+        /* ── Status bar — ver seletor completo na secao sidebar (#165 fix) ── */
         /* ── Tabs ─────────────────────────────────────────────────────────────
            Inactive tabs use bg (recessed); selected tab uses surf (elevated).
            A 2px accent line on top of the selected tab gives clear affordance.
@@ -375,12 +374,21 @@ static QString gerarQss()
            deterministico). O QSS aqui NAO define background do widget raiz —
            isso evita o conflito com o Fusion style que sobrescreve o QSS de
            QWidget customizado quando ha stylesheet global ativo no Wayland.
-           Largura fixa 230px garante coluna lateral estavel sem encolher.
+           Largura 252px: calculada para caber "Planejamento/Orcamento" sem clip
+           (icone 16px + gap 4px + texto ~188px Inter 13px + 2x7px padding = ~222px
+           + margem de folga). Fix #165 bug 1 (clip horizontal).
            Separador: linha sutil entre zona de itens e footer.
         ── */
         QWidget#sidebarNav {
-            min-width: 230px;
-            max-width: 230px;
+            min-width: 252px;
+            max-width: 252px;
+        }
+        /* QScrollArea e viewport da zona de itens: transparentes para o navy do
+           paintEvent() do pai transparecer. Sem borda, sem scroll horizontal. */
+        QScrollArea#sidebarScrollArea,
+        QScrollArea#sidebarScrollArea > QWidget > QWidget {
+            background-color: transparent;
+            border: none;
         }
         /* Filhos diretos e descendentes nomeados: background transparent para
            o navy do paintEvent() do pai transparecer. Os objectNames foram
@@ -392,6 +400,22 @@ static QString gerarQss()
         QWidget#sidebarUsuario {
             background-color: transparent;
         }
+        /* Scrollbar vertical da sidebar: fina e discreta sobre o navy */
+        QScrollArea#sidebarScrollArea QScrollBar:vertical {
+            background: transparent;
+            width: 4px;
+            margin: 0;
+        }
+        QScrollArea#sidebarScrollArea QScrollBar::handle:vertical {
+            background: rgba(255,255,255,0.15);
+            border-radius: 2px;
+            min-height: 20px;
+        }
+        QScrollArea#sidebarScrollArea QScrollBar::handle:vertical:hover {
+            background: rgba(255,255,255,0.30);
+        }
+        QScrollArea#sidebarScrollArea QScrollBar::add-line:vertical,
+        QScrollArea#sidebarScrollArea QScrollBar::sub-line:vertical { height: 0; }
         QFrame#sidebarSep {
             background: rgba(255,255,255,0.08);
             max-height: 1px;
@@ -406,13 +430,15 @@ static QString gerarQss()
             padding: 12px 10px 4px;
             background: transparent;
         }
-        /* Itens de navegacao: fundo transparente por padrao */
+        /* Itens de navegacao: fundo transparente por padrao.
+           padding horizontal reduzido de 11px para 7px (#165 fix clip horizontal):
+           economiza 8px totais sem comprometer o affordance de clique. */
         QWidget#sidebarNav QPushButton#navItem {
             color: @@SIDEBARTXT@@;
             background: transparent;
             border: none;
             text-align: left;
-            padding: 9px 11px;
+            padding: 9px 7px;
             border-radius: 9px;
             font-weight: 500;
             font-size: 13px;
@@ -439,6 +465,22 @@ static QString gerarQss()
             color: @@SIDEBARTXT@@;
             font-size: 13px;
             font-weight: 500;
+            background: transparent;
+        }
+        /* ── Status bar integrada ao tema (#165 fix bug 2 — faixa clara) ───────
+           QStatusBar fica full-width ABAIXO do centralWidget (sidebar+stack).
+           Com background @@BG@@ (claro) ela criava faixa clara sob o navy da
+           sidebar. Correcao: fundo @@SURF@@/escuro coerente com o tema; texto
+           em @@SUB@@ (discreto); borda top sutil. Nao remove nem esconde a
+           statusbar — apenas harmoniza visualmente. */
+        QStatusBar {
+            background-color: @@SURF@@;
+            color: @@SUB@@;
+            border-top: 1px solid @@BRD@@;
+            font-size: 12px;
+        }
+        QStatusBar QLabel {
+            color: @@SUB@@;
             background: transparent;
         }
     )");

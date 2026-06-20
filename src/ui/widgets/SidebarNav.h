@@ -8,6 +8,7 @@
 
 class QLabel;
 class QPushButton;
+class QScrollArea;
 class QVBoxLayout;
 
 // SidebarNav — barra lateral de navegacao agrupada (#165, redesign Fase 2 Task 1).
@@ -16,9 +17,8 @@ class QVBoxLayout;
 // (grupos), emite chave estavel ao clicar e mantem o estado de item ativo.
 //
 // Layout (de cima para baixo):
-//   [itens + grupos na ordem de insercao]
-//   <addStretch>
-//   [footer items]
+//   QScrollArea (zona de itens + grupos — rola quando janela e pequena)
+//   [footer items fixos]
 //   [avatar inicial + nome do usuario]
 //
 // QSS hooks:
@@ -74,8 +74,8 @@ private:
                        const QString &titulo, QVBoxLayout *layout,
                        int indice = -1);
 
-    QVBoxLayout *m_mainLayout   = nullptr; // layout de itens + grupos
-    QVBoxLayout *m_footerLayout = nullptr; // layout de footer items + usuario
+    QVBoxLayout *m_mainLayout   = nullptr; // layout de itens + grupos (dentro do scroll)
+    QVBoxLayout *m_footerLayout = nullptr; // layout de footer items + usuario (fixo)
 
     QMap<QString, QPushButton *> m_itens; // chave -> botao (todos: normais + footer)
 

@@ -9,6 +9,8 @@
 #include <QPalette>
 #include <QPainter>
 #include <QPushButton>
+#include <QScrollArea>
+#include <QScrollBar>
 #include <QStyle>
 #include <QVBoxLayout>
 
@@ -39,29 +41,51 @@ SidebarNav::SidebarNav(QWidget *parent)
     setAttribute(Qt::WA_StyledBackground, false);
     setAutoFillBackground(false);
 
-    // Layout raiz — empilha itens (top), stretch e footer (bottom).
+    // Layout raiz — scroll de itens (top, expande) + footer fixo (bottom).
     auto *rootLayout = new QVBoxLayout(this);
     rootLayout->setContentsMargins(8, 12, 8, 8);
     rootLayout->setSpacing(2);
 
-    // Zona de itens: grupos + navItems na ordem de insercao.
-    // objectName "sidebarMainArea" expoe o widget ao seletor QSS de transparencia
-    // (#165 fix: QWidget#sidebarNav > QWidget nao alcanca sem objectName em alguns
-    // versions do Qt Fusion). Alternativa mais robusta: setAttribute direto.
-    auto *mainWidget = new QWidget(this);
+    // ── Zona de itens: dentro de QScrollArea para rolar quando janela for baixa.
+    //
+    // Transparencia em cascata: SidebarNav.paintEvent pinta o navy; a QScrollArea
+    // e o viewport sao transparentes (WA_NoSystemBackground + autoFillBackground=false);
+    // o mainWidget tambem transparente. Assim o navy do paintEvent transpassa ate
+    // o conteudo sem ser sobrescrito pelo QSS global (background-color: @@BG@@).
+    //
+    // Scroll horizontal desligado (sidebar tem largura fixa); vertical as-needed.
+    // setWidgetResizable(true) garante que o mainWidget receba o width disponivel
+    // (sem isso o sizeHint do widget interno define a largura e pode ficar menor
+    // que a sidebar, criando scrollbar horizontal indesejado).
+    auto *scrollArea = new QScrollArea(this);
+    scrollArea->setObjectName(QStringLiteral("sidebarScrollArea"));
+    scrollArea->setFrameShape(QFrame::NoFrame);
+    scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    scrollArea->setWidgetResizable(true);
+    // Transparencia da QScrollArea
+    scrollArea->setAttribute(Qt::WA_NoSystemBackground, true);
+    scrollArea->setAutoFillBackground(false);
+    // Viewport transparente (Qt cria o viewport internamente)
+    scrollArea->viewport()->setAttribute(Qt::WA_NoSystemBackground, true);
+    scrollArea->viewport()->setAutoFillBackground(false);
+
+    auto *mainWidget = new QWidget(scrollArea);
     mainWidget->setObjectName(QStringLiteral("sidebarMainArea"));
-    // Transparente: o paintEvent do pai (SidebarNav) ja pinta o navy.
-    // Sem setAutoFillBackground(true) e sem WA_StyledBackground: o widget
-    // nao solicita pintura propria e o fundo do pai transpassa.
     mainWidget->setAttribute(Qt::WA_NoSystemBackground, true);
     mainWidget->setAutoFillBackground(false);
     m_mainLayout = new QVBoxLayout(mainWidget);
     m_mainLayout->setContentsMargins(0, 0, 0, 0);
     m_mainLayout->setSpacing(2);
-    rootLayout->addWidget(mainWidget);
+    // Stretch final: mantido permanentemente como ultimo item no m_mainLayout.
+    // addItem() usa insertWidget(count()-1) para inserir antes deste stretch,
+    // garantindo que os botoes ficam no topo e o espaco vazio expande embaixo.
+    // Isso tambem faz o mainWidget nao ser esticado verticalmente pelo QScrollArea
+    // quando o conteudo e menor que a viewport.
+    m_mainLayout->addStretch(1);
 
-    // Espaco flexivel empurra o footer para baixo.
-    rootLayout->addStretch();
+    scrollArea->setWidget(mainWidget);
+    rootLayout->addWidget(scrollArea, 1); // stretch=1: ocupa todo o espaco disponivel
 
     // Separador visual antes do rodape.
     rootLayout->addWidget(criarSeparador(this));
@@ -132,7 +156,9 @@ void SidebarNav::addGrupo(const QString &titulo)
     label->setObjectName(QStringLiteral("grupo"));
     // Margem superior separa o grupo do item anterior.
     label->setContentsMargins(6, 10, 6, 2);
-    m_mainLayout->addWidget(label);
+    // Insere antes do stretch final (count()-1) para manter o stretch como
+    // ultimo item — isso garante que os grupos ficam empilhados no topo.
+    m_mainLayout->insertWidget(m_mainLayout->count() - 1, label);
 }
 
 void SidebarNav::addItem(const QString &chave, const QString &emoji,
@@ -196,11 +222,17 @@ void SidebarNav::registrarItem(const QString &chave, const QString &emoji,
 
     m_itens.insert(chave, btn);
 
-    // indice == -1: append ao final; caso contrario: insere na posicao especificada.
-    if (indice < 0)
-        layout->addWidget(btn);
-    else
+    if (indice >= 0) {
+        // Posicao explicita: usada pelo addFooterItem para inserir antes do usuarioWidget.
         layout->insertWidget(indice, btn);
+    } else if (layout == m_mainLayout) {
+        // Zona de itens: inserir antes do stretch final (count()-1).
+        // O stretch permanece sempre o ultimo item; os botoes empilham acima dele.
+        layout->insertWidget(layout->count() - 1, btn);
+    } else {
+        // Footer layout ou outro: append simples (sem stretch a preservar).
+        layout->addWidget(btn);
+    }
 
     const QString chaveCapturada = chave;
     connect(btn, &QPushButton::clicked, this, [this, chaveCapturada]() {

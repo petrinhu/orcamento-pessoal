@@ -316,3 +316,13 @@ peubud_add_test(test_sidebar_render
     ${CMAKE_SOURCE_DIR}/src/ui/NavRegistry.cpp)
 set_tests_properties(test_sidebar_render PROPERTIES
     ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
+# Reproducao offscreen dos bugs #165: clip horizontal + scroll vertical + statusbar.
+# Salva /tmp/repro_full.png (1100x690) e /tmp/repro_short.png (1100x470).
+peubud_add_test(test_sidebar_repro
+    ${CMAKE_SOURCE_DIR}/src/ui/widgets/SidebarNav.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/Theme.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/NavRegistry.cpp)
+set_tests_properties(test_sidebar_repro PROPERTIES
+    ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
