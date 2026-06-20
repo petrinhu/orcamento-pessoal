@@ -2,6 +2,7 @@
 
 #include "Theme.h"
 #include <QMainWindow>
+#include <QMap>
 
 class DashboardWidget;
 class TendenciasWidget;
@@ -16,7 +17,8 @@ class MetasWidget;
 class LembretesWidget;
 class BuscaGlobalDialog;
 class PrefsWidget;
-class QTabWidget;
+class QStackedWidget;
+class SidebarNav;
 class QLabel;
 class QToolButton;
 class QAction;
@@ -63,11 +65,8 @@ private:
     void onBuscaGlobal();
     void onBloquear();
 
-    // Tab order persistence (drag & drop)
-    void aplicarOrdemAbasSalva();
-    void salvarOrdemAbas();
-    void resetarOrdemAbas();              // restaura ordem default (botao ↺)
-    QStringList ordemAbasDefault() const; // chaves na ordem default do codigo
+    // Navegação por chave estável (#165)
+    void navegarParaChave(const QString &chave);
 
     // Atalhos globais de teclado (#80)
     void setupShortcuts();
@@ -75,9 +74,9 @@ private:
     // Recebe dados TVM do CalculadoraHub e abre AddCompraDialog na aba Cartões.
     void onTvmParaCartoes(double pv, int n, double iMensal, double pmt);
 
-    // Cada aba é um widget de conteúdo (m_<x>) envolvido por um TabShell
-    // (m_shell<X>). O shell é o widget efetivamente inserido na aba e carrega
-    // o objectName de persistência de ordem (tab_<x>); o widget de conteúdo
+    // Cada página é um widget de conteúdo (m_<x>) envolvido por um TabShell
+    // (m_shell<X>). O shell é o widget efetivamente inserido no stack e carrega
+    // o objectName de persistência (tab_<x>); o widget de conteúdo
     // segue intacto (lógica e conexões inalteradas).
     DashboardWidget      *m_dashboard      = nullptr;
     class TabShell       *m_shellDashboard = nullptr;
@@ -107,7 +106,9 @@ private:
     LembretesWidget      *m_lembretes      = nullptr;
     class TabShell       *m_shellLembretes = nullptr;
     BuscaGlobalDialog    *m_buscaGlobal    = nullptr;
-    QTabWidget     *m_tabs       = nullptr;
+    QStackedWidget *m_stack      = nullptr;
+    SidebarNav     *m_sidebar    = nullptr;
+    QMap<QString, QWidget *> m_paginas;
     QLabel         *m_statusUser  = nullptr;
     QLabel         *m_statusTotal = nullptr;
 
