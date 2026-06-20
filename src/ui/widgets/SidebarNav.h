@@ -1,6 +1,8 @@
 #pragma once
 
 #include <QMap>
+#include <QPainter>
+#include <QPaintEvent>
 #include <QString>
 #include <QWidget>
 
@@ -23,6 +25,11 @@ class QVBoxLayout;
 //   QPushButton objectName="navItem"         -- item navegavel
 //   QPushButton property "ativo"=true/false  -- item ativo (pill colorido, task futura)
 //   QLabel      objectName="grupo"           -- rotulo de grupo (nao clicavel)
+//
+// Fix #165 (paintEvent): o fundo navy e pintado via QPainter no paintEvent,
+// contornando a instabilidade de QSS background em QWidget customizado sob
+// Fusion/Wayland com stylesheet global ativo. QPainter e deterministico e
+// independe de WA_StyledBackground, QPalette::Window ou propagacao de QSS.
 class SidebarNav : public QWidget {
     Q_OBJECT
 public:
@@ -55,6 +62,11 @@ public:
 
 signals:
     void navegou(const QString &chave);
+
+protected:
+    // Pinta o fundo navy via QPainter (deterministico, independe de QSS/palette/Wayland).
+    // Contorna a instabilidade de QWidget custom background sob Fusion + stylesheet global.
+    void paintEvent(QPaintEvent *event) override;
 
 private:
     // indice == -1 (default): addWidget; >= 0: insertWidget na posicao dada.

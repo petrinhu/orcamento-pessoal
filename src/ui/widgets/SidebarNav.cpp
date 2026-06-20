@@ -5,7 +5,9 @@
 #include <QFrame>
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QLinearGradient>
 #include <QPalette>
+#include <QPainter>
 #include <QPushButton>
 #include <QStyle>
 #include <QVBoxLayout>
@@ -28,19 +30,14 @@ SidebarNav::SidebarNav(QWidget *parent)
 {
     // objectName necessario para o seletor QWidget#sidebarNav no QSS (#165).
     setObjectName(QStringLiteral("sidebarNav"));
-    // Habilita autoFillBackground para que o Fusion style aplique o
-    // background-color/gradiente do QSS neste widget (sem isso, QWidget
-    // nao pinta o proprio fundo com background-color definido via QSS).
-    setAutoFillBackground(true);
 
-    // Piso de seguranca: cor navy solida via QPalette (#165 contraste fix).
-    // Garante fundo escuro mesmo se o gradiente QSS nao propagar (ex.: Fusion
-    // em alguns contextos de layout nao re-pinta QWidget filhos com background
-    // do ancestral via QSS). O QPalette::Window e aplicado ANTES do QSS;
-    // o gradiente fica por cima quando funciona — este e o fallback.
-    QPalette pal = palette();
-    pal.setColor(QPalette::Window, QColor(Theme::sidebar1()));
-    setPalette(pal);
+    // O fundo navy e pintado pelo paintEvent (deterministico, independe de
+    // QSS/palette/Wayland). Nao usar autoFillBackground=true aqui: com QSS global
+    // ativo (Fusion style), o QStyle::polish sobrescreve QPalette::Window com
+    // a cor @@BG@@ do tema, anulando o navy. O paintEvent e a unica fonte
+    // confiavel do fundo neste contexto.
+    setAttribute(Qt::WA_StyledBackground, false);
+    setAutoFillBackground(false);
 
     // Layout raiz — empilha itens (top), stretch e footer (bottom).
     auto *rootLayout = new QVBoxLayout(this);
@@ -48,8 +45,15 @@ SidebarNav::SidebarNav(QWidget *parent)
     rootLayout->setSpacing(2);
 
     // Zona de itens: grupos + navItems na ordem de insercao.
+    // objectName "sidebarMainArea" expoe o widget ao seletor QSS de transparencia
+    // (#165 fix: QWidget#sidebarNav > QWidget nao alcanca sem objectName em alguns
+    // versions do Qt Fusion). Alternativa mais robusta: setAttribute direto.
     auto *mainWidget = new QWidget(this);
-    // Transparente: nao pintar fundo claro por cima do navy do widget raiz.
+    mainWidget->setObjectName(QStringLiteral("sidebarMainArea"));
+    // Transparente: o paintEvent do pai (SidebarNav) ja pinta o navy.
+    // Sem setAutoFillBackground(true) e sem WA_StyledBackground: o widget
+    // nao solicita pintura propria e o fundo do pai transpassa.
+    mainWidget->setAttribute(Qt::WA_NoSystemBackground, true);
     mainWidget->setAutoFillBackground(false);
     m_mainLayout = new QVBoxLayout(mainWidget);
     m_mainLayout->setContentsMargins(0, 0, 0, 0);
@@ -64,7 +68,8 @@ SidebarNav::SidebarNav(QWidget *parent)
 
     // Zona de footer: footerItems + bloco de usuario.
     auto *footerWidget = new QWidget(this);
-    // Transparente: nao pintar fundo claro por cima do navy do widget raiz.
+    footerWidget->setObjectName(QStringLiteral("sidebarFooterArea"));
+    footerWidget->setAttribute(Qt::WA_NoSystemBackground, true);
     footerWidget->setAutoFillBackground(false);
     m_footerLayout = new QVBoxLayout(footerWidget);
     m_footerLayout->setContentsMargins(0, 4, 0, 0);
@@ -74,7 +79,7 @@ SidebarNav::SidebarNav(QWidget *parent)
     // Bloco de usuario (avatar inicial + nome) — fica sempre no fim do footer.
     auto *usuarioWidget = new QWidget(this);
     usuarioWidget->setObjectName(QStringLiteral("sidebarUsuario"));
-    // Transparente: nao pintar fundo claro por cima do navy do widget raiz.
+    usuarioWidget->setAttribute(Qt::WA_NoSystemBackground, true);
     usuarioWidget->setAutoFillBackground(false);
     auto *usuarioLayout = new QHBoxLayout(usuarioWidget);
     usuarioLayout->setContentsMargins(4, 4, 4, 4);
@@ -94,6 +99,29 @@ SidebarNav::SidebarNav(QWidget *parent)
     usuarioLayout->addWidget(m_nomeLabel, 1);
 
     m_footerLayout->addWidget(usuarioWidget);
+}
+
+// ── paintEvent ───────────────────────────────────────────────────────────────
+//
+// Pinta o gradiente navy diretamente com QPainter. Esta abordagem e
+// deterministica e funciona sob qualquer plataforma/compositor/style:
+//   - QSS background em QWidget customizado e instavel no Fusion/Wayland
+//     quando ha stylesheet global ativo (o style re-pinta sobre o QSS).
+//   - QPalette::Window tambem falha quando o QStyle::polish sobrescreve
+//     a palette com os tokens do tema (@@BG@@).
+//   - paintEvent contorna ambos: e chamado pelo framework APOS o style
+//     terminar, e o resultado e o pixel final na tela.
+//
+// Filhos com WA_NoSystemBackground + autoFillBackground=false nao solicitam
+// pintura propria, entao o navy aqui pintado transparece ate eles.
+
+void SidebarNav::paintEvent(QPaintEvent *)
+{
+    QPainter p(this);
+    QLinearGradient g(0, 0, 0, height());
+    g.setColorAt(0.0, QColor(Theme::sidebar1()));
+    g.setColorAt(1.0, QColor(Theme::sidebar2()));
+    p.fillRect(rect(), g);
 }
 
 // ── API publica ───────────────────────────────────────────────────────────────

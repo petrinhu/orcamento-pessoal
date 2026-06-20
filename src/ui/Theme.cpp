@@ -370,20 +370,26 @@ static QString gerarQss()
         /* ── Dialog button boxes ── */
         QDialogButtonBox QPushButton { min-width: 80px; }
 
-        /* ── Sidebar navy (#165 redesign Fase 2 Task 6) ─────────────────────
-           Gradiente navy do topo (@@SIDEBAR1@@) ao fundo (@@SIDEBAR2@@).
+        /* ── Sidebar navy (#165 redesign Fase 2 Task 6 + fix paintEvent) ──────
+           O gradiente navy e pintado pelo paintEvent() do SidebarNav (QPainter
+           deterministico). O QSS aqui NAO define background do widget raiz —
+           isso evita o conflito com o Fusion style que sobrescreve o QSS de
+           QWidget customizado quando ha stylesheet global ativo no Wayland.
            Largura fixa 230px garante coluna lateral estavel sem encolher.
            Separador: linha sutil entre zona de itens e footer.
         ── */
         QWidget#sidebarNav {
-            background-color: qlineargradient(x1:0,y1:0,x2:0,y2:1,
-                stop:0 @@SIDEBAR1@@, stop:1 @@SIDEBAR2@@);
             min-width: 230px;
             max-width: 230px;
         }
-        /* Filhos e descendentes da sidebar: fundo transparente para gradiente aparecer */
-        QWidget#sidebarNav > QWidget,
-        QWidget#sidebarNav QWidget#sidebarUsuario {
+        /* Filhos diretos e descendentes nomeados: background transparent para
+           o navy do paintEvent() do pai transparecer. Os objectNames foram
+           adicionados no construtor (#165 fix) para garantir que os seletores
+           aqui os alcancam — seletor > QWidget sem nome nao funciona de forma
+           confiavel em todas as versoes do Fusion. */
+        QWidget#sidebarMainArea,
+        QWidget#sidebarFooterArea,
+        QWidget#sidebarUsuario {
             background-color: transparent;
         }
         QFrame#sidebarSep {

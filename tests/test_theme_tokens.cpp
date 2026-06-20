@@ -249,25 +249,35 @@ void TestThemeTokens::accPressed_tomEscuroCoerente()
 
 // ── Tokens de sidebar no QSS (#165) ──────────────────────────────────────────
 
-// Verifica que @@SIDEBAR1@@ foi substituido (nao aparece como literal no QSS)
-// e que o valor real (#1B2A41) esta no bloco do seletor #sidebarNav.
+// Verifica que os tokens de sidebar foram substituidos corretamente no QSS e
+// que o seletor raiz existe. NOTA (fix #165 paintEvent): o gradiente navy
+// (@@SIDEBAR1@@/@@SIDEBAR2@@) foi movido para SidebarNav::paintEvent(), que e
+// deterministico e independe de QSS/Wayland. O QSS nao contem mais o gradiente
+// — contem apenas dimensoes, transparencias dos filhos e texto dos itens.
+// Os tokens @@SIDEBAR1@@/@@SIDEBAR2@@ ainda sao substituidos em gerarQss()
+// (chamada correta), mas o valor resultante nao precisa estar no QSS final.
 void TestThemeTokens::sidebarNavBackground_contemSidebar1()
 {
     const QString qss = Theme::qssParaTeste();
 
-    // Token literal nao pode aparecer apos substituicao.
+    // Token literal nao pode aparecer apos substituicao de tokens.
+    // (gerarQss() substitui todos os @@TOKEN@@ — verificar que nenhum sobrou)
     QVERIFY2(!qss.contains(QStringLiteral("@@SIDEBAR1@@")),
              "Token @@SIDEBAR1@@ nao foi substituido no QSS");
     QVERIFY2(!qss.contains(QStringLiteral("@@SIDEBAR2@@")),
              "Token @@SIDEBAR2@@ nao foi substituido no QSS");
+    QVERIFY2(!qss.contains(QStringLiteral("@@SIDEBARTXT@@")),
+             "Token @@SIDEBARTXT@@ nao foi substituido no QSS");
 
-    // O seletor do widget raiz deve existir.
+    // O seletor do widget raiz deve existir (define min/max-width da coluna).
     QVERIFY2(qss.contains(QStringLiteral("QWidget#sidebarNav")),
              "Seletor QWidget#sidebarNav ausente no QSS");
 
-    // O valor do Sidebar1Light (#1B2A41) deve estar no QSS (usado no gradiente).
-    QVERIFY2(qss.contains(Theme::sidebar1()),
-             "Cor sidebar1 ausente no QSS apos substituicao de @@SIDEBAR1@@");
+    // O sidebarText (cor dos itens/nome) deve estar no QSS — e o unico token
+    // de sidebar que aparece no QSS apos o fix paintEvent. O gradiente navy
+    // agora vive no SidebarNav::paintEvent(), nao no QSS.
+    QVERIFY2(qss.contains(Theme::sidebarText()),
+             "Cor sidebarText ausente no QSS — token @@SIDEBARTXT@@ nao foi expandido");
 }
 
 // O bloco do item ativo [ativo="true"] deve conter o accent (#3B82F6).
