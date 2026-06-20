@@ -594,8 +594,10 @@ void ParcelasWidget::onOrganizarPor()
     auto *cb2 = makeCombo(); form->addRow(tr("Segundo por"),  cb2);
     auto *cb3 = makeCombo(); form->addRow(tr("Terceiro por"), cb3);
 
+    // Margem interna garante folga para a sombra dos botões (#176).
     auto *btns = new QDialogButtonBox(
         QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dlg);
+    btns->setContentsMargins(0, 6, 10, 10);
     form->addRow(btns);
     connect(btns, &QDialogButtonBox::accepted, &dlg, &QDialog::accept);
     connect(btns, &QDialogButtonBox::rejected, &dlg, &QDialog::reject);
@@ -666,8 +668,10 @@ void ParcelasWidget::onCellChanged(int row, int col)
     vl->addWidget(rJuros);
     layout->addWidget(grp);
 
+    // Margem interna garante folga para a sombra dos botões (#176).
     auto *btns = new QDialogButtonBox(
         QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dlg);
+    btns->setContentsMargins(0, 6, 10, 10);
     layout->addWidget(btns);
     connect(btns, &QDialogButtonBox::accepted, &dlg, &QDialog::accept);
     connect(btns, &QDialogButtonBox::rejected, &dlg, &QDialog::reject);

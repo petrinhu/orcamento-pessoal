@@ -280,6 +280,10 @@ void MainWindow::buildUi()
     // ── Status bar ─────────────────────────────────────────────────────────
     // m_statusUser removido (#165): redundante com o rodapé da sidebar que
     // já exibe o nome do usuário logado.
+    // QSizeGrip desabilitado (#176): o handle nativo não herda o QSS navy e
+    // aparece como quadrado branco no canto inferior-direito ao redimensionar.
+    // A janela continua redimensionável pelas bordas — apenas o grip visual some.
+    statusBar()->setSizeGripEnabled(false);
     m_statusTotal = new QLabel(this);
     m_statusTotal->setObjectName(QStringLiteral("subtitle"));
     statusBar()->addPermanentWidget(m_statusTotal);
@@ -1241,14 +1245,26 @@ void MainWindow::onConfiguracoes()
     // (acima), o dialog também minimiza junto com a MainWindow (#177).
     dlg.setWindowModality(Qt::ApplicationModal);
     auto *lay   = new QVBoxLayout(&dlg);
-    // Margem inferior dá folga para a sombra do botão "✕ Fechar" não clipar
-    // na borda do diálogo (#176): blur=8 + offset=1 → ~9px; 16px = folga segura.
-    lay->setContentsMargins(12, 12, 12, 16);
+    // Margem padrão: left/top/right = 12, bottom = 12.
+    // O btnRow abaixo tem contentsMargins próprias que garantem folga para
+    // a sombra do botão Fechar (#176): ButtonShadowFilter usa blur=8, offsetY=1
+    // → extensão ~5px; 10px na direita e 10px abaixo dão folga segura sem
+    // depender do clip do QDialogButtonBox (parent imediato do botão).
+    lay->setContentsMargins(12, 12, 12, 12);
     auto *prefs = new PrefsWidget(&dlg);
     lay->addWidget(prefs);
-    auto *btns = new QDialogButtonBox(QDialogButtonBox::Close, &dlg);
-    lay->addWidget(btns);
-    connect(btns,  &QDialogButtonBox::rejected,    &dlg,       &QDialog::accept);
+
+    // Linha manual de botão: btnFechar é filho direto de &dlg, não do row.
+    // O layout do dlg (margem 12px) + btnRow (margem bottom/right 10px) somam
+    // folga suficiente para que a sombra (~5px) não estoure a borda do diálogo.
+    auto *btnRow = new QHBoxLayout;
+    btnRow->setContentsMargins(0, 6, 10, 10);
+    btnRow->addStretch();
+    auto *btnFechar = new QPushButton(tr("Fechar"), &dlg);
+    btnFechar->setIcon(Theme::emojiIcon(QStringLiteral("❌"), 14));
+    connect(btnFechar, &QPushButton::clicked, &dlg, &QDialog::accept);
+    btnRow->addWidget(btnFechar);
+    lay->addLayout(btnRow);
     connect(prefs, &PrefsWidget::cartoesAlterados, m_parcelas, &ParcelasWidget::recarregar);
     connect(prefs, &PrefsWidget::moedaAlterada,    m_parcelas, &ParcelasWidget::recarregar);
     connect(prefs, &PrefsWidget::moedaAlterada,    m_entradas, &EntradasWidget::recarregar);

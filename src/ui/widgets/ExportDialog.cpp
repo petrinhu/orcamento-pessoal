@@ -83,8 +83,10 @@ void ExportDialog::buildUi(const QStringList &sections, const QString &initialFo
     vbox->addWidget(lblNote);
 
     // ── OK / Cancelar ─────────────────────────────────────────────────────────
+    // Margem interna garante folga para a sombra dos botões (#176).
     auto *bbox = new QDialogButtonBox(
         QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
+    bbox->setContentsMargins(0, 6, 10, 10);
     vbox->addWidget(bbox);
 
     connect(btnAll,  &QPushButton::clicked, this, [this]() {

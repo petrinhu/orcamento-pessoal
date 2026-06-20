@@ -89,8 +89,10 @@ void CategoriaDialog::build(const QString &tipo, const QList<Categoria> &pais)
         atualizarVisibilidadeDespesa();
     });
 
+    // Margem interna garante folga para a sombra dos botões (#176).
     auto *btns = new QDialogButtonBox(
         QDialogButtonBox::Save | QDialogButtonBox::Cancel, this);
+    btns->setContentsMargins(0, 6, 10, 10);
     lay->addWidget(btns);
 
     auto *btnSave = btns->button(QDialogButtonBox::Save);

@@ -80,7 +80,9 @@ AboutDialog::AboutDialog(QWidget *parent)
     layout->addSpacing(20);
 
     // ── Close button ──────────────────────────────────────────────────────
+    // Margem interna garante folga para a sombra do botão (#176).
     auto *btns = new QDialogButtonBox(QDialogButtonBox::Close, this);
+    btns->setContentsMargins(0, 6, 10, 10);
     layout->addWidget(btns);
     connect(btns, &QDialogButtonBox::rejected, this, &QDialog::accept);
 }

@@ -118,10 +118,12 @@ void AddCompraDialog::buildUi()
     root->addLayout(receiptForm);
 
     // ── Buttons ────────────────────────────────────────────────────────────
+    // Margem interna garante folga para a sombra dos botões (#176).
     auto *btnBox = new QDialogButtonBox(
         QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
     btnBox->button(QDialogButtonBox::Ok)->setText(tr("Adicionar"));
     btnBox->button(QDialogButtonBox::Ok)->setObjectName(QStringLiteral("primary"));
+    btnBox->setContentsMargins(0, 6, 10, 10);
     connect(btnBox, &QDialogButtonBox::accepted, this, &AddCompraDialog::accept);
     connect(btnBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
     root->addWidget(btnBox);

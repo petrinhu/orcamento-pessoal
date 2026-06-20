@@ -63,10 +63,12 @@ void PagadorDialog::buildUi()
     root->addLayout(form);
 
     // ── Buttons ───────────────────────────────────────────────────────────
+    // Margem interna garante folga para a sombra dos botões (#176).
     auto *btns = new QDialogButtonBox(
         QDialogButtonBox::Save | QDialogButtonBox::Cancel, this);
     btns->button(QDialogButtonBox::Save)->setText(tr("Salvar"));
     btns->button(QDialogButtonBox::Cancel)->setText(tr("Cancelar"));
+    btns->setContentsMargins(0, 6, 10, 10);
 
     auto *saveBtn = btns->button(QDialogButtonBox::Save);
     saveBtn->setEnabled(!m_original.nome.isEmpty());

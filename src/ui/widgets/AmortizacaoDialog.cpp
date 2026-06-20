@@ -88,7 +88,9 @@ void AmortizacaoDialog::buildUi(const Compra &compra)
     root->addWidget(m_table);
 
     // ── close button ──────────────────────────────────────────────────────
+    // Margem interna garante folga para a sombra do botão (#176).
     auto *btns = new QDialogButtonBox(QDialogButtonBox::Close, this);
+    btns->setContentsMargins(0, 6, 10, 10);
     connect(btns, &QDialogButtonBox::rejected, this, &QDialog::reject);
     root->addWidget(btns);
 }

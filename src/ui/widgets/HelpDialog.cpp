@@ -68,7 +68,10 @@ HelpDialog::HelpDialog(QWidget *parent)
 
     layout->addWidget(browser);
 
+    // Margem interna no box garante folga para a sombra do botão (#176):
+    // ButtonShadowFilter blur=8 → extensão ~5px; 10px right/bottom são seguros.
     auto *btns = new QDialogButtonBox(QDialogButtonBox::Close, this);
+    btns->setContentsMargins(0, 6, 10, 10);
     layout->addWidget(btns);
     connect(btns, &QDialogButtonBox::rejected, this, &QDialog::accept);
 }

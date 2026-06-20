@@ -289,10 +289,12 @@ void InvestimentoDialog::buildUi(const QList<Categoria> &categorias)
     root->addWidget(grpRec);
 
     // ── Buttons ────────────────────────────────────────────────────────────
+    // Margem interna garante folga para a sombra dos botões (#176).
     auto *btns = new QDialogButtonBox(
         QDialogButtonBox::Save | QDialogButtonBox::Cancel, this);
     btns->button(QDialogButtonBox::Save)->setText(tr("Salvar"));
     btns->button(QDialogButtonBox::Cancel)->setText(tr("Cancelar"));
+    btns->setContentsMargins(0, 6, 10, 10);
     connect(btns, &QDialogButtonBox::accepted, this, &QDialog::accept);
     connect(btns, &QDialogButtonBox::rejected, this, &QDialog::reject);
     root->addWidget(btns);

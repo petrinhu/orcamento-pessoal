@@ -196,8 +196,10 @@ void RecorrenciaDialog::buildUi(const QList<FonteRenda> &fontes,
     root->addLayout(form);
 
     // Buttons
+    // Margem interna garante folga para a sombra dos botões (#176).
     auto *btns = new QDialogButtonBox(
         QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
+    btns->setContentsMargins(0, 6, 10, 10);
     root->addWidget(btns);
     connect(btns, &QDialogButtonBox::accepted, this, &QDialog::accept);
     connect(btns, &QDialogButtonBox::rejected, this, &QDialog::reject);
