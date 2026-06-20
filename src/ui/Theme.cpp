@@ -306,7 +306,10 @@ static QString gerarQss()
         }
         QHeaderView::section:hover { color: @@ACC@@; }
         /* ── Labels ── */
-        QLabel#title    { font-size: 16px; font-weight: 600; }
+        /* color explícito em QLabel garante que o Fusion/palette não sobrescreva
+           com WindowText em widgets frameless (ex.: LoginDialog). */
+        QLabel { color: @@TXT@@; background-color: transparent; }
+        QLabel#title    { font-size: 16px; font-weight: 600; color: @@TXT@@; }
         QLabel#subtitle { font-size: 12px; color: @@SUB@@; }
         QLabel#error    { font-size: 12px; color: @@NEG@@; }
         /* ── Status bar ── */

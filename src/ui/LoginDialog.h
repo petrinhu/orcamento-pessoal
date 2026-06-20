@@ -7,6 +7,7 @@
 class QLineEdit;
 class QLabel;
 class QPushButton;
+class QToolButton;
 
 // Splash/login dialog.
 // QT_DEBUG: shows only name field, no password required.
@@ -33,15 +34,20 @@ private:
     void updateChecklist();
     bool senhaValida() const;
 
-    QLineEdit   *m_nome       = nullptr;
-    QLineEdit   *m_senha      = nullptr;
-    QPushButton *m_btnEntrar  = nullptr;
+    QLineEdit   *m_nome        = nullptr;
+    QLineEdit   *m_senha       = nullptr;
+    QPushButton *m_btnEntrar   = nullptr;
     QPushButton *m_btnCancelar = nullptr;
 
     // Checklist labels (release only)
     QLabel *m_chkLen    = nullptr;
     QLabel *m_chkUpper  = nullptr;
     QLabel *m_chkDigit  = nullptr;
+
+#ifndef QT_DEBUG
+    // Botão olho hold-to-reveal (release only — só existe quando há senha)
+    QToolButton *m_btnOlho = nullptr;
+#endif
 
     QByteArray m_chave;     // Argon2id key
     QByteArray m_chaveOld;  // PBKDF2 key (for legacy file backward compat)

@@ -12,8 +12,10 @@
 #include <QLineEdit>
 #include <QLabel>
 #include <QPushButton>
+#include <QToolButton>
 #include <QRegularExpression>
 #include <QMessageBox>
+#include <QPalette>
 
 #include <sodium.h>  // sodium_memzero — apaga chaves derivadas no destrutor
 
@@ -70,6 +72,19 @@ void LoginDialog::limparSenha()
 
 void LoginDialog::buildUi()
 {
+    // ── Correção #1: contraste em dialog frameless ────────────────────────────
+    // Qt::FramelessWindowHint impede o gerenciador de janela de pintar o fundo.
+    // Sem setAutoFillBackground, o Fusion pode deixar a área do widget transparente
+    // ou usar a cor errada da palette herdada — texto fica invisível ou de baixo
+    // contraste. Fixar a palette do dialog com o fundo @@BG@@ do tema garante
+    // que todo texto dentro do dialog sempre contrasta sobre o fundo correto.
+    {
+        QPalette pal = palette();
+        pal.setColor(QPalette::Window, QColor(Theme::background()));
+        setPalette(pal);
+        setAutoFillBackground(true);
+    }
+
     auto *root = new QVBoxLayout(this);
     root->setContentsMargins(40, 40, 40, 40);
     root->setSpacing(16);
@@ -87,6 +102,8 @@ void LoginDialog::buildUi()
     root->addWidget(lblNome);
     m_nome = new QLineEdit(this);
     m_nome->setPlaceholderText(tr("Seu nome"));
+    // ── Anti-clip: campo expande horizontalmente mas não encolhe abaixo do hint
+    m_nome->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     root->addWidget(m_nome);
     connect(m_nome, &QLineEdit::textChanged, this, &LoginDialog::onNomeChanged);
 
@@ -94,11 +111,37 @@ void LoginDialog::buildUi()
     // Senha
     auto *lblSenha = new QLabel(tr("Senha"), this);
     root->addWidget(lblSenha);
+
+    // ── Correção #3: linha senha + botão olho em HBoxLayout ──────────────────
+    auto *rowSenha = new QHBoxLayout();
+    rowSenha->setSpacing(4);
+
     m_senha = new QLineEdit(this);
     m_senha->setEchoMode(QLineEdit::Password);
     m_senha->setPlaceholderText(tr("Mínimo 8 caracteres"));
-    root->addWidget(m_senha);
+    m_senha->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    rowSenha->addWidget(m_senha);
     connect(m_senha, &QLineEdit::textChanged, this, &LoginDialog::onSenhaChanged);
+
+    // Botão olho hold-to-reveal: revela a senha APENAS enquanto o botão está
+    // pressionado (pressed → Normal; released → Password). O toolTip instrui o
+    // usuário. Usa emojiIcon para renderizar o glifo colorido via Noto Emoji —
+    // consistent com a política do projeto (emoji nunca em texto de botão).
+    m_btnOlho = new QToolButton(this);
+    m_btnOlho->setIcon(Theme::emojiIcon(QStringLiteral("👁"), 18));
+    m_btnOlho->setToolTip(tr("Segure para ver a senha"));
+    m_btnOlho->setFixedSize(32, 32);
+    m_btnOlho->setFocusPolicy(Qt::NoFocus);  // não entra no Tab order de auth
+    rowSenha->addWidget(m_btnOlho);
+
+    connect(m_btnOlho, &QToolButton::pressed,  this, [this]() {
+        m_senha->setEchoMode(QLineEdit::Normal);
+    });
+    connect(m_btnOlho, &QToolButton::released, this, [this]() {
+        m_senha->setEchoMode(QLineEdit::Password);
+    });
+
+    root->addLayout(rowSenha);
 
     // Checklist
     auto *checkFrame = new QFrame(this);
@@ -118,22 +161,32 @@ void LoginDialog::buildUi()
 
     root->addSpacing(8);
 
-    // Botões Cancelar + Entrar (mesma linha)
+    // ── Correção #2: botões anti-clip ─────────────────────────────────────────
+    // MinimumExpanding: os botões crescem para preencher a linha, mas nunca
+    // ficam abaixo do sizeHint — o que impede o clip quando a janela estreita.
+    // O minimumSize do dialog garante que a janela nunca encolhe além do ponto
+    // onde os botões caberiam confortavelmente.
     auto *btnRow = new QHBoxLayout();
+    btnRow->setSpacing(8);
 
     m_btnCancelar = new QPushButton(tr("Cancelar"), this);
+    m_btnCancelar->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
     btnRow->addWidget(m_btnCancelar);
     connect(m_btnCancelar, &QPushButton::clicked, this, &QDialog::reject);
 
     m_btnEntrar = new QPushButton(tr("Entrar"), this);
     m_btnEntrar->setObjectName(QStringLiteral("primary"));
     m_btnEntrar->setEnabled(false);
+    m_btnEntrar->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
     btnRow->addWidget(m_btnEntrar);
     connect(m_btnEntrar, &QPushButton::clicked, this, &LoginDialog::onEntrar);
 
     root->addLayout(btnRow);
 
-    setMinimumWidth(360);
+    // Largura mínima: 360px comporta os dois botões (≥80px cada) + margens 2×40
+    // + spacing 8px. Altura mínima: garante que checklist + campos + botões
+    // nunca ficam cortados ao redimensionar a janela para o menor tamanho útil.
+    setMinimumSize(360, 340);
 }
 
 void LoginDialog::onNomeChanged(const QString &)
