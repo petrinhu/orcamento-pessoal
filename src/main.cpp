@@ -30,26 +30,29 @@ int main(int argc, char *argv[])
 
     Theme::aplicar();
 
-    // ── Login ──────────────────────────────────────────────────────────────
-    LoginDialog login;
-    if (login.exec() != QDialog::Accepted)
-        return 0;
-
-    const QString    nome     = login.nome();
-    const QByteArray chave    = login.chave();
-    const QByteArray chaveOld = login.chaveOld(); // PBKDF2 — for legacy file migration
-
-    // ── Open database ──────────────────────────────────────────────────────
+    // ── Login + retry loop ─────────────────────────────────────────────────
+    // Cria o diretório de dados uma única vez, antes do loop.
     QDir().mkpath(QStringLiteral("data"));
 
-    const QString slug = UserSession::instance().slug();
-    if (!DatabaseManager::instance().open(slug, chave, chaveOld)) {
-        QMessageBox::critical(nullptr,
-            QStringLiteral("Erro ao abrir banco de dados"),
-            QStringLiteral("Não foi possível abrir o banco de dados.\n"
-                           "Verifique se a senha está correta."));
-        return 1;
+    LoginDialog login;
+    for (;;) {
+        if (login.exec() != QDialog::Accepted)
+            return 0; // usuário cancelou/fechou → saída limpa
+
+        const QByteArray chave    = login.chave();
+        const QByteArray chaveOld = login.chaveOld(); // PBKDF2 — for legacy file migration
+
+        if (DatabaseManager::instance().open(UserSession::instance().slug(), chave, chaveOld))
+            break; // sucesso → segue para onboarding/MainWindow
+
+        QMessageBox::warning(&login,
+            QStringLiteral("Senha incorreta"),
+            QStringLiteral("Não foi possível abrir o cofre com essa senha.\n"
+                           "Verifique a senha e tente novamente, ou clique em Cancelar para sair."));
+        login.limparSenha(); // mantém o nome, limpa a senha — volta ao topo do loop
     }
+
+    const QString nome = login.nome();
 
     // ── Onboarding first-run (#109) ───────────────────────────────────────
     // Exibido apenas se a flag nunca foi marcada. "Pular" e "Concluir"

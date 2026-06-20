@@ -50,6 +50,24 @@ QString    LoginDialog::nome()     const { return m_nome->text().trimmed(); }
 QByteArray LoginDialog::chave()    const { return m_chave; }
 QByteArray LoginDialog::chaveOld() const { return m_chaveOld; }
 
+void LoginDialog::limparSenha()
+{
+#ifndef QT_DEBUG
+    if (m_senha) {
+        m_senha->clear();
+        m_senha->setFocus();
+    }
+    // Zera a chave derivada da tentativa anterior para não vazar em memória
+    if (!m_chave.isEmpty())
+        sodium_memzero(m_chave.data(), static_cast<size_t>(m_chave.size()));
+    m_chave.clear();
+    if (!m_chaveOld.isEmpty())
+        sodium_memzero(m_chaveOld.data(), static_cast<size_t>(m_chaveOld.size()));
+    m_chaveOld.clear();
+#endif
+    // Em QT_DEBUG não há campo de senha; no-op intencional.
+}
+
 void LoginDialog::buildUi()
 {
     auto *root = new QVBoxLayout(this);
@@ -100,12 +118,20 @@ void LoginDialog::buildUi()
 
     root->addSpacing(8);
 
-    // Botão Entrar
+    // Botões Cancelar + Entrar (mesma linha)
+    auto *btnRow = new QHBoxLayout();
+
+    m_btnCancelar = new QPushButton(tr("Cancelar"), this);
+    btnRow->addWidget(m_btnCancelar);
+    connect(m_btnCancelar, &QPushButton::clicked, this, &QDialog::reject);
+
     m_btnEntrar = new QPushButton(tr("Entrar"), this);
     m_btnEntrar->setObjectName(QStringLiteral("primary"));
     m_btnEntrar->setEnabled(false);
-    root->addWidget(m_btnEntrar);
+    btnRow->addWidget(m_btnEntrar);
     connect(m_btnEntrar, &QPushButton::clicked, this, &LoginDialog::onEntrar);
+
+    root->addLayout(btnRow);
 
     setMinimumWidth(360);
 }

@@ -21,6 +21,8 @@ public:
     QByteArray chave()    const; // Argon2id-derived key (empty in debug)
     QByteArray chaveOld() const; // PBKDF2-derived key for legacy file migration (empty in debug)
 
+    void limparSenha(); // limpa campo de senha e reposiciona foco (usado em retry)
+
 private slots:
     void onNomeChanged(const QString &text);
     void onSenhaChanged(const QString &text);
@@ -31,9 +33,10 @@ private:
     void updateChecklist();
     bool senhaValida() const;
 
-    QLineEdit  *m_nome   = nullptr;
-    QLineEdit  *m_senha  = nullptr;
-    QPushButton *m_btnEntrar = nullptr;
+    QLineEdit   *m_nome       = nullptr;
+    QLineEdit   *m_senha      = nullptr;
+    QPushButton *m_btnEntrar  = nullptr;
+    QPushButton *m_btnCancelar = nullptr;
 
     // Checklist labels (release only)
     QLabel *m_chkLen    = nullptr;
