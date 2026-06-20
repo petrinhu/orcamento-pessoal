@@ -26,6 +26,10 @@ endfunction()
 peubud_add_test(test_canary)
 peubud_add_test(test_finance_engine ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp)
 
+# #178: garantia de pasta antes de save/autosave — logica pura de QDir::mkpath
+# (ramo GUI/QMessageBox nao testavel headless; cobrimos o contrato de criacao).
+peubud_add_test(test_dir_guard)
+
 # #132: CalculadoraService — funcoes puras (sem dependencias externas).
 peubud_add_test(test_calculadora
     ${CMAKE_SOURCE_DIR}/src/services/CalculadoraService.cpp)

@@ -844,6 +844,44 @@ void MainWindow::closeEvent(QCloseEvent *event)
     }
 }
 
+// ── Utilitário: garantia de pasta (#178) ─────────────────────────────────────
+
+// Garante que `dir` existe antes de gravar.
+// - Se já existe → retorna true imediatamente.
+// - Se não existe → exibe aviso com dois botões:
+//     [Criar pasta]  → tenta QDir().mkpath(dir); se falhar, mostra erro e
+//                      retorna false; se ok, retorna true.
+//     [Cancelar]     → retorna false (operação de save deve ser abortada).
+// Invariante: nunca chamar dentro do loop do autosave — use mkpath silencioso
+// lá e o flag m_autosaveAvisado para notificar apenas uma vez por sessão.
+bool MainWindow::garantirPastaExiste(const QString &dir)
+{
+    if (QDir(dir).exists())
+        return true;
+
+    QMessageBox msg(this);
+    msg.setIcon(QMessageBox::Warning);
+    msg.setWindowTitle(tr("Pasta de destino não encontrada"));
+    msg.setText(tr("A pasta de destino não existe:"));
+    msg.setInformativeText(dir);
+    QPushButton *btnCriar    = msg.addButton(tr("Criar pasta"),  QMessageBox::AcceptRole);
+    QPushButton *btnCancelar = msg.addButton(tr("Cancelar"),     QMessageBox::RejectRole);
+    msg.setDefaultButton(btnCriar);
+    msg.exec();
+
+    if (msg.clickedButton() == btnCancelar)
+        return false;
+
+    // Usuário escolheu [Criar pasta]
+    if (!QDir().mkpath(dir)) {
+        QMessageBox::critical(this, tr("Erro ao criar pasta"),
+            tr("Não foi possível criar a pasta:\n%1\n\n"
+               "Verifique permissões e tente novamente.").arg(dir));
+        return false;
+    }
+    return true;
+}
+
 // ── Auto-save ─────────────────────────────────────────────────────────────────
 
 void MainWindow::resetAutosaveTimer()
@@ -858,7 +896,25 @@ void MainWindow::onAutosave()
 {
     if (!m_dirty) return;
     const QString folder = AppSettings::instance().autosavesFolder();
-    QDir().mkpath(folder);
+
+    // (#178) Tenta criar a pasta silenciosamente (sem diálogo — autosave
+    // não pode abrir popup a cada ciclo). Se falhar, notifica uma única vez
+    // por sessão via statusBar e pausa este ciclo sem derrubar o app.
+    if (!QDir(folder).exists() && !QDir().mkpath(folder)) {
+        if (!m_autosaveAvisado) {
+            m_autosaveAvisado = true;
+            statusBar()->showMessage(
+                tr("Auto-save: pasta '%1' não existe e não pôde ser criada. "
+                   "Use Arquivo → Salvar Como para escolher outro destino.")
+                    .arg(folder),
+                10000);
+        }
+        return;
+    }
+    // Pasta existe (criada agora ou já existia): limpa o aviso anterior se
+    // a situação se normalizou (ex.: pasta recriada externamente).
+    m_autosaveAvisado = false;
+
     const QString ts   = QDateTime::currentDateTime().toString(
                            QStringLiteral("yyyyMMdd_HHmmss"));
     const QString slug = UserSession::instance().slug();
@@ -890,18 +946,34 @@ void MainWindow::onAbrir()
 
 void MainWindow::onSalvar()
 {
+    // (#178) Garante que o diretório data/ (banco principal) existe antes de
+    // gravar. Se sumir em runtime (ex.: mnt desmontado, pasta removida), avisa
+    // com opção de criar, em vez de falhar silenciosamente.
+    if (!garantirPastaExiste(QStringLiteral("data"))) {
+        statusBar()->showMessage(tr("Save cancelado."), 3000);
+        return; // m_dirty permanece true — nenhum dado perdido
+    }
     if (DatabaseManager::instance().save()) {
         m_dirty = false;
+        m_autosaveAvisado = false; // pasta está OK novamente
         statusBar()->showMessage(tr("Arquivo salvo."), 3000);
     } else {
-        QMessageBox::warning(this, tr("Erro"), tr("Não foi possível salvar."));
+        QMessageBox::warning(this, tr("Erro ao salvar"),
+            tr("Não foi possível salvar o arquivo.\n"
+               "Verifique se há espaço em disco e permissões de escrita."));
     }
 }
 
 void MainWindow::onSalvarComo()
 {
     const QString startDir = AppSettings::instance().savesFolder();
-    QDir().mkpath(startDir);
+
+    // (#178) Garante pasta de saves antes de abrir o dialog. Se o usuário
+    // cancelar a criação, abandona o fluxo sem perda de dados.
+    if (!garantirPastaExiste(startDir)) {
+        statusBar()->showMessage(tr("Save cancelado."), 3000);
+        return;
+    }
 
     const QString path = QFileDialog::getSaveFileName(
         this, tr("Salvar cópia como"),
@@ -911,9 +983,19 @@ void MainWindow::onSalvarComo()
 
     const QString dest = path.endsWith(QStringLiteral(".pbd"), Qt::CaseInsensitive)
                        ? path : path + QStringLiteral(".pbd");
+
+    // (#178) O usuário pode ter digitado um caminho com pasta inexistente no
+    // dialog — verifica o diretório pai do destino final também.
+    const QString destDir = QFileInfo(dest).absolutePath();
+    if (!garantirPastaExiste(destDir)) {
+        statusBar()->showMessage(tr("Save cancelado."), 3000);
+        return;
+    }
+
     if (!DatabaseManager::instance().exportToFile(dest)) {
-        QMessageBox::warning(this, tr("Erro"),
-            tr("Não foi possível salvar o arquivo."));
+        QMessageBox::warning(this, tr("Erro ao salvar"),
+            tr("Não foi possível salvar o arquivo.\n"
+               "Verifique se há espaço em disco e permissões de escrita."));
     }
 }
 

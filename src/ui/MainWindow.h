@@ -42,6 +42,12 @@ private:
     void resetAutosaveTimer();
     void onAutosave();
 
+    // (#178) Garante que `dir` existe antes de gravar. Se não existe, exibe
+    // QMessageBox com [Cancelar] / [Criar pasta]. Retorna true se a pasta
+    // existe (ou foi criada); false se o usuário cancelou ou mkpath falhou.
+    // NÃO usar no autosave (sem diálogo por ciclo) — use apenas no save manual.
+    bool garantirPastaExiste(const QString &dir);
+
     // Arquivo
     void onAbrir();
     void onSalvar();
@@ -110,7 +116,8 @@ private:
     QMap<QString, QWidget *> m_paginas;
     QLabel         *m_statusTotal = nullptr;
 
-    bool         m_dirty         = false;
-    QTimer      *m_autosaveTimer = nullptr;
-    QUndoStack  *m_undoStack     = nullptr;
+    bool         m_dirty              = false;
+    bool         m_autosaveAvisado    = false; // (#178) avisa falha de pasta uma vez por sessão
+    QTimer      *m_autosaveTimer      = nullptr;
+    QUndoStack  *m_undoStack          = nullptr;
 };
