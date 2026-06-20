@@ -354,3 +354,31 @@ peubud_add_test(test_shadow_render
     ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp)
 set_tests_properties(test_shadow_render PROPERTIES
     ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
+# Regressão #174: Enter no login dispara Entrar, nao Cancelar.
+# Verifica m_btnEntrar->isDefault()==true, m_btnCancelar->autoDefault()==false
+# e returnPressed no campo nome aceita o dialog quando form valido.
+# Compilado em QT_DEBUG (sem crypto/libsecret em runtime).
+# Cadeia: LoginDialog + Theme + UserSession + crypto (headers/codigo necessarios
+# para compilar o .cpp do dialog, mesmo que o codigo de crypto nao execute).
+peubud_add_test(test_login_enter
+    ${CMAKE_SOURCE_DIR}/src/ui/LoginDialog.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/Theme.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/session/UserSession.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/SodiumCryptoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/AesCryptoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/KeyDerivation.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp)
+# QT_DEBUG: LoginDialog pula o bloco de cripto/libsecret em runtime.
+target_compile_definitions(test_login_enter PRIVATE QT_DEBUG)
+target_link_libraries(test_login_enter PRIVATE
+    OpenSSL::SSL
+    OpenSSL::Crypto
+    ${LIBSODIUM_LIBRARIES}
+    ${LIBSECRET_LIBRARIES})
+target_include_directories(test_login_enter PRIVATE
+    ${LIBSODIUM_INCLUDE_DIRS}
+    ${LIBSECRET_INCLUDE_DIRS})
+set_tests_properties(test_login_enter PROPERTIES
+    ENVIRONMENT "QT_QPA_PLATFORM=offscreen")

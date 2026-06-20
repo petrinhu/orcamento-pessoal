@@ -171,6 +171,9 @@ void LoginDialog::buildUi()
 
     m_btnCancelar = new QPushButton(tr("Cancelar"), this);
     m_btnCancelar->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
+    // (#174) Impede o Cancelar de capturar Enter — nem como default implícito
+    // nem como fallback quando o Entrar está desabilitado.
+    m_btnCancelar->setAutoDefault(false);
     btnRow->addWidget(m_btnCancelar);
     connect(m_btnCancelar, &QPushButton::clicked, this, &QDialog::reject);
 
@@ -178,10 +181,25 @@ void LoginDialog::buildUi()
     m_btnEntrar->setObjectName(QStringLiteral("primary"));
     m_btnEntrar->setEnabled(false);
     m_btnEntrar->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
+    // (#174) Garante que Enter sempre dispara Entrar, não Cancelar.
+    // O Cancelar foi criado primeiro → Qt o elegeria como default implícito
+    // sem este setDefault explícito.
+    m_btnEntrar->setDefault(true);
     btnRow->addWidget(m_btnEntrar);
     connect(m_btnEntrar, &QPushButton::clicked, this, &LoginDialog::onEntrar);
 
     root->addLayout(btnRow);
+
+    // (#174) Belt-and-suspenders: Enter nos campos de texto submete o form
+    // quando o botão Entrar está habilitado, independente do foco atual.
+    connect(m_nome, &QLineEdit::returnPressed, this, [this]{
+        if (m_btnEntrar->isEnabled()) onEntrar();
+    });
+#ifndef QT_DEBUG
+    connect(m_senha, &QLineEdit::returnPressed, this, [this]{
+        if (m_btnEntrar->isEnabled()) onEntrar();
+    });
+#endif
 
     // Largura mínima: 360px comporta os dois botões (≥80px cada) + margens 2×40
     // + spacing 8px. Altura mínima: garante que checklist + campos + botões
