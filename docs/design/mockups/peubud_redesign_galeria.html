@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<title>PeuBud: galeria de abas</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Color+Emoji&display=swap">
+<style>
+  :root{
+    --bg:#EEF3F9; --surface:#FFFFFF; --surface-2:#F7FAFD;
+    --primary:#3B82F6; --primary-d:#2563EB; --primary-soft:#E7F0FE;
+    --text:#15233B; --sub:#67768D; --border:#E4EAF2;
+    --pos:#15A66A; --pos-soft:#E4F6EE; --neg:#E5484D; --neg-soft:#FCEAEA; --gold:#E8A93B; --gold-soft:#FBF1DC;
+    --purple:#8B5CF6; --slate:#94A3B8; --teal:#14B8A6;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;padding:26px 34px}
+  .emoji{font-family:'Noto Color Emoji',sans-serif}
+  h1{font-size:21px;font-weight:700;margin-bottom:3px}
+  .lead{color:var(--sub);font-size:13px;margin-bottom:24px}
+  .tab{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px 22px;margin-bottom:20px;box-shadow:0 1px 3px rgba(20,40,80,.05)}
+  .tab > h2{font-size:16px;font-weight:700;display:flex;align-items:center;gap:9px;margin-bottom:3px}
+  .tab > .d{color:var(--sub);font-size:12.5px;margin-bottom:16px}
+  .row{display:flex;gap:14px;flex-wrap:wrap}
+  .tag{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+  .b{font-variant-numeric:tabular-nums;font-weight:700}
+  .bar{height:8px;border-radius:5px;background:#E9EEF5;overflow:hidden}
+  .bar > i{display:block;height:100%;border-radius:5px}
+  .btn{font-family:inherit;font-weight:600;border:none;border-radius:8px;padding:7px 13px;color:#fff;background:var(--primary);cursor:pointer;font-size:12.5px;box-shadow:0 2px 8px rgba(59,130,246,.3)}
+
+  /* cartoes */
+  .ccard{width:240px;border-radius:14px;padding:16px;color:#fff;background:linear-gradient(135deg,#5B2A86,#3B1E66)}
+  .ccard.b2{background:linear-gradient(135deg,#0F4C81,#0A3055)} .ccard.b3{background:linear-gradient(135deg,#B14F12,#7A340A)}
+  .ccard .nm{font-weight:600;font-size:13px;opacity:.9} .ccard .fat{font-size:20px;font-weight:700;margin:10px 0 4px}
+  .ccard .lim{font-size:11px;opacity:.8;margin-bottom:6px}
+  .ccard .bar{background:rgba(255,255,255,.25)} .ccard .bar > i{background:#fff}
+
+  /* lembrete status */
+  .lem{flex:1;min-width:230px;background:var(--surface-2);border:1px solid var(--border);border-left:4px solid var(--slate);border-radius:10px;padding:12px 14px}
+  .lem.red{border-left-color:var(--neg);background:var(--neg-soft)} .lem.yel{border-left-color:var(--gold);background:var(--gold-soft)} .lem.grn{border-left-color:var(--pos);background:var(--pos-soft)}
+  .lem .t{font-weight:600} .lem .s{font-size:12px;color:var(--sub);margin-top:2px}
+  .lem .badge{font-size:11px;font-weight:700;float:right}
+
+  /* meta ring */
+  .ring{width:96px;height:96px;border-radius:50%;flex-shrink:0;position:relative;background:conic-gradient(var(--pos) 0% 68%, #E9EEF5 68% 100%)}
+  .ring.b{background:conic-gradient(var(--primary) 0% 40%, #E9EEF5 40% 100%)}
+  .ring::after{content:'';position:absolute;inset:11px;border-radius:50%;background:var(--surface)}
+  .ring .pc{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:17px;z-index:1}
+  .goal{flex:1;min-width:210px;border:1px solid var(--border);border-radius:12px;padding:14px;display:flex;gap:14px;align-items:center}
+
+  /* switch */
+  .sw{width:38px;height:22px;border-radius:12px;background:var(--pos);position:relative;display:inline-block}
+  .sw.off{background:#C7CFDB} .sw::after{content:'';position:absolute;width:18px;height:18px;border-radius:50%;background:#fff;top:2px;right:2px;box-shadow:0 1px 2px rgba(0,0,0,.3)}
+  .sw.off::after{right:auto;left:2px}
+  .rec{display:flex;align-items:center;gap:12px;padding:11px 4px;border-bottom:1px solid #EEF2F7}
+  .rec:last-child{border:none}
+  .pill{font-size:11.5px;color:var(--sub);background:var(--surface-2);border:1px solid var(--border);border-radius:7px;padding:3px 9px}
+
+  /* mini table */
+  .mt{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px}
+  .mt th{text-align:left;color:var(--sub);font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;padding:7px 10px;border-bottom:1px solid var(--border)}
+  .mt td{padding:9px 10px;border-bottom:1px solid #EEF2F7} .mt td.r{text-align:right;font-weight:600}
+
+  /* donut */
+  .donut{width:120px;height:120px;border-radius:50%;flex-shrink:0;position:relative;background:conic-gradient(#3B82F6 0% 44%,#15A66A 44% 70%,#E8A93B 70% 86%,#8B5CF6 86% 100%)}
+  .donut::after{content:'';position:absolute;inset:22px;border-radius:50%;background:var(--surface)}
+  /* sparkline */
+  .quote{flex:1;min-width:200px;border:1px solid var(--border);border-radius:12px;padding:13px 15px}
+  .up{color:var(--pos);font-weight:700} .down{color:var(--neg);font-weight:700}
+</style>
+</head>
+<body>
+  <h1>Galeria: sugestoes de design por aba</h1>
+  <p class="lead">Mesmo sistema (azuis, cards arredondados, emoji), cada aba com um padrao visual proprio. A sidebar (igual aos mockups anteriores) fica fixa a esquerda; aqui mostro so o conteudo de cada aba.</p>
+
+  <!-- CARTOES -->
+  <div class="tab">
+    <h2><span class="emoji">💳</span> Cartoes</h2>
+    <div class="d">Um "cartao" visual por cartao (fatura + limite usado) e a tabela de parcelas por mes.</div>
+    <div class="row">
+      <div class="ccard"><div class="nm">Nubank</div><div class="fat">R$ 1.240,50</div><div class="lim">Limite usado: 41%</div><div class="bar"><i style="width:41%"></i></div></div>
+      <div class="ccard b2"><div class="nm">Inter</div><div class="fat">R$ 680,00</div><div class="lim">Limite usado: 22%</div><div class="bar"><i style="width:22%"></i></div></div>
+      <div class="ccard b3"><div class="nm">Itau</div><div class="fat">R$ 2.110,90</div><div class="lim">Limite usado: 76%</div><div class="bar"><i style="width:76%"></i></div></div>
+    </div>
+    <table class="mt"><thead><tr><th>Compra</th><th>Cartao</th><th>Parcela</th><th class="r">Valor</th></tr></thead>
+      <tbody><tr><td>Notebook</td><td>Nubank</td><td>3 / 10</td><td class="r">R$ 450,00</td></tr>
+      <tr><td>Geladeira</td><td>Itau</td><td>2 / 12</td><td class="r">R$ 320,00</td></tr></tbody></table>
+  </div>
+
+  <!-- RECORRENCIAS -->
+  <div class="tab">
+    <h2><span class="emoji">🔁</span> Recorrencias</h2>
+    <div class="d">Lista com frequencia, proxima data e um interruptor ligar/pausar.</div>
+    <div class="rec"><span class="emoji" style="font-size:18px">💵</span><b>Salario</b><span class="tag" style="background:var(--pos-soft);color:var(--pos)">Entrada</span><span class="pill">Mensal</span><span class="pill">Proxima: 05/07</span><span class="b" style="margin-left:auto">R$ 7.000</span><span class="sw"></span></div>
+    <div class="rec"><span class="emoji" style="font-size:18px">📺</span><b>Streaming</b><span class="tag" style="background:var(--neg-soft);color:var(--neg)">Gasto</span><span class="pill">Mensal</span><span class="pill">Proxima: 12/07</span><span class="b" style="margin-left:auto">R$ 55</span><span class="sw"></span></div>
+    <div class="rec"><span class="emoji" style="font-size:18px">🏋️</span><b>Academia</b><span class="tag" style="background:var(--neg-soft);color:var(--neg)">Gasto</span><span class="pill">Mensal</span><span class="pill">Pausada</span><span class="b" style="margin-left:auto">R$ 99</span><span class="sw off"></span></div>
+  </div>
+
+  <!-- LEMBRETES -->
+  <div class="tab">
+    <h2><span class="emoji">🔔</span> Lembretes</h2>
+    <div class="d">Cards com borda colorida por status e contagem regressiva dinamica.</div>
+    <div class="row">
+      <div class="lem red"><span class="badge" style="color:var(--neg)">Vencido ha 2 dias</span><div class="t">Conta de luz</div><div class="s">R$ 187,30 · venceu 17/06</div><button class="btn" style="margin-top:9px;background:var(--neg)"><span class="emoji">✅</span> Pagar</button></div>
+      <div class="lem yel"><span class="badge" style="color:#9A6B16">Vence em 2 dias</span><div class="t">Internet</div><div class="s">R$ 119,90 · vence 21/06</div><button class="btn" style="margin-top:9px">✅ Pagar</button></div>
+      <div class="lem grn"><span class="badge" style="color:var(--pos)">Resolvido</span><div class="t">Agua</div><div class="s">R$ 74,00 · pago 10/06</div></div>
+    </div>
+  </div>
+
+  <!-- PLANEJAMENTO -->
+  <div class="tab">
+    <h2><span class="emoji">📋</span> Planejamento / Orcamento</h2>
+    <div class="d">Barra por categoria: o quanto do planejado ja foi gasto, com cor de aderencia.</div>
+    <div style="display:flex;flex-direction:column;gap:14px;margin-top:4px">
+      <div><div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px"><b>Alimentacao</b><span class="sub" style="color:var(--sub)">R$ 540 de R$ 600 · <span style="color:var(--pos)">dentro</span></span></div><div class="bar"><i style="width:90%;background:var(--primary)"></i></div></div>
+      <div><div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px"><b>Lazer</b><span style="color:var(--sub)">R$ 410 de R$ 300 · <span style="color:var(--neg)">estourou</span></span></div><div class="bar"><i style="width:100%;background:var(--neg)"></i></div></div>
+      <div><div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px"><b>Transporte</b><span style="color:var(--sub)">R$ 120 de R$ 250 · <span style="color:var(--pos)">bem dentro</span></span></div><div class="bar"><i style="width:48%;background:var(--pos)"></i></div></div>
+    </div>
+  </div>
+
+  <!-- METAS -->
+  <div class="tab">
+    <h2><span class="emoji">🎯</span> Metas</h2>
+    <div class="d">Cards com anel de progresso (motivacional) + aporte.</div>
+    <div class="row">
+      <div class="goal"><div class="ring"><div class="pc">68%</div></div><div><div style="font-weight:600">Viagem</div><div style="font-size:12px;color:var(--sub);margin:3px 0 8px">R$ 6.800 de R$ 10.000 · faltam 120 dias</div><button class="btn"><span class="emoji">💰</span> Aporte</button></div></div>
+      <div class="goal"><div class="ring b"><div class="pc">40%</div></div><div><div style="font-weight:600">Reserva de emergencia</div><div style="font-size:12px;color:var(--sub);margin:3px 0 8px">R$ 8.000 de R$ 20.000 · sem prazo</div><button class="btn">💰 Aporte</button></div></div>
+    </div>
+  </div>
+
+  <!-- DIVIDAS -->
+  <div class="tab">
+    <h2><span class="emoji">📉</span> Dividas</h2>
+    <div class="d">Card por divida: saldo, barra de quitacao, juros a.m. e a.a.</div>
+    <div class="row">
+      <div class="goal" style="flex-direction:column;align-items:stretch;gap:8px"><div style="display:flex;justify-content:space-between"><b>Emprestimo - Banco X</b><span class="tag" style="background:var(--neg-soft);color:var(--neg)">Atrasado</span></div><div style="font-size:12px;color:var(--sub)">Saldo: <b class="b">R$ 3.200</b> de R$ 8.000 · juros 2,5% a.m. (34,5% a.a.)</div><div class="bar"><i style="width:60%;background:var(--pos)"></i></div><div style="font-size:11px;color:var(--sub)">60% quitado</div></div>
+      <div class="goal" style="flex-direction:column;align-items:stretch;gap:8px"><div style="display:flex;justify-content:space-between"><b>Emprestei - Joao</b><span class="tag" style="background:var(--primary-soft);color:var(--primary-d)">A receber</span></div><div style="font-size:12px;color:var(--sub)">Saldo: <b class="b">R$ 500</b> de R$ 1.000 · sem juros</div><div class="bar"><i style="width:50%;background:var(--primary)"></i></div><div style="font-size:11px;color:var(--sub)">50% recebido</div></div>
+    </div>
+  </div>
+
+  <!-- INVESTIMENTOS -->
+  <div class="tab">
+    <h2><span class="emoji">📊</span> Investimentos</h2>
+    <div class="d">Alocacao em donut + carteira por tipo + saldo do mes.</div>
+    <div class="row" style="align-items:center">
+      <div class="donut"></div>
+      <div style="flex:1;min-width:260px;display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;justify-content:space-between;font-size:13px"><span><span class="emoji">📈</span> Acoes</span><b class="b">R$ 12.400 · 44%</b></div>
+        <div style="display:flex;justify-content:space-between;font-size:13px"><span><span class="emoji">🏢</span> FIIs</span><b class="b">R$ 7.300 · 26%</b></div>
+        <div style="display:flex;justify-content:space-between;font-size:13px"><span><span class="emoji">🛡️</span> Renda fixa</span><b class="b">R$ 4.500 · 16%</b></div>
+        <div style="display:flex;justify-content:space-between;font-size:13px"><span><span class="emoji">🪙</span> Cripto</span><b class="b">R$ 3.900 · 14%</b></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROVENTOS -->
+  <div class="tab">
+    <h2><span class="emoji">💰</span> Proventos</h2>
+    <div class="d">Barras de proventos por mes + lista por ativo (ticker).</div>
+    <svg viewBox="0 0 560 90" width="100%" height="90">
+      <g><rect x="20" y="40" width="40" height="40" rx="4" fill="#15A66A"/><rect x="90" y="28" width="40" height="52" rx="4" fill="#15A66A"/><rect x="160" y="50" width="40" height="30" rx="4" fill="#15A66A"/><rect x="230" y="20" width="40" height="60" rx="4" fill="#15A66A"/><rect x="300" y="36" width="40" height="44" rx="4" fill="#15A66A"/><rect x="370" y="46" width="40" height="34" rx="4" fill="#15A66A"/></g>
+    </svg>
+    <div class="row" style="margin-top:6px">
+      <span class="tag" style="background:var(--primary-soft);color:var(--primary-d)">PETR4 · Dividendo · R$ 120</span>
+      <span class="tag" style="background:var(--pos-soft);color:var(--pos)">MXRF11 · Rend. FII · R$ 88</span>
+      <span class="tag" style="background:var(--gold-soft);color:#9A6B16">ITSA4 · JCP · R$ 45</span>
+    </div>
+  </div>
+
+  <!-- BOLSA -->
+  <div class="tab">
+    <h2><span class="emoji">🏦</span> Bolsa</h2>
+    <div class="d">Busca por ticker + cards de cotacao (variacao colorida).</div>
+    <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:9px;padding:9px 13px;color:var(--sub);max-width:280px;margin-bottom:12px"><span class="emoji">🔍</span> Buscar ticker (PETR4, MGLU3)...</div>
+    <div class="row">
+      <div class="quote"><div style="display:flex;justify-content:space-between"><b>PETR4</b><span class="up">▲ 2,4%</span></div><div style="font-size:12px;color:var(--sub)">Petrobras PN</div><div class="b" style="font-size:18px;margin-top:6px">R$ 38,72</div></div>
+      <div class="quote"><div style="display:flex;justify-content:space-between"><b>MGLU3</b><span class="down">▼ 1,1%</span></div><div style="font-size:12px;color:var(--sub)">Magazine Luiza</div><div class="b" style="font-size:18px;margin-top:6px">R$ 12,05</div></div>
+      <div class="quote"><div style="display:flex;justify-content:space-between"><b>VALE3</b><span class="up">▲ 0,8%</span></div><div style="font-size:12px;color:var(--sub)">Vale ON</div><div class="b" style="font-size:18px;margin-top:6px">R$ 61,40</div></div>
+    </div>
+  </div>
+
+</body>
+</html>

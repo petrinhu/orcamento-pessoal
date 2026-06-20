@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<title>PeuBud: simbolos de moeda (Noto Sans Symbols 2)</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Sans+Symbols+2&family=Noto+Sans:wght@400;600&display=swap">
+<style>
+  :root{ --bg:#31363B; --surface:#1B1E20; --border:#575B5F; --text:#EFF0F1; --subtext:#9aa0a6; --accent:#3DAEE9; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;padding:28px 32px}
+  h1{font-size:20px;font-weight:600;margin:0 0 4px}
+  .sub{color:var(--subtext);font-size:13px;margin:0 0 22px;max-width:920px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px}
+  .cell{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 8px;text-align:center}
+  .sym{font-family:'Noto Sans Symbols 2','Noto Sans',sans-serif;font-size:34px;line-height:1.1;color:var(--text)}
+  .code{font-size:12px;font-weight:600;color:var(--accent);margin-top:8px}
+  .name{font-size:11px;color:var(--subtext)}
+  .note{margin-top:18px;font-size:12px;color:var(--subtext);max-width:920px}
+  .brl{color:#27AE60}
+</style>
+</head>
+<body>
+  <h1>Simbolos de moeda em Noto Sans Symbols 2</h1>
+  <p class="sub">Os simbolos sao caracteres Unicode (bloco Currency Symbols). O Real (R$) e texto comum. Todos renderizam sem fonte de icone; o Noto Sans Symbols 2 da um traco consistente. Avalie se quer embutir (opcao B) ou so usar o que as fontes atuais ja renderizam (opcao A).</p>
+  <div class="grid">
+    <div class="cell"><div class="sym brl">R$</div><div class="code">BRL</div><div class="name">Real (Brasil)</div></div>
+    <div class="cell"><div class="sym">&#36;</div><div class="code">USD</div><div class="name">Dolar (EUA)</div></div>
+    <div class="cell"><div class="sym">&#8364;</div><div class="code">EUR</div><div class="name">Euro</div></div>
+    <div class="cell"><div class="sym">&#163;</div><div class="code">GBP</div><div class="name">Libra (Reino Unido)</div></div>
+    <div class="cell"><div class="sym">&#165;</div><div class="code">JPY/CNY</div><div class="name">Iene / Yuan</div></div>
+    <div class="cell"><div class="sym">&#8377;</div><div class="code">INR</div><div class="name">Rupia (India)</div></div>
+    <div class="cell"><div class="sym">&#8381;</div><div class="code">RUB</div><div class="name">Rublo (Russia)</div></div>
+    <div class="cell"><div class="sym">&#8383;</div><div class="code">BTC</div><div class="name">Bitcoin</div></div>
+    <div class="cell"><div class="sym">&#8361;</div><div class="code">KRW</div><div class="name">Won (Coreia)</div></div>
+    <div class="cell"><div class="sym">&#8362;</div><div class="code">ILS</div><div class="name">Shekel (Israel)</div></div>
+    <div class="cell"><div class="sym">&#8363;</div><div class="code">VND</div><div class="name">Dong (Vietna)</div></div>
+    <div class="cell"><div class="sym">&#8372;</div><div class="code">UAH</div><div class="name">Hryvnia (Ucrania)</div></div>
+    <div class="cell"><div class="sym">&#8376;</div><div class="code">KZT</div><div class="name">Tenge (Cazaquistao)</div></div>
+    <div class="cell"><div class="sym">&#8378;</div><div class="code">TRY</div><div class="name">Lira (Turquia)</div></div>
+    <div class="cell"><div class="sym">&#8358;</div><div class="code">NGN</div><div class="name">Naira (Nigeria)</div></div>
+    <div class="cell"><div class="sym">&#8369;</div><div class="code">PHP</div><div class="name">Peso (Filipinas)</div></div>
+    <div class="cell"><div class="sym">&#3647;</div><div class="code">THB</div><div class="name">Baht (Tailandia)</div></div>
+    <div class="cell"><div class="sym">&#8353;</div><div class="code">CRC</div><div class="name">Colon (Costa Rica)</div></div>
+    <div class="cell"><div class="sym">&#8366;</div><div class="code">MNT</div><div class="name">Tugrik (Mongolia)</div></div>
+    <div class="cell"><div class="sym">&#8357;</div><div class="code">LAK</div><div class="name">Kip (Laos)</div></div>
+    <div class="cell"><div class="sym">&#8373;</div><div class="code">GHS</div><div class="name">Cedi (Gana)</div></div>
+    <div class="cell"><div class="sym">&#8370;</div><div class="code">PYG</div><div class="name">Guarani (Paraguai)</div></div>
+    <div class="cell"><div class="sym">&#8382;</div><div class="code">GEL</div><div class="name">Lari (Georgia)</div></div>
+    <div class="cell"><div class="sym">&#162;</div><div class="code">cent</div><div class="name">Centavo</div></div>
+  </div>
+  <p class="note">Observacao: estes glifos ja aparecem com Inter + fallback do sistema. Embutir o Noto Sans Symbols 2 (OFL) so vale se voce quiser garantir o MESMO traco em qualquer distro. Recomendo confirmar quais moedas o app realmente expoe (o ECB/Frankfurter lista ~30) antes de decidir.</p>
+</body>
+</html>

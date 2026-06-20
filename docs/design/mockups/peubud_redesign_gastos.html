@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<title>PeuBud: redesign Gastos (tabela)</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Color+Emoji&display=swap">
+<style>
+  :root{
+    --bg:#EEF3F9; --surface:#FFFFFF; --surface-2:#F7FAFD;
+    --side-1:#1B2A41; --side-2:#16233A; --side-txt:#AFBDD0; --side-txt-dim:#7A8AA3;
+    --primary:#3B82F6; --primary-d:#2563EB; --primary-soft:#E7F0FE;
+    --text:#15233B; --sub:#67768D; --border:#E4EAF2;
+    --pos:#15A66A; --pos-soft:#E4F6EE; --neg:#E5484D; --neg-soft:#FCEAEA; --gold:#E8A93B;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;display:flex;min-height:100vh}
+  .emoji{font-family:'Noto Color Emoji',sans-serif}
+  .side{width:236px;flex-shrink:0;background:linear-gradient(170deg,var(--side-1),var(--side-2));color:var(--side-txt);padding:18px 14px;display:flex;flex-direction:column;gap:4px}
+  .brand{display:flex;align-items:center;gap:10px;padding:6px 8px 18px}
+  .brand .logo{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,#3B82F6,#22C55E);display:flex;align-items:center;justify-content:center;font-size:17px}
+  .brand .name{font-weight:700;font-size:17px;color:#fff}
+  .grp{font-size:10.5px;font-weight:600;letter-spacing:1.2px;color:var(--side-txt-dim);text-transform:uppercase;margin:14px 10px 5px}
+  .item{display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:9px;cursor:pointer;color:var(--side-txt);font-weight:500;font-size:13.5px}
+  .item .ic{font-size:16px;width:18px;text-align:center}
+  .item:hover{background:rgba(255,255,255,.06);color:#fff}
+  .item.active{background:var(--primary);color:#fff;box-shadow:0 4px 12px rgba(59,130,246,.4)}
+
+  .main{flex:1;padding:24px 30px;overflow:auto}
+  .topbar{display:flex;align-items:center;justify-content:space-between}
+  .topbar h1{font-size:22px;font-weight:700}
+  .topbar .crumb{color:var(--sub);font-size:13px;margin-top:2px}
+  .monthnav{display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:4px;box-shadow:0 1px 2px rgba(20,40,80,.05)}
+  .monthnav button{border:none;background:transparent;width:30px;height:30px;border-radius:7px;cursor:pointer;font-size:14px;color:var(--sub)}
+  .monthnav .lbl{font-weight:600;padding:0 8px}
+
+  /* barra de acoes */
+  .actions{display:flex;align-items:center;gap:10px;margin:20px 0 14px}
+  button.cta{font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer;border:none;border-radius:9px;padding:9px 16px;color:#fff;background:var(--primary);box-shadow:0 3px 10px rgba(59,130,246,.35)}
+  button.sec{font-family:inherit;font-size:13.5px;font-weight:500;cursor:pointer;border:1px solid var(--border);border-radius:9px;padding:9px 14px;background:var(--surface);color:var(--text);box-shadow:0 2px 5px rgba(20,40,80,.06)}
+  button.sec:hover{border-color:var(--primary);color:var(--primary)}
+  button.sec[disabled]{opacity:.5;cursor:default;box-shadow:none}
+  .search{margin-left:auto;display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:8px 12px;color:var(--sub);min-width:200px}
+
+  /* tabela */
+  .tablewrap{background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:0 1px 3px rgba(20,40,80,.05);overflow:hidden}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  thead th{text-align:left;font-weight:600;font-size:11.5px;letter-spacing:.5px;text-transform:uppercase;color:var(--sub);
+        padding:13px 16px;background:var(--surface-2);border-bottom:1px solid var(--border)}
+  thead th.r{text-align:right}
+  tbody td{padding:13px 16px;border-bottom:1px solid #EEF2F7;height:48px;vertical-align:middle}
+  tbody tr:hover{background:#F4F8FE}
+  tbody tr:last-child td{border-bottom:none}
+  td.r{text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
+  td.desc{font-weight:600}
+  .date{color:var(--sub);font-variant-numeric:tabular-nums}
+  .tag{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:600}
+  .tag.cat{background:#EEF1F6;color:#4A5568}
+  .tag.fixo{background:var(--primary-soft);color:var(--primary-d)}
+  .tag.var{background:#FBF1DC;color:#9A6B16}
+  .pay{color:var(--sub);font-size:12.5px}
+  tfoot td{padding:14px 16px;background:var(--surface-2);font-weight:600;border-top:1px solid var(--border)}
+  .foot{display:flex;gap:24px;color:var(--text)}
+  .foot b.r{color:var(--neg)}
+  .miniprog{display:inline-block;width:60px;height:6px;border-radius:3px;background:#E4EAF2;vertical-align:middle;margin-left:8px;overflow:hidden}
+  .miniprog i{display:block;height:100%;background:var(--primary);width:43%}
+</style>
+</head>
+<body>
+  <nav class="side">
+    <div class="brand"><div class="logo emoji">🐷</div><div class="name">PeuBud</div></div>
+    <div class="item"><span class="ic emoji">🏠</span> Dashboard</div>
+    <div class="grp">Dia a dia</div>
+    <div class="item"><span class="ic emoji">💵</span> Entradas</div>
+    <div class="item active"><span class="ic emoji">🧾</span> Gastos</div>
+    <div class="item"><span class="ic emoji">💳</span> Cartões</div>
+    <div class="item"><span class="ic emoji">🔁</span> Recorrências</div>
+    <div class="item"><span class="ic emoji">🔔</span> Lembretes</div>
+    <div class="grp">Planejar</div>
+    <div class="item"><span class="ic emoji">📋</span> Planejamento</div>
+    <div class="item"><span class="ic emoji">🎯</span> Metas</div>
+    <div class="item"><span class="ic emoji">📉</span> Dívidas</div>
+    <div class="item"><span class="ic emoji">📈</span> Tendências</div>
+    <div class="grp">Investir</div>
+    <div class="item"><span class="ic emoji">📊</span> Investimentos</div>
+    <div class="item"><span class="ic emoji">💰</span> Proventos</div>
+    <div class="item"><span class="ic emoji">🏦</span> Bolsa</div>
+  </nav>
+
+  <main class="main">
+    <div class="topbar">
+      <div><h1>Gastos</h1><div class="crumb">Gastos do dia a dia que nao passam no cartao</div></div>
+      <div class="monthnav"><button class="emoji">◀️</button><span class="lbl">Junho 2026</span><button class="emoji">▶️</button></div>
+    </div>
+
+    <div class="actions">
+      <button class="cta"><span class="emoji">➕</span> Novo gasto</button>
+      <button class="sec" disabled><span class="emoji">🗑️</span> Excluir</button>
+      <button class="sec"><span class="emoji">🔃</span> Organizar por ▾</button>
+      <div class="search"><span class="emoji">🔍</span> Buscar gasto...</div>
+    </div>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr>
+          <th>Data</th><th>Descricao</th><th>Categoria</th><th>Pagamento</th><th>Tipo</th><th class="r">Valor</th>
+        </tr></thead>
+        <tbody>
+          <tr><td class="date">05/06</td><td class="desc">Aluguel</td><td><span class="tag cat">Moradia</span></td><td class="pay">Boleto</td><td><span class="tag fixo">Fixo</span></td><td class="r">R$ 1.500,00</td></tr>
+          <tr><td class="date">08/06</td><td class="desc">Mercado do mes</td><td><span class="tag cat">Alimentacao</span></td><td class="pay">PIX</td><td><span class="tag var">Variavel</span></td><td class="r">R$ 612,40</td></tr>
+          <tr><td class="date">10/06</td><td class="desc">Academia</td><td><span class="tag cat">Saude</span></td><td class="pay">Debito</td><td><span class="tag fixo">Fixo</span></td><td class="r">R$ 99,90</td></tr>
+          <tr><td class="date">12/06</td><td class="desc">Uber</td><td><span class="tag cat">Transporte</span></td><td class="pay">PIX</td><td><span class="tag var">Variavel</span></td><td class="r">R$ 38,70</td></tr>
+          <tr><td class="date">15/06</td><td class="desc">Conta de luz</td><td><span class="tag cat">Moradia</span></td><td class="pay">Boleto</td><td><span class="tag fixo">Fixo</span></td><td class="r">R$ 187,30</td></tr>
+          <tr><td class="date">18/06</td><td class="desc">Restaurante</td><td><span class="tag cat">Lazer</span></td><td class="pay">Dinheiro</td><td><span class="tag var">Variavel</span></td><td class="r">R$ 145,00</td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="6">
+          <div class="foot">
+            <span>Mes atual</span>
+            <span>Fixos: <b>R$ 1.787,20</b> (43%<span class="miniprog"><i></i></span>)</span>
+            <span>Variaveis: <b>R$ 796,10</b></span>
+            <span>Total: <b class="r">R$ 2.583,30</b></span>
+          </div>
+        </td></tr></tfoot>
+      </table>
+    </div>
+  </main>
+</body>
+</html>

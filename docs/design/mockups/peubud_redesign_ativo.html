@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<title>PeuBud: detalhe do ativo + analise tecnica</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Color+Emoji&display=swap">
+<style>
+  :root{
+    --bg:#EEF3F9; --surface:#FFFFFF; --surface-2:#F7FAFD;
+    --side-1:#1B2A41; --side-2:#16233A; --side-txt:#AFBDD0; --side-txt-dim:#7A8AA3;
+    --primary:#3B82F6; --primary-d:#2563EB; --primary-soft:#E7F0FE;
+    --text:#15233B; --sub:#67768D; --border:#E4EAF2; --pos:#16C784; --neg:#EA3943; --gold:#E8A93B;
+    --chart-bg:#141A21; --magic:#8B5CF6;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;display:flex;min-height:100vh}
+  .emoji{font-family:'Noto Color Emoji',sans-serif}
+  .side{width:236px;flex-shrink:0;background:linear-gradient(170deg,var(--side-1),var(--side-2));color:var(--side-txt);padding:18px 14px}
+  .brand{display:flex;align-items:center;gap:10px;padding:6px 8px 18px}
+  .brand .logo{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,#3B82F6,#22C55E);display:flex;align-items:center;justify-content:center;font-size:17px}
+  .brand .name{font-weight:700;font-size:17px;color:#fff}
+  .grp{font-size:10.5px;font-weight:600;letter-spacing:1.2px;color:var(--side-txt-dim);text-transform:uppercase;margin:14px 10px 5px}
+  .item{display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:9px;color:var(--side-txt);font-weight:500;font-size:13.5px}
+  .item.active{background:var(--primary);color:#fff;box-shadow:0 4px 12px rgba(59,130,246,.4)}
+
+  .main{flex:1;padding:20px 26px;overflow:auto}
+  .back{color:var(--sub);font-size:13px;cursor:pointer;margin-bottom:10px;display:inline-block}
+  .head{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-bottom:6px}
+  .head .tk{font-size:23px;font-weight:700} .head .nm{color:var(--sub);font-size:12.5px}
+  .head .px{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
+  .head .vr{font-weight:700;font-size:14px} .up{color:var(--pos)} .down{color:var(--neg)}
+  .magic{margin-left:auto;font-family:inherit;font-weight:600;font-size:13px;border:none;border-radius:10px;padding:9px 16px;color:#fff;
+         background:linear-gradient(135deg,#8B5CF6,#6D28D9);cursor:pointer;box-shadow:0 4px 14px rgba(139,92,246,.4);display:flex;align-items:center;gap:7px}
+  .stats{display:flex;gap:20px;margin:8px 0 14px;flex-wrap:wrap}
+  .stats div{font-size:12px;color:var(--sub)} .stats b{color:var(--text);font-weight:600}
+
+  .ctrls{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+  .tf{display:inline-flex;gap:4px;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:4px}
+  .tf span{padding:5px 11px;border-radius:6px;font-size:12.5px;font-weight:600;color:var(--sub);cursor:pointer}
+  .tf span.on{background:#141A21;color:#fff}
+  .inds{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{font-size:12px;font-weight:600;padding:6px 11px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--sub);cursor:pointer}
+  .chip.on{background:var(--primary-soft);border-color:#BBD5FB;color:var(--primary-d)}
+
+  .layout{display:grid;grid-template-columns:auto 1fr 270px;gap:14px}
+  /* barra de desenho vertical */
+  .tools{display:flex;flex-direction:column;gap:6px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:8px;height:fit-content;box-shadow:0 1px 3px rgba(20,40,80,.05)}
+  .tools .tl{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;color:var(--sub)}
+  .tools .tl:hover{background:var(--surface-2);color:var(--primary)}
+  .tools .tl.on{background:var(--primary);color:#fff}
+  .tools .sep{height:1px;background:var(--border);margin:3px 4px}
+
+  .chartcard{background:var(--chart-bg);border:1px solid #232B34;border-radius:14px;padding:10px;box-shadow:0 2px 8px rgba(20,40,80,.12)}
+  .clbl{color:#8A97A8;font-size:11px;padding:2px 6px 6px;display:flex;gap:14px}
+  .clbl .ma1{color:#EA3943} .clbl .ma2{color:#E8A93B} .clbl .bb{color:#5B8DEF} .clbl .lta{color:#16C784}
+  canvas{width:100%;display:block}
+
+  .book{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:0 1px 3px rgba(20,40,80,.05);height:fit-content}
+  .book h3{font-size:13px;font-weight:700;padding:11px 14px;border-bottom:1px solid var(--border)}
+  .bkhead{display:flex;justify-content:space-between;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--sub);padding:6px 14px;background:var(--surface-2)}
+  .lvl{position:relative;display:flex;justify-content:space-between;padding:5px 14px;font-size:12.5px;font-variant-numeric:tabular-nums;z-index:1}
+  .lvl .fill{position:absolute;top:0;bottom:0;right:0;z-index:-1;opacity:.16}
+  .lvl.ask .fill{background:var(--neg)} .lvl.bid .fill{background:var(--pos)}
+  .lvl.ask .p{color:var(--neg);font-weight:600} .lvl.bid .p{color:var(--pos);font-weight:600} .lvl .q{color:var(--sub)}
+  .spread{text-align:center;font-size:11.5px;color:var(--sub);padding:7px;background:var(--surface-2);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+  .spread b{color:var(--text)}
+
+  .legend{margin-top:16px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .lg{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:11px 13px;font-size:12px;color:var(--sub)}
+  .lg b{color:var(--text);display:block;margin-bottom:2px;font-size:12.5px}
+  .note{margin-top:14px;font-size:12px;color:#7a5b10;background:#FFF6E5;border:1px solid #F3E2BC;border-radius:10px;padding:10px 13px}
+</style>
+</head>
+<body>
+  <nav class="side">
+    <div class="brand"><div class="logo emoji">🐷</div><div class="name">PeuBud</div></div>
+    <div class="grp">Investir</div>
+    <div class="item"><span class="emoji">📊</span> Investimentos</div>
+    <div class="item"><span class="emoji">💰</span> Proventos</div>
+    <div class="item active"><span class="emoji">🏦</span> Bolsa</div>
+  </nav>
+
+  <main class="main">
+    <span class="back">◀️ Voltar para Bolsa</span>
+    <div class="head">
+      <div><div class="tk">PETR4</div><div class="nm">Petrobras PN · B3</div></div>
+      <div class="px">R$ 38,72</div><div class="vr up">▲ 0,91 (2,40%)</div>
+      <button class="magic"><span class="emoji">🪄</span> Auxilio de IA</button>
+    </div>
+    <div class="stats"><div>Abertura <b>37,90</b></div><div>Maxima <b>38,95</b></div><div>Minima <b>37,72</b></div><div>Volume <b>52,3 M</b></div></div>
+
+    <div class="ctrls">
+      <div class="tf"><span>1D</span><span class="on">1S</span><span>1M</span><span>3M</span><span>1A</span></div>
+      <div class="inds">
+        <span class="chip on">MM20</span><span class="chip on">MM50</span><span class="chip on">Bollinger</span>
+        <span class="chip on">Suporte/Resist.</span><span class="chip on">RSI</span><span class="chip">MACD</span><span class="chip">Fibonacci</span>
+      </div>
+    </div>
+
+    <div class="layout">
+      <!-- ferramentas de desenho -->
+      <div class="tools">
+        <div class="tl on emoji" title="Cursor">🖱️</div>
+        <div class="sep"></div>
+        <div class="tl emoji" title="Linha de tendencia (LTA/LTB)">📈</div>
+        <div class="tl emoji" title="Linha horizontal (suporte/resistencia)">➖</div>
+        <div class="tl emoji" title="Canal">🚧</div>
+        <div class="tl emoji" title="Fibonacci">🔢</div>
+        <div class="tl emoji" title="Retangulo / zona">▭</div>
+        <div class="tl emoji" title="Anotacao">📝</div>
+        <div class="sep"></div>
+        <div class="tl emoji" title="Apagar tracados">🧹</div>
+      </div>
+
+      <div class="chartcard">
+        <div class="clbl"><span>PETR4 · 1S</span><span class="ma1">MM20</span><span class="ma2">MM50</span><span class="bb">Bollinger</span><span class="lta">LTA</span><span style="color:#EA3943">Resistencia</span></div>
+        <canvas id="chart"></canvas>
+        <canvas id="rsi"></canvas>
+      </div>
+
+      <div class="book">
+        <h3>Book de ofertas</h3>
+        <div class="bkhead"><span>Preco</span><span>Qtd</span></div>
+        <div class="lvl ask"><span class="fill" style="width:40%"></span><span class="p">38,80</span><span class="q">12.400</span></div>
+        <div class="lvl ask"><span class="fill" style="width:62%"></span><span class="p">38,78</span><span class="q">19.800</span></div>
+        <div class="lvl ask"><span class="fill" style="width:78%"></span><span class="p">38,74</span><span class="q">24.500</span></div>
+        <div class="lvl ask"><span class="fill" style="width:22%"></span><span class="p">38,73</span><span class="q">5.900</span></div>
+        <div class="spread">Spread <b>R$ 0,02</b> · ultimo <b>38,72</b></div>
+        <div class="lvl bid"><span class="fill" style="width:55%"></span><span class="p">38,71</span><span class="q">16.200</span></div>
+        <div class="lvl bid"><span class="fill" style="width:88%"></span><span class="p">38,70</span><span class="q">28.700</span></div>
+        <div class="lvl bid"><span class="fill" style="width:34%"></span><span class="p">38,68</span><span class="q">9.400</span></div>
+        <div class="lvl bid"><span class="fill" style="width:48%"></span><span class="p">38,66</span><span class="q">13.500</span></div>
+      </div>
+    </div>
+
+    <div class="legend">
+      <div class="lg"><b>📈 Linha de Tendencia (LTA/LTB)</b> LTA liga fundos ascendentes (compradores no controle); LTB liga topos descendentes (vendedores dominam).</div>
+      <div class="lg"><b>➖ Suporte e Resistencia</b> Suporte: preco onde a compra segura a queda. Resistencia: preco onde a venda trava a alta.</div>
+      <div class="lg"><b>〰️ Medias Moveis (MM)</b> Suavizam o historico pra mostrar a direcao da tendencia com mais clareza.</div>
+      <div class="lg"><b>📊 Bandas de Bollinger</b> Mostram volatilidade e quando o ativo pode estar muito valorizado/desvalorizado.</div>
+      <div class="lg"><b>📉 RSI / MACD</b> Osciladores de forca e momento; ajudam a ver sobrecompra/sobrevenda e cruzamentos.</div>
+      <div class="lg"><b>🔢 Fibonacci / Canais</b> Niveis de retracao e faixas de preco pra projetar alvos e zonas.</div>
+    </div>
+
+    <div class="note"><span class="emoji">⚠️</span> Dados ilustrativos. <b>Candlestick/indicadores</b> calculados sobre o historico (brapi/yfinance, ja temos IndicadoresTecnicos e SuporteResistencia no codigo). <b>Book nivel 2</b> e fonte a definir (corretora/B3 paga). <b>Auxilio de IA</b> 🪄: a definir (Claude/GPT/Gemini/Grok/Ollama nas Configuracoes).</div>
+  </main>
+
+  <script>
+    function mk(id,h){const c=document.getElementById(id);const dpr=window.devicePixelRatio||1;const w=c.clientWidth||820;c.width=w*dpr;c.height=h*dpr;c.style.height=h+'px';const x=c.getContext('2d');x.scale(dpr,dpr);return {x,w,h};}
+    // dados
+    const N=52; let p=33; const d=[];
+    for(let i=0;i<N;i++){const o=p;const drift=Math.sin(i/6)*0.6+0.14;const ch=drift+(Math.random()-0.5)*1.5;p=Math.max(28,o+ch);const c=p;const hi=Math.max(o,c)+Math.random()*0.8,lo=Math.min(o,c)-Math.random()*0.8;d.push({o,c,hi,lo,v:.3+Math.random()});}
+    const C=d.map(x=>x.c);
+    const sma=(n,i)=> i<n?null:C.slice(i-n,i).reduce((a,b)=>a+b,0)/n;
+    function drawMain(){
+      const {x,w,h}=mk('chart',300); x.fillStyle='#141A21';x.fillRect(0,0,w,h);
+      const top=8,volH=46,ch_h=h-volH-16;
+      let mn=Math.min(...d.map(a=>a.lo)),mx=Math.max(...d.map(a=>a.hi));const pad=(mx-mn)*.08;mn-=pad;mx+=pad;
+      const Y=v=>top+ch_h-((v-mn)/(mx-mn))*ch_h;const cw=w/N,bw=cw*.6;
+      x.strokeStyle='#262E38';x.setLineDash([4,4]);for(let g=0;g<=4;g++){const yy=top+ch_h*g/4;x.beginPath();x.moveTo(0,yy);x.lineTo(w,yy);x.stroke();}x.setLineDash([]);
+      // bollinger (banda)
+      const bb=[];for(let i=0;i<N;i++){if(i<20){bb.push(null);continue;}const m=sma(20,i);const sd=Math.sqrt(C.slice(i-20,i).reduce((a,b)=>a+(b-m)**2,0)/20);bb.push({u:m+2*sd,l:m-2*sd});}
+      x.fillStyle='rgba(91,141,239,.12)';x.beginPath();let st=false;
+      bb.forEach((b,i)=>{if(!b)return;const cx=i*cw+cw/2;if(!st){x.moveTo(cx,Y(b.u));st=true;}else x.lineTo(cx,Y(b.u));});
+      for(let i=N-1;i>=0;i--){if(!bb[i])continue;const cx=i*cw+cw/2;x.lineTo(cx,Y(bb[i].l));}x.closePath();x.fill();
+      // volume
+      const vmx=Math.max(...d.map(a=>a.v));d.forEach((a,i)=>{const up=a.c>=a.o;x.fillStyle=up?'rgba(22,199,132,.5)':'rgba(234,57,67,.5)';const vh=(a.v/vmx)*volH;x.fillRect(i*cw+cw*.2,h-vh,bw,vh);});
+      // candles
+      d.forEach((a,i)=>{const up=a.c>=a.o;x.strokeStyle=x.fillStyle=up?'#16C784':'#EA3943';const cx=i*cw+cw/2;x.beginPath();x.moveTo(cx,Y(a.hi));x.lineTo(cx,Y(a.lo));x.stroke();const yo=Y(a.o),yc=Y(a.c);x.fillRect(cx-bw/2,Math.min(yo,yc),bw,Math.max(1.5,Math.abs(yc-yo)));});
+      // MM20 (vermelho) MM50 (dourado)
+      const line=(n,col)=>{x.strokeStyle=col;x.lineWidth=1.8;x.beginPath();let s=false;for(let i=0;i<N;i++){const v=sma(n,i);if(v==null)continue;const cx=i*cw+cw/2;if(!s){x.moveTo(cx,Y(v));s=true;}else x.lineTo(cx,Y(v));}x.stroke();};
+      line(20,'#EA3943');line(50,'#E8A93B');
+      // LTA (linha de tendencia de alta, verde tracejada) ligando 2 fundos
+      x.strokeStyle='#16C784';x.lineWidth=1.6;x.setLineDash([6,4]);x.beginPath();x.moveTo(6*cw,Y(d[6].lo));x.lineTo(44*cw,Y(d[44].lo));x.stroke();x.setLineDash([]);
+      // resistencia (horizontal vermelha)
+      const res=mx-pad*1.2;x.strokeStyle='rgba(234,57,67,.7)';x.setLineDash([5,4]);x.beginPath();x.moveTo(0,Y(res));x.lineTo(w,Y(res));x.stroke();x.setLineDash([]);
+    }
+    function drawRSI(){
+      const {x,w,h}=mk('rsi',74);x.fillStyle='#141A21';x.fillRect(0,0,w,h);
+      x.fillStyle='#8A97A8';x.font='10px Inter';x.fillText('RSI 14',6,13);
+      const cw=w/N;const rsi=[];let g=0,l=0;
+      for(let i=1;i<N;i++){const ch=C[i]-C[i-1];g=(g*13+(ch>0?ch:0))/14;l=(l*13+(ch<0?-ch:0))/14;rsi.push(i<14?null:100-100/(1+g/(l||.0001)));}
+      // zonas 70/30
+      const Y=v=>10+(h-18)*(1-v/100);
+      x.strokeStyle='#2A323C';x.setLineDash([3,3]);[70,30].forEach(z=>{x.beginPath();x.moveTo(0,Y(z));x.lineTo(w,Y(z));x.stroke();});x.setLineDash([]);
+      x.strokeStyle='#8B5CF6';x.lineWidth=1.8;x.beginPath();let s=false;rsi.forEach((v,i)=>{if(v==null)return;const cx=(i+1)*cw+cw/2;if(!s){x.moveTo(cx,Y(v));s=true;}else x.lineTo(cx,Y(v));});x.stroke();
+    }
+    function all(){drawMain();drawRSI();}all();window.addEventListener('resize',all);
+  </script>
+</body>
+</html>

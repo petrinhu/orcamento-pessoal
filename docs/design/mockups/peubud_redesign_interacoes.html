@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<title>PeuBud: hover, orientacoes, menus</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Color+Emoji&display=swap">
+<style>
+  :root{
+    --bg:#EEF3F9; --surface:#FFFFFF; --surface-2:#F7FAFD;
+    --side-1:#1B2A41; --side-2:#16233A; --side-txt:#AFBDD0; --side-txt-dim:#7A8AA3;
+    --primary:#3B82F6; --primary-d:#2563EB; --primary-soft:#E7F0FE;
+    --text:#15233B; --sub:#67768D; --border:#E4EAF2; --pos:#15A66A; --gold:#E8A93B; --dark:#1B2A41;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;display:flex;min-height:100vh}
+  .emoji{font-family:'Noto Color Emoji',sans-serif}
+  .side{width:236px;flex-shrink:0;background:linear-gradient(170deg,var(--side-1),var(--side-2));color:var(--side-txt);padding:18px 14px;display:flex;flex-direction:column;gap:4px}
+  .brand{display:flex;align-items:center;gap:10px;padding:6px 8px 14px}
+  .brand .logo{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,#3B82F6,#22C55E);display:flex;align-items:center;justify-content:center;font-size:17px}
+  .brand .name{font-weight:700;font-size:17px;color:#fff}
+  .brand .col{margin-left:auto;color:var(--side-txt-dim);cursor:pointer;font-size:15px}
+  .grp{font-size:10.5px;font-weight:600;letter-spacing:1.2px;color:var(--side-txt-dim);text-transform:uppercase;margin:12px 10px 5px}
+  .item{display:flex;align-items:center;gap:11px;padding:8px 11px;border-radius:9px;cursor:pointer;color:var(--side-txt);font-weight:500;font-size:13.5px}
+  .item .ic{font-size:16px;width:18px;text-align:center}
+  .item:hover{background:rgba(255,255,255,.06);color:#fff}
+  .item.active{background:var(--primary);color:#fff;box-shadow:0 4px 12px rgba(59,130,246,.4)}
+  .side .foot{margin-top:auto;border-top:1px solid rgba(255,255,255,.08);padding-top:10px}
+  .user{display:flex;align-items:center;gap:9px;padding:9px 11px;margin-top:4px}
+  .user .av{width:26px;height:26px;border-radius:50%;background:#3B82F6;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+  .user .nm{font-size:13px;color:#fff;font-weight:500}
+
+  .main{flex:1;padding:24px 30px;overflow:auto;position:relative}
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+  .topbar h1{font-size:22px;font-weight:700}
+  .topbar .crumb{color:var(--sub);font-size:13px;margin-top:2px}
+  .util{display:flex;align-items:center;gap:8px;position:relative}
+  .ubtn{width:38px;height:38px;border-radius:10px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;box-shadow:0 1px 3px rgba(20,40,80,.05)}
+  .ubtn:hover{border-color:var(--primary)}
+  .ubtn.lbl{width:auto;padding:0 14px;gap:7px;font-size:13px;font-weight:500}
+  /* dropdown "Mais" aberto */
+  .menu{position:absolute;top:46px;right:0;background:var(--surface);border:1px solid var(--border);border-radius:12px;
+        box-shadow:0 12px 34px rgba(20,40,80,.18);padding:6px;min-width:210px;z-index:5}
+  .menu div{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;font-size:13.5px;cursor:pointer}
+  .menu div:hover{background:var(--surface-2)}
+  .menu hr{border:none;border-top:1px solid var(--border);margin:5px 8px}
+
+  .help{background:var(--primary-soft);border:1px solid #CFE0FB;border-radius:12px;padding:13px 16px;margin-bottom:18px;display:flex;gap:10px;align-items:flex-start;position:relative}
+  .help .body{line-height:1.5}
+  .gloss{border-bottom:1.5px dotted var(--primary);cursor:help;color:var(--primary-d);font-weight:500;position:relative}
+  /* tooltip de glossario aberto */
+  .tip{position:absolute;left:0;top:24px;width:260px;background:var(--dark);color:#EAF0F8;font-size:12.5px;line-height:1.5;
+       border-radius:10px;padding:11px 13px;box-shadow:0 10px 28px rgba(0,0,0,.28);z-index:6}
+  .tip b{color:#fff} .tip::before{content:'';position:absolute;top:-6px;left:18px;border:6px solid transparent;border-bottom-color:var(--dark);border-top:0}
+  .help .x{margin-left:auto;color:var(--sub);cursor:pointer;font-size:12px;white-space:nowrap}
+
+  .panel{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px;box-shadow:0 1px 3px rgba(20,40,80,.05);margin-bottom:16px}
+  .panel .h{font-weight:600;margin-bottom:6px}
+  .empty{text-align:center;padding:40px 20px;color:var(--sub)}
+  .empty .big{font-size:40px} .empty .t{font-size:15px;font-weight:600;color:var(--text);margin:10px 0 4px}
+  .empty button{margin-top:14px;font-family:inherit;font-weight:600;border:none;border-radius:9px;padding:9px 18px;color:#fff;background:var(--primary);cursor:pointer;box-shadow:0 3px 10px rgba(59,130,246,.35)}
+
+  /* botao com tooltip */
+  .demoreel{display:flex;gap:30px;align-items:flex-start;margin-top:4px}
+  .bt{position:relative;display:inline-block}
+  .bt .btn{font-family:inherit;font-weight:600;border:none;border-radius:9px;padding:9px 16px;color:#fff;background:var(--primary);cursor:pointer;box-shadow:0 3px 10px rgba(59,130,246,.35)}
+  .bt .bttip{position:absolute;top:-34px;left:50%;transform:translateX(-50%);background:var(--dark);color:#fff;font-size:11.5px;padding:5px 9px;border-radius:7px;white-space:nowrap;box-shadow:0 6px 16px rgba(0,0,0,.25)}
+  .note{font-size:12px;color:var(--sub);margin-top:8px}
+</style>
+</head>
+<body>
+  <nav class="side">
+    <div class="brand"><div class="logo emoji">🐷</div><div class="name">PeuBud</div><span class="col emoji">⏪</span></div>
+    <div class="item"><span class="ic emoji">🏠</span> Dashboard</div>
+    <div class="grp">Dia a dia</div>
+    <div class="item active"><span class="ic emoji">💵</span> Entradas</div>
+    <div class="item"><span class="ic emoji">🧾</span> Gastos</div>
+    <div class="item"><span class="ic emoji">💳</span> Cartões</div>
+    <div class="item"><span class="ic emoji">🔁</span> Recorrências</div>
+    <div class="item"><span class="ic emoji">🔔</span> Lembretes</div>
+    <div class="grp">Planejar</div>
+    <div class="item"><span class="ic emoji">📋</span> Planejamento</div>
+    <div class="item"><span class="ic emoji">🎯</span> Metas</div>
+    <div class="grp">Investir</div>
+    <div class="item"><span class="ic emoji">📊</span> Investimentos</div>
+    <!-- rodape da sidebar = "menus" globais -->
+    <div class="foot">
+      <div class="item"><span class="ic emoji">⚙️</span> Preferências</div>
+      <div class="item"><span class="ic emoji">❓</span> Ajuda</div>
+      <div class="item"><span class="ic emoji">🌗</span> Tema: automatico</div>
+      <div class="user"><div class="av">P</div><div class="nm">petrus</div></div>
+    </div>
+  </nav>
+
+  <main class="main">
+    <div class="topbar">
+      <div><h1>Entradas</h1><div class="crumb">O dinheiro que voce recebe</div></div>
+      <div class="util">
+        <div class="ubtn emoji" title="Buscar">🔍</div>
+        <div class="ubtn emoji" title="Calculadora">🧮</div>
+        <div class="ubtn lbl"><span class="emoji">⋯</span> Mais</div>
+        <!-- menu "Mais" aberto (substitui a barra de menu antiga) -->
+        <div class="menu">
+          <div><span class="emoji">📁</span> Importar extrato...</div>
+          <div><span class="emoji">💾</span> Exportar...</div>
+          <div><span class="emoji">🔄</span> Reconciliar extrato</div>
+          <hr>
+          <div><span class="emoji">🖨️</span> Imprimir</div>
+          <div><span class="emoji">ℹ️</span> Sobre o PeuBud</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="help">
+      <span class="emoji">💵</span>
+      <div class="body">Aqui voce registra o dinheiro que recebe. O app calcula o liquido descontando o
+        <span class="gloss">IRRF<div class="tip"><b>IRRF</b> (Imposto de Renda Retido na Fonte): a parte do imposto ja descontada do seu pagamento. Passe o mouse em termos sublinhados pra ver o que significam.</div></span>
+        e o <span class="gloss">INSS</span>, se voce informar.</div>
+      <span class="x">recolher ▲</span>
+    </div>
+
+    <div class="panel">
+      <div class="h">Microinteracoes (passe o mouse, no app de verdade)</div>
+      <div class="demoreel">
+        <div class="bt"><div class="bttip">Adicionar um recebimento</div><button class="btn"><span class="emoji">➕</span> Novo lancamento</button>
+          <div class="note">Botao: sobe levinho + sombra, afunda no clique, tooltip explica a acao.</div></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="empty">
+        <div class="big emoji">💵</div>
+        <div class="t">Nenhuma entrada ainda neste mes</div>
+        <div>Registre seu salario, freela ou aluguel pra comecar a acompanhar.</div>
+        <button class="emoji">➕ Novo lancamento</button>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<title>PeuBud: redesign Graficos</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Color+Emoji&display=swap">
+<style>
+  :root{
+    --bg:#EEF3F9; --surface:#FFFFFF; --surface-2:#F7FAFD;
+    --side-1:#1B2A41; --side-2:#16233A; --side-txt:#AFBDD0; --side-txt-dim:#7A8AA3;
+    --primary:#3B82F6; --primary-d:#2563EB; --primary-soft:#E7F0FE;
+    --text:#15233B; --sub:#67768D; --border:#E4EAF2;
+    --pos:#15A66A; --neg:#E5484D; --gold:#E8A93B; --purple:#8B5CF6; --slate:#94A3B8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;display:flex;min-height:100vh}
+  .emoji{font-family:'Noto Color Emoji',sans-serif}
+  .side{width:236px;flex-shrink:0;background:linear-gradient(170deg,var(--side-1),var(--side-2));color:var(--side-txt);padding:18px 14px;display:flex;flex-direction:column;gap:4px}
+  .brand{display:flex;align-items:center;gap:10px;padding:6px 8px 18px}
+  .brand .logo{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,#3B82F6,#22C55E);display:flex;align-items:center;justify-content:center;font-size:17px}
+  .brand .name{font-weight:700;font-size:17px;color:#fff}
+  .grp{font-size:10.5px;font-weight:600;letter-spacing:1.2px;color:var(--side-txt-dim);text-transform:uppercase;margin:14px 10px 5px}
+  .item{display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:9px;cursor:pointer;color:var(--side-txt);font-weight:500;font-size:13.5px}
+  .item .ic{font-size:16px;width:18px;text-align:center}
+  .item:hover{background:rgba(255,255,255,.06);color:#fff}
+  .item.active{background:var(--primary);color:#fff;box-shadow:0 4px 12px rgba(59,130,246,.4)}
+
+  .main{flex:1;padding:24px 30px;overflow:auto}
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+  .topbar h1{font-size:22px;font-weight:700}
+  .topbar .crumb{color:var(--sub);font-size:13px;margin-top:2px}
+  .tabs{display:flex;gap:6px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:4px}
+  .tabs span{padding:6px 12px;border-radius:7px;font-size:12.5px;font-weight:500;color:var(--sub);cursor:pointer}
+  .tabs span.on{background:var(--primary);color:#fff}
+
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
+  .stat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:13px 16px;box-shadow:0 1px 3px rgba(20,40,80,.05)}
+  .stat .l{color:var(--sub);font-size:12px;font-weight:500}
+  .stat .v{font-size:19px;font-weight:700;margin-top:3px}
+
+  .grid{display:grid;grid-template-columns:1.6fr 1fr;gap:16px}
+  .panel{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px;box-shadow:0 1px 3px rgba(20,40,80,.05)}
+  .panel .h{font-weight:600;font-size:14.5px;margin-bottom:14px}
+  .full{grid-column:1 / -1}
+
+  .donutwrap{display:flex;align-items:center;gap:24px}
+  .donut{width:160px;height:160px;border-radius:50%;flex-shrink:0;position:relative;
+    background:conic-gradient(#3B82F6 0% 32%, #15A66A 32% 56%, #E8A93B 56% 70%, #E5484D 70% 82%, #8B5CF6 82% 92%, #94A3B8 92% 100%)}
+  .donut::after{content:'';position:absolute;inset:30px;border-radius:50%;background:var(--surface);
+    box-shadow:0 2px 6px rgba(20,40,80,.08) inset}
+  .donut .ctr{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1}
+  .donut .ctr .big{font-size:18px;font-weight:700} .donut .ctr .sm{font-size:11px;color:var(--sub)}
+  .leg{display:flex;flex-direction:column;gap:9px;font-size:13px}
+  .leg div{display:flex;align-items:center;gap:8px}
+  .leg .d{width:11px;height:11px;border-radius:4px}
+  .leg .pc{margin-left:auto;color:var(--sub);font-weight:600;font-variant-numeric:tabular-nums}
+</style>
+</head>
+<body>
+  <nav class="side">
+    <div class="brand"><div class="logo emoji">🐷</div><div class="name">PeuBud</div></div>
+    <div class="item"><span class="ic emoji">🏠</span> Dashboard</div>
+    <div class="grp">Dia a dia</div>
+    <div class="item"><span class="ic emoji">💵</span> Entradas</div>
+    <div class="item"><span class="ic emoji">🧾</span> Gastos</div>
+    <div class="item"><span class="ic emoji">💳</span> Cartões</div>
+    <div class="item"><span class="ic emoji">🔁</span> Recorrências</div>
+    <div class="item"><span class="ic emoji">🔔</span> Lembretes</div>
+    <div class="grp">Planejar</div>
+    <div class="item"><span class="ic emoji">📋</span> Planejamento</div>
+    <div class="item"><span class="ic emoji">🎯</span> Metas</div>
+    <div class="item"><span class="ic emoji">📉</span> Dívidas</div>
+    <div class="item active"><span class="ic emoji">📈</span> Tendências</div>
+    <div class="grp">Investir</div>
+    <div class="item"><span class="ic emoji">📊</span> Investimentos</div>
+    <div class="item"><span class="ic emoji">💰</span> Proventos</div>
+    <div class="item"><span class="ic emoji">🏦</span> Bolsa</div>
+  </nav>
+
+  <main class="main">
+    <div class="topbar">
+      <div><h1>Tendências</h1><div class="crumb">Seus gastos em graficos, pra enxergar padroes</div></div>
+      <div class="tabs"><span class="on">Mensal</span><span>Categoria</span><span>Pagamento</span><span>Fixo x Variavel</span></div>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="l">Total (12 meses)</div><div class="v">R$ 54.230</div></div>
+      <div class="stat"><div class="l">Media por mes</div><div class="v">R$ 4.519</div></div>
+      <div class="stat"><div class="l emoji">📈 Mes de pico</div><div class="v">Abril</div></div>
+      <div class="stat"><div class="l">Maior categoria</div><div class="v">Moradia</div></div>
+    </div>
+
+    <div class="grid">
+      <!-- Linha / area -->
+      <div class="panel">
+        <div class="h">Gastos mensais (linha)</div>
+        <svg viewBox="0 0 540 200" width="100%" height="200">
+          <defs><linearGradient id="ar" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#3B82F6" stop-opacity="0.28"/><stop offset="1" stop-color="#3B82F6" stop-opacity="0"/>
+          </linearGradient></defs>
+          <g stroke="#EEF2F7"><line x1="34" y1="40" x2="528" y2="40"/><line x1="34" y1="90" x2="528" y2="90"/><line x1="34" y1="140" x2="528" y2="140"/></g>
+          <path d="M40,120 L86,100 L132,128 L178,70 L224,55 L270,92 L316,80 L362,110 L408,75 L454,95 L500,60 L520,84
+                   L520,165 L40,165 Z" fill="url(#ar)"/>
+          <polyline points="40,120 86,100 132,128 178,70 224,55 270,92 316,80 362,110 408,75 454,95 500,60 520,84"
+                    fill="none" stroke="#3B82F6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="224" cy="55" r="4.5" fill="#3B82F6" stroke="#fff" stroke-width="2"/>
+          <g font-family="Inter" font-size="9.5" fill="#9AA7BA" text-anchor="middle">
+            <text x="40" y="182">Jul</text><text x="132" y="182">Set</text><text x="224" y="182">Nov</text>
+            <text x="316" y="182">Jan</text><text x="408" y="182">Mar</text><text x="500" y="182">Mai</text>
+          </g>
+        </svg>
+      </div>
+
+      <!-- Donut categoria -->
+      <div class="panel">
+        <div class="h">Por categoria (donut)</div>
+        <div class="donutwrap">
+          <div class="donut"><div class="ctr"><div class="big">R$ 4.5k</div><div class="sm">no mes</div></div></div>
+          <div class="leg">
+            <div><span class="d" style="background:#3B82F6"></span> Moradia <span class="pc">32%</span></div>
+            <div><span class="d" style="background:#15A66A"></span> Alimentacao <span class="pc">24%</span></div>
+            <div><span class="d" style="background:#E8A93B"></span> Transporte <span class="pc">14%</span></div>
+            <div><span class="d" style="background:#E5484D"></span> Lazer <span class="pc">12%</span></div>
+            <div><span class="d" style="background:#8B5CF6"></span> Saude <span class="pc">10%</span></div>
+            <div><span class="d" style="background:#94A3B8"></span> Outros <span class="pc">8%</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Barras por pagamento -->
+      <div class="panel full">
+        <div class="h">Por tipo de pagamento (barras)</div>
+        <svg viewBox="0 0 900 150" width="100%" height="150">
+          <g stroke="#EEF2F7"><line x1="0" y1="40" x2="900" y2="40"/><line x1="0" y1="80" x2="900" y2="80"/><line x1="0" y1="118" x2="900" y2="118"/></g>
+          <g>
+            <rect x="80"  y="34"  width="120" height="84" rx="6" fill="#3B82F6"/>
+            <rect x="300" y="58"  width="120" height="60" rx="6" fill="#15A66A"/>
+            <rect x="520" y="70"  width="120" height="48" rx="6" fill="#E8A93B"/>
+            <rect x="740" y="92"  width="120" height="26" rx="6" fill="#94A3B8"/>
+          </g>
+          <g font-family="Inter" font-size="12" fill="#67768D" text-anchor="middle" font-weight="500">
+            <text x="140" y="138">PIX</text><text x="360" y="138">Debito</text><text x="580" y="138">Boleto</text><text x="800" y="138">Dinheiro</text>
+          </g>
+          <g font-family="Inter" font-size="11" fill="#15233B" text-anchor="middle" font-weight="600">
+            <text x="140" y="28">R$ 2.1k</text><text x="360" y="52">R$ 1.4k</text><text x="580" y="64">R$ 0.9k</text><text x="800" y="86">R$ 0.4k</text>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

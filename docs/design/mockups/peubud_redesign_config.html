@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<title>PeuBud: Configuracoes (todas as abas)</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Color+Emoji&display=swap">
+<style>
+  :root{
+    --bg:#EEF3F9; --surface:#FFFFFF; --surface-2:#F7FAFD;
+    --side-1:#1B2A41; --side-2:#16233A; --side-txt:#AFBDD0; --side-txt-dim:#7A8AA3;
+    --primary:#3B82F6; --primary-d:#2563EB; --primary-soft:#E7F0FE;
+    --text:#15233B; --sub:#67768D; --border:#E4EAF2; --pos:#16C784; --neg:#EA3943; --gold:#E8A93B; --magic:#8B5CF6;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;display:flex;min-height:100vh}
+  .emoji{font-family:'Noto Color Emoji',sans-serif}
+  .side{width:210px;flex-shrink:0;background:linear-gradient(170deg,var(--side-1),var(--side-2));color:var(--side-txt);padding:18px 12px;display:flex;flex-direction:column}
+  .brand{display:flex;align-items:center;gap:9px;padding:6px 8px 16px}
+  .brand .logo{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#3B82F6,#22C55E);display:flex;align-items:center;justify-content:center;font-size:16px}
+  .brand .name{font-weight:700;font-size:16px;color:#fff}
+  .item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;color:var(--side-txt);font-size:13px}
+  .side .foot{margin-top:auto;border-top:1px solid rgba(255,255,255,.08);padding-top:10px}
+  .item.active{background:var(--primary);color:#fff}
+
+  .main{flex:1;padding:22px 28px;overflow:auto;display:flex;gap:22px}
+  .subnav{width:190px;flex-shrink:0;position:sticky;top:0;align-self:flex-start}
+  .subnav h1{font-size:19px;font-weight:700;margin-bottom:12px}
+  .subnav a{display:flex;align-items:center;gap:9px;padding:8px 11px;border-radius:8px;color:var(--sub);font-weight:500;font-size:13px;cursor:pointer}
+  .subnav a.on{background:var(--surface);color:var(--primary-d);font-weight:600;box-shadow:0 1px 3px rgba(20,40,80,.06)}
+
+  .content{flex:1;max-width:720px;display:flex;flex-direction:column;gap:16px}
+  .sec{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:17px 19px;box-shadow:0 1px 3px rgba(20,40,80,.05)}
+  .sec h2{font-size:15.5px;font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:3px}
+  .sec .sd{color:var(--sub);font-size:12.5px;margin-bottom:14px}
+  .field-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid #F1F4F8}
+  .field-row:last-child{border:none}
+  .field-row .lab{font-weight:500} .field-row .hint{font-size:11.5px;color:var(--sub)}
+  .sel{background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:8px 11px;font-size:13px;font-family:inherit}
+  /* toggle */
+  .sw{width:40px;height:23px;border-radius:12px;background:var(--pos);position:relative;cursor:pointer}
+  .sw.off{background:#C7CFDB} .sw::after{content:'';position:absolute;width:19px;height:19px;border-radius:50%;background:#fff;top:2px;right:2px;box-shadow:0 1px 2px rgba(0,0,0,.3)}
+  .sw.off::after{right:auto;left:2px}
+  /* radios em linha */
+  .seg{display:inline-flex;background:var(--surface-2);border:1px solid var(--border);border-radius:9px;padding:3px}
+  .seg span{padding:6px 13px;border-radius:7px;font-size:12.5px;font-weight:600;color:var(--sub);cursor:pointer}
+  .seg span.on{background:var(--primary);color:#fff}
+  .sw-row{display:flex;gap:8px}
+  .swatch{width:26px;height:26px;border-radius:8px;cursor:pointer;border:2px solid transparent}
+  .swatch.on{border-color:var(--text)}
+  .tag{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
+  .btn{font-family:inherit;font-weight:600;font-size:12.5px;border:none;border-radius:8px;padding:8px 14px;color:#fff;background:var(--primary);cursor:pointer}
+  .btn.g{background:var(--surface);color:var(--text);border:1px solid var(--border)}
+  .field{display:flex;align-items:center;gap:8px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:8px 11px;font-size:13px;color:var(--sub);min-width:220px}
+  .field input{border:none;background:transparent;outline:none;flex:1;font-size:13px;color:var(--text);font-family:inherit}
+
+  /* IA providers */
+  .prov{border:1px solid var(--border);border-radius:11px;padding:12px 13px;margin-top:10px}
+  .prov.sel{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft)}
+  .prow{display:flex;align-items:center;gap:11px}
+  .radio{width:19px;height:19px;border-radius:50%;border:2px solid #C7CFDB;flex-shrink:0;position:relative}
+  .radio.on{border-color:var(--primary)} .radio.on::after{content:'';position:absolute;inset:3px;border-radius:50%;background:var(--primary)}
+  .plogo{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;color:#fff;font-weight:700}
+  .pname{font-weight:600;font-size:13.5px} .pmeta{font-size:11.5px;color:var(--sub)}
+  .status{margin-left:auto;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px}
+  .status.ok{background:#E4F6EE;color:var(--pos)} .status.no{background:#F1F4F8;color:var(--sub)}
+  .pbody{margin-top:11px;padding-top:11px;border-top:1px solid #F1F4F8;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+</style>
+</head>
+<body>
+  <nav class="side">
+    <div class="brand"><div class="logo emoji">🐷</div><div class="name">PeuBud</div></div>
+    <div class="item"><span class="emoji">🏠</span> Dashboard</div>
+    <div class="item"><span class="emoji">🧾</span> Gastos</div>
+    <div class="item"><span class="emoji">🏦</span> Bolsa</div>
+    <div class="foot"><div class="item active"><span class="emoji">⚙️</span> Preferências</div><div class="item"><span class="emoji">❓</span> Ajuda</div></div>
+  </nav>
+
+  <main class="main">
+    <div class="subnav">
+      <h1>Configurações</h1>
+      <a class="on"><span class="emoji">🎨</span> Aparência</a>
+      <a><span class="emoji">💱</span> Moeda</a>
+      <a><span class="emoji">🏷️</span> Categorias</a>
+      <a><span class="emoji">💵</span> Fontes de renda</a>
+      <a><span class="emoji">💳</span> Cartões</a>
+      <a><span class="emoji">📈</span> Mercado</a>
+      <a><span class="emoji">🪄</span> Assistente de IA</a>
+      <a><span class="emoji">💾</span> Backup</a>
+      <a><span class="emoji">🔒</span> Segurança</a>
+      <a><span class="emoji">ℹ️</span> Sobre</a>
+    </div>
+
+    <div class="content">
+      <!-- APARENCIA -->
+      <div class="sec">
+        <h2><span class="emoji">🎨</span> Aparência</h2>
+        <div class="sd">Tema, cor de destaque, densidade e tamanho do texto.</div>
+        <div class="field-row"><div><div class="lab">Tema</div><div class="hint">Segue o sistema, ou fixo</div></div><div class="seg"><span>Claro</span><span>Escuro</span><span class="on">Automático</span></div></div>
+        <div class="field-row"><div class="lab">Cor de destaque</div><div class="sw-row"><div class="swatch on" style="background:#3B82F6"></div><div class="swatch" style="background:#16C784"></div><div class="swatch" style="background:#8B5CF6"></div><div class="swatch" style="background:#E8A93B"></div><div class="swatch" style="background:#EA3943"></div></div></div>
+        <div class="field-row"><div class="lab">Densidade</div><div class="seg"><span class="on">Confortável</span><span>Compacta</span></div></div>
+        <div class="field-row"><div class="lab">Tamanho do texto</div><select class="sel"><option>Padrão</option><option>Grande</option><option>Maior (acessibilidade)</option></select></div>
+      </div>
+
+      <!-- MOEDA -->
+      <div class="sec">
+        <h2><span class="emoji">💱</span> Moeda</h2>
+        <div class="sd">Moeda padrao e formato dos valores.</div>
+        <div class="field-row"><div class="lab">Moeda padrão</div><select class="sel"><option>R$ Real (BRL)</option><option>$ Dolar (USD)</option><option>€ Euro (EUR)</option></select></div>
+        <div class="field-row"><div class="lab">Atualizar cotações automaticamente</div><div class="sw"></div></div>
+        <div class="field-row"><div><div class="lab">Exemplo de formato</div></div><b>R$ 1.234,56</b></div>
+      </div>
+
+      <!-- CATEGORIAS -->
+      <div class="sec">
+        <h2><span class="emoji">🏷️</span> Categorias</h2>
+        <div class="sd">Organize seus gastos. Cada categoria tem cor e tipo (fixo/variavel).</div>
+        <div class="field-row"><div class="lab"><span class="swatch" style="width:16px;height:16px;display:inline-block;background:#3B82F6;vertical-align:middle"></span> Moradia</div><span class="tag" style="background:var(--primary-soft);color:var(--primary-d)">Fixo</span></div>
+        <div class="field-row"><div class="lab"><span class="swatch" style="width:16px;height:16px;display:inline-block;background:#16C784;vertical-align:middle"></span> Alimentação</div><span class="tag" style="background:#FBF1DC;color:#9A6B16">Variável</span></div>
+        <div class="field-row"><div class="lab"><span class="swatch" style="width:16px;height:16px;display:inline-block;background:#E8A93B;vertical-align:middle"></span> Lazer</div><span class="tag" style="background:#FBF1DC;color:#9A6B16">Variável</span></div>
+        <button class="btn" style="margin-top:12px"><span class="emoji">➕</span> Nova categoria</button>
+      </div>
+
+      <!-- MERCADO -->
+      <div class="sec">
+        <h2><span class="emoji">📈</span> Mercado</h2>
+        <div class="sd">Fonte de dados de cotacoes e candlestick (aba Bolsa e ativo).</div>
+        <div class="field-row"><div class="lab">Provedor</div><select class="sel"><option>brapi.dev</option><option>yfinance</option></select></div>
+        <div class="field-row"><div class="lab">Token brapi</div><div class="field"><span class="emoji">🔑</span><input value="••••••••••3xQ"/></div></div>
+        <div class="field-row"><div><div class="lab">Book de ofertas (nivel 2)</div><div class="hint">Fonte a definir (corretora/B3). Desligado por ora.</div></div><div class="sw off"></div></div>
+      </div>
+
+      <!-- IA -->
+      <div class="sec">
+        <h2><span class="emoji">🪄</span> Assistente de IA</h2>
+        <div class="sd">Conecte um ou mais provedores. O 🪄 aparece em cada aba. Escolha o ativo no radio. Chaves guardadas no keystore do sistema.</div>
+
+        <div class="prov"><div class="prow"><div class="radio"></div><div class="plogo emoji" style="background:#5B6573">🚫</div><div><div class="pname">Sem IA</div><div class="pmeta">Tudo fica offline, nenhum dado sai do app (mais privado)</div></div></div></div>
+
+        <div class="prov sel"><div class="prow"><div class="radio on"></div><div class="plogo" style="background:#D97757">C</div><div><div class="pname">Claude · Anthropic</div><div class="pmeta">Em uso como padrão</div></div><span class="status ok">Conectado</span></div>
+          <div class="pbody"><div class="field"><span class="emoji">🔑</span><input value="sk-ant-••••3xQ"/></div><select class="sel"><option>Opus 4.8</option><option>Sonnet 4.6</option></select><button class="btn g">Testar</button></div></div>
+
+        <div class="prov"><div class="prow"><div class="radio"></div><div class="plogo" style="background:#10A37F">G</div><div><div class="pname">GPT · OpenAI</div><div class="pmeta">Configurado</div></div><span class="status ok">Conectado</span></div></div>
+        <div class="prov"><div class="prow"><div class="radio"></div><div class="plogo" style="background:linear-gradient(135deg,#4285F4,#9B72CB)">G</div><div><div class="pname">Gemini · Google</div></div><span class="status no">Não configurado</span></div></div>
+        <div class="prov"><div class="prow"><div class="radio"></div><div class="plogo" style="background:#111">𝕏</div><div><div class="pname">Grok · xAI</div></div><span class="status no">Não configurado</span></div></div>
+        <div class="prov"><div class="prow"><div class="radio"></div><div class="plogo emoji" style="background:#222">🦙</div><div><div class="pname">Ollama · local</div><div class="pmeta">Roda no seu PC, grátis e privado</div></div><span class="status no">Desconectado</span></div></div>
+        <div class="prov"><div class="prow"><div class="radio"></div><div class="plogo" style="background:#6566F1">OR</div><div><div class="pname">OpenRouter</div><div class="pmeta">Vários modelos numa chave só</div></div><span class="status no">Não configurado</span></div></div>
+        <div class="prov"><div class="prow"><div class="radio"></div><div class="plogo" style="background:#4D6BFE">DS</div><div><div class="pname">DeepSeek</div></div><span class="status no">Não configurado</span></div></div>
+        <div class="prov"><div class="prow"><div class="radio"></div><div class="plogo" style="background:#FF7000">M</div><div><div class="pname">Mistral</div></div><span class="status no">Não configurado</span></div></div>
+      </div>
+
+      <!-- BACKUP -->
+      <div class="sec">
+        <h2><span class="emoji">💾</span> Backup</h2>
+        <div class="sd">Copia de seguranca do seu banco criptografado (.pbd).</div>
+        <div class="field-row"><div class="lab">Backup automático</div><div class="sw"></div></div>
+        <div class="field-row"><div class="lab">Frequência</div><select class="sel"><option>Ao fechar o app</option><option>Diário</option><option>Semanal</option></select></div>
+        <div class="field-row"><div class="lab">Pasta</div><div class="hint">~/Backups/PeuBud</div></div>
+        <div style="display:flex;gap:8px;margin-top:12px"><button class="btn"><span class="emoji">💾</span> Fazer backup agora</button><button class="btn g"><span class="emoji">📁</span> Restaurar</button></div>
+      </div>
+
+      <!-- SEGURANCA -->
+      <div class="sec">
+        <h2><span class="emoji">🔒</span> Segurança</h2>
+        <div class="sd">Senha, bloqueio e onde a chave fica guardada.</div>
+        <div class="field-row"><div class="lab">Senha de acesso</div><button class="btn g">Alterar senha</button></div>
+        <div class="field-row"><div><div class="lab">Bloqueio automático</div><div class="hint">Pede a senha apos inatividade</div></div><div class="sw"></div></div>
+        <div class="field-row"><div class="lab">Tempo até bloquear</div><select class="sel"><option>5 min</option><option>15 min</option><option>Nunca</option></select></div>
+        <div class="field-row"><div><div class="lab">Chave de criptografia</div><div class="hint">Guardada no KWallet/GNOME Keyring (libsecret)</div></div><span class="tag" style="background:#E4F6EE;color:var(--pos)">✅ Protegida</span></div>
+      </div>
+
+      <!-- SOBRE -->
+      <div class="sec">
+        <h2><span class="emoji">ℹ️</span> Sobre</h2>
+        <div class="field-row"><div class="lab">PeuBud</div><span class="hint">versão 0.9 (redesign)</span></div>
+        <div class="field-row"><div class="lab">Licença</div><span class="hint">AGPL-3.0-or-later</span></div>
+        <div class="field-row"><div class="lab">Feito em</div><span class="hint">C++20 · Qt6 · SQLite · libsodium</span></div>
+      </div>
+    </div>
+  </main>
+</body>
+</html>
