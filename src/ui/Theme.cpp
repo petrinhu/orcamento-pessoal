@@ -1,5 +1,7 @@
 #include "Theme.h"
 
+#include "ButtonShadowFilter.h"
+
 #include <QApplication>
 #include <QFontDatabase>
 #include <QGuiApplication>
@@ -115,9 +117,17 @@ static QString gerarQss()
     const QString alt  = dark ? QStringLiteral("#232629") : QStringLiteral("#F5F5F5");
     // Hover background
     const QString hov  = dark ? QStringLiteral("#3B4045") : QStringLiteral("#D0E9F6");
+    // Accent tints for button feedback: hover = lighter accent, pressed = darker
+    // accent. Fixed Breeze-blue derivatives — same in light/dark (the accent
+    // token itself does not change between schemes).
+    const QString accHover   = QStringLiteral("#5CC6FA");  // accent +light
+    const QString accPressed = QStringLiteral("#1F7AAD");  // accent +dark
 
-    // %1=txt  %2=bg  %3=surf  %4=acc  %5=sub  %6=brd  %7=alt  %8=hov
+    // %1=txt  %2=bg  %3=surf  %4=acc  %5=sub  %6=brd  %7=alt  %8=hov  %9=hov(menu/tab)
     // (neg is unused in QSS — multiArg skips absent markers, causing drift)
+    // Button accent tints use named tokens (@@ACC_HOVER@@ / @@ACC_PRESSED@@), not
+    // %10/%11: QString::arg's multi-arg form resolves the *lowest* placeholder, so
+    // %10 collides with %1. Named tokens replaced explicitly below — unambiguous.
     QString qss = QStringLiteral(R"(
         /* ── Base ── */
         QWidget {
@@ -165,7 +175,13 @@ static QString gerarQss()
             border-radius: 8px;
             border: 1px solid %7;
         }
-        /* ── Buttons ── */
+        /* ── Buttons ──────────────────────────────────────────────────────────
+           Depth + click feedback ("Shadow" style). The real drop shadow comes
+           from ButtonShadowFilter (QGraphicsDropShadowEffect, app-wide); the QSS
+           here provides the *sink* on press — content drops 2px via asymmetric
+           padding (padding-top up, padding-bottom down) and the fill darkens.
+           This works even if the graphics effect is unavailable.
+        ── */
         QPushButton#primary {
             background-color: %4;
             color: white;
@@ -174,8 +190,13 @@ static QString gerarQss()
             padding: 6px 18px;
             font-weight: 500;
         }
-        QPushButton#primary:hover   { background-color: %4; }
-        QPushButton#primary:pressed { background-color: %4; }
+        QPushButton#primary:hover   { background-color: @@ACC_HOVER@@; }
+        QPushButton#primary:pressed {
+            background-color: @@ACC_PRESSED@@;
+            padding-top: 8px;
+            padding-bottom: 4px;
+        }
+        QPushButton#primary:disabled { background-color: %7; color: %5; }
         QPushButton {
             background-color: %3;
             border: 1px solid %7;
@@ -184,7 +205,12 @@ static QString gerarQss()
             color: %1;
         }
         QPushButton:hover   { border-color: %4; color: %4; }
-        QPushButton:pressed { background-color: %9; }
+        QPushButton:pressed {
+            background-color: %9;
+            border-color: %4;
+            padding-top: 7px;
+            padding-bottom: 3px;
+        }
         QPushButton:disabled { color: %5; border-color: %7; }
         /* ── Theme cycle button ── */
         QToolButton#themeBtn {
@@ -319,6 +345,9 @@ static QString gerarQss()
     )")
     .arg(txt, bg, surf, acc, sub, neg, brd, alt, hov);
 
+    qss.replace(QStringLiteral("@@ACC_HOVER@@"),   accHover);
+    qss.replace(QStringLiteral("@@ACC_PRESSED@@"), accPressed);
+
     return qss;
 }
 
@@ -402,6 +431,10 @@ void aplicar()
     QApplication::setFont(font);
 
     qApp->setStyleSheet(gerarQss());
+
+    // App-wide drop shadow + press-sink on every QPushButton (covers LoginDialog,
+    // which is shown before MainWindow). Idempotent; lives for the app lifetime.
+    ButtonShadowFilter::install();
 
     // Re-apply when OS scheme changes (only matters in Auto mode)
     QObject::connect(

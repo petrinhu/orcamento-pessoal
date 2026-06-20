@@ -1,0 +1,83 @@
+#include "ButtonShadowFilter.h"
+
+#include <QApplication>
+#include <QColor>
+#include <QEvent>
+#include <QGraphicsDropShadowEffect>
+#include <QPushButton>
+
+namespace {
+
+// Rest state: the button floats a couple of px above the surface.
+constexpr int    kRestBlur     = 12;
+constexpr int    kRestOffsetY  = 2;
+// Pressed state: shadow collapses toward the button — it sinks into the surface.
+constexpr int    kPressBlur    = 4;
+constexpr int    kPressOffsetY = 1;
+
+QColor restColor()  { return QColor(0, 0, 0, 110); }
+QColor pressColor() { return QColor(0, 0, 0, 140); }
+
+void applyShadow(QGraphicsDropShadowEffect *fx, int blur, int offsetY, const QColor &c)
+{
+    fx->setBlurRadius(blur);
+    fx->setXOffset(0);
+    fx->setYOffset(offsetY);
+    fx->setColor(c);
+}
+
+// Returns our shadow effect on the button, or nullptr if the button has no
+// effect or carries a foreign one (which we must not touch).
+QGraphicsDropShadowEffect *ourShadow(QPushButton *btn)
+{
+    return qobject_cast<QGraphicsDropShadowEffect *>(btn->graphicsEffect());
+}
+
+} // namespace
+
+void ButtonShadowFilter::install()
+{
+    static ButtonShadowFilter *instance = nullptr;
+    if (instance)
+        return;
+    instance = new ButtonShadowFilter(qApp);
+    qApp->installEventFilter(instance);
+}
+
+bool ButtonShadowFilter::eventFilter(QObject *obj, QEvent *ev)
+{
+    auto *btn = qobject_cast<QPushButton *>(obj);
+    if (!btn)
+        return QObject::eventFilter(obj, ev);
+
+    if (btn->isFlat())
+        return QObject::eventFilter(obj, ev);
+
+    switch (ev->type()) {
+    case QEvent::Polish:
+    case QEvent::Show:
+        // A widget accepts only one QGraphicsEffect: only install if none is
+        // present, so we never clobber an effect set elsewhere.
+        if (!btn->graphicsEffect()) {
+            auto *fx = new QGraphicsDropShadowEffect(btn);
+            applyShadow(fx, kRestBlur, kRestOffsetY, restColor());
+            btn->setGraphicsEffect(fx);
+        }
+        break;
+
+    case QEvent::MouseButtonPress:
+        if (auto *fx = ourShadow(btn))
+            applyShadow(fx, kPressBlur, kPressOffsetY, pressColor());
+        break;
+
+    case QEvent::MouseButtonRelease:
+        if (auto *fx = ourShadow(btn))
+            applyShadow(fx, kRestBlur, kRestOffsetY, restColor());
+        break;
+
+    default:
+        break;
+    }
+
+    return QObject::eventFilter(obj, ev);
+}
