@@ -12,7 +12,7 @@ Arquivo canônico de pendências, auditoria técnica e conformidade com o contra
 - **Status**: ✅ Concluído · 🔄 Em andamento · 🟡 Parcial · ⏳ Pendente · ❄️ Congelado pós-1.0 · 💡 Decisão tomada · 🎨 Pendente design · 🔍 Pendente verificação · ❌ Cancelado
 - **Estado Auditado**: `—` (não auditado) · `✓` (auditado e aprovado) · `⚠` (auditado com ressalvas)
 
-> **Convenção de ID:** `#NN` mantido como identificador estável — usado em commits (`feat(#44): ...`), branches e referências cruzadas. Próximo ID disponível: **#163**.
+> **Convenção de ID:** `#NN` mantido como identificador estável — usado em commits (`feat(#44): ...`), branches e referências cruzadas. Próximo ID disponível: **#174**.
 >
 > **Hierarquia:** itens filhos só começam após pai ✅; irmãos com mesmo prefixo numérico (ex.: `1.2.1` e `1.2.2`) são paralelos.
 
@@ -145,14 +145,25 @@ Arquivo canônico de pendências, auditoria técnica e conformidade com o contra
 
 ### Onda 9 — Design visual & UX (frontend-design) — **roda ANTES da Onda 8 (distribuição)**
 
-> O `frontend-design`/`ux-ui-designer` **decide e refatora** o visual; o usuário **ajusta depois**. Implementação direto no Qt (`Theme.cpp`/QSS) + screenshots (NÃO via claude.ai/design, que é web e não converte pra Qt — serve só como moodboard de direção). Centralizado: muda no `Theme`/`TabShell` → propaga pras 13 abas.
+> **Redesign UI completo (moderno), APROVADO via brainstorm + mockups (2026-06-19).** Direção: **amigável + azuis confiáveis** (sidebar navy, fundo azul-claro, cards brancos) + **sidebar agrupada à esquerda** (substitui as abas no topo; grupos Dia a dia/Planejar/Investir) + cards arredondados + emoji (já feito) + microinterações. Spec completa no design doc (#163). **Roda ANTES da Onda 8.** Mockups em `/tmp/peubud_redesign_*.html`. Já entregues nesta sessão (commitados/pushados): emoji colorido em todo o app, botões com sombra+feedback, cores Metas, #161/#162. Itens #163-#173 = a implementação do redesign.
 
 | Onda | ID | Grupo | Descrição Técnica | Prioridade | Pré-requisito | Dificuldade | Status | Estado Auditado |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| 9 | #160 | FUNC | **Passada de design visual** conduzida pelo `frontend-design`: refinar `Theme`/QSS (paleta, tipografia Inter, espaçamento, hierarquia, elevação, estados), consistência dos componentes, `TabShell`, dark/light. Entrega proposta → usuário ajusta. Inclui o color-coding #159. Moodboard opcional via `claude.ai/design` (web; eu traduzo pro Qt) | Média | #158 | Alta | ⏳ Pendente | — |
+| 9 | #160 | FUNC | **Passada de design visual** conduzida pelo `frontend-design`: refinar `Theme`/QSS (paleta, tipografia Inter, espaçamento, hierarquia, elevação, estados), consistência dos componentes, `TabShell`, dark/light. Entrega proposta → usuário ajusta. Inclui o color-coding #159. Moodboard opcional via `claude.ai/design` (web; eu traduzo pro Qt) | Média | #158 | Alta | 🔄 Expandido em #163-#173 (redesign aprovado) | — |
 | 9 | #159 | FUNC | **Cores por sinal nos valores** (`=0` azul `Acento`, `>0` verde `Positivo`, `<0` vermelho `Negativo`) nos displays monetários — parte da passada de design #160 | Média | — | Média | ⏳ Pendente | — |
-| 9 | #161 | FUNC | **Dívidas: mostrar juros a.m. E a.a.** (decisão do usuário). a.a. = `(1+i_m)^12 − 1` (compostos). `DividaDialog`: campos a.m./a.a. sincronizados (digita um, atualiza o outro); `DividasWidget`: coluna mostra "X% a.m. (Y% a.a.)". Modelo guarda `jurosMensal` (fonte da verdade) | Média | — | Média | ⏳ Pendente | — |
-| 9 | #162 | FUNC | **Lembretes: cores + contagem dinâmica** (decisão do usuário). 🔴 vencido/não-debitado ("Vencido há X dias") · ⚪ branco "Vence hoje" · 🟡 "Vence em N dias" (N≤3, dinâmico) · 🟢 verde resolvido · futuro sem destaque. Refatorar a lógica de cor/label do `LembretesWidget` | Média | — | Média | ⏳ Pendente | — |
+| 9 | #161 | FUNC | **Dívidas: mostrar juros a.m. E a.a.** (decisão do usuário). a.a. = `(1+i_m)^12 − 1` (compostos). `DividaDialog`: campos a.m./a.a. sincronizados (digita um, atualiza o outro); `DividasWidget`: coluna mostra "X% a.m. (Y% a.a.)". Modelo guarda `jurosMensal` (fonte da verdade) | Média | — | Média | ✅ Concluído | ✓ |
+| 9 | #162 | FUNC | **Lembretes: cores + contagem dinâmica**. 🔴 vencido/não-debitado · ⚪ vence hoje · 🟡 "Vence em N dias" (N≤3) · 🟢 resolvido | Média | — | Média | ✅ Concluído | ✓ |
+| 9 | #163 | DOC | **Design doc do redesign** (spec): brainstorm + mockups aprovados (amigável + azuis + sidebar agrupada). Salvar em `docs/superpowers/specs/`; base da implementação | Alta | — | Baixa | 🔄 Em redação | — |
+| 9 | #164 | FUNC | **Design system / tokens** no `Theme`: paleta azul/navy, tipografia Inter (hierarquia), raios (cards 14/botões 9), sombras, espaçamento, dark/light | Alta | #163 | Média | ⏳ Pendente | — |
+| 9 | #165 | FUNC | **Sidebar agrupada à esquerda** (substitui QTabWidget no topo): grupos Dia a dia/Planejar/Investir, colapsável, item ativo em pill, rodapé (Preferências/Ajuda/Tema/usuário). **Navegação por chave estável (resolve #157)** | Alta | #164 | Alta | ⏳ Pendente | — |
+| 9 | #166 | FUNC | **Componentes base**: cards arredondados, tags coloridas, banner de ajuda azul recolhível (refina TabShell), tooltips de glossário no hover, empty states guiados | Média | #164 | Média | ⏳ Pendente | — |
+| 9 | #167 | FUNC | **Tabelas novo estilo**: densidade confortável (~48px), só divisórias horizontais, hover de linha, tags em categoria/tipo, rodapé-resumo com mini-barra | Média | #166 | Média | ⏳ Pendente | — |
+| 9 | #168 | FUNC | **Gráficos novo estilo**: linha/área com degradê, donut com centro, barras arredondadas; refatorar charts (Dashboard/Tendências/Investimentos) | Média | #164 | Média | ⏳ Pendente | — |
+| 9 | #169 | FUNC | **Redesign por aba** (13): Cartões (cartões visuais+limite), Recorrências (switch), Lembretes (status-cards), Planejamento (barras aderência), Metas (anel), Dívidas (barra quitação), Investimentos (donut), Proventos (barras+tickers), Bolsa (cards cotação) | Média | #166,#167,#168 | Alta | ⏳ Pendente | — |
+| 9 | #170 | FUNC | **Menus**: aposentar QMenuBar → rodapé da sidebar + "⋯ Mais" (Importar/Exportar/Reconciliar/Imprimir/Sobre) + cluster utilidades topo-direito (busca/calculadora) | Média | #165 | Média | ⏳ Pendente | — |
+| 9 | #171 | FUNC | **Tela de detalhe do ativo (Bolsa)**: candlestick dark + book de ofertas + ferramentas de traçado (LTA/LTB, S/R, canal, Fibonacci) + indicadores (MM/Bollinger/RSI/MACD; reusa #52/#53). Dados: candlestick via brapi/yfinance; **book nível 2 = fonte a definir** (corretora/B3 paga/crawling) | Média | #168 | Alta | ⏳ Pendente | — |
+| 9 | #172 | FUNC | **Assistente de IA 🪄 (EPIC)**: botão "Auxílio de IA" em cada aba + Config > IA com **Claude/GPT/Gemini/Grok/Ollama + OpenRouter/DeepSeek/Mistral + modo "sem IA"**; radio de seleção; chaves no keystore (libsecret). **Uso a planejar** (resumo, leitura de gráfico, categorizar). Spec própria | Média | #173 | Alta | 🔵 A planejar | — |
+| 9 | #173 | FUNC | **Tela de Configurações redesenhada**: sub-navegação (Aparência/Moeda/Categorias/Fontes/Cartões/Mercado/IA/Backup/Segurança/Sobre) + seções no novo estilo; inclui aba Assistente de IA (#172) | Média | #164 | Média | ⏳ Pendente | — |
 
 ---
 
