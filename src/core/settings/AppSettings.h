@@ -42,9 +42,23 @@ public:
     void    setAutosaveEnabled(bool on);
     int     autosaveIntervalMinutes() const;        // default: 5
     void    setAutosaveIntervalMinutes(int minutes);
-    QString savesFolder() const;                    // default: Documents/PeuBud
+
+    // (#181) Caminhos FIXOS — o usuário não escolhe mais a pasta.
+    // ~/peubud/save/<slug>/database.pbd (cofre principal)
+    // ~/peubud/save/<slug>/database.auto.pbd (autosave — sobrescreve)
+    // mkpath da pasta-pai é garantido ao chamar qualquer um desses getters.
+    static QString savePathFixo(const QString &slug);
+    static QString autosavePathFixo(const QString &slug);
+
+    // (#181) Caminhos legados para migração transparente no open().
+    // data/<slug>.pbd (relativo ao CWD — antigo padrão pré-#181)
+    static QString saveLegadoData(const QString &slug);
+
+    // Deprecated (#181): callers legados (BackupService usa diretorioPadrao próprio).
+    // Mantidos para não quebrar callers externos; internamente não usados mais.
+    QString savesFolder() const;
     void    setSavesFolder(const QString &path);
-    QString autosavesFolder() const;                // default: savesFolder()/autosaves
+    QString autosavesFolder() const;
     void    setAutosavesFolder(const QString &path);
 
     // ── Startup tab ───────────────────────────────────────────────────────

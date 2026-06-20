@@ -31,8 +31,6 @@ private slots:
     void onCurrencyChanged(int index);
     void onAutosaveToggled(bool checked);
     void onIntervalChanged(int minutes);
-    void onBrowseSavesFolder();
-    void onBrowseAutosavesFolder();
 
 private:
     void buildUi();
@@ -45,8 +43,7 @@ private:
     QComboBox    *m_comboCurrency      = nullptr;
     QCheckBox    *m_chkAutosave        = nullptr;
     QSpinBox     *m_spnInterval        = nullptr;
-    QLineEdit    *m_edtSavesFolder     = nullptr;
-    QLineEdit    *m_edtAutosavesFolder = nullptr;
+    // (#181) m_edtSavesFolder / m_edtAutosavesFolder removidos — paths são fixos.
     QComboBox    *m_comboInitialTab    = nullptr;
     QCheckBox    *m_chkIniciante       = nullptr;
     ConfigCategoriasWidget*m_categorias= nullptr;

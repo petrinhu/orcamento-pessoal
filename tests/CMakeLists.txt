@@ -30,6 +30,13 @@ peubud_add_test(test_finance_engine ${CMAKE_SOURCE_DIR}/src/services/FinanceEngi
 # (ramo GUI/QMessageBox nao testavel headless; cobrimos o contrato de criacao).
 peubud_add_test(test_dir_guard)
 
+# #181: pastas de save fixas ~/peubud/save/<slug>/database[.auto].pbd
+# Testa: formato do caminho fixo, mkpath da pasta, logica de migracao
+# (cofre legado data/<slug>.pbd → novo destino + .bak, idempotencia,
+# novo usuario sem cofre, atomicidade do .new).
+# Depende apenas de Qt::Core + Qt::Test — sem DB, cripto ou rede.
+peubud_add_test(test_pastas_fixas)
+
 # #132: CalculadoraService — funcoes puras (sem dependencias externas).
 peubud_add_test(test_calculadora
     ${CMAKE_SOURCE_DIR}/src/services/CalculadoraService.cpp)
@@ -61,12 +68,18 @@ peubud_add_test(test_recorrencia
     ${CMAKE_SOURCE_DIR}/src/repositories/CartaoRepository.cpp
     ${CMAKE_SOURCE_DIR}/src/core/crypto/SodiumCryptoService.cpp
     ${CMAKE_SOURCE_DIR}/src/core/crypto/AesCryptoService.cpp
-    ${CMAKE_SOURCE_DIR}/src/core/crypto/KeyDerivation.cpp)
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/KeyDerivation.cpp
+    # (#181) DatabaseManager agora depende de AppSettings (savePathFixo).
+    ${CMAKE_SOURCE_DIR}/src/core/settings/AppSettings.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp)
 target_link_libraries(test_recorrencia PRIVATE
     OpenSSL::SSL
     OpenSSL::Crypto
-    ${LIBSODIUM_LIBRARIES})
-target_include_directories(test_recorrencia PRIVATE ${LIBSODIUM_INCLUDE_DIRS})
+    ${LIBSODIUM_LIBRARIES}
+    ${LIBSECRET_LIBRARIES})
+target_include_directories(test_recorrencia PRIVATE
+    ${LIBSODIUM_INCLUDE_DIRS}
+    ${LIBSECRET_INCLUDE_DIRS})
 
 # #133: ImportService parsers via API publica fromCsv/fromOfx. Cadeia:
 # ImportService + parsers PDF + match finder + ParcelaService/FinanceEngine.
@@ -149,13 +162,19 @@ peubud_add_test(test_resumo
     ${CMAKE_SOURCE_DIR}/src/services/AuditLogService.cpp
     ${CMAKE_SOURCE_DIR}/src/core/crypto/SodiumCryptoService.cpp
     ${CMAKE_SOURCE_DIR}/src/core/crypto/AesCryptoService.cpp
-    ${CMAKE_SOURCE_DIR}/src/core/crypto/KeyDerivation.cpp)
-# DatabaseManager puxa crypto (OpenSSL + libsodium); linkar explicitamente.
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/KeyDerivation.cpp
+    # (#181) DatabaseManager agora depende de AppSettings (savePathFixo).
+    ${CMAKE_SOURCE_DIR}/src/core/settings/AppSettings.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp)
+# DatabaseManager puxa crypto (OpenSSL + libsodium + libsecret); linkar explicitamente.
 target_link_libraries(test_resumo PRIVATE
     OpenSSL::SSL
     OpenSSL::Crypto
-    ${LIBSODIUM_LIBRARIES})
-target_include_directories(test_resumo PRIVATE ${LIBSODIUM_INCLUDE_DIRS})
+    ${LIBSODIUM_LIBRARIES}
+    ${LIBSECRET_LIBRARIES})
+target_include_directories(test_resumo PRIVATE
+    ${LIBSODIUM_INCLUDE_DIRS}
+    ${LIBSECRET_INCLUDE_DIRS})
 
 # Teste do FechamentoMensalService (#144). Espelha a cadeia de test_resumo:
 # simulate() delega ao ResumoService, logo precisa da mesma arvore de servicos,
@@ -180,12 +199,18 @@ peubud_add_test(test_fechamento
     ${CMAKE_SOURCE_DIR}/src/services/AuditLogService.cpp
     ${CMAKE_SOURCE_DIR}/src/core/crypto/SodiumCryptoService.cpp
     ${CMAKE_SOURCE_DIR}/src/core/crypto/AesCryptoService.cpp
-    ${CMAKE_SOURCE_DIR}/src/core/crypto/KeyDerivation.cpp)
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/KeyDerivation.cpp
+    # (#181) DatabaseManager agora depende de AppSettings (savePathFixo).
+    ${CMAKE_SOURCE_DIR}/src/core/settings/AppSettings.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp)
 target_link_libraries(test_fechamento PRIVATE
     OpenSSL::SSL
     OpenSSL::Crypto
-    ${LIBSODIUM_LIBRARIES})
-target_include_directories(test_fechamento PRIVATE ${LIBSODIUM_INCLUDE_DIRS})
+    ${LIBSODIUM_LIBRARIES}
+    ${LIBSECRET_LIBRARIES})
+target_include_directories(test_fechamento PRIVATE
+    ${LIBSODIUM_INCLUDE_DIRS}
+    ${LIBSECRET_INCLUDE_DIRS})
 
 # Teste de regressao dos triggers de auditoria (#142, fase RED).
 # Exercita os triggers audit_* criados por createSchema(); prova o bug de
@@ -213,12 +238,18 @@ peubud_add_test(test_audit_triggers
     ${CMAKE_SOURCE_DIR}/src/repositories/ProventoRepository.cpp
     ${CMAKE_SOURCE_DIR}/src/core/crypto/SodiumCryptoService.cpp
     ${CMAKE_SOURCE_DIR}/src/core/crypto/AesCryptoService.cpp
-    ${CMAKE_SOURCE_DIR}/src/core/crypto/KeyDerivation.cpp)
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/KeyDerivation.cpp
+    # (#181) DatabaseManager agora depende de AppSettings (savePathFixo).
+    ${CMAKE_SOURCE_DIR}/src/core/settings/AppSettings.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp)
 target_link_libraries(test_audit_triggers PRIVATE
     OpenSSL::SSL
     OpenSSL::Crypto
-    ${LIBSODIUM_LIBRARIES})
-target_include_directories(test_audit_triggers PRIVATE ${LIBSODIUM_INCLUDE_DIRS})
+    ${LIBSODIUM_LIBRARIES}
+    ${LIBSECRET_LIBRARIES})
+target_include_directories(test_audit_triggers PRIVATE
+    ${LIBSODIUM_INCLUDE_DIRS}
+    ${LIBSECRET_INCLUDE_DIRS})
 
 # Teste de Categoria (#118): classificacao fixo/variavel (TipoDespesa).
 # Exercita a migration #118 (coluna `fixo`) + round-trip pelo repo, com o
@@ -245,12 +276,18 @@ peubud_add_test(test_categoria
     ${CMAKE_SOURCE_DIR}/src/repositories/ProventoRepository.cpp
     ${CMAKE_SOURCE_DIR}/src/core/crypto/SodiumCryptoService.cpp
     ${CMAKE_SOURCE_DIR}/src/core/crypto/AesCryptoService.cpp
-    ${CMAKE_SOURCE_DIR}/src/core/crypto/KeyDerivation.cpp)
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/KeyDerivation.cpp
+    # (#181) DatabaseManager agora depende de AppSettings (savePathFixo).
+    ${CMAKE_SOURCE_DIR}/src/core/settings/AppSettings.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp)
 target_link_libraries(test_categoria PRIVATE
     OpenSSL::SSL
     OpenSSL::Crypto
-    ${LIBSODIUM_LIBRARIES})
-target_include_directories(test_categoria PRIVATE ${LIBSODIUM_INCLUDE_DIRS})
+    ${LIBSODIUM_LIBRARIES}
+    ${LIBSECRET_LIBRARIES})
+target_include_directories(test_categoria PRIVATE
+    ${LIBSODIUM_INCLUDE_DIRS}
+    ${LIBSECRET_INCLUDE_DIRS})
 
 # Teste de tokens de paleta do Theme (#164 redesign fase 1).
 # Verifica valores da nova paleta azul-confiavel e getters adicionados.
@@ -288,12 +325,18 @@ peubud_add_test(test_gasto_service
     ${CMAKE_SOURCE_DIR}/src/repositories/ProventoRepository.cpp
     ${CMAKE_SOURCE_DIR}/src/core/crypto/SodiumCryptoService.cpp
     ${CMAKE_SOURCE_DIR}/src/core/crypto/AesCryptoService.cpp
-    ${CMAKE_SOURCE_DIR}/src/core/crypto/KeyDerivation.cpp)
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/KeyDerivation.cpp
+    # (#181) DatabaseManager agora depende de AppSettings (savePathFixo).
+    ${CMAKE_SOURCE_DIR}/src/core/settings/AppSettings.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp)
 target_link_libraries(test_gasto_service PRIVATE
     OpenSSL::SSL
     OpenSSL::Crypto
-    ${LIBSODIUM_LIBRARIES})
-target_include_directories(test_gasto_service PRIVATE ${LIBSODIUM_INCLUDE_DIRS})
+    ${LIBSODIUM_LIBRARIES}
+    ${LIBSECRET_LIBRARIES})
+target_include_directories(test_gasto_service PRIVATE
+    ${LIBSODIUM_INCLUDE_DIRS}
+    ${LIBSECRET_INCLUDE_DIRS})
 
 # Teste do SidebarNav (#165 redesign fase 2 task 1).
 # Widget puro (QWidget + QPushButton): sem DB, sem cripto, sem network.

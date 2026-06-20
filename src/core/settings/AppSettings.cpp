@@ -2,6 +2,7 @@
 #include "services/ParcelaService.h"
 #include "core/secret/SecretStoreService.h"
 
+#include <QDir>
 #include <QStandardPaths>
 
 // App name compartilhado com o cofre do sistema (mesmo usado para o salt
@@ -64,6 +65,35 @@ QString AppSettings::currencySymbol() const
 }
 
 // ── Save / autosave settings ──────────────────────────────────────────────────
+
+// (#181) Caminho fixo do cofre principal: ~/peubud/save/<slug>/database.pbd
+// mkpath da pasta-pai é garantido aqui — o chamador pode usar o path diretamente.
+QString AppSettings::savePathFixo(const QString &slug)
+{
+    const QString dir = QDir::homePath()
+                      + QStringLiteral("/peubud/save/")
+                      + slug;
+    QDir().mkpath(dir);
+    return dir + QStringLiteral("/database.pbd");
+}
+
+// (#181) Caminho fixo do autosave: ~/peubud/save/<slug>/database.auto.pbd
+// Sobrescreve a cada ciclo (snapshot do estado atual, não histórico timestampado).
+QString AppSettings::autosavePathFixo(const QString &slug)
+{
+    const QString dir = QDir::homePath()
+                      + QStringLiteral("/peubud/save/")
+                      + slug;
+    QDir().mkpath(dir);
+    return dir + QStringLiteral("/database.auto.pbd");
+}
+
+// (#181) Caminho legado pré-#181 (relativo ao CWD do processo).
+// Usado pela migração em DatabaseManager::open() para detectar cofre antigo.
+QString AppSettings::saveLegadoData(const QString &slug)
+{
+    return QStringLiteral("data/") + slug + QStringLiteral(".pbd");
+}
 
 bool AppSettings::autosaveEnabled() const
 {

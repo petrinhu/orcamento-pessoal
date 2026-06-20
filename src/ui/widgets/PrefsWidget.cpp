@@ -8,6 +8,7 @@
 #include "ConfigWidget.h"
 #include "MarketConfigWidget.h"
 #include "core/settings/AppSettings.h"
+#include "core/session/UserSession.h"
 #include "ui/NavRegistry.h"
 
 #include <QVBoxLayout>
@@ -22,7 +23,7 @@
 #include <QSpinBox>
 #include <QLineEdit>
 #include <QPushButton>
-#include <QFileDialog>
+// (#181) QFileDialog removido — Browse de pastas de save não existe mais.
 #include <QTabWidget>
 
 // ── Currency list ─────────────────────────────────────────────────────────────
@@ -173,34 +174,31 @@ void PrefsWidget::buildUi()
     connect(m_spnInterval, QOverload<int>::of(&QSpinBox::valueChanged),
             this, &PrefsWidget::onIntervalChanged);
 
-    auto *lblSavesFolder = new QLabel(tr("Pasta de salvamentos:"), grpSave);
-    laySave->addWidget(lblSavesFolder);
-    auto *rowSaves = new QHBoxLayout;
-    m_edtSavesFolder = new QLineEdit(AppSettings::instance().savesFolder(), grpSave);
-    auto *btnBrowseSaves = new QPushButton(QStringLiteral("…"), grpSave);
-    btnBrowseSaves->setObjectName(QStringLiteral("iconButton")); // glifo browse, sem borda (#165)
-    rowSaves->addWidget(m_edtSavesFolder);
-    rowSaves->addWidget(btnBrowseSaves);
-    laySave->addLayout(rowSaves);
-    connect(btnBrowseSaves, &QPushButton::clicked, this, &PrefsWidget::onBrowseSavesFolder);
-    connect(m_edtSavesFolder, &QLineEdit::editingFinished, this, [this]() {
-        AppSettings::instance().setSavesFolder(m_edtSavesFolder->text().trimmed());
-    });
+    // (#181) Pasta de save FIXA — o usuário não escolhe mais.
+    // Exibe o caminho informativo (somente leitura) em vez dos botões Browse.
+    // O slug pode ainda ser vazio aqui (sessão sem login em debug) — toleramos.
+    {
+        auto *lblLocal = new QLabel(tr("Local do cofre (fixo):"), grpSave);
+        laySave->addWidget(lblLocal);
+        // Usa slug vazio como placeholder se ainda não logado (teórico em prefs).
+        const QString slugAtual = UserSession::instance().slug();
+        const QString pathExibido = AppSettings::savePathFixo(
+            slugAtual.isEmpty() ? QStringLiteral("<usuário>") : slugAtual);
+        auto *lblPath = new QLabel(pathExibido, grpSave);
+        lblPath->setWordWrap(true);
+        // Estilo sutil de campo read-only: monoespaçado, cor subtext.
+        lblPath->setObjectName(QStringLiteral("caminhoFixo"));
+        laySave->addWidget(lblPath);
 
-    auto *lblAutosavesFolder = new QLabel(tr("Pasta de auto-salvamentos:"), grpSave);
-    laySave->addWidget(lblAutosavesFolder);
-    auto *rowAutosaves = new QHBoxLayout;
-    m_edtAutosavesFolder = new QLineEdit(AppSettings::instance().autosavesFolder(), grpSave);
-    auto *btnBrowseAutosaves = new QPushButton(QStringLiteral("…"), grpSave);
-    btnBrowseAutosaves->setObjectName(QStringLiteral("iconButton")); // glifo browse, sem borda (#165)
-    rowAutosaves->addWidget(m_edtAutosavesFolder);
-    rowAutosaves->addWidget(btnBrowseAutosaves);
-    laySave->addLayout(rowAutosaves);
-    connect(btnBrowseAutosaves, &QPushButton::clicked,
-            this, &PrefsWidget::onBrowseAutosavesFolder);
-    connect(m_edtAutosavesFolder, &QLineEdit::editingFinished, this, [this]() {
-        AppSettings::instance().setAutosavesFolder(m_edtAutosavesFolder->text().trimmed());
-    });
+        auto *lblAuto = new QLabel(tr("Auto-save (fixo):"), grpSave);
+        laySave->addWidget(lblAuto);
+        const QString pathAutoExibido = AppSettings::autosavePathFixo(
+            slugAtual.isEmpty() ? QStringLiteral("<usuário>") : slugAtual);
+        auto *lblPathAuto = new QLabel(pathAutoExibido, grpSave);
+        lblPathAuto->setWordWrap(true);
+        lblPathAuto->setObjectName(QStringLiteral("caminhoFixo"));
+        laySave->addWidget(lblPathAuto);
+    }
 
     layGeral->addWidget(grpSave);
 
@@ -373,24 +371,5 @@ void PrefsWidget::onIntervalChanged(int minutes)
     AppSettings::instance().setAutosaveIntervalMinutes(minutes);
 }
 
-void PrefsWidget::onBrowseSavesFolder()
-{
-    const QString dir = QFileDialog::getExistingDirectory(
-        this, tr("Selecionar pasta de salvamentos"),
-        m_edtSavesFolder->text());
-    if (!dir.isEmpty()) {
-        m_edtSavesFolder->setText(dir);
-        AppSettings::instance().setSavesFolder(dir);
-    }
-}
-
-void PrefsWidget::onBrowseAutosavesFolder()
-{
-    const QString dir = QFileDialog::getExistingDirectory(
-        this, tr("Selecionar pasta de auto-salvamentos"),
-        m_edtAutosavesFolder->text());
-    if (!dir.isEmpty()) {
-        m_edtAutosavesFolder->setText(dir);
-        AppSettings::instance().setAutosavesFolder(dir);
-    }
-}
+// (#181) onBrowseSavesFolder / onBrowseAutosavesFolder removidos.
+// Pastas de save são FIXAS (~/peubud/save/<slug>/); usuário não escolhe mais.

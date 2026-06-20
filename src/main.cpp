@@ -31,7 +31,8 @@ int main(int argc, char *argv[])
     Theme::aplicar();
 
     // ── Login + retry loop ─────────────────────────────────────────────────
-    // Cria o diretório de dados uma única vez, antes do loop.
+    // Cria o diretório temporário data/ (banco decifrado em runtime).
+    // O cofre cifrado vai para ~/peubud/save/<slug>/database.pbd (#181).
     QDir().mkpath(QStringLiteral("data"));
 
     LoginDialog login;

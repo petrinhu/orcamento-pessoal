@@ -1,6 +1,7 @@
 #include "DatabaseManager.h"
 #include "core/crypto/AesCryptoService.h"
 #include "core/crypto/SodiumCryptoService.h"
+#include "core/settings/AppSettings.h"
 #include "services/FechamentoMensalService.h"
 #include "services/AuditLogService.h"
 #include "repositories/ProventoRepository.h"
@@ -19,18 +20,72 @@
 
 namespace {
 
-// Garante que o diretório `data/` exista e tenha permissões 0700 (apenas o
-// dono lê/escreve/entra). O `.db` em claro vive aqui durante a sessão; em um
-// sistema multiusuário, 0700 impede que outros usuários locais leiam o SQLite
-// decifrado. Não altera onde o `.pbd` é procurado (mesmo diretório relativo).
+// Garante que o diretório temporário `data/` (onde o `.db` em claro vive
+// durante a sessão) exista com permissões 0700.
 void ensureDataDirSecure()
 {
     const QString dataDir = QStringLiteral("data");
     QDir().mkpath(dataDir);
-    // chmod 0700 é idempotente; ignora falha silenciosamente (ex.: FS sem
-    // suporte a permissões POSIX). Best-effort hardening, não bloqueante.
     ::chmod(QFile::encodeName(dataDir).constData(), S_IRWXU);
 }
+
+#ifndef QT_DEBUG
+// (#181) Garante que a pasta-pai do caminho fixo ~/peubud/save/<slug>/
+// exista e tenha permissões 0700. O `.db` em claro vive em data/ (CWD)
+// durante a sessão; o cofre cifrado fica no caminho fixo.
+void ensureSaveDirSecure(const QString &pbdPath)
+{
+    const QString dir = QFileInfo(pbdPath).absolutePath();
+    QDir().mkpath(dir);
+    // chmod 0700 é idempotente; best-effort (FS sem POSIX não bloqueia).
+    ::chmod(QFile::encodeName(dir).constData(), S_IRWXU);
+}
+
+// (#181) Migração transparente: se o cofre no caminho fixo novo não existe
+// mas existe no caminho legado (data/<slug>.pbd), copia para o novo destino
+// e renomeia o antigo para <antigo>.bak — nunca deleta o original.
+// Retorna true se o cofre novo foi criado por migração (ou já existia).
+// Retorna false se nenhum cofre existe em nenhum lugar (novo usuário).
+bool migrarCofreSeNecessario(const QString &pbdPathNovo, const QString &pbdPathLegado)
+{
+    if (QFile::exists(pbdPathNovo))
+        return true; // caminho novo já tem cofre — nada a fazer
+
+    if (!QFile::exists(pbdPathLegado))
+        return false; // nenhum cofre existe — novo usuário, banco vazio
+
+    // Cofre legado encontrado — copiar (não mover) para o novo destino.
+    // SEGURANÇA: usar write atômico via arquivo .new para não deixar destino
+    // corrompido se o processo for interrompido no meio.
+    const QString tmpNovo = pbdPathNovo + QStringLiteral(".new");
+    if (!QFile::copy(pbdPathLegado, tmpNovo)) {
+        qWarning() << "DatabaseManager: falha ao copiar cofre legado para novo destino"
+                   << pbdPathLegado << "->" << tmpNovo;
+        return false;
+    }
+    if (!QFile::rename(tmpNovo, pbdPathNovo)) {
+        qWarning() << "DatabaseManager: falha ao renomear cofre copiado"
+                   << tmpNovo << "->" << pbdPathNovo;
+        QFile::remove(tmpNovo);
+        return false;
+    }
+
+    // Renomeia o antigo para .bak (mantém como backup — não deleta nunca).
+    const QString bakPath = pbdPathLegado + QStringLiteral(".bak");
+    if (!QFile::rename(pbdPathLegado, bakPath)) {
+        // Renomear para .bak falhou (ex.: FS read-only, cross-device) —
+        // deixa o original no lugar. Não é erro fatal: o cofre novo já está
+        // no destino correto. Log de aviso para o dev.
+        qWarning() << "DatabaseManager: não foi possível renomear legado para .bak"
+                   << pbdPathLegado << "(cofre novo OK em" << pbdPathNovo << ")";
+    } else {
+        qDebug() << "DatabaseManager: cofre legado migrado para" << pbdPathNovo
+                 << "| backup em" << bakPath;
+    }
+
+    return true;
+}
+#endif // QT_DEBUG
 
 } // namespace
 
@@ -49,7 +104,7 @@ bool DatabaseManager::open(const QString &slug,
                            const QByteArray &keyNew,
                            const QByteArray &keyLegacy)
 {
-    ensureDataDirSecure();   // mkpath + chmod 0700 no diretório de dados
+    ensureDataDirSecure();   // mkpath + chmod 0700 no diretório de dados temporário
 
     m_slug        = slug;
     m_key         = keyNew;
@@ -58,15 +113,23 @@ bool DatabaseManager::open(const QString &slug,
     m_dbPath      = QStringLiteral("data/.%1.db").arg(slug);
 
 #ifndef QT_DEBUG
-    // (#127c) Limpa `.db` em claro órfão de uma sessão anterior que não fechou
-    // limpo (ex.: crash/kill — o close() normal já remove o `.db`). Em release a
-    // fonte de verdade é sempre o `.pbd`; o `.db` é puramente derivado, então é
-    // seguro descartá-lo aqui. Reduz a janela de exposição do banco em claro.
-    // (Em QT_DEBUG NÃO se remove: lá o `.db` É a fonte de verdade — sem `.pbd`.)
+    // (#181) Caminho fixo do cofre: ~/peubud/save/<slug>/database.pbd
+    const QString pbdPath    = AppSettings::savePathFixo(slug);
+    const QString pbdLegado  = AppSettings::saveLegadoData(slug);
+
+    // Garante que a pasta do cofre fixo existe e tem permissão 0700.
+    ensureSaveDirSecure(pbdPath);
+
+    // (#181) Migração transparente: se cofre novo ausente mas legado presente,
+    // copia o legado para o novo destino (nunca deleta o original).
+    migrarCofreSeNecessario(pbdPath, pbdLegado);
+
+    // (#127c) Limpa `.db` em claro órfão de sessão anterior que não fechou
+    // limpo (ex.: crash/kill — close() normal remove o `.db`). Em release a
+    // fonte de verdade é sempre o `.pbd`; o `.db` é derivado, seguro descartar.
     if (QFile::exists(m_dbPath))
         QFile::remove(m_dbPath);
 
-    const QString pbdPath = QStringLiteral("data/%1.pbd").arg(slug);
     if (QFile::exists(pbdPath)) {
         if (!decryptAndLoad(pbdPath, m_dbPath, keyNew, keyLegacy))
             return false;
@@ -94,7 +157,8 @@ bool DatabaseManager::save()
 {
 #ifndef QT_DEBUG
     if (!m_db.isOpen()) return false;
-    const QString pbdPath = QStringLiteral("data/%1.pbd").arg(m_slug);
+    // (#181) Caminho fixo — ~/peubud/save/<slug>/database.pbd
+    const QString pbdPath = AppSettings::savePathFixo(m_slug);
     return encryptAndSave(m_dbPath, m_key, pbdPath);
 #else
     return true; // debug: SQLite persiste imediatamente
@@ -111,7 +175,8 @@ void DatabaseManager::close()
     QSqlDatabase::removeDatabase(QStringLiteral("main"));
 
 #ifndef QT_DEBUG
-    const QString pbdPath = QStringLiteral("data/%1.pbd").arg(m_slug);
+    // (#181) Caminho fixo — ~/peubud/save/<slug>/database.pbd
+    const QString pbdPath = AppSettings::savePathFixo(m_slug);
     encryptAndSave(dbPath, m_key, pbdPath);
 #endif
 

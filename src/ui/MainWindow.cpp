@@ -899,32 +899,30 @@ void MainWindow::resetAutosaveTimer()
 void MainWindow::onAutosave()
 {
     if (!m_dirty) return;
-    const QString folder = AppSettings::instance().autosavesFolder();
 
-    // (#178) Tenta criar a pasta silenciosamente (sem diálogo — autosave
-    // não pode abrir popup a cada ciclo). Se falhar, notifica uma única vez
-    // por sessão via statusBar e pausa este ciclo sem derrubar o app.
-    if (!QDir(folder).exists() && !QDir().mkpath(folder)) {
+    // (#181) Caminho fixo do autosave: ~/peubud/save/<slug>/database.auto.pbd
+    // mkpath é garantido por autosavePathFixo(); sem diálogo (autosave é silencioso).
+    const QString slug = UserSession::instance().slug();
+    const QString path = AppSettings::autosavePathFixo(slug);
+
+    // (#178/#181) Se o mkpath interno falhou (permissão negada), a pasta não
+    // existirá — notifica uma única vez por sessão; não abre popup a cada ciclo.
+    const QString dir = QFileInfo(path).absolutePath();
+    if (!QDir(dir).exists()) {
         if (!m_autosaveAvisado) {
             m_autosaveAvisado = true;
             statusBar()->showMessage(
-                tr("Auto-save: pasta '%1' não existe e não pôde ser criada. "
-                   "Use Arquivo → Salvar Como para escolher outro destino.")
-                    .arg(folder),
+                tr("Auto-save: pasta '%1' não pôde ser criada (sem permissão?). "
+                   "Verifique as permissões do diretório ~/peubud/save/.")
+                    .arg(dir),
                 10000);
         }
         return;
     }
-    // Pasta existe (criada agora ou já existia): limpa o aviso anterior se
-    // a situação se normalizou (ex.: pasta recriada externamente).
     m_autosaveAvisado = false;
 
-    const QString ts   = QDateTime::currentDateTime().toString(
-                           QStringLiteral("yyyyMMdd_HHmmss"));
-    const QString slug = UserSession::instance().slug();
-    const QString path = QStringLiteral("%1/%2_%3.pbd").arg(folder, slug, ts);
     if (DatabaseManager::instance().exportToFile(path))
-        statusBar()->showMessage(tr("Auto-salvo: %1").arg(path), 3000);
+        statusBar()->showMessage(tr("Auto-salvo em %1").arg(path), 3000);
 }
 
 // ── Arquivo slots ─────────────────────────────────────────────────────────────
@@ -950,34 +948,29 @@ void MainWindow::onAbrir()
 
 void MainWindow::onSalvar()
 {
-    // (#178) Garante que o diretório data/ (banco principal) existe antes de
-    // gravar. Se sumir em runtime (ex.: mnt desmontado, pasta removida), avisa
-    // com opção de criar, em vez de falhar silenciosamente.
-    if (!garantirPastaExiste(QStringLiteral("data"))) {
-        statusBar()->showMessage(tr("Save cancelado."), 3000);
-        return; // m_dirty permanece true — nenhum dado perdido
-    }
+    // (#181) Caminho fixo: ~/peubud/save/<slug>/database.pbd
+    // mkpath é garantido por AppSettings::savePathFixo() no DatabaseManager::save().
+    // (#178/#181) Se o mkpath falhou (permissão negada), save() retorna false —
+    // a mensagem de erro orienta o usuário sem diálogo de criação de pasta.
     if (DatabaseManager::instance().save()) {
         m_dirty = false;
-        m_autosaveAvisado = false; // pasta está OK novamente
+        m_autosaveAvisado = false;
         statusBar()->showMessage(tr("Arquivo salvo."), 3000);
     } else {
+        const QString slug = UserSession::instance().slug();
         QMessageBox::warning(this, tr("Erro ao salvar"),
-            tr("Não foi possível salvar o arquivo.\n"
-               "Verifique se há espaço em disco e permissões de escrita."));
+            tr("Não foi possível salvar o arquivo em:\n%1\n\n"
+               "Verifique se há espaço em disco e permissões de escrita.")
+                .arg(AppSettings::savePathFixo(slug)));
     }
 }
 
 void MainWindow::onSalvarComo()
 {
-    const QString startDir = AppSettings::instance().savesFolder();
-
-    // (#178) Garante pasta de saves antes de abrir o dialog. Se o usuário
-    // cancelar a criação, abandona o fluxo sem perda de dados.
-    if (!garantirPastaExiste(startDir)) {
-        statusBar()->showMessage(tr("Save cancelado."), 3000);
-        return;
-    }
+    // (#181) "Salvar como" virou "Salvar cópia como" — exporta uma cópia
+    // cifrada para um destino escolhido pelo usuário. O cofre principal
+    // permanece em ~/peubud/save/<slug>/database.pbd (inalterado).
+    const QString startDir = QDir::homePath();
 
     const QString path = QFileDialog::getSaveFileName(
         this, tr("Salvar cópia como"),
@@ -988,18 +981,18 @@ void MainWindow::onSalvarComo()
     const QString dest = path.endsWith(QStringLiteral(".pbd"), Qt::CaseInsensitive)
                        ? path : path + QStringLiteral(".pbd");
 
-    // (#178) O usuário pode ter digitado um caminho com pasta inexistente no
-    // dialog — verifica o diretório pai do destino final também.
+    // Garante que a pasta de destino da cópia existe antes de escrever.
     const QString destDir = QFileInfo(dest).absolutePath();
     if (!garantirPastaExiste(destDir)) {
-        statusBar()->showMessage(tr("Save cancelado."), 3000);
+        statusBar()->showMessage(tr("Exportação cancelada."), 3000);
         return;
     }
 
     if (!DatabaseManager::instance().exportToFile(dest)) {
-        QMessageBox::warning(this, tr("Erro ao salvar"),
-            tr("Não foi possível salvar o arquivo.\n"
-               "Verifique se há espaço em disco e permissões de escrita."));
+        QMessageBox::warning(this, tr("Erro ao exportar cópia"),
+            tr("Não foi possível exportar a cópia para:\n%1\n\n"
+               "Verifique se há espaço em disco e permissões de escrita.")
+                .arg(dest));
     }
 }
 
