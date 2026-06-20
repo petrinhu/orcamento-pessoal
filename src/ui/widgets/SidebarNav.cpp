@@ -25,6 +25,13 @@ static QFrame *criarSeparador(QWidget *parent)
 SidebarNav::SidebarNav(QWidget *parent)
     : QWidget(parent)
 {
+    // objectName necessario para o seletor QWidget#sidebarNav no QSS (#165).
+    setObjectName(QStringLiteral("sidebarNav"));
+    // Habilita autoFillBackground para que o Fusion style aplique o
+    // background-color/gradiente do QSS neste widget (sem isso, QWidget
+    // nao pinta o proprio fundo com background-color definido via QSS).
+    setAutoFillBackground(true);
+
     // Layout raiz — empilha itens (top), stretch e footer (bottom).
     auto *rootLayout = new QVBoxLayout(this);
     rootLayout->setContentsMargins(8, 12, 8, 8);
@@ -52,6 +59,7 @@ SidebarNav::SidebarNav(QWidget *parent)
 
     // Bloco de usuario (avatar inicial + nome) — fica sempre no fim do footer.
     auto *usuarioWidget = new QWidget(this);
+    usuarioWidget->setObjectName(QStringLiteral("sidebarUsuario"));
     auto *usuarioLayout = new QHBoxLayout(usuarioWidget);
     usuarioLayout->setContentsMargins(4, 4, 4, 4);
     usuarioLayout->setSpacing(8);
@@ -60,9 +68,8 @@ SidebarNav::SidebarNav(QWidget *parent)
     m_avatarLabel->setObjectName(QStringLiteral("sidebarAvatar"));
     m_avatarLabel->setFixedSize(28, 28);
     m_avatarLabel->setAlignment(Qt::AlignCenter);
-    // Estilo basico do circulo — sera refinado pelo QSS navy na task futura.
-    m_avatarLabel->setStyleSheet(
-        QStringLiteral("background:#3B82F6; color:white; border-radius:14px; font-weight:600;"));
+    // Estilo via QSS global (Theme.cpp, seletor QWidget#sidebarNav QLabel#sidebarAvatar).
+    // Sem setStyleSheet inline: evita conflito de especificidade com o QSS global (#165).
 
     m_nomeLabel = new QLabel(usuarioWidget);
     m_nomeLabel->setObjectName(QStringLiteral("sidebarNome"));

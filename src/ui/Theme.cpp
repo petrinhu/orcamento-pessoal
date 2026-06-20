@@ -143,10 +143,16 @@ static QString gerarQss()
     const QString accHover   = QStringLiteral("#60A5FA");  // accent +light
     const QString accPressed = QStringLiteral("#2563EB");  // accent +dark
 
+    // Tokens sidebar (#165): navy independente de light/dark (tom proprio da sidebar).
+    const QString sb1  = sidebar1();
+    const QString sb2  = sidebar2();
+    const QString sbtx = sidebarText();
+
     // Tokens nomeados: eliminam o esquema posicional %N que causou 2 bugs
     // (hover e agora neg/brd trocados). Cada @@TOKEN@@ tem semântica inequívoca.
     // @@TXT@@ @@BG@@ @@SURF@@ @@ACC@@ @@SUB@@ @@NEG@@ @@BRD@@ @@ALT@@ @@HOV@@
-    // @@ACC_HOVER@@ @@ACC_PRESSED@@ (fixos, não dependem do tema)
+    // @@ACC_HOVER@@ @@ACC_PRESSED@@
+    // @@SIDEBAR1@@ @@SIDEBAR2@@ @@SIDEBARTXT@@ (sidebar, fixos independente de tema)
     // Raio de cards: 14px; inputs/botões: 9px (#164 Fase 1).
     QString qss = QStringLiteral(R"(
         /* ── Base ── */
@@ -360,6 +366,72 @@ static QString gerarQss()
         }
         /* ── Dialog button boxes ── */
         QDialogButtonBox QPushButton { min-width: 80px; }
+
+        /* ── Sidebar navy (#165 redesign Fase 2 Task 6) ─────────────────────
+           Gradiente navy do topo (@@SIDEBAR1@@) ao fundo (@@SIDEBAR2@@).
+           Largura fixa 230px garante coluna lateral estavel sem encolher.
+           Separador: linha sutil entre zona de itens e footer.
+        ── */
+        QWidget#sidebarNav {
+            background-color: qlineargradient(x1:0,y1:0,x2:0,y2:1,
+                stop:0 @@SIDEBAR1@@, stop:1 @@SIDEBAR2@@);
+            min-width: 230px;
+            max-width: 230px;
+        }
+        /* Filhos e descendentes da sidebar: fundo transparente para gradiente aparecer */
+        QWidget#sidebarNav > QWidget,
+        QWidget#sidebarNav QWidget#sidebarUsuario {
+            background-color: transparent;
+        }
+        QFrame#sidebarSep {
+            background: rgba(255,255,255,0.08);
+            max-height: 1px;
+            border: none;
+        }
+        /* Rotulo de grupo: dim em relacao ao sidebarText; maiusculas via codigo */
+        QWidget#sidebarNav QLabel#grupo {
+            color: rgba(175,189,208,0.55);
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            padding: 12px 10px 4px;
+            background: transparent;
+        }
+        /* Itens de navegacao: fundo transparente por padrao */
+        QWidget#sidebarNav QPushButton#navItem {
+            color: @@SIDEBARTXT@@;
+            background: transparent;
+            border: none;
+            text-align: left;
+            padding: 9px 11px;
+            border-radius: 9px;
+            font-weight: 500;
+            font-size: 13px;
+        }
+        QWidget#sidebarNav QPushButton#navItem:hover {
+            background: rgba(255,255,255,0.06);
+            color: white;
+        }
+        /* Pill ativo: accent + sombra azul (property dinamica setada por setAtivo()) */
+        QWidget#sidebarNav QPushButton#navItem[ativo="true"] {
+            background: @@ACC@@;
+            color: white;
+            font-weight: 600;
+        }
+        /* Avatar (circulo inicial) e nome do usuario no rodape */
+        QWidget#sidebarNav QLabel#sidebarAvatar {
+            background: @@ACC@@;
+            color: white;
+            border-radius: 14px;
+            font-weight: 600;
+            font-size: 13px;
+        }
+        QWidget#sidebarNav QLabel#sidebarNome {
+            color: @@SIDEBARTXT@@;
+            font-size: 13px;
+            font-weight: 500;
+            background: transparent;
+        }
     )");
 
     // Substituição de tokens nomeados → valores da paleta. Ordem não importa
@@ -368,14 +440,20 @@ static QString gerarQss()
     qss.replace(QStringLiteral("@@TXT@@"),          txt);
     qss.replace(QStringLiteral("@@BG@@"),           bg);
     qss.replace(QStringLiteral("@@SURF@@"),         surf);
+    // @@ACC_HOVER@@ e @@ACC_PRESSED@@ antes de @@ACC@@ para evitar replace parcial
+    // (ex.: "@@ACC_H..." poderia casar com "@@ACC@@" se a ordem fosse inversa).
+    qss.replace(QStringLiteral("@@ACC_HOVER@@"),    accHover);
+    qss.replace(QStringLiteral("@@ACC_PRESSED@@"),  accPressed);
     qss.replace(QStringLiteral("@@ACC@@"),          acc);
     qss.replace(QStringLiteral("@@SUB@@"),          sub);
     qss.replace(QStringLiteral("@@NEG@@"),          neg);
     qss.replace(QStringLiteral("@@BRD@@"),          brd);
     qss.replace(QStringLiteral("@@ALT@@"),          alt);
     qss.replace(QStringLiteral("@@HOV@@"),          hov);
-    qss.replace(QStringLiteral("@@ACC_HOVER@@"),    accHover);
-    qss.replace(QStringLiteral("@@ACC_PRESSED@@"),  accPressed);
+    // Tokens sidebar (#165): substituidos por ultimo (nao conflitam com os acima).
+    qss.replace(QStringLiteral("@@SIDEBAR1@@"),     sb1);
+    qss.replace(QStringLiteral("@@SIDEBAR2@@"),     sb2);
+    qss.replace(QStringLiteral("@@SIDEBARTXT@@"),   sbtx);
 
     return qss;
 }

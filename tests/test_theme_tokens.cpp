@@ -51,6 +51,13 @@ private slots:
     // accHover e accPressed atualizados para tons coerentes com #3B82F6 (#164 fix).
     void accHover_tomClaroCoerente();
     void accPressed_tomEscuroCoerente();
+
+    // ── Tokens de sidebar no QSS (#165) ─────────────────────────────────────
+    // Garante que @@SIDEBAR1@@, @@SIDEBAR2@@, @@SIDEBARTXT@@ foram substituidos
+    // pelos valores reais e que o seletor #sidebarNav esta presente no QSS.
+    void sidebarNavBackground_contemSidebar1();
+    void navItemAtivo_contemAccento();
+    void navItemNormal_contemSidebarText();
 };
 
 void TestThemeTokens::initTestCase()
@@ -238,6 +245,60 @@ void TestThemeTokens::accPressed_tomEscuroCoerente()
     const QString qss = Theme::qssParaTeste();
     QVERIFY2(qss.contains(QStringLiteral("#2563EB")),
              "accPressed (#2563EB) ausente no QSS — verificar gerarQss()");
+}
+
+// ── Tokens de sidebar no QSS (#165) ──────────────────────────────────────────
+
+// Verifica que @@SIDEBAR1@@ foi substituido (nao aparece como literal no QSS)
+// e que o valor real (#1B2A41) esta no bloco do seletor #sidebarNav.
+void TestThemeTokens::sidebarNavBackground_contemSidebar1()
+{
+    const QString qss = Theme::qssParaTeste();
+
+    // Token literal nao pode aparecer apos substituicao.
+    QVERIFY2(!qss.contains(QStringLiteral("@@SIDEBAR1@@")),
+             "Token @@SIDEBAR1@@ nao foi substituido no QSS");
+    QVERIFY2(!qss.contains(QStringLiteral("@@SIDEBAR2@@")),
+             "Token @@SIDEBAR2@@ nao foi substituido no QSS");
+
+    // O seletor do widget raiz deve existir.
+    QVERIFY2(qss.contains(QStringLiteral("QWidget#sidebarNav")),
+             "Seletor QWidget#sidebarNav ausente no QSS");
+
+    // O valor do Sidebar1Light (#1B2A41) deve estar no QSS (usado no gradiente).
+    QVERIFY2(qss.contains(Theme::sidebar1()),
+             "Cor sidebar1 ausente no QSS apos substituicao de @@SIDEBAR1@@");
+}
+
+// O bloco do item ativo [ativo="true"] deve conter o accent (#3B82F6).
+void TestThemeTokens::navItemAtivo_contemAccento()
+{
+    const QString qss = Theme::qssParaTeste();
+    const QString regra = QStringLiteral("[ativo=\"true\"]");
+    const int posRegra = qss.indexOf(regra);
+    QVERIFY2(posRegra >= 0, "Seletor [ativo=\"true\"] ausente no QSS");
+
+    const int posAbre = qss.indexOf('{', posRegra);
+    const int posFecha = qss.indexOf('}', posAbre);
+    QVERIFY(posAbre >= 0 && posFecha > posAbre);
+    const QString bloco = qss.mid(posAbre, posFecha - posAbre);
+
+    QVERIFY2(bloco.contains(Theme::acento()),
+             "Cor accent ausente no bloco do item ativo [ativo=\"true\"]");
+}
+
+// O bloco do navItem normal deve conter a cor de texto da sidebar (@@SIDEBARTXT@@).
+void TestThemeTokens::navItemNormal_contemSidebarText()
+{
+    const QString qss = Theme::qssParaTeste();
+
+    // Token literal nao pode aparecer (deve ter sido substituido).
+    QVERIFY2(!qss.contains(QStringLiteral("@@SIDEBARTXT@@")),
+             "Token @@SIDEBARTXT@@ nao foi substituido no QSS");
+
+    // O valor real deve estar presente no QSS.
+    QVERIFY2(qss.contains(Theme::sidebarText()),
+             "Cor sidebarText ausente no QSS apos substituicao de @@SIDEBARTXT@@");
 }
 
 QTEST_MAIN(TestThemeTokens)
