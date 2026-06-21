@@ -1,4 +1,5 @@
 #include "BolsaWidget.h"
+#include "EmptyStateWidget.h"
 #include "ui/Theme.h"
 
 #include "core/settings/AppSettings.h"
@@ -11,6 +12,7 @@
 #include <QLineEdit>
 #include <QMessageBox>
 #include <QPushButton>
+#include <QStackedWidget>
 #include <QTableWidget>
 #include <QVBoxLayout>
 
@@ -58,8 +60,20 @@ void BolsaWidget::buildUi()
 
     root->addLayout(bar);
 
+    // ── Stack: empty state (0) + tabela (1) ──────────────────────────────
+    // Sem CTA: Bolsa exige input do usuário para buscar (#166 Peça 2 — sem botão).
+    m_stack = new QStackedWidget(this);
+
+    auto *emptyState = new EmptyStateWidget(
+        QStringLiteral("🏦"),
+        tr("Nenhuma cotação pesquisada"),
+        tr("Digite o código de uma ação (ex.: PETR4) para ver o preço e as informações mais recentes."),
+        QString(), // sem CTA
+        m_stack);
+    m_stack->addWidget(emptyState); // index 0
+
     // ── Tabela de resultados ──────────────────────────────────────────────
-    m_tabela = new QTableWidget(this);
+    m_tabela = new QTableWidget(m_stack);
     m_tabela->setColumnCount(5);
     m_tabela->setHorizontalHeaderLabels({
         tr("Ticker"), tr("Nome"), tr("Último"), tr("Variação %"), tr("Volume")
@@ -69,7 +83,9 @@ void BolsaWidget::buildUi()
     m_tabela->setEditTriggers(QAbstractItemView::NoEditTriggers);
     m_tabela->setSelectionBehavior(QAbstractItemView::SelectRows);
     m_tabela->setAlternatingRowColors(true);
-    root->addWidget(m_tabela, 1);
+    m_stack->addWidget(m_tabela); // index 1
+
+    root->addWidget(m_stack, 1);
 
     // ── Status ────────────────────────────────────────────────────────────
     m_lblStatus = new QLabel(this);
@@ -121,6 +137,8 @@ void BolsaWidget::onBuscar()
             m_tabela->setItem(i, 3, new QTableWidgetItem(QStringLiteral("—")));
             m_tabela->setItem(i, 4, new QTableWidgetItem(QStringLiteral("—")));
         }
+        // Alterna stack: tabela (1) quando há resultados, empty state (0) quando não.
+        m_stack->setCurrentIndex(results.isEmpty() ? 0 : 1);
         m_lblStatus->setText(tr("%1 resultados para '%2'").arg(results.size()).arg(q));
     });
 }

@@ -1,4 +1,5 @@
 #include "PlanejamentoWidget.h"
+#include "EmptyStateWidget.h"
 #include "ItemOrcamentoDialog.h"
 #include "repositories/CategoriaRepository.h"
 #include "repositories/FonteRendaRepository.h"
@@ -100,20 +101,17 @@ void PlanejamentoWidget::buildUi()
     // ── Stack ──────────────────────────────────────────────────────────────
     m_stack = new QStackedWidget(this);
 
-    auto *emptyPage = new QWidget(m_stack);
-    auto *emptyLay  = new QVBoxLayout(emptyPage);
-    emptyLay->setAlignment(Qt::AlignCenter);
-    auto *lblTitle = new QLabel(tr("Nenhum item de orçamento cadastrado."), emptyPage);
-    lblTitle->setAlignment(Qt::AlignCenter);
-    QFont fTitle = lblTitle->font(); fTitle.setPointSize(14);
-    lblTitle->setFont(fTitle);
-    auto *lblHint = new QLabel(tr("Clique em \"➕ Novo item\" para começar."), emptyPage);
-    lblHint->setObjectName(QStringLiteral("subtitle"));
-    lblHint->setAlignment(Qt::AlignCenter);
-    emptyLay->addWidget(lblTitle);
-    emptyLay->addSpacing(4);
-    emptyLay->addWidget(lblHint);
-    m_stack->addWidget(emptyPage); // index 0
+    // Empty state guiado (§9.7 manual de estilo, #166 Peça 2).
+    // CTA encaminha o click para btnNovo via signal→signal (zero duplicação).
+    auto *emptyState = new EmptyStateWidget(
+        QStringLiteral("📋"),
+        tr("Nenhum item no orçamento"),
+        tr("Planeje quanto quer gastar em cada categoria do mês e veja se está dentro do combinado."),
+        tr("Novo item"),
+        m_stack);
+    connect(emptyState->ctaButton(), &QPushButton::clicked,
+            btnNovo,                 &QPushButton::click);
+    m_stack->addWidget(emptyState); // index 0
 
     m_table = new QTableWidget(m_stack);
     m_table->setColumnCount(COL_COUNT);

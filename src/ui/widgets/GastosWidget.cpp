@@ -1,4 +1,5 @@
 #include "GastosWidget.h"
+#include "EmptyStateWidget.h"
 #include "ui/Theme.h"
 #include "GastoDialog.h"
 #include "repositories/CategoriaRepository.h"
@@ -92,21 +93,17 @@ void GastosWidget::buildUi()
     // ── Stack: empty state (0) + table (1) ────────────────────────────────
     m_stack = new QStackedWidget(this);
 
-    auto *emptyPage = new QWidget(m_stack);
-    auto *emptyLay  = new QVBoxLayout(emptyPage);
-    emptyLay->setAlignment(Qt::AlignCenter);
-    auto *lblTitle = new QLabel(tr("Nenhum gasto cadastrado."), emptyPage);
-    lblTitle->setAlignment(Qt::AlignCenter);
-    QFont fTitle = lblTitle->font();
-    fTitle.setPointSize(14);
-    lblTitle->setFont(fTitle);
-    auto *lblHint = new QLabel(tr("Clique em \"➕ Novo gasto\" para começar."), emptyPage);
-    lblHint->setObjectName(QStringLiteral("subtitle"));
-    lblHint->setAlignment(Qt::AlignCenter);
-    emptyLay->addWidget(lblTitle);
-    emptyLay->addSpacing(4);
-    emptyLay->addWidget(lblHint);
-    m_stack->addWidget(emptyPage); // index 0
+    // Empty state guiado (§9.7 manual de estilo, #166 Peça 2).
+    // CTA encaminha o click para btnNova via signal→signal (zero duplicação de lógica).
+    auto *emptyState = new EmptyStateWidget(
+        QStringLiteral("🧾"),
+        tr("Nenhum gasto ainda"),
+        tr("Anote suas despesas aqui para descobrir para onde seu dinheiro vai todo mês."),
+        tr("Novo gasto"),
+        m_stack);
+    connect(emptyState->ctaButton(), &QPushButton::clicked,
+            btnNova,                 &QPushButton::click);
+    m_stack->addWidget(emptyState); // index 0
 
     m_table = new QTableWidget(m_stack);
     m_table->setSelectionBehavior(QAbstractItemView::SelectItems);

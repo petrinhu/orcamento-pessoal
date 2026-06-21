@@ -730,6 +730,27 @@ static QString gerarQss()
             color: @@TAG_ROXO_FG@@;
             background-color: @@TAG_ROXO_BG@@;
         }
+
+        /* ── Empty states guiados (#166 Peca 2) ─────────────────────────────────
+           EmptyStateWidget: emoji 64px (QLabel#emptyStateEmoji — so pixmap),
+           titulo Inter SemiBold 16px cor @@TXT@@, frase Regular 13px cor @@SUB@@.
+           Centralizados vertical+horizontalmente sobre o fundo da view.
+        ── */
+        QLabel#emptyStateTitle {
+            font-size: 16px;
+            font-weight: 600;
+            color: @@TXT@@;
+            background-color: transparent;
+        }
+        QLabel#emptyStateFrase {
+            font-size: 13px;
+            font-weight: 400;
+            color: @@SUB@@;
+            background-color: transparent;
+        }
+        QLabel#emptyStateEmoji {
+            background-color: transparent;
+        }
     )");
 
     // Substituição de tokens nomeados → valores da paleta. Ordem não importa

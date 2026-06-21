@@ -1,4 +1,5 @@
 #include "RecorrenciaWidget.h"
+#include "EmptyStateWidget.h"
 #include "ui/Theme.h"
 #include "ui/Tag.h"
 #include "RecorrenciaDialog.h"
@@ -12,6 +13,7 @@
 #include <QUndoStack>
 #include <memory>
 
+#include <QStackedWidget>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QTableWidget>
@@ -81,15 +83,29 @@ void RecorrenciaWidget::buildUi()
     toolbar->addStretch();
     root->addLayout(toolbar);
 
-    // ── Hint label ─────────────────────────────────────────────────────────
+    // ── Hint label (persiste acima do stack) ──────────────────────────────
     auto *hint = new QLabel(
         tr("Lançamentos são gerados automaticamente ao abrir o app."), this);
     hint->setObjectName(QStringLiteral("subtitle"));
     hint->setContentsMargins(8, 0, 8, 4);
     root->addWidget(hint);
 
-    // ── Table ──────────────────────────────────────────────────────────────
-    m_table = new QTableWidget(0, 6, this);
+    // ── Stack: empty state (0) + table (1) ────────────────────────────────
+    m_stack = new QStackedWidget(this);
+
+    // Empty state guiado (§9.7 manual de estilo, #166 Peça 2).
+    // CTA encaminha o click para btnAdd via signal→signal (zero duplicação de lógica).
+    auto *emptyState = new EmptyStateWidget(
+        QStringLiteral("🔄"),
+        tr("Nenhuma cobrança automática"),
+        tr("Cadastre contas fixas — internet, academia, streaming — e o PeuBud lança sozinho todo mês."),
+        tr("Adicionar"),
+        m_stack);
+    connect(emptyState->ctaButton(), &QPushButton::clicked,
+            btnAdd,                  &QPushButton::click);
+    m_stack->addWidget(emptyState); // index 0
+
+    m_table = new QTableWidget(0, 6, m_stack);
     m_table->setHorizontalHeaderLabels({
         tr("Descrição"), tr("Tipo"), tr("Valor"),
         tr("Frequência"), tr("Próxima"), tr("Ativo")
@@ -101,7 +117,9 @@ void RecorrenciaWidget::buildUi()
     m_table->setSelectionBehavior(QAbstractItemView::SelectRows);
     m_table->setEditTriggers(QAbstractItemView::NoEditTriggers);
     m_table->setAlternatingRowColors(true);
-    root->addWidget(m_table);
+    m_stack->addWidget(m_table); // index 1
+
+    root->addWidget(m_stack);
 
     // ── Connections ────────────────────────────────────────────────────────
     connect(btnAdd,      &QPushButton::clicked, this, &RecorrenciaWidget::onAdicionar);
@@ -132,6 +150,10 @@ void RecorrenciaWidget::recarregar()
 void RecorrenciaWidget::popularTabela()
 {
     m_table->setRowCount(0);
+
+    // Alterna stack: empty state (0) quando não há itens, tabela (1) caso contrário.
+    m_stack->setCurrentIndex(m_itens.isEmpty() ? 0 : 1);
+
     for (const auto &t : m_itens) {
         const int row = m_table->rowCount();
         m_table->insertRow(row);

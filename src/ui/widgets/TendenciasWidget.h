@@ -10,6 +10,7 @@ class QChartView;
 class QDateEdit;
 class QComboBox;
 class QLabel;
+class QStackedWidget;
 class QTabWidget;
 
 // Spending-trends tab — four charts (monthly bar of total despesas via
@@ -37,6 +38,9 @@ private:
     QDateEdit  *m_dtInicio    = nullptr;
     QDateEdit  *m_dtFim       = nullptr;
     QComboBox  *m_cbCategoria = nullptr;
+
+    // ── Stack: 0=emptyState (sem dados), 1=charts ─────────────────────────────
+    QStackedWidget *m_stack    = nullptr;
 
     // ── Charts ────────────────────────────────────────────────────────────────
     QTabWidget *m_chartTabs  = nullptr;

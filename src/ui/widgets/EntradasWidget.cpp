@@ -1,4 +1,5 @@
 #include "EntradasWidget.h"
+#include "EmptyStateWidget.h"
 #include "ui/Theme.h"
 #include "LancamentoEntradaDialog.h"
 #include "repositories/CategoriaRepository.h"
@@ -91,21 +92,19 @@ void EntradasWidget::buildUi()
     // ── Stack: empty state (0) + table (1) ────────────────────────────────
     m_stack = new QStackedWidget(this);
 
-    auto *emptyPage = new QWidget(m_stack);
-    auto *emptyLay  = new QVBoxLayout(emptyPage);
-    emptyLay->setAlignment(Qt::AlignCenter);
-    auto *lblEmptyTitle = new QLabel(tr("Nenhum lançamento cadastrado."), emptyPage);
-    lblEmptyTitle->setAlignment(Qt::AlignCenter);
-    QFont fTitle = lblEmptyTitle->font();
-    fTitle.setPointSize(14);
-    lblEmptyTitle->setFont(fTitle);
-    auto *lblEmptyHint = new QLabel(tr("Clique em \"➕ Novo lançamento\" para começar."), emptyPage);
-    lblEmptyHint->setObjectName(QStringLiteral("subtitle"));
-    lblEmptyHint->setAlignment(Qt::AlignCenter);
-    emptyLay->addWidget(lblEmptyTitle);
-    emptyLay->addSpacing(4);
-    emptyLay->addWidget(lblEmptyHint);
-    m_stack->addWidget(emptyPage); // index 0
+    // Empty state guiado (§9.7 manual de estilo, #166 Peça 2).
+    // CTA conectado ao botão "Novo lançamento" da toolbar via signal→signal:
+    // nenhuma lógica de criação duplicada — o CTA simplesmente dispara o mesmo
+    // clicked() de btnNova, que carrega o handler lambda abaixo.
+    auto *emptyState = new EmptyStateWidget(
+        QStringLiteral("💵"),
+        tr("Nenhuma entrada ainda"),
+        tr("Registre o dinheiro que você recebe — salário, freela, aluguel — para saber quanto entra por mês."),
+        tr("Novo lançamento"),
+        m_stack);
+    connect(emptyState->ctaButton(), &QPushButton::clicked,
+            btnNova,                 &QPushButton::click);
+    m_stack->addWidget(emptyState); // index 0
 
     m_table = new QTableWidget(m_stack);
     m_table->setSelectionBehavior(QAbstractItemView::SelectItems);

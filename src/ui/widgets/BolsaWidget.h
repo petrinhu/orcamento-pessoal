@@ -7,6 +7,7 @@ class QPushButton;
 class QTableWidget;
 class QLabel;
 class QComboBox;
+class QStackedWidget;
 class MarketDataService;
 
 // BolsaWidget (#50) - aba "Bolsa" do app. Infraestrutura mínima:
@@ -31,10 +32,11 @@ private:
     void buildUi();
     void carregarProvider();
 
-    MarketDataService *m_service   = nullptr;
+    MarketDataService *m_service    = nullptr;
     QComboBox         *m_cbProvider = nullptr;
-    QLineEdit         *m_edtBusca  = nullptr;
-    QPushButton       *m_btnBuscar = nullptr;
-    QTableWidget      *m_tabela   = nullptr;
-    QLabel            *m_lblStatus = nullptr;
+    QLineEdit         *m_edtBusca   = nullptr;
+    QPushButton       *m_btnBuscar  = nullptr;
+    QStackedWidget    *m_stack      = nullptr; // 0=emptyState, 1=tabela
+    QTableWidget      *m_tabela     = nullptr;
+    QLabel            *m_lblStatus  = nullptr;
 };

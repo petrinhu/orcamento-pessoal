@@ -1,4 +1,5 @@
 #include "ProventosWidget.h"
+#include "EmptyStateWidget.h"
 #include "ui/Theme.h"
 #include "ProventoDialog.h"
 
@@ -13,6 +14,7 @@
 #include <QLocale>
 #include <QMessageBox>
 #include <QPushButton>
+#include <QStackedWidget>
 #include <QTableWidget>
 #include <QVBoxLayout>
 
@@ -64,8 +66,23 @@ void ProventosWidget::buildUi()
 
     root->addLayout(bar);
 
+    // ── Stack: empty state (0) + tabela (1) ──────────────────────────────
+    m_stack = new QStackedWidget(this);
+
+    // Empty state guiado (§9.7 manual de estilo, #166 Peça 2).
+    // CTA conectado ao handler onNovo via signal→signal do m_btnNovo.
+    auto *emptyState = new EmptyStateWidget(
+        QStringLiteral("💰"),
+        tr("Nenhum provento registrado"),
+        tr("Registre dividendos e rendimentos dos seus investimentos para acompanhar o que você recebeu."),
+        tr("Novo provento"),
+        m_stack);
+    connect(emptyState->ctaButton(), &QPushButton::clicked,
+            this, &ProventosWidget::onNovo);
+    m_stack->addWidget(emptyState); // index 0
+
     // Tabela
-    m_tabela = new QTableWidget(this);
+    m_tabela = new QTableWidget(m_stack);
     m_tabela->setColumnCount(6);
     m_tabela->setHorizontalHeaderLabels({
         tr("Data"), tr("Ticker"), tr("Tipo"),
@@ -76,7 +93,9 @@ void ProventosWidget::buildUi()
     m_tabela->setEditTriggers(QAbstractItemView::NoEditTriggers);
     m_tabela->setSelectionBehavior(QAbstractItemView::SelectRows);
     m_tabela->setAlternatingRowColors(true);
-    root->addWidget(m_tabela, 1);
+    m_stack->addWidget(m_tabela); // index 1
+
+    root->addWidget(m_stack, 1);
 
     // Totais
     m_lblTotais = new QLabel(this);
@@ -105,6 +124,9 @@ void ProventosWidget::recarregarTabela()
         for (const auto &p : lista) if (p.tipo == tipoFiltro) filt.append(p);
         lista = filt;
     }
+
+    // Alterna stack: empty state (0) quando não há proventos, tabela (1) caso contrário.
+    m_stack->setCurrentIndex(lista.isEmpty() ? 0 : 1);
 
     QLocale loc(QLocale::Portuguese, QLocale::Brazil);
     m_tabela->setRowCount(lista.size());

@@ -1,6 +1,7 @@
 #include "ParcelasWidget.h"
 #include "AddCompraDialog.h"
 #include "CompraDetailPanel.h"
+#include "EmptyStateWidget.h"
 #include "services/CompraService.h"
 #include "services/ParcelaService.h"
 #include "core/commands/UndoCommands.h"
@@ -110,21 +111,17 @@ void ParcelasWidget::buildUi()
     // ── Stack: empty state (0) + table (1) ────────────────────────────────
     m_stack = new QStackedWidget(this);
 
-    auto *emptyPage = new QWidget(m_stack);
-    auto *emptyLay  = new QVBoxLayout(emptyPage);
-    emptyLay->setAlignment(Qt::AlignCenter);
-    auto *lblEmptyTitle = new QLabel(tr("Nenhuma compra cadastrada."), emptyPage);
-    lblEmptyTitle->setAlignment(Qt::AlignCenter);
-    QFont fTitle = lblEmptyTitle->font();
-    fTitle.setPointSize(14);
-    lblEmptyTitle->setFont(fTitle);
-    auto *lblEmptyHint = new QLabel(tr("Clique em \"➕ Novo item\" para começar."), emptyPage);
-    lblEmptyHint->setObjectName(QStringLiteral("subtitle"));
-    lblEmptyHint->setAlignment(Qt::AlignCenter);
-    emptyLay->addWidget(lblEmptyTitle);
-    emptyLay->addSpacing(4);
-    emptyLay->addWidget(lblEmptyHint);
-    m_stack->addWidget(emptyPage); // index 0
+    // Empty state guiado (§9.7 manual de estilo, #166 Peça 2).
+    // CTA conectado ao mesmo handler do botão "Novo item" da toolbar.
+    auto *emptyState = new EmptyStateWidget(
+        QStringLiteral("💳"),
+        tr("Nenhuma compra ainda"),
+        tr("Adicione uma compra parcelada para acompanhar quanto falta pagar em cada mês."),
+        tr("Novo item"),
+        m_stack);
+    connect(emptyState->ctaButton(), &QPushButton::clicked,
+            this, &ParcelasWidget::onNovaCompra);
+    m_stack->addWidget(emptyState); // index 0
 
     m_table = new QTableWidget(m_stack);
     m_table->setAlternatingRowColors(true);

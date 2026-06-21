@@ -7,6 +7,7 @@
 
 class QTableWidget;
 class QPushButton;
+class QStackedWidget;
 class QUndoStack;
 
 class RecorrenciaWidget final : public QWidget {
@@ -31,10 +32,11 @@ private:
     void popularTabela();
     int  idDaLinhaSelecionada() const;
 
-    QTableWidget *m_table    = nullptr;
-    QPushButton  *m_btnEdit  = nullptr;
-    QPushButton  *m_btnRem   = nullptr;
-    QPushButton  *m_btnToggle= nullptr;
+    QStackedWidget *m_stack    = nullptr; // 0=emptyState, 1=table
+    QTableWidget   *m_table    = nullptr;
+    QPushButton    *m_btnEdit  = nullptr;
+    QPushButton    *m_btnRem   = nullptr;
+    QPushButton    *m_btnToggle= nullptr;
 
     QList<TransacaoRecorrente> m_itens;
     QUndoStack *m_undoStack = nullptr;

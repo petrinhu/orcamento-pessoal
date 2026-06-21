@@ -1,4 +1,5 @@
 #include "LembretesWidget.h"
+#include "EmptyStateWidget.h"
 #include "LembreteDialog.h"
 #include "repositories/LembreteRepository.h"
 #include "core/commands/UndoCommands.h"
@@ -130,16 +131,17 @@ void LembretesWidget::buildUi()
     // ── Stacked ────────────────────────────────────────────────────────────
     m_stack = new QStackedWidget(this);
 
-    auto *emptyPage = new QWidget(m_stack);
-    auto *emptyLay  = new QVBoxLayout(emptyPage);
-    emptyLay->setAlignment(Qt::AlignCenter);
-    auto *lblEmpty  = new QLabel(
-        tr("Nenhum lembrete cadastrado.\nClique em \"➕ Novo\" para adicionar."),
-        emptyPage);
-    lblEmpty->setAlignment(Qt::AlignCenter);
-    lblEmpty->setObjectName(QStringLiteral("subtitle"));
-    emptyLay->addWidget(lblEmpty);
-    m_stack->addWidget(emptyPage);
+    // Empty state guiado (§9.7 manual de estilo, #166 Peça 2).
+    // CTA conectado ao handler onNovo da toolbar via slot do widget.
+    auto *emptyState = new EmptyStateWidget(
+        QStringLiteral("🔔"),
+        tr("Nenhum lembrete ainda"),
+        tr("Crie alertas para não esquecer contas, vencimentos e qualquer coisa que precisa de atenção."),
+        tr("Novo"),
+        m_stack);
+    connect(emptyState->ctaButton(), &QPushButton::clicked,
+            this, &LembretesWidget::onNovo);
+    m_stack->addWidget(emptyState);
 
     m_table = new QTableWidget(0, ColCount, this);
     m_table->setHorizontalHeaderLabels({

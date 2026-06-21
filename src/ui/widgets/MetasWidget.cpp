@@ -1,5 +1,6 @@
 #include "MetasWidget.h"
 #include "MetaDialog.h"
+#include "EmptyStateWidget.h"
 #include "repositories/MetaRepository.h"
 #include "core/commands/UndoCommands.h"
 #include "ui/Theme.h"
@@ -105,15 +106,17 @@ void MetasWidget::buildUi()
     // ── Stacked (empty state / table) ──────────────────────────────────────
     m_stack = new QStackedWidget(this);
 
-    // Empty state
-    auto *emptyPage  = new QWidget(m_stack);
-    auto *emptyLay   = new QVBoxLayout(emptyPage);
-    emptyLay->setAlignment(Qt::AlignCenter);
-    auto *lblEmpty   = new QLabel(tr("Nenhuma meta cadastrada.\nClique em \"➕ Nova meta\" para começar."), emptyPage);
-    lblEmpty->setAlignment(Qt::AlignCenter);
-    lblEmpty->setObjectName(QStringLiteral("subtitle"));
-    emptyLay->addWidget(lblEmpty);
-    m_stack->addWidget(emptyPage);
+    // Empty state guiado (§9.7 manual de estilo, #166 Peça 2).
+    // CTA conectado ao handler onNova via signal→signal do btnNova.
+    auto *emptyState = new EmptyStateWidget(
+        QStringLiteral("🎯"),
+        tr("Nenhuma meta ainda"),
+        tr("Defina um objetivo — viagem, reserva, eletrônico — e o PeuBud mostra quanto falta pra chegar lá."),
+        tr("Nova meta"),
+        m_stack);
+    connect(emptyState->ctaButton(), &QPushButton::clicked,
+            this, &MetasWidget::onNova);
+    m_stack->addWidget(emptyState);
 
     // Table
     m_table = new QTableWidget(0, ColCount, this);

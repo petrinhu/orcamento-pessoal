@@ -1,4 +1,5 @@
 #include "TendenciasWidget.h"
+#include "EmptyStateWidget.h"
 #include "ui/Theme.h"
 #include "models/Categoria.h"
 #include "models/GastoAvulso.h"
@@ -21,6 +22,7 @@
 #include <QPainter>
 #include <algorithm>
 
+#include <QStackedWidget>
 #include <QChartView>
 #include <QChart>
 #include <QBarSeries>
@@ -104,11 +106,23 @@ void TendenciasWidget::buildUi()
     ctrlBar->addStretch();
     root->addLayout(ctrlBar);
 
+    // ── Stack: empty state (0) + charts (1) ──────────────────────────────────
+    // Sem CTA: Tendências é read-only, dados vêm de outros widgets (#166 Peça 2).
+    m_stack = new QStackedWidget(this);
+
+    auto *emptyState = new EmptyStateWidget(
+        QStringLiteral("📊"),
+        tr("Ainda sem dados para analisar"),
+        tr("Os gráficos aparecem aqui conforme você registra gastos. Comece adicionando suas despesas."),
+        QString(), // sem CTA
+        m_stack);
+    m_stack->addWidget(emptyState); // index 0
+
     // ── Chart tabs ────────────────────────────────────────────────────────────
-    m_chartTabs = new QTabWidget(this);
+    m_chartTabs = new QTabWidget(m_stack);
 
     auto makeView = [this]() {
-        auto *v = new QChartView(new QChart, this);
+        auto *v = new QChartView(new QChart, m_stack);
         v->setRenderHint(QPainter::Antialiasing);
         v->setFrameShape(QFrame::NoFrame);
         return v;
@@ -123,7 +137,9 @@ void TendenciasWidget::buildUi()
     m_chartTabs->addTab(m_viewCat,     tr("Por Categoria"));
     m_chartTabs->addTab(m_viewTipo,    tr("Por Tipo de Pagamento"));
     m_chartTabs->addTab(m_viewFixoVar, tr("Fixo × Variável"));
-    root->addWidget(m_chartTabs, 1);
+    m_stack->addWidget(m_chartTabs); // index 1
+
+    root->addWidget(m_stack, 1);
 
     // ── Summary strip ─────────────────────────────────────────────────────────
     auto *sumBar = new QHBoxLayout;
@@ -155,6 +171,10 @@ void TendenciasWidget::recarregar()
     const QDate inicio(m_dtInicio->date().year(), m_dtInicio->date().month(), 1);
     const QDate fim(m_dtFim->date().year(), m_dtFim->date().month(), 1);
     if (inicio > fim) return;
+
+    // Detecta se há dados no período antes de construir os gráficos.
+    // A alternância do stack para o empty state é feita no final,
+    // após buildGraficoMensal verificar m_meses.
 
     const QString catSel = m_cbCategoria->currentIndex() == 0
                            ? QString() : m_cbCategoria->currentText();
@@ -245,6 +265,10 @@ void TendenciasWidget::recarregar()
     }
 
     atualizarResumo(total, m_meses.size(), picoAno, picoMes, picoVal, catPrincipal);
+
+    // Alterna stack: empty state (0) quando não há dados agregados, charts (1) caso contrário.
+    const bool temDados = !m_meses.isEmpty() && total > 0;
+    m_stack->setCurrentIndex(temDados ? 1 : 0);
 }
 
 // ─── Chart builders ───────────────────────────────────────────────────────────

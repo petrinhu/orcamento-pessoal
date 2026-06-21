@@ -157,6 +157,7 @@ set(SOURCES
     src/ui/widgets/ProventosWidget.cpp
     src/ui/widgets/AjusteCorporativoDialog.cpp
     src/ui/widgets/AjustesCorporativosWidget.cpp
+    src/ui/widgets/EmptyStateWidget.cpp
     src/ui/widgets/AddCompraDialog.cpp
     src/ui/widgets/ConfigWidget.cpp
     src/ui/widgets/PrefsWidget.cpp

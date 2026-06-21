@@ -1,4 +1,5 @@
 #include "DividasWidget.h"
+#include "EmptyStateWidget.h"
 #include "ui/Theme.h"
 #include "DividaDialog.h"
 #include "repositories/DividaRepository.h"
@@ -127,21 +128,17 @@ void DividasWidget::buildUi()
     // ── Stack: empty (0) + table (1) ──────────────────────────────────────
     m_stack = new QStackedWidget(this);
 
-    auto *emptyPage = new QWidget(m_stack);
-    auto *emptyLay  = new QVBoxLayout(emptyPage);
-    emptyLay->setAlignment(Qt::AlignCenter);
-    auto *lblTitle = new QLabel(tr("Nenhuma dívida ou empréstimo cadastrado."), emptyPage);
-    lblTitle->setAlignment(Qt::AlignCenter);
-    QFont fTitle = lblTitle->font();
-    fTitle.setPointSize(14);
-    lblTitle->setFont(fTitle);
-    auto *lblHint = new QLabel(tr("Clique em \"➕ Nova dívida\" para começar."), emptyPage);
-    lblHint->setObjectName(QStringLiteral("subtitle"));
-    lblHint->setAlignment(Qt::AlignCenter);
-    emptyLay->addWidget(lblTitle);
-    emptyLay->addSpacing(4);
-    emptyLay->addWidget(lblHint);
-    m_stack->addWidget(emptyPage); // index 0
+    // Empty state guiado (§9.7 manual de estilo, #166 Peça 2).
+    // CTA conectado ao handler onNova da toolbar via slot do widget.
+    auto *emptyState = new EmptyStateWidget(
+        QStringLiteral("💸"),
+        tr("Nenhuma dívida registrada"),
+        tr("Anote o que você deve — empréstimo, cartão atrasado — para acompanhar e planejar o pagamento."),
+        tr("Nova dívida"),
+        m_stack);
+    connect(emptyState->ctaButton(), &QPushButton::clicked,
+            this, &DividasWidget::onNova);
+    m_stack->addWidget(emptyState); // index 0
 
     m_table = new QTableWidget(m_stack);
     m_table->setColumnCount(ColCount);

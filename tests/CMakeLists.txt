@@ -497,6 +497,19 @@ peubud_add_test(test_cards_render
 set_tests_properties(test_cards_render PROPERTIES
     ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 
+# Empty states guiados (#166 Peça 2): EmptyStateWidget com emoji+título+frase+CTA.
+# Verifica: labels corretos, copy exata das 12 telas, CTA presente/ausente conforme
+# tabela, QSS contém seletores #emptyStateTitle/#emptyStateFrase, sem tokens
+# residuais, render offscreen light+dark das telas representativas.
+# Salva /tmp/empty_*_{light,dark}.png para aprovacao visual.
+peubud_add_test(test_empty_state_render
+    ${CMAKE_SOURCE_DIR}/src/ui/widgets/EmptyStateWidget.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/Theme.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/FocusVisibleFilter.cpp)
+set_tests_properties(test_empty_state_render PROPERTIES
+    ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
 # Render offscreen do LoginDialog pos-#186: icone @128px + tagline.
 # Verifica: QLabel#loginIcon existe, pixmap nao-nulo 128x128 (:/icon/icon.png),
 # titulo de texto removido, tagline presente; salva light+dark em /tmp/.

@@ -7,6 +7,7 @@ class QPushButton;
 class QLabel;
 class QLineEdit;
 class QComboBox;
+class QStackedWidget;
 
 // ProventosWidget (#66) - lista de proventos recebidos com filtros + CRUD.
 // Abre via botão "Proventos" em InvestimentosWidget. Mostra tabela
@@ -27,11 +28,12 @@ private:
     void recarregarTabela();
     void atualizarTotais();
 
-    QLineEdit    *m_edtTickerFiltro = nullptr;
-    QComboBox    *m_cbTipoFiltro    = nullptr;
-    QTableWidget *m_tabela          = nullptr;
-    QLabel       *m_lblTotais       = nullptr;
-    QPushButton  *m_btnNovo         = nullptr;
-    QPushButton  *m_btnEditar       = nullptr;
-    QPushButton  *m_btnRemover      = nullptr;
+    QLineEdit      *m_edtTickerFiltro = nullptr;
+    QComboBox      *m_cbTipoFiltro    = nullptr;
+    QStackedWidget *m_stack           = nullptr; // 0=emptyState, 1=tabela
+    QTableWidget   *m_tabela          = nullptr;
+    QLabel         *m_lblTotais       = nullptr;
+    QPushButton    *m_btnNovo         = nullptr;
+    QPushButton    *m_btnEditar       = nullptr;
+    QPushButton    *m_btnRemover      = nullptr;
 };
