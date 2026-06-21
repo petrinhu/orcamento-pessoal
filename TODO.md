@@ -12,7 +12,7 @@ Arquivo canônico de pendências, auditoria técnica e conformidade com o contra
 - **Status**: ✅ Concluído · 🔄 Em andamento · 🟡 Parcial · ⏳ Pendente · ❄️ Congelado pós-1.0 · 💡 Decisão tomada · 🎨 Pendente design · 🔍 Pendente verificação · ❌ Cancelado
 - **Estado Auditado**: `—` (não auditado) · `✓` (auditado e aprovado) · `⚠` (auditado com ressalvas)
 
-> **Convenção de ID:** `#NN` mantido como identificador estável — usado em commits (`feat(#44): ...`), branches e referências cruzadas. Próximo ID disponível: **#185**.
+> **Convenção de ID:** `#NN` mantido como identificador estável — usado em commits (`feat(#44): ...`), branches e referências cruzadas. Próximo ID disponível: **#186**.
 >
 > **Hierarquia:** itens filhos só começam após pai ✅; irmãos com mesmo prefixo numérico (ex.: `1.2.1` e `1.2.2`) são paralelos.
 
@@ -182,6 +182,7 @@ Arquivo canônico de pendências, auditoria técnica e conformidade com o contra
 | 10 | #182 | DOC/DESIGN | **Manual de estilo** (`docs/manual_estilo.md`): o `visual-design-director` consolida as decisões de design feitas até aqui + os mockups num manual de estilo. **Estilo de DOCUMENTO** espelhando os manuais de marca de referência do usuário (`~/IDrive/Documentos/Modelos/PETRUS_MANUALDEMARCA_2023.pdf` e `Petrus • Manual da Marca_2018.pdf`) — **só a estrutura/estilo do documento, NÃO as cores deles**. Salvar `manual_estilo.md` nos docs + ponteiro na memória do projeto. **Entregue: 18 seções espelhando os manuais de marca (só estrutura/tom), conteúdo real do PeuBud, hex conferidos vs `Theme.cpp`** | Baixa | #163 | Média | 🔍 Pendente verificação | — |
 | 10 | #183 | BUG/DESIGN | **Inconsistência de ícone**: os ícones nos **labels dos botões dos cards** estão CINZA (mono), mas os ícones nas **descrições/instruções** (TabHelp, nova tipografia) estão COLORIDOS. Decidir política única (todos coloridos? mono por contexto?) via `visual-design-director` e aplicar | Média | #163 | Baixa | ⏳ Pendente | — |
 | 10 | #184 | FEATURE | **Alerta de vencimento no desktop**: no dia do vencimento de compromissos (contas etc.) disparar notificação na **barra de tarefas/área de notificação** do desktop (KDE/GNOME via `QSystemTrayIcon::showMessage` ou `org.freedesktop.Notifications`), **com ou sem som**. **Ajustável nas Preferências:** modo de disparo (com som / sem som / desligar). Estende os Lembretes (#162). Nota técnica: dispara com o app aberto + checagem no dia; alertar com app fechado exigiria daemon/systemd-timer (avaliar depois) | Baixa | #162 | Média | ⏳ Pendente | — |
+| 10 | #185 | FEATURE | **Avatar customizável (imagem)**: usuário carrega imagem (extensões a definir — ex.: PNG/JPG/WEBP) p/ usar como avatar no lugar da letra inicial, **nas Configurações**. Abre **tela de ajuste** (crop + zoom + reposicionar). **Validação de dimensões:** warning se x/y muito pequena ou muito grande (limites a definir) e **bloqueia o uso** do arquivo fora desses limites. A imagem ajustada é salva **NO BANCO** (blob no cofre `.pbd`, NÃO linkar pro arquivo no disco) e exibida em **formato circular** (sidebar/rodapé). Toca o avatar do `SidebarNav` (hoje letra inicial) | Baixa | — | Alta | ⏳ Pendente | — |
 
 ---
 
