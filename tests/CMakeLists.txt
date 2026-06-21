@@ -486,6 +486,17 @@ peubud_add_test(test_tag_render
 set_tests_properties(test_tag_render PROPERTIES
     ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 
+# Consistência de cards (#166 Peça 4): QFrame#dashCard unificado com #surface.
+# Verifica: QSS contém seletores #surface e #dashCard com border-radius 14px,
+# sem tokens residuais, render offscreen light+dark de QFrame#dashCard nao nulo.
+# Salva /tmp/cards_light.png e /tmp/cards_dark.png para aprovacao visual.
+peubud_add_test(test_cards_render
+    ${CMAKE_SOURCE_DIR}/src/ui/Theme.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/FocusVisibleFilter.cpp)
+set_tests_properties(test_cards_render PROPERTIES
+    ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
 # Render offscreen do LoginDialog pos-#186: icone @128px + tagline.
 # Verifica: QLabel#loginIcon existe, pixmap nao-nulo 128x128 (:/icon/icon.png),
 # titulo de texto removido, tagline presente; salva light+dark em /tmp/.

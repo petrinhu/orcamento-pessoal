@@ -86,8 +86,10 @@ QWidget *DashboardWidget::makeCard(const QString &title,
                                    int tabIndex)
 {
     auto *frame = new QFrame(this);
-    frame->setFrameShape(QFrame::StyledPanel);
-    frame->setFrameShadow(QFrame::Plain);
+    // NoFrame: deixa o QSS#dashCard (raio 14px, borda @@BRD@@, fundo @@SURF@@)
+    // controlar a aparência. StyledPanel/StyledShadow aciona o drawPrimitive do
+    // Fusion e sobrepõe borda própria sobre o QSS (#166 Peça 4).
+    frame->setFrameShape(QFrame::NoFrame);
     frame->setObjectName(QStringLiteral("dashCard"));
     frame->setMinimumWidth(160);
 

@@ -295,8 +295,12 @@ static QString gerarQss()
         QMenu::item:disabled { color: @@SUB@@; }
         QMenu::separator { height: 1px; background: @@BRD@@; margin: 3px 8px; }
         QMenu::indicator { width: 14px; height: 14px; }
-        /* ── Frames / surfaces (cards) — raio 14px (#164) ── */
-        QFrame#surface {
+        /* ── Frames / surfaces (cards) — raio 14px (#164, #166 Peça 4) ── */
+        /* QFrame#surface: seletor genérico para qualquer superfície de card.      */
+        /* QFrame#dashCard: cards do Dashboard (makeCard) — idêntico ao #surface,  */
+        /*   mas com objectName próprio para preservar o eventFilter de clique.     */
+        QFrame#surface,
+        QFrame#dashCard {
             background-color: @@SURF@@;
             border-radius: 14px;
             border: 1px solid @@BRD@@;
