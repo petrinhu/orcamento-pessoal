@@ -19,6 +19,7 @@
 #include <QDate>
 #include <QEvent>
 #include <QMouseEvent>
+#include <QShowEvent>
 #include <QComboBox>
 #include <QPainter>
 
@@ -190,6 +191,9 @@ void DashboardWidget::buildUi()
     navBar->addWidget(btnPrint);
     root->addLayout(navBar);
 
+    // Registra os 4 botões #iconButton para repolish no primeiro show (#165 quirk).
+    m_navIconBtns = { btnPrev, btnNext, btnFechar, btnPrint };
+
     connect(btnPrev,   &QPushButton::clicked, this, [this]() { navegarMes(-1); });
     connect(btnNext,   &QPushButton::clicked, this, [this]() { navegarMes(+1); });
     connect(btnPrint,  &QPushButton::clicked, this, &DashboardWidget::imprimir);
@@ -289,6 +293,28 @@ void DashboardWidget::buildUi()
             this, &DashboardWidget::atualizarGrafico);
 
     lay->addStretch();
+}
+
+// ── Primeiro show: repolish dos #iconButton ───────────────────────────────────
+// Quirk Qt/Fusion: regras QSS por #objectName (ex.: QPushButton#iconButton)
+// podem não vencer a regra-base QPushButton no primeiro polish do widget,
+// causando o estilo "caixa" (borda + fundo) em repouso. Um unpolish/polish
+// explícito força o recálculo correto da cascata QSS sem side effects visuais.
+// A flag m_firstShow garante que isso ocorra apenas na primeira exibição —
+// shows subsequentes (reexibição após minimizar, trocar de aba e voltar) já
+// estão corretamente polished e não precisam do ciclo extra.
+void DashboardWidget::showEvent(QShowEvent *ev)
+{
+    QWidget::showEvent(ev);
+    if (!m_firstShow)
+        return;
+    m_firstShow = false;
+
+    QStyle *s = style();
+    for (QPushButton *btn : std::as_const(m_navIconBtns)) {
+        s->unpolish(btn);
+        s->polish(btn);
+    }
 }
 
 // ── Data ──────────────────────────────────────────────────────────────────────
