@@ -141,6 +141,7 @@ set(SOURCES
     src/ui/NavRegistry.cpp
     src/ui/Theme.cpp
     src/ui/ButtonShadowFilter.cpp
+    src/ui/FocusVisibleFilter.cpp
     src/ui/GlossarioDecorator.cpp
     src/ui/LoginDialog.cpp
     src/ui/MainWindow.cpp

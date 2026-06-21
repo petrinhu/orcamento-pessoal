@@ -19,7 +19,6 @@
 #include <QDate>
 #include <QEvent>
 #include <QMouseEvent>
-#include <QShowEvent>
 #include <QComboBox>
 #include <QPainter>
 
@@ -33,7 +32,6 @@
 
 #include <QPrinter>
 #include <QPrintPreviewDialog>
-#include <QTimer>
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -192,9 +190,6 @@ void DashboardWidget::buildUi()
     navBar->addWidget(btnPrint);
     root->addLayout(navBar);
 
-    // Registra os 4 botões #iconButton para repolish no primeiro show (#165 quirk).
-    m_navIconBtns = { btnPrev, btnNext, btnFechar, btnPrint };
-
     connect(btnPrev,   &QPushButton::clicked, this, [this]() { navegarMes(-1); });
     connect(btnNext,   &QPushButton::clicked, this, [this]() { navegarMes(+1); });
     connect(btnPrint,  &QPushButton::clicked, this, &DashboardWidget::imprimir);
@@ -294,39 +289,6 @@ void DashboardWidget::buildUi()
             this, &DashboardWidget::atualizarGrafico);
 
     lay->addStretch();
-}
-
-// ── Primeiro show: repolish DEFERIDO dos #iconButton ─────────────────────────
-// Quirk Qt/Fusion/Wayland: regras QSS por #objectName (QPushButton#iconButton)
-// não vencem a regra-base QPushButton no primeiro polish do widget — o botão
-// aparece com a "caixa" (borda + fundo) do estilo default.
-//
-// Fix: QTimer::singleShot(0) agenda o repolish para a PRÓXIMA iteração do
-// event loop — depois que o polish/layout inicial já assentou. Esse timing é
-// exatamente o que um resize dispara (e que o usuário confirmou corrigir o
-// visual). O repolish imediato (versão anterior) rodava ANTES desse ponto e
-// era sobrescrito pelo ciclo de layout, por isso não funcionava no KDE real.
-//
-// m_firstShow garante que o singleShot seja agendado apenas na primeira
-// exibição real; shows subsequentes (minimizar/restaurar, trocar de aba)
-// já encontram os botões corretamente polished.
-void DashboardWidget::showEvent(QShowEvent *ev)
-{
-    QWidget::showEvent(ev);
-    if (!m_firstShow)
-        return;
-    m_firstShow = false;
-
-    // singleShot(0): executa na próxima iteração do event loop (pós-layout),
-    // imitando o timing do resize que o usuário confirmou consertar o 1º render.
-    QTimer::singleShot(0, this, [this]() {
-        QStyle *s = style();
-        for (QPushButton *btn : std::as_const(m_navIconBtns)) {
-            s->unpolish(btn);
-            s->polish(btn);
-            btn->update();
-        }
-    });
 }
 
 // ── Data ──────────────────────────────────────────────────────────────────────

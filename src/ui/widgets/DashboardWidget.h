@@ -2,13 +2,11 @@
 
 #include <QWidget>
 #include <QDate>
-#include <QList>
 
 class QLabel;
 class QScrollArea;
 class QComboBox;
 class QChartView;
-class QPushButton;
 
 class DashboardWidget final : public QWidget {
     Q_OBJECT
@@ -32,9 +30,6 @@ signals:
 
 protected:
     bool eventFilter(QObject *obj, QEvent *ev) override;
-    // Força repolish dos #iconButton na primeira exibição (quirk Qt/Fusion:
-    // regra por #objectName não é aplicada no primeiro polish em alguns casos).
-    void showEvent(QShowEvent *ev) override;
 
 private:
     void buildUi();
@@ -49,11 +44,6 @@ private:
                       QLabel **outSub = nullptr, int tabIndex = -1);
 
     QDate   m_mes; // first day of displayed month
-    bool    m_firstShow = true; // usado em showEvent para repolish único dos iconButtons
-
-    // Botões da navBar que precisam de repolish no primeiro show (#165 quirk).
-    // Mantidos como ponteiros membros para evitar findChildren a cada show.
-    QList<QPushButton *> m_navIconBtns;
 
     QLabel *m_lblMes = nullptr;
 

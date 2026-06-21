@@ -294,7 +294,8 @@ target_include_directories(test_categoria PRIVATE
 # Usa QT_QPA_PLATFORM=offscreen (setMode chama setPalette que precisa de GUI).
 peubud_add_test(test_theme_tokens
     ${CMAKE_SOURCE_DIR}/src/ui/Theme.cpp
-    ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp)
+    ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/FocusVisibleFilter.cpp)
 set_tests_properties(test_theme_tokens PROPERTIES
     ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 
@@ -344,7 +345,8 @@ target_include_directories(test_gasto_service PRIVATE
 peubud_add_test(test_sidebar_nav
     ${CMAKE_SOURCE_DIR}/src/ui/widgets/SidebarNav.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/Theme.cpp
-    ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp)
+    ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/FocusVisibleFilter.cpp)
 set_tests_properties(test_sidebar_nav PROPERTIES
     ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 
@@ -360,6 +362,7 @@ peubud_add_test(test_sidebar_render
     ${CMAKE_SOURCE_DIR}/src/ui/widgets/SidebarNav.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/Theme.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/FocusVisibleFilter.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/NavRegistry.cpp)
 set_tests_properties(test_sidebar_render PROPERTIES
     ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
@@ -374,6 +377,7 @@ peubud_add_test(test_sidebar_repro
     ${CMAKE_SOURCE_DIR}/src/ui/widgets/CurrencyPanelWidget.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/Theme.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/FocusVisibleFilter.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/NavRegistry.cpp
     ${CMAKE_SOURCE_DIR}/src/core/settings/AppSettings.cpp
     ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp
@@ -394,7 +398,8 @@ peubud_add_test(test_locale_meses)
 # e gera /tmp/shadow_fix.png para inspecao visual.
 peubud_add_test(test_shadow_render
     ${CMAKE_SOURCE_DIR}/src/ui/Theme.cpp
-    ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp)
+    ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/FocusVisibleFilter.cpp)
 set_tests_properties(test_shadow_render PROPERTIES
     ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 
@@ -404,15 +409,21 @@ set_tests_properties(test_shadow_render PROPERTIES
 # Salva /tmp/setas_fix.png para inspecao visual.
 peubud_add_test(test_setas_mono_render
     ${CMAKE_SOURCE_DIR}/src/ui/Theme.cpp
-    ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp)
+    ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/FocusVisibleFilter.cpp)
 set_tests_properties(test_setas_mono_render PROPERTIES
     ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 
-# Render offscreen #165 iconButton: navBar (◀ mês ▶ 🔒 🖨️) sem borda, triângulo mono.
-# Salva /tmp/iconbtn_light.png e /tmp/iconbtn_dark.png para aprovação visual.
+# #165 iconButton: contrato do FocusVisibleFilter (anel de foco só por teclado)
+# + render offscreen da navBar (◀ mês ▶ 🔒 🖨️) p/ aprovação visual.
+# NOTA (lição #165): o bug da "caixa no 1º render" é o estado :focus do botão
+# (foco automático ActiveWindow), que o offscreen + QWidget::grab() NÃO reproduzem.
+# Por isso o teste que VALE aqui é o de LÓGICA DE FOCO (FocusVisibleFilter),
+# testável sem compositor; os grabs offscreen ficam só como smoke de render.
 peubud_add_test(test_iconbtn_render
     ${CMAKE_SOURCE_DIR}/src/ui/Theme.cpp
-    ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp)
+    ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/FocusVisibleFilter.cpp)
 set_tests_properties(test_iconbtn_render PROPERTIES
     ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 
@@ -424,6 +435,7 @@ peubud_add_test(test_ajuda_render
     ${CMAKE_SOURCE_DIR}/src/ui/TabHelp.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/Theme.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/FocusVisibleFilter.cpp
     ${CMAKE_SOURCE_DIR}/src/core/settings/AppSettings.cpp
     ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp
     # AppSettings::brapiToken usa SecretStoreService (libsecret).
@@ -444,6 +456,7 @@ peubud_add_test(test_login_enter
     ${CMAKE_SOURCE_DIR}/src/ui/LoginDialog.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/Theme.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/FocusVisibleFilter.cpp
     ${CMAKE_SOURCE_DIR}/src/core/session/UserSession.cpp
     ${CMAKE_SOURCE_DIR}/src/core/crypto/SodiumCryptoService.cpp
     ${CMAKE_SOURCE_DIR}/src/core/crypto/AesCryptoService.cpp

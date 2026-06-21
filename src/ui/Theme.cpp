@@ -1,6 +1,7 @@
 #include "Theme.h"
 
 #include "ButtonShadowFilter.h"
+#include "FocusVisibleFilter.h"
 
 #include <QApplication>
 #include <QFontDatabase>
@@ -744,6 +745,12 @@ void aplicar()
     // App-wide drop shadow + press-sink on every QPushButton (covers LoginDialog,
     // which is shown before MainWindow). Idempotent; lives for the app lifetime.
     ButtonShadowFilter::install();
+
+    // App-wide :focus-visible emulation for #iconButton: the focus ring shows
+    // only for keyboard focus (Tab/Backtab/Shortcut), never for the automatic
+    // focus Qt gives the first focusable widget when a window becomes active.
+    // Fixes #165 (caixa no ◀️ no 1º render). Idempotent; lives for the app lifetime.
+    FocusVisibleFilter::install();
 
     // Re-apply when OS scheme changes (only matters in Auto mode)
     QObject::connect(
