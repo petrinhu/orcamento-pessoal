@@ -1,4 +1,5 @@
 #include "CalculadoraDialog.h"
+#include "GlossaryLabel.h"
 #include "ui/Theme.h"
 #include "services/TvmService.h"
 #include "services/ParcelaService.h"
@@ -392,7 +393,10 @@ void CalculadoraDialog::buildTabFinanceira(QWidget *tab)
     for (int r = 0; r < tvmRows.size(); ++r) {
         const auto &row = tvmRows.at(r);
 
-        auto *lbl = new QLabel(row.lbl + QStringLiteral(":"), tab);
+        // GlossaryLabel (#166 §9.6): sublinhado pontilhado + tooltip do glossario
+        // para siglas TVM (PV/PMT/FV/NPER/RATE). "N" e "i/mes" nao tem entrada
+        // propria no glossario — usam QLabel comum (sem cue vazio).
+        auto *lbl = new GlossaryLabel(row.lbl + QStringLiteral(":"), tab);
         lbl->setMinimumWidth(46);
 
         row.fld->setPlaceholderText(QStringLiteral("0"));
@@ -421,7 +425,8 @@ void CalculadoraDialog::buildTabFinanceira(QWidget *tab)
     // ── CET (auto, read-only) ──────────────────────────────────────────────
     {
         auto *row = new QHBoxLayout;
-        auto *lbl = new QLabel(tr("CET:"), tab);
+        // GlossaryLabel (#166 §9.6): CET e o termo mais importante pro leigo
+        auto *lbl = new GlossaryLabel(tr("CET:"), tab);
         lbl->setMinimumWidth(46);
 
         m_tvmCet = new QLineEdit(tab);

@@ -164,6 +164,7 @@ set(SOURCES
     src/ui/widgets/AboutDialog.cpp
     src/ui/widgets/HelpDialog.cpp
     src/ui/widgets/GlossarioDialog.cpp
+    src/ui/widgets/GlossaryLabel.cpp
     src/ui/widgets/OnboardingDialog.cpp
     src/ui/widgets/EntradasWidget.cpp
     src/ui/widgets/LancamentoEntradaDialog.cpp

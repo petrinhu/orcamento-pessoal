@@ -565,3 +565,42 @@ target_link_libraries(test_tab_shell_scroll PRIVATE ${LIBSECRET_LIBRARIES})
 target_include_directories(test_tab_shell_scroll PRIVATE ${LIBSECRET_INCLUDE_DIRS})
 set_tests_properties(test_tab_shell_scroll PROPERTIES
     ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
+# GlossaryLabel (#166 Peca 3 §9.6): cue estatico de glossario com sublinhado
+# pontilhado no paintEvent. Verifica contrato (a-f): nao-destrutivo, tooltip do
+# servico, construcao sem crash, cursor, tooltip vazio p/ desconhecido, ":" final.
+# Cadeia minima: GlossaryLabel + GlossarioService + AppSettings + SecretStoreService
+# + ParcelaService/FinanceEngine (AppSettings arrasta SecretStoreService).
+peubud_add_test(test_glossary_label
+    ${CMAKE_SOURCE_DIR}/src/ui/widgets/GlossaryLabel.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/GlossarioService.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/settings/AppSettings.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/Theme.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/FocusVisibleFilter.cpp)
+target_link_libraries(test_glossary_label PRIVATE ${LIBSECRET_LIBRARIES})
+target_include_directories(test_glossary_label PRIVATE ${LIBSECRET_INCLUDE_DIRS})
+set_tests_properties(test_glossary_label PROPERTIES
+    ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
+# Render offscreen do GlossaryLabel (#166 Peca 3 §9.6).
+# Verifica: sublinhado pontilhado pintado (diferenca de pixel vs QLabel comum),
+# render nao-nulo em light+dark.
+# Salva /tmp/glossary_cue_light.png e /tmp/glossary_cue_dark.png para aprovacao visual.
+peubud_add_test(test_glossary_label_render
+    ${CMAKE_SOURCE_DIR}/src/ui/widgets/GlossaryLabel.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/GlossarioService.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/settings/AppSettings.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/Theme.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/FocusVisibleFilter.cpp)
+target_link_libraries(test_glossary_label_render PRIVATE ${LIBSECRET_LIBRARIES})
+target_include_directories(test_glossary_label_render PRIVATE ${LIBSECRET_INCLUDE_DIRS})
+set_tests_properties(test_glossary_label_render PROPERTIES
+    ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
