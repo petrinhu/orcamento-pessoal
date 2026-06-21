@@ -13,14 +13,22 @@ class QWidget;
 // Stateless: funcoes livres. Chamar uma vez apos construir o widget root.
 namespace GlossarioDecorator {
 
-// Percorre findChildren<QLabel*>/QPushButton* e aplica tooltip automatico
-// quando o texto bate com algum termo do glossario. Idempotente (so escreve
-// quando toolTip() esta vazio).
+// aplicarTooltips (#125, atualizado #166 Peca 3 §9.6):
+// - Nao-destrutivo: nunca altera text() do widget.
+// - Seta toolTip() com definicao do glossario (tooltip escuro via QSS global).
+// - Affordanca: cursor WhatsThisCursor (?) nos QLabel com tooltip — indica
+//   "passe o mouse para saber mais" (alternativa ao sublinhado pontilhado
+//   por-palavra, inviavel sem converter o label para rich-text HTML destrutivo).
+// - Idempotente: so escreve quando toolTip() esta vazio.
 void aplicarTooltips(QWidget *root);
 
-// Aplica labelColoquial em QLabel/QPushButton/QGroupBox/QCheckBox/QRadioButton
-// quando o modo iniciante esta ativo. Ex.: "FIRE" -> "Aposentadoria
-// Antecipada (FIRE)". No-op em modo Avancado. (#104)
+// aplicarLabelsColoquiais (#104):
+// - Altera text() (DESTRUTIVO): troca o texto do widget pelo labelColoquial.
+// - Usado apenas no modo Iniciante para renomear siglas para versao amigavel.
+// - NAO substitui aplicarTooltips (§9.6): o tooltip escuro continua como
+//   mecanismo principal de educacao contextual; este e complementar.
+// - Mantido para compatibilidade. Callers (MainWindow) continuam chamando ambos.
+// Ex.: "FIRE" -> "Aposentadoria Antecipada (FIRE)". No-op em modo Avancado. (#104)
 void aplicarLabelsColoquiais(QWidget *root);
 
 // Inspeciona QFormLayout em todos descendentes; para cada linha cujo label

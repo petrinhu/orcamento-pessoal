@@ -4,6 +4,7 @@
 #include "services/GlossarioService.h"
 
 #include <QCheckBox>
+#include <QCursor>
 #include <QFormLayout>
 #include <QGroupBox>
 #include <QLabel>
@@ -13,6 +14,17 @@
 
 namespace GlossarioDecorator {
 
+// aplicarTooltips (#166 Peca 3 — §9.6 mecanismo)
+//
+// Nao-destrutivo: nunca altera text() nem setText() — so seta toolTip() e cursor.
+// Affordanca de "termo explicavel": cursor WhatsThisCursor (?) nos QLabel que
+// recebem tooltip, sinalizando "passe o mouse para saber mais". Em Qt Widgets o
+// sublinhado pontilhado por-palavra exigiria converter o label para rich-text HTML,
+// o que seria destrutivo (altera text()). O cursor e a alternativa nao-destrutiva
+// viavel — especialmente util em desktops onde cursor e visivel (#166 decisao).
+//
+// O tooltip escuro (fundo navy #1B2A41 do QToolTip) e definido no QSS global em
+// Theme::gerarQss() — os tooltips serao escuros automaticamente ao usar setToolTip().
 void aplicarTooltips(QWidget *root)
 {
     if (!root) return;
@@ -22,6 +34,9 @@ void aplicarTooltips(QWidget *root)
         const QString termo = GlossarioService::primeiroTermoEncontrado(lbl->text());
         if (!termo.isEmpty() && lbl->toolTip().isEmpty()) {
             lbl->setToolTip(GlossarioService::definicao(termo));
+            // Affordanca: cursor de interrogacao indica "tem explicacao aqui".
+            // Nao-destrutivo: nao altera text(), nao altera estrutura do widget.
+            lbl->setCursor(Qt::WhatsThisCursor);
         }
     }
     const auto buttons = root->findChildren<QPushButton*>();
@@ -29,6 +44,7 @@ void aplicarTooltips(QWidget *root)
         const QString termo = GlossarioService::primeiroTermoEncontrado(b->text());
         if (!termo.isEmpty() && b->toolTip().isEmpty()) {
             b->setToolTip(GlossarioService::definicao(termo));
+            // Botoes ja tem cursor de ponteiro; nao sobrescrever (nao acrescenta).
         }
     }
 }

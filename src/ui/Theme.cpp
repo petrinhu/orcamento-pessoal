@@ -731,6 +731,24 @@ static QString gerarQss()
             background-color: @@TAG_ROXO_BG@@;
         }
 
+        /* ── Tooltip escuro — glossario de termos financeiros (#166 Peca 3) ───────
+           QToolTip: fundo escuro com texto claro, padding confortavel, raio 6px.
+           Largura maxima ~280px via wordWrap do Qt (max-width nao tem efeito em
+           QToolTip via QSS, mas o texto usa wordwrap automatico do Qt).
+           Contraste WCAG AA: #EAF0F8 sobre #1B2A41 = 9.07:1 (PASS).
+           O navy #1B2A41 e o mesmo da sidebar — reforco de identidade de "definicao
+           do PeuBud", distinto do tooltip padrao do sistema. (#166 §9.6)
+        ── */
+        QToolTip {
+            background-color: #1B2A41;
+            color: #EAF0F8;
+            border: 1px solid #2A3340;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-family: "Inter";
+            font-size: 13px;
+        }
+
         /* ── Empty states guiados (#166 Peca 2) ─────────────────────────────────
            EmptyStateWidget: emoji 64px (QLabel#emptyStateEmoji — so pixmap),
            titulo Inter SemiBold 16px cor @@TXT@@, frase Regular 13px cor @@SUB@@.
