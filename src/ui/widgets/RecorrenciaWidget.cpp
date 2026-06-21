@@ -1,5 +1,6 @@
 #include "RecorrenciaWidget.h"
 #include "ui/Theme.h"
+#include "ui/Tag.h"
 #include "RecorrenciaDialog.h"
 #include "repositories/CategoriaRepository.h"
 #include "repositories/TransacaoRecorrenteRepository.h"
@@ -147,17 +148,42 @@ void RecorrenciaWidget::popularTabela()
         }
         m_table->setItem(row, 0, itDesc);
 
-        // Col 1: Tipo
-        m_table->setItem(row, 1, roItem(t.tipo == QStringLiteral("entrada")
-                                        ? tr("Entrada") : tr("Gasto")));
+        // Col 1: Tipo — chip tonal (§9.5): entrada=sucesso (esmeralda), gasto=perigo (vermelho)
+        {
+            const bool isEntrada = (t.tipo == QStringLiteral("entrada"));
+            auto *chip = Theme::criarTag(
+                isEntrada ? tr("Entrada") : tr("Gasto"),
+                isEntrada ? Tag::Variante::Sucesso : Tag::Variante::Perigo);
+            auto *cell = new QWidget;
+            auto *lay  = new QHBoxLayout(cell);
+            lay->setContentsMargins(4, 2, 4, 2);
+            lay->addWidget(chip);
+            lay->addStretch();
+            m_table->setCellWidget(row, 1, cell);
+        }
 
         // Col 2: Valor
         auto *itValor = roItem(uifmt::formatCentavosBRL(t.valor));
         itValor->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
         m_table->setItem(row, 2, itValor);
 
-        // Col 3: Frequência
-        m_table->setItem(row, 3, roItem(freqLabel(t.frequencia)));
+        // Col 3: Frequência — chip tonal (§9.5): paleta categórica por frequência
+        {
+            const QString freq = freqLabel(t.frequencia);
+            // Mapeamento determinístico frequência→matiz (sem random):
+            //   mensal=azul, semanal=esmeralda, quinzenal=roxo, anual=dourado
+            Tag::Variante freqVar = Tag::Variante::Azul;
+            if (t.frequencia == QStringLiteral("semanal"))    freqVar = Tag::Variante::Esmeralda;
+            else if (t.frequencia == QStringLiteral("quinzenal")) freqVar = Tag::Variante::Roxo;
+            else if (t.frequencia == QStringLiteral("anual"))     freqVar = Tag::Variante::Dourado;
+            auto *chip = Theme::criarTag(freq, freqVar);
+            auto *cell = new QWidget;
+            auto *lay  = new QHBoxLayout(cell);
+            lay->setContentsMargins(4, 2, 4, 2);
+            lay->addWidget(chip);
+            lay->addStretch();
+            m_table->setCellWidget(row, 3, cell);
+        }
 
         // Col 4: Próxima
         QDate proxima;

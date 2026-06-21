@@ -475,6 +475,17 @@ target_include_directories(test_login_enter PRIVATE
 set_tests_properties(test_login_enter PROPERTIES
     ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 
+# Render offscreen das tags coloridas (#166 Fase 3, Peca 1).
+# Verifica: criarTag -> QLabel com objectName "tag" + propriedade "variante" corretas,
+# QSS contem os seletores das variantes, sem tokens residuais, render light+dark.
+# Salva /tmp/tags_light.png e /tmp/tags_dark.png para aprovacao visual.
+peubud_add_test(test_tag_render
+    ${CMAKE_SOURCE_DIR}/src/ui/Theme.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/FocusVisibleFilter.cpp)
+set_tests_properties(test_tag_render PROPERTIES
+    ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
 # Render offscreen do LoginDialog pos-#186: icone @128px + tagline.
 # Verifica: QLabel#loginIcon existe, pixmap nao-nulo 128x128 (:/icon/icon.png),
 # titulo de texto removido, tagline presente; salva light+dark em /tmp/.

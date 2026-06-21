@@ -4,7 +4,10 @@
 #include <QFont>
 #include <QColor>
 #include <QIcon>
+#include <QLabel>
 #include <QPalette>
+
+#include "Tag.h"
 
 // Paleta azul-confiável (redesign Fase 1, #164) + Inter font + QSS.
 // Light/dark: respects OS setting (Auto) or overridden via setMode().
@@ -104,5 +107,13 @@ QString helpInstrBg();   // fundo do callout Instruções
 QString helpNumBg();     // fundo da pílula numerada
 QString helpNumFg();     // cor do número na pílula (blue-700 no light, AA garantido)
 QString helpEyebrow();   // cor do eyebrow/rótulo (blue-700 no light, AA garantido)
+
+// ── Tag / chip colorido (#166 Fase 3, Peça 1) ────────────────────────────────
+// Cria um QLabel estilizado como chip tonal (§9.5 manual de estilo).
+// objectName = "tag", propriedade dinâmica "variante" = Tag::toQssKey(v).
+// Estilo aplicado via QSS global (gerarQss): QLabel#tag[variante="X"] { … }.
+// A propriedade dinâmica dispara re-avaliação do QSS automaticamente no Qt.
+// Caller é responsável pelo ownership (parent opcional).
+QLabel *criarTag(const QString &texto, Tag::Variante v, QWidget *parent = nullptr);
 
 } // namespace Theme

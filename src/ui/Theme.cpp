@@ -2,6 +2,7 @@
 
 #include "ButtonShadowFilter.h"
 #include "FocusVisibleFilter.h"
+#include "Tag.h"
 
 #include <QApplication>
 #include <QFontDatabase>
@@ -54,6 +55,7 @@ namespace Color {
     // WCAG AA sobre o tint azul-claro (3.24:1 falha; #1D4ED8 = 5.91:1 PASS).
     // Light
     const QString HelpDescBgLight   = QStringLiteral("#EAF1FE");
+
     const QString HelpDescBarLight  = QStringLiteral("#3B82F6");
     const QString HelpInstrBgLight  = QStringLiteral("#F4F8FE");
     const QString HelpNumBgLight    = QStringLiteral("#E2ECFD");
@@ -66,6 +68,52 @@ namespace Color {
     const QString HelpNumBgDark     = QStringLiteral("#21344F");
     const QString HelpNumFgDark     = QStringLiteral("#5B9BFF"); // AA sobre num-bg dark
     const QString HelpEyebrowDark   = QStringLiteral("#7FB0FF"); // AA sobre desc-bg dark
+
+    // ── Tokens de tag/chip colorido (#166 Fase 3, Peça 1) ───────────────────
+    // Chips tonais: fundo = tint suave do matiz, texto = matiz escuro.
+    // WCAG AA verificado nos dois temas (≥4.5:1). 2026-06-21.
+    //
+    // sucesso   = esmeralda (positivo semântico)
+    //   L: #0D7A50/#D1FAE5 = 4.73:1   D: #34D399/#064E3B = 5.06:1
+    const QString TagSucessoFgLight  = QStringLiteral("#0D7A50"); // emerald-700
+    const QString TagSucessoBgLight  = QStringLiteral("#D1FAE5"); // emerald-100
+    const QString TagSucessoFgDark   = QStringLiteral("#34D399"); // emerald-400
+    const QString TagSucessoBgDark   = QStringLiteral("#064E3B"); // emerald-900
+    //
+    // perigo    = vermelho (negativo semântico)
+    //   L: #9B1C1C/#FEE2E2 = 6.67:1   D: #FCA5A5/#7F1D1D = 5.28:1
+    const QString TagPerigoFgLight   = QStringLiteral("#9B1C1C"); // red-800
+    const QString TagPerigoBgLight   = QStringLiteral("#FEE2E2"); // red-100
+    const QString TagPerigoFgDark    = QStringLiteral("#FCA5A5"); // red-300
+    const QString TagPerigoBgDark    = QStringLiteral("#7F1D1D"); // red-900
+    //
+    // atencao   = dourado (aviso semântico)
+    //   L: #92400E/#FEF3C7 = 6.37:1   D: #FCD34D/#78350F = 6.29:1
+    const QString TagAtencaoFgLight  = QStringLiteral("#92400E"); // amber-800
+    const QString TagAtencaoBgLight  = QStringLiteral("#FEF3C7"); // amber-100
+    const QString TagAtencaoFgDark   = QStringLiteral("#FCD34D"); // amber-300
+    const QString TagAtencaoBgDark   = QStringLiteral("#78350F"); // amber-900
+    //
+    // info      = azul (também cobre Fixo e Azul categórico)
+    //   L: #1D4ED8/#DBEAFE = 5.49:1   D: #93C5FD/#1E3A5F = 6.38:1
+    const QString TagInfoFgLight     = QStringLiteral("#1D4ED8"); // blue-700
+    const QString TagInfoBgLight     = QStringLiteral("#DBEAFE"); // blue-100
+    const QString TagInfoFgDark      = QStringLiteral("#93C5FD"); // blue-300
+    const QString TagInfoBgDark      = QStringLiteral("#1E3A5F"); // blue-950 (custom navy)
+    //
+    // neutro    = slate (também cobre Slate categórico)
+    //   L: #374151/#F1F5F9 = 9.41:1   D: #94A3B8/#1E293B = 5.71:1
+    const QString TagNeutroFgLight   = QStringLiteral("#374151"); // slate-700
+    const QString TagNeutroBgLight   = QStringLiteral("#F1F5F9"); // slate-100
+    const QString TagNeutroFgDark    = QStringLiteral("#94A3B8"); // slate-400
+    const QString TagNeutroBgDark    = QStringLiteral("#1E293B"); // slate-800
+    //
+    // roxo      = violeta (cobre Variavel categórico)
+    //   L: #5B21B6/#EDE9FE = 7.57:1   D: #A78BFA/#2E1065 = 5.60:1
+    const QString TagRoxoFgLight     = QStringLiteral("#5B21B6"); // violet-800
+    const QString TagRoxoBgLight     = QStringLiteral("#EDE9FE"); // violet-100
+    const QString TagRoxoFgDark      = QStringLiteral("#A78BFA"); // violet-400
+    const QString TagRoxoBgDark      = QStringLiteral("#2E1065"); // violet-950
 }
 
 // ── ThemeMode state ───────────────────────────────────────────────────────────
@@ -183,6 +231,20 @@ static QString gerarQss()
     const QString helpNumBgTok   = dark ? Color::HelpNumBgDark   : Color::HelpNumBgLight;
     const QString helpNumFgTok   = dark ? Color::HelpNumFgDark   : Color::HelpNumFgLight;
     const QString helpEyebrowTok = dark ? Color::HelpEyebrowDark : Color::HelpEyebrowLight;
+
+    // Tokens de tag/chip (#166 Fase 3, Peça 1): fg/bg por variante, light+dark.
+    const QString tagSucessoFg  = dark ? Color::TagSucessoFgDark  : Color::TagSucessoFgLight;
+    const QString tagSucessoBg  = dark ? Color::TagSucessoBgDark  : Color::TagSucessoBgLight;
+    const QString tagPerigoFg   = dark ? Color::TagPerigoFgDark   : Color::TagPerigoFgLight;
+    const QString tagPerigoBg   = dark ? Color::TagPerigoBgDark   : Color::TagPerigoBgLight;
+    const QString tagAtencaoFg  = dark ? Color::TagAtencaoFgDark  : Color::TagAtencaoFgLight;
+    const QString tagAtencaoBg  = dark ? Color::TagAtencaoBgDark  : Color::TagAtencaoBgLight;
+    const QString tagInfoFg     = dark ? Color::TagInfoFgDark     : Color::TagInfoFgLight;
+    const QString tagInfoBg     = dark ? Color::TagInfoBgDark     : Color::TagInfoBgLight;
+    const QString tagNeutroFg   = dark ? Color::TagNeutroFgDark   : Color::TagNeutroFgLight;
+    const QString tagNeutroBg   = dark ? Color::TagNeutroBgDark   : Color::TagNeutroBgLight;
+    const QString tagRoxoFg     = dark ? Color::TagRoxoFgDark     : Color::TagRoxoFgLight;
+    const QString tagRoxoBg     = dark ? Color::TagRoxoBgDark     : Color::TagRoxoBgLight;
 
     // Tokens nomeados: eliminam o esquema posicional %N que causou 2 bugs
     // (hover e agora neg/brd trocados). Cada @@TOKEN@@ tem semântica inequívoca.
@@ -618,6 +680,52 @@ static QString gerarQss()
             color: @@SIDEBARTXT@@;
             background: transparent;
         }
+
+        /* ── Tags / chips coloridos (#166 Fase 3, Peca 1) ──────────────────────
+           Chips tonais: fundo tint suave + texto versao escura do matiz.
+           Forma totalmente arredondada (~20px), fonte Inter Medium 12px.
+           WCAG AA verificado nos dois temas (>=4.5:1). 2026-06-21.
+           A propriedade dinamica "variante" dispara re-avaliacao do QSS
+           automaticamente (Qt reaplica regras com atributo quando setProperty()
+           e chamado). Nenhum estilo inline — tudo via token nomeado.
+        ── */
+        QLabel#tag {
+            font-size: 12px;
+            font-weight: 500;
+            padding: 2px 10px;
+            border-radius: 20px;
+            border: none;
+        }
+        /* sucesso = esmeralda — positivo semantico */
+        QLabel#tag[variante="sucesso"] {
+            color: @@TAG_SUCESSO_FG@@;
+            background-color: @@TAG_SUCESSO_BG@@;
+        }
+        /* perigo = vermelho — negativo semantico */
+        QLabel#tag[variante="perigo"] {
+            color: @@TAG_PERIGO_FG@@;
+            background-color: @@TAG_PERIGO_BG@@;
+        }
+        /* atencao = dourado — aviso semantico */
+        QLabel#tag[variante="atencao"] {
+            color: @@TAG_ATENCAO_FG@@;
+            background-color: @@TAG_ATENCAO_BG@@;
+        }
+        /* info = azul — informativo / fixo / azul categorico */
+        QLabel#tag[variante="info"] {
+            color: @@TAG_INFO_FG@@;
+            background-color: @@TAG_INFO_BG@@;
+        }
+        /* neutro = slate — sem status / slate categorico */
+        QLabel#tag[variante="neutro"] {
+            color: @@TAG_NEUTRO_FG@@;
+            background-color: @@TAG_NEUTRO_BG@@;
+        }
+        /* roxo = violeta — variavel / roxo categorico */
+        QLabel#tag[variante="roxo"] {
+            color: @@TAG_ROXO_FG@@;
+            background-color: @@TAG_ROXO_BG@@;
+        }
     )");
 
     // Substituição de tokens nomeados → valores da paleta. Ordem não importa
@@ -647,8 +755,40 @@ static QString gerarQss()
     qss.replace(QStringLiteral("@@HELP_NUM_BG@@"),   helpNumBgTok);
     qss.replace(QStringLiteral("@@HELP_NUM_FG@@"),   helpNumFgTok);
     qss.replace(QStringLiteral("@@HELP_EYEBROW@@"),  helpEyebrowTok);
+    // Tokens de tag (#166 Fase 3, Peça 1): chips tonais por variante.
+    // Ordem: @@TAG_*_FG@@ antes de @@TAG_*_BG@@ (sem conflito; prefixos distintos).
+    qss.replace(QStringLiteral("@@TAG_SUCESSO_FG@@"), tagSucessoFg);
+    qss.replace(QStringLiteral("@@TAG_SUCESSO_BG@@"), tagSucessoBg);
+    qss.replace(QStringLiteral("@@TAG_PERIGO_FG@@"),  tagPerigoFg);
+    qss.replace(QStringLiteral("@@TAG_PERIGO_BG@@"),  tagPerigoBg);
+    qss.replace(QStringLiteral("@@TAG_ATENCAO_FG@@"), tagAtencaoFg);
+    qss.replace(QStringLiteral("@@TAG_ATENCAO_BG@@"), tagAtencaoBg);
+    qss.replace(QStringLiteral("@@TAG_INFO_FG@@"),    tagInfoFg);
+    qss.replace(QStringLiteral("@@TAG_INFO_BG@@"),    tagInfoBg);
+    qss.replace(QStringLiteral("@@TAG_NEUTRO_FG@@"),  tagNeutroFg);
+    qss.replace(QStringLiteral("@@TAG_NEUTRO_BG@@"),  tagNeutroBg);
+    qss.replace(QStringLiteral("@@TAG_ROXO_FG@@"),    tagRoxoFg);
+    qss.replace(QStringLiteral("@@TAG_ROXO_BG@@"),    tagRoxoBg);
 
     return qss;
+}
+
+// ── criarTag ─────────────────────────────────────────────────────────────────
+// Cria um QLabel estilizado como chip tonal (§9.5 manual de estilo, #166 Fase 3).
+// objectName = "tag" → seletor QLabel#tag no QSS global.
+// Propriedade dinâmica "variante" = Tag::toQssKey(v) → seletor com atributo
+// QLabel#tag[variante="X"] — o Qt re-avalia o QSS automaticamente.
+// Padding 2px 10px, raio 20px (totalmente arredondado), Inter Medium 12px.
+// Caller é responsável pelo ownership; parent é opcional.
+QLabel *criarTag(const QString &texto, Tag::Variante v, QWidget *parent)
+{
+    auto *lbl = new QLabel(texto, parent);
+    lbl->setObjectName(QStringLiteral("tag"));
+    // setProperty dispara QEvent::StyleChange: o QSS global reavalia as regras
+    // com atributo [variante="X"] automaticamente (sem setStyleSheet local).
+    lbl->setProperty("variante", QLatin1StringView(Tag::toQssKey(v)));
+    lbl->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    return lbl;
 }
 
 // ── qssParaTeste ─────────────────────────────────────────────────────────────
