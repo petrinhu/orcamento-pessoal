@@ -48,7 +48,7 @@ void ProventoDialog::buildUi()
 
     m_cbTipo = new QComboBox(this);
     m_cbTipo->addItem(tr("Dividendo (isento PF)"),    QStringLiteral("dividendo"));
-    m_cbTipo->addItem(tr("JCP (IR 15% retido)"),       QStringLiteral("jcp"));
+    m_cbTipo->addItem(tr("JCP (IR 17,5% retido)"),    QStringLiteral("jcp"));
     m_cbTipo->addItem(tr("Rendimento FII"),             QStringLiteral("rendimento"));
     m_cbTipo->addItem(tr("Bonificação"),                QStringLiteral("bonus"));
     if (!m_original.tipo.isEmpty()) {
@@ -118,7 +118,8 @@ void ProventoDialog::recalcularLiquido()
     const qint64 bruto = parseCent(m_edtBruto->text());
     if (bruto <= 0) return;
     const QString tipo = m_cbTipo->currentData().toString();
-    const double aliq  = (tipo == QLatin1String("jcp")) ? 0.15 : 0.0;
+    // JCP: aliquota IRRF 17,5% desde jan/2026 (LC 224/2025). Era 15% ate 2025.
+    const double aliq  = (tipo == QLatin1String("jcp")) ? 0.175 : 0.0;
     const qint64 liquido = static_cast<qint64>(std::round(bruto * (1.0 - aliq)));
     // Apenas atualiza se liquido estiver vazio ou for igual a bruto (estado inicial)
     const qint64 atual = parseCent(m_edtLiquido->text());
