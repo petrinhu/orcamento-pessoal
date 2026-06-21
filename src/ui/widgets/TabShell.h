@@ -7,6 +7,7 @@ class QToolButton;
 class QHBoxLayout;
 class QVBoxLayout;
 class QFrame;
+class QScrollArea;
 
 // Invólucro de layout padrão para uma aba do PeuBud.
 //
@@ -108,6 +109,11 @@ private:
     QToolButton *m_instrToggle   = nullptr;
     QFrame      *m_sepInstr      = nullptr;
 
-    QVBoxLayout *m_contentSlot   = nullptr;
+    // #188: QScrollArea envolve o conteúdo de cada aba para que a janela possa
+    // ser reduzida sem clipar — o conteúdo rola em vez de ser cortado.
+    // Os callouts ficam acima da área de scroll (sempre visíveis).
+    QScrollArea *m_scrollArea    = nullptr;
+    QWidget     *m_scrollContent = nullptr; // container interno do QScrollArea
+    QVBoxLayout *m_contentSlot   = nullptr; // layout dentro de m_scrollContent
     QWidget     *m_content       = nullptr;
 };

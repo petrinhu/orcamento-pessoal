@@ -12,7 +12,7 @@ Arquivo canônico de pendências, auditoria técnica e conformidade com o contra
 - **Status**: ✅ Concluído · 🔄 Em andamento · 🟡 Parcial · ⏳ Pendente · ❄️ Congelado pós-1.0 · 💡 Decisão tomada · 🎨 Pendente design · 🔍 Pendente verificação · ❌ Cancelado
 - **Estado Auditado**: `—` (não auditado) · `✓` (auditado e aprovado) · `⚠` (auditado com ressalvas)
 
-> **Convenção de ID:** `#NN` mantido como identificador estável — usado em commits (`feat(#44): ...`), branches e referências cruzadas. Próximo ID disponível: **#188**.
+> **Convenção de ID:** `#NN` mantido como identificador estável — usado em commits (`feat(#44): ...`), branches e referências cruzadas. Próximo ID disponível: **#189**.
 >
 > **Hierarquia:** itens filhos só começam após pai ✅; irmãos com mesmo prefixo numérico (ex.: `1.2.1` e `1.2.2`) são paralelos.
 
@@ -185,6 +185,7 @@ Arquivo canônico de pendências, auditoria técnica e conformidade com o contra
 | 10 | #185 | FEATURE | **Avatar customizável (imagem)**: usuário carrega imagem (extensões a definir — ex.: PNG/JPG/WEBP) p/ usar como avatar no lugar da letra inicial, **nas Configurações**. Abre **tela de ajuste** (crop + zoom + reposicionar). **Validação de dimensões:** warning se x/y muito pequena ou muito grande (limites a definir) e **bloqueia o uso** do arquivo fora desses limites. A imagem ajustada é salva **NO BANCO** (blob no cofre `.pbd`, NÃO linkar pro arquivo no disco) e exibida em **formato circular** (sidebar/rodapé). Toca o avatar do `SidebarNav` (hoje letra inicial) | Baixa | — | Alta | ⏳ Pendente | — |
 | 10 | #186 | DESIGN/FUNC | **Login: novo cabeçalho** — remover o título de texto "Orçamento Pessoal"; usar o **ícone full @128px** (que já contém "PeuBud") centralizado em cima + a **tagline "Suas finanças, sem complicação"** embaixo (empilhado), SEM wordmark de texto (evita "PeuBud" duplicado). Estilo da tagline a definir pelo `visual-design-director` (mockup em curso); recorte squircle. Implementar no `LoginDialog` (frontend-engineer) | Baixa | — | Baixa | 🔄 Em design | — |
 | 10 | #187 | BUG/PRECISÃO | **JCP — alíquota de IRRF desatualizada (15% → 17,5%)**: `ProventoDialog.cpp:121` calcula o líquido do JCP com `0.15`, mas desde jan/2026 a alíquota é **17,5%** (LC 224/2025) → app mostra líquido maior que o real (erro de precisão financeira, prioridade nº1). Corrigir em 3 pontos: cálculo (`ProventoDialog`), label do combo ("JCP (IR 17,5% retido)"), texto do glossário (`GlossarioService`). Verificado em fonte (Receita/B3/Econet). Descoberto no #166 Peça 3. | Alta | — | Baixa | ⏳ Pendente | — |
+| 10 | #188 | BUG | **Conteúdo clipa/trunca em janela reduzida** (OK maximizado): faltava scroll/responsividade nas abas — conteúdo cortado quando espaço < mínimo. Fix: `QScrollArea(setWidgetResizable=true)` compartilhado no `TabShell` (camada de apresentação compartilhada); callouts de ajuda ficam FORA do scroll (sempre visíveis); wordWrap nos QLabel já existia. Cobre todas as 13 abas gerenciadas pelo TabShell. `test_tab_shell_scroll` (5 casos) verde. | Alta | — | Baixa | 🔍 Pendente verificação | — |
 
 ---
 

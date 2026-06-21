@@ -9,6 +9,7 @@
 #include <QVBoxLayout>
 #include <QFrame>
 #include <QScrollArea>
+#include <QSizePolicy>
 
 namespace {
 constexpr auto kBlocoDesc  = "desc";
@@ -145,10 +146,23 @@ TabShell::TabShell(const QString &titulo, QWidget *parent)
         (void)bodyWidget;
     }
 
-    // ── Slot de conteúdo (recebe a tabela/widget da aba) ───────────────────
-    m_contentSlot = new QVBoxLayout;
+    // ── Slot de conteúdo (#188): envolto em QScrollArea para que a janela
+    // possa ser reduzida sem clipar o conteúdo — rola em vez de cortar.
+    // Apenas o conteúdo da aba entra no scroll; os callouts ficam acima.
+    m_scrollArea = new QScrollArea(this);
+    m_scrollArea->setWidgetResizable(true);
+    m_scrollArea->setFrameShape(QFrame::NoFrame); // sem borda extra
+    m_scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    m_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+
+    m_scrollContent = new QWidget;
+    m_scrollContent->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+    m_contentSlot = new QVBoxLayout(m_scrollContent);
     m_contentSlot->setContentsMargins(0, 0, 0, 0);
-    root->addLayout(m_contentSlot, 1);
+    m_contentSlot->setSpacing(0);
+
+    m_scrollArea->setWidget(m_scrollContent);
+    root->addWidget(m_scrollArea, 1);
 }
 
 QFrame *TabShell::montarCallout(const QString &bloco,
@@ -435,7 +449,9 @@ void TabShell::setContent(QWidget *content)
     }
     m_content = content;
     if (m_content) {
-        m_content->setParent(this);
+        // #188: parent é m_scrollContent (widget interno do QScrollArea),
+        // não o TabShell diretamente — assim o layout dentro do scroll o gerencia.
+        m_content->setParent(m_scrollContent);
         m_contentSlot->addWidget(m_content);
     }
 }

@@ -546,3 +546,22 @@ target_include_directories(test_login_header_render PRIVATE
     ${LIBSECRET_INCLUDE_DIRS})
 set_tests_properties(test_login_header_render PROPERTIES
     ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
+# Regressão #188: conteúdo das abas deve rolar em janela pequena (não clipar).
+# Verifica: QScrollArea existe no TabShell, conteúdo (setContent) está dentro
+# do scroll, widgetResizable==true, render em 720x500 não nulo, callouts fora.
+# TabShell puxa TabHelp + Theme + AppSettings + SecretStoreService + ParcelaService.
+peubud_add_test(test_tab_shell_scroll
+    ${CMAKE_SOURCE_DIR}/src/ui/widgets/TabShell.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/TabHelp.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/Theme.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/FocusVisibleFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/settings/AppSettings.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp)
+target_link_libraries(test_tab_shell_scroll PRIVATE ${LIBSECRET_LIBRARIES})
+target_include_directories(test_tab_shell_scroll PRIVATE ${LIBSECRET_INCLUDE_DIRS})
+set_tests_properties(test_tab_shell_scroll PROPERTIES
+    ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
