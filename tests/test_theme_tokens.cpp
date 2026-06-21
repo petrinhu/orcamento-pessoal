@@ -8,6 +8,7 @@
 
 #include <QtTest/QtTest>
 #include <QApplication>
+#include <QColor>
 
 #include "ui/Theme.h"
 
@@ -58,6 +59,14 @@ private slots:
     void sidebarNavBackground_contemSidebar1();
     void navItemAtivo_contemAccento();
     void navItemNormal_contemSidebarText();
+
+    // ── Cue de glossário (#166 §9.6): cor visível e cinza (não-azul) ─────────
+    // A cor do sublinhado deve ser claramente visível (alpha alto) e cinza —
+    // NUNCA o azul accent (reservado a ações; competiria com os CTAs).
+    void glossarioUnderline_alphaAlto_light();
+    void glossarioUnderline_naoEhAccent_light();
+    void glossarioUnderline_ehCinza_light();
+    void glossarioUnderline_darkAware();
 };
 
 void TestThemeTokens::initTestCase()
@@ -309,6 +318,59 @@ void TestThemeTokens::navItemNormal_contemSidebarText()
     // O valor real deve estar presente no QSS.
     QVERIFY2(qss.contains(Theme::sidebarText()),
              "Cor sidebarText ausente no QSS apos substituicao de @@SIDEBARTXT@@");
+}
+
+// ── Cue de glossário: cor do sublinhado (#166 §9.6) ──────────────────────────
+
+void TestThemeTokens::glossarioUnderline_alphaAlto_light()
+{
+    Theme::setMode(Theme::ThemeMode::Light);
+    const QColor c = Theme::glossarioUnderline();
+    // Visível: alpha >= 200 (~78%+). O valor antigo (140, ~55%) era imperceptível.
+    QVERIFY2(c.alpha() >= 200,
+        qPrintable(QStringLiteral("alpha do sublinhado deveria ser >= 200 (visível), got %1")
+            .arg(c.alpha())));
+}
+
+void TestThemeTokens::glossarioUnderline_naoEhAccent_light()
+{
+    Theme::setMode(Theme::ThemeMode::Light);
+    const QColor c = Theme::glossarioUnderline();
+    const QColor accent(Theme::acento()); // #3B82F6
+    // NÃO pode ser o azul accent (reservado a ações).
+    QVERIFY2(c.rgb() != accent.rgb(),
+        "sublinhado de glossário NÃO pode ser o azul accent (reservado a CTAs)");
+    // Robustez extra: não pode ser "muito azul" (blue dominante e saturado).
+    // Cinza tem R≈G≈B; azul tem B >> R. Exigir que B não domine demais.
+    QVERIFY2(c.blue() - c.red() < 60,
+        qPrintable(QStringLiteral("cor parece azulada demais (R=%1 G=%2 B=%3) — deve ser cinza")
+            .arg(c.red()).arg(c.green()).arg(c.blue())));
+}
+
+void TestThemeTokens::glossarioUnderline_ehCinza_light()
+{
+    Theme::setMode(Theme::ThemeMode::Light);
+    const QColor c = Theme::glossarioUnderline();
+    // Cinza-ardósia: saturação moderada/baixa. HSV saturation < ~45%.
+    QVERIFY2(c.saturationF() < 0.45,
+        qPrintable(QStringLiteral("saturação %1 alta demais — deve ser cinza dessaturado")
+            .arg(c.saturationF())));
+}
+
+void TestThemeTokens::glossarioUnderline_darkAware()
+{
+    Theme::setMode(Theme::ThemeMode::Light);
+    const QColor light = Theme::glossarioUnderline();
+    Theme::setMode(Theme::ThemeMode::Dark);
+    const QColor dark = Theme::glossarioUnderline();
+    Theme::setMode(Theme::ThemeMode::Light); // restaura
+
+    // Light e dark devem diferir (tom apropriado a cada fundo).
+    QVERIFY2(light.rgb() != dark.rgb(),
+        "cor do sublinhado deve ser dark-aware (light != dark)");
+    // No dark, deve ser mais CLARA (luminância maior) para destacar sobre fundo escuro.
+    QVERIFY2(dark.lightnessF() > light.lightnessF(),
+        "no dark, o sublinhado deve ser mais claro que no light (contraste com fundo)");
 }
 
 QTEST_MAIN(TestThemeTokens)

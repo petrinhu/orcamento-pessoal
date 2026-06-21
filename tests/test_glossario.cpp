@@ -23,6 +23,7 @@ private slots:
     void termosCobreMinimo50Entradas();
     void primeiroTermoEncontradoCetEmFrase();
     void primeiroTermoEncontradoNenhumQuandoVazio();
+    void primeiroTermoNaoCasaDentroDePalavraAcentuada();
     void caseInsensitive();
     void aplicarLabelsColoquiaisRenomeia();
     void aplicarLabelsRespeitaModoAvancado();
@@ -127,6 +128,18 @@ void TestGlossario::primeiroTermoEncontradoNenhumQuandoVazio()
     QCOMPARE(GlossarioService::primeiroTermoEncontrado(QString()), QString());
     QCOMPARE(GlossarioService::primeiroTermoEncontrado(
                  QStringLiteral("Olá mundo")), QString());
+}
+
+void TestGlossario::primeiroTermoNaoCasaDentroDePalavraAcentuada()
+{
+    // Regressao (#166 §9.6): "\bDAS\b" NAO deve casar em "Concluídas" — o
+    // boundary apos a letra acentuada "í" era falso sem UseUnicodePropertiesOption.
+    // Sem o fix, o cue (sublinhado + tooltip) de "DAS" pintaria errado.
+    QCOMPARE(GlossarioService::primeiroTermoEncontrado(
+                 QStringLiteral("Concluídas")), QString());
+    // "DAS" isolado (com word boundary real) ainda deve casar.
+    QCOMPARE(GlossarioService::primeiroTermoEncontrado(
+                 QStringLiteral("Pagar DAS do mês")), QStringLiteral("DAS"));
 }
 
 void TestGlossario::caseInsensitive()

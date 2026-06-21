@@ -17,9 +17,13 @@ namespace GlossarioDecorator {
 // - Nao-destrutivo: nunca altera text() do widget.
 // - Seta toolTip() com definicao do glossario (tooltip escuro via QSS global).
 // - Affordanca: cursor WhatsThisCursor (?) nos QLabel com tooltip — indica
-//   "passe o mouse para saber mais" (alternativa ao sublinhado pontilhado
-//   por-palavra, inviavel sem converter o label para rich-text HTML destrutivo).
-// - Idempotente: so escreve quando toolTip() esta vazio.
+//   "passe o mouse para saber mais".
+// - Cue estatico (§9.6): nos QLabel-chave curtos (texto ~= termo), instala o
+//   sublinhado pontilhado via GlossaryUnderlineFilter (event filter que pinta
+//   por cima, sem trocar a classe nem mexer no layout). Cobertura AMPLA: mesma
+//   varredura dos tooltips. Labels de prosa longa ficam so com tooltip (nao
+//   risca a frase inteira). Botoes nao recebem sublinhado (ja tem chrome).
+// - Idempotente: tooltip so quando vazio; sublinhado marcado por propriedade.
 void aplicarTooltips(QWidget *root);
 
 // aplicarLabelsColoquiais (#104):

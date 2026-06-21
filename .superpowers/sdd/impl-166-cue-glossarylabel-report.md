@@ -10,7 +10,70 @@
 
 ## Hash
 
-Pendente geração do commit (vide seção abaixo).
+- `9085b84` — implementação inicial (GlossaryLabel, 4 pontos curados)
+- (2ª onda) — visibilidade reforçada + cobertura ampla (vide abaixo)
+
+---
+
+## 2ª onda — visibilidade + cobertura ampla
+
+### (1) Visibilidade
+
+Cor antiga: `Theme::subtexto()` (#67768D) com alpha **140 (~55%)** — quase
+imperceptível. Substituída por getter dedicado `Theme::glossarioUnderline()`:
+
+| Tema | Cor base | Alpha | Racional |
+|---|---|---|---|
+| Light | `#5A6B82` (cinza-ardósia escuro) | **220 (~86%)** | um tom mais firme que o subtexto |
+| Dark | `#9AA8BC` (cinza-ardósia claro) | **220 (~86%)** | destaca sobre fundo escuro |
+
+**Mantém-se CINZA** (saturação < 45%, B−R < 60) — NÃO é o azul accent
+(`#3B82F6`), que continua reservado a ações/CTAs. Testes em `test_theme_tokens`
+garantem: alpha ≥ 200, não-accent, cinza dessaturado, dark-aware (dark mais claro).
+
+### (2) Cobertura ampla
+
+`GlossarioDecorator::aplicarTooltips` agora, na MESMA varredura que já seta os
+tooltips, instala o sublinhado pontilhado (via `GlossaryUnderlineFilter`) nos
+labels-chave **curtos**. Não troca classe nem mexe no layout — o filter pinta o
+pontilhado por cima no `QEvent::Paint` (re-despacho síncrono + overlay).
+
+**Critério de elegância (`deveSublinhar`):** decora quando o texto é
+essencialmente o termo — ≤ 28 chars, OU o termo cobre ≥ 55% do texto. Prosa
+longa fica só com tooltip (não risca a frase inteira).
+
+**Onde `aplicarTooltips` roda (cobertura efetiva):**
+- `MainWindow` (`this`) → todas as telas/abas carregadas (Dashboard, Parcelas,
+  Entradas, Gastos, Investimentos, Proventos, Bolsa, Metas, Recorrência…).
+- Dialogs modais que se auto-decoram no fim do `buildUi`: `CalculadoraDialog`
+  (todas as 8 abas), `ProventoDialog`, `InvestimentoDialog`, `AddCompraDialog`.
+
+**Levantamento:** das 806 strings de UI ≤ 28 chars, **77 contêm termo de
+glossário** e recebem o cue — CET, PV, PMT, FV, CDI, SELIC, IOF, IRPF, INSS,
+JCP, PGBL, Ticker, Dividendo, Provento, Aporte, ROI, OFX, SAC, Price, CDB,
+LCI/LCA, IPCA, Vencimento, Parcela, FIRE (+ variantes), etc.
+
+**Tooltip-only (sem sublinhado):**
+- Prosa longa com termo no meio (callouts de ajuda, frases explicativas) —
+  ex.: "O CET considera juros, tarifas e impostos…".
+- Texto em rich-text/HTML (`<b>DY:</b> …`) — o helper de pintura descarta
+  `mightBeRichText` (baseline ambígua).
+- Botões (`QPushButton`) — já têm chrome próprio (borda/sombra).
+
+### Bônus — fix de precisão na varredura
+
+`primeiroTermoEncontrado` ganhou `UseUnicodePropertiesOption` na regex de
+word-boundary. Sem isso, `\bDAS\b` casava em "Conclu**í**das" (boundary falso
+após letra acentuada) — falso-positivo que pintaria sublinhado/tooltip de "DAS"
+em "Concluídas". Corrige tooltips E sublinhados. Regressão coberta por
+`primeiroTermoNaoCasaDentroDePalavraAcentuada`.
+
+### Arquivos novos (2ª onda)
+
+- `src/ui/widgets/GlossaryUnderline.{h,cpp}` — helper de pintura compartilhado
+  (DRY: `GlossaryLabel` e o filter usam a mesma cor/posição/padrão).
+- `src/ui/GlossaryUnderlineFilter.{h,cpp}` — event filter por-label (cobertura ampla).
+- `tests/test_glossary_coverage.cpp` — 14 testes (cobertura, prosa, idempotência, render).
 
 ---
 

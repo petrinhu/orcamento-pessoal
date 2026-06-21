@@ -1,5 +1,6 @@
 #include "GlossarioDecorator.h"
 
+#include "GlossaryUnderlineFilter.h"
 #include "core/settings/AppSettings.h"
 #include "services/GlossarioService.h"
 
@@ -25,6 +26,33 @@ namespace GlossarioDecorator {
 //
 // O tooltip escuro (fundo navy #1B2A41 do QToolTip) e definido no QSS global em
 // Theme::gerarQss() — os tooltips serao escuros automaticamente ao usar setToolTip().
+namespace {
+
+// Decide se o label deve receber o sublinhado pontilhado ESTÁTICO (§9.6) além
+// do tooltip. Critério de elegância: o cue marca um TERMO, não rica uma frase.
+// Sublinhar a largura inteira de um label de prosa longa ("Taxa CET ao ano com
+// IOF incluído…") ficaria pesado. Decoramos quando o texto é essencialmente o
+// termo — label-chave curto (ex.: "CET:", "PV:", "Dividend Yield (DY)").
+//
+// Regra (robusta, sem falso-positivo em prosa):
+//   - texto plano (rich-text é descartado pelo helper de pintura), E
+//   - texto curto: ≤ 28 caracteres visíveis, OU o termo cobre ≥ 55% do texto.
+bool deveSublinhar(const QString &texto, const QString &termo)
+{
+    if (termo.isEmpty()) return false;
+    const QString t = texto.trimmed();
+    if (t.isEmpty()) return false;
+
+    if (t.length() <= 28)
+        return true;
+
+    // Texto longo: só se o termo dominar (label-chave com sufixo explicativo).
+    const double cobertura = static_cast<double>(termo.length()) / t.length();
+    return cobertura >= 0.55;
+}
+
+} // namespace
+
 void aplicarTooltips(QWidget *root)
 {
     if (!root) return;
@@ -32,12 +60,20 @@ void aplicarTooltips(QWidget *root)
     for (auto *lbl : labels) {
         if (lbl->property("glossarioIgnore").toBool()) continue;
         const QString termo = GlossarioService::primeiroTermoEncontrado(lbl->text());
-        if (!termo.isEmpty() && lbl->toolTip().isEmpty()) {
+        if (termo.isEmpty()) continue;
+
+        if (lbl->toolTip().isEmpty()) {
             lbl->setToolTip(GlossarioService::definicao(termo));
             // Affordanca: cursor de interrogacao indica "tem explicacao aqui".
             // Nao-destrutivo: nao altera text(), nao altera estrutura do widget.
             lbl->setCursor(Qt::WhatsThisCursor);
         }
+
+        // Cue estático (§9.6): sublinhado pontilhado nos labels-chave curtos.
+        // Cobertura AMPLA — mesma varredura dos tooltips. Não-destrutivo (event
+        // filter pinta por cima; não troca classe nem mexe no layout).
+        if (deveSublinhar(lbl->text(), termo))
+            GlossaryUnderlineFilter::decorar(lbl);
     }
     const auto buttons = root->findChildren<QPushButton*>();
     for (auto *b : buttons) {
@@ -45,6 +81,7 @@ void aplicarTooltips(QWidget *root)
         if (!termo.isEmpty() && b->toolTip().isEmpty()) {
             b->setToolTip(GlossarioService::definicao(termo));
             // Botoes ja tem cursor de ponteiro; nao sobrescrever (nao acrescenta).
+            // Sem sublinhado em botões: já têm chrome próprio (borda/sombra).
         }
     }
 }

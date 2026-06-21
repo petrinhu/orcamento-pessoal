@@ -364,8 +364,13 @@ QString GlossarioService::primeiroTermoEncontrado(const QString &texto)
         return a.size() > b.size();
     });
     for (const QString &k : chaves) {
+        // UseUnicodePropertiesOption: trata letras acentuadas (í, ç, ã…) como
+        // word-chars. Sem isso, "\bDAS\b" casa em "Conclu[í]DAS" (boundary falso
+        // antes de letra acentuada) — falso-positivo que pintaria sublinhado/
+        // tooltip de "DAS" em "Concluídas". (#166 §9.6: corrige precisão da varredura.)
         const QRegularExpression rx(
-            QStringLiteral("\\b") + QRegularExpression::escape(k) + QStringLiteral("\\b"));
+            QStringLiteral("\\b") + QRegularExpression::escape(k) + QStringLiteral("\\b"),
+            QRegularExpression::UseUnicodePropertiesOption);
         if (rx.match(upper).hasMatch()) return k;
     }
     return {};

@@ -143,6 +143,7 @@ set(SOURCES
     src/ui/ButtonShadowFilter.cpp
     src/ui/FocusVisibleFilter.cpp
     src/ui/GlossarioDecorator.cpp
+    src/ui/GlossaryUnderlineFilter.cpp
     src/ui/LoginDialog.cpp
     src/ui/MainWindow.cpp
     src/ui/widgets/ParcelasWidget.cpp
@@ -165,6 +166,7 @@ set(SOURCES
     src/ui/widgets/HelpDialog.cpp
     src/ui/widgets/GlossarioDialog.cpp
     src/ui/widgets/GlossaryLabel.cpp
+    src/ui/widgets/GlossaryUnderline.cpp
     src/ui/widgets/OnboardingDialog.cpp
     src/ui/widgets/EntradasWidget.cpp
     src/ui/widgets/LancamentoEntradaDialog.cpp

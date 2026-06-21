@@ -133,6 +133,9 @@ peubud_add_test(test_external_process
 peubud_add_test(test_glossario
     ${CMAKE_SOURCE_DIR}/src/services/GlossarioService.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/GlossarioDecorator.cpp
+    # #166 §9.6: GlossarioDecorator::aplicarTooltips instala o sublinhado via filter.
+    ${CMAKE_SOURCE_DIR}/src/ui/GlossaryUnderlineFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/widgets/GlossaryUnderline.cpp
     ${CMAKE_SOURCE_DIR}/src/core/settings/AppSettings.cpp
     # #129: AppSettings::brapiToken usa SecretStoreService (libsecret).
     ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp
@@ -573,6 +576,7 @@ set_tests_properties(test_tab_shell_scroll PROPERTIES
 # + ParcelaService/FinanceEngine (AppSettings arrasta SecretStoreService).
 peubud_add_test(test_glossary_label
     ${CMAKE_SOURCE_DIR}/src/ui/widgets/GlossaryLabel.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/widgets/GlossaryUnderline.cpp
     ${CMAKE_SOURCE_DIR}/src/services/GlossarioService.cpp
     ${CMAKE_SOURCE_DIR}/src/core/settings/AppSettings.cpp
     ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp
@@ -592,6 +596,7 @@ set_tests_properties(test_glossary_label PROPERTIES
 # Salva /tmp/glossary_cue_light.png e /tmp/glossary_cue_dark.png para aprovacao visual.
 peubud_add_test(test_glossary_label_render
     ${CMAKE_SOURCE_DIR}/src/ui/widgets/GlossaryLabel.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/widgets/GlossaryUnderline.cpp
     ${CMAKE_SOURCE_DIR}/src/services/GlossarioService.cpp
     ${CMAKE_SOURCE_DIR}/src/core/settings/AppSettings.cpp
     ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp
@@ -603,4 +608,26 @@ peubud_add_test(test_glossary_label_render
 target_link_libraries(test_glossary_label_render PRIVATE ${LIBSECRET_LIBRARIES})
 target_include_directories(test_glossary_label_render PRIVATE ${LIBSECRET_INCLUDE_DIRS})
 set_tests_properties(test_glossary_label_render PROPERTIES
+    ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
+# Cobertura AMPLA do cue (#166 §9.6): GlossarioDecorator::aplicarTooltips agora
+# tambem instala o sublinhado pontilhado (via GlossaryUnderlineFilter) nos labels
+# -chave curtos da mesma varredura. Verifica: label-chave recebe a propriedade
+# "glossarioUnderlined"; prosa longa NAO recebe (so tooltip); idempotencia;
+# nao-destrutivo (text() intacto); render diff de pixel + PNGs de cobertura.
+peubud_add_test(test_glossary_coverage
+    ${CMAKE_SOURCE_DIR}/src/ui/GlossarioDecorator.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/GlossaryUnderlineFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/widgets/GlossaryUnderline.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/GlossarioService.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/settings/AppSettings.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/Theme.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/FocusVisibleFilter.cpp)
+target_link_libraries(test_glossary_coverage PRIVATE ${LIBSECRET_LIBRARIES})
+target_include_directories(test_glossary_coverage PRIVATE ${LIBSECRET_INCLUDE_DIRS})
+set_tests_properties(test_glossary_coverage PROPERTIES
     ENVIRONMENT "QT_QPA_PLATFORM=offscreen")

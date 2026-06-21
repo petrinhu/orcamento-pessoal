@@ -1,6 +1,7 @@
 #include "InvestimentoDialog.h"
 #include "CalculadoraEdit.h"
 #include "ReceiptAttachmentWidget.h"
+#include "ui/GlossarioDecorator.h"
 #include "ui/UiFormatters.h"
 #include "services/investimento/InvestActivityFactory.h"
 #include "services/investimento/IInvestActivity.h"
@@ -300,6 +301,12 @@ void InvestimentoDialog::buildUi(const QList<Categoria> &categorias)
     root->addWidget(btns);
 
     setMinimumWidth(400);
+
+    // Cue de glossário (#166 §9.6): tooltip + sublinhado nos labels-chave
+    // (ex.: "Ticker:"). Dialog modal não é alcançado pela varredura do
+    // MainWindow (criado on-demand), então se auto-decora aqui.
+    GlossarioDecorator::aplicarTooltips(this);
+
     m_edtNome->setFocus();
 }
 

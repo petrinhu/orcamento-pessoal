@@ -4,6 +4,7 @@
 #include "services/ParcelaService.h"
 #include <cmath>
 #include "models/Cartao.h"
+#include "ui/GlossarioDecorator.h"
 #include "ui/Theme.h"
 
 #include <QVBoxLayout>
@@ -127,6 +128,11 @@ void AddCompraDialog::buildUi()
     connect(btnBox, &QDialogButtonBox::accepted, this, &AddCompraDialog::accept);
     connect(btnBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
     root->addWidget(btnBox);
+
+    // Cue de glossário (#166 §9.6): tooltip + sublinhado nos labels-chave.
+    // Dialog modal não é alcançado pela varredura do MainWindow (criado
+    // on-demand), então se auto-decora aqui.
+    GlossarioDecorator::aplicarTooltips(this);
 }
 
 void AddCompraDialog::buildTabSimples(QWidget *tab)

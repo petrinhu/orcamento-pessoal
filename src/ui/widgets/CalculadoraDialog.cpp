@@ -1,5 +1,6 @@
 #include "CalculadoraDialog.h"
 #include "GlossaryLabel.h"
+#include "ui/GlossarioDecorator.h"
 #include "ui/Theme.h"
 #include "services/TvmService.h"
 #include "services/ParcelaService.h"
@@ -161,6 +162,12 @@ void CalculadoraDialog::buildUi()
     root->addWidget(m_tabs);
     setMinimumWidth(300);
     adjustSize();
+
+    // Cue de glossário (#166 §9.6): amplia a cobertura a TODAS as abas da
+    // calculadora (Bolsa, Renda Fixa, IR, etc.). Os 4 GlossaryLabel curados da
+    // tab Financeira já se auto-marcam ("glossarioUnderlined") e são pulados —
+    // sem pintura dupla. Dialog modal não é alcançado pela varredura do MainWindow.
+    GlossarioDecorator::aplicarTooltips(this);
 }
 
 void CalculadoraDialog::buildTabComum(QWidget *tab)

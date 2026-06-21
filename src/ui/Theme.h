@@ -89,6 +89,12 @@ QString sidebarText();  // texto na sidebar
 // direto. Usado em barras de progresso e fundos de aviso (Metas, Lembretes).
 QColor  atencao();
 
+// Cor do sublinhado pontilhado do cue de glossário (#166 §9.6). CINZA dedicado
+// (NÃO o azul accent — reservado a ações). Tom firme + alpha ~86%: claramente
+// visível em light e dark sem competir com o texto nem com os CTAs. Usado por
+// GlossaryLabel e GlossaryUnderlineFilter.
+QColor  glossarioUnderline();
+
 // Renderiza um glifo de emoji da fonte embutida "Noto Color Emoji" num QIcon
 // colorido (pixmap transparente, HiDPI-aware). Usar em QPushButton/QToolButton
 // via setIcon — QSS não renderiza fonte colorida no texto de botão de forma

@@ -1,5 +1,6 @@
 #include "ProventoDialog.h"
 #include "CalculadoraEdit.h"
+#include "ui/GlossarioDecorator.h"
 
 #include <QComboBox>
 #include <QDateEdit>
@@ -110,6 +111,11 @@ void ProventoDialog::buildUi()
             this, &ProventoDialog::recalcularLiquido);
 
     setMinimumWidth(400);
+
+    // Cue de glossário (#166 §9.6): tooltip + sublinhado nos labels-chave
+    // (ex.: "Ticker:"). Dialogs modais não são alcançados pela varredura do
+    // MainWindow (criados on-demand), então se auto-decoram aqui.
+    GlossarioDecorator::aplicarTooltips(this);
 }
 
 void ProventoDialog::recalcularLiquido()

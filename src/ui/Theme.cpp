@@ -168,6 +168,19 @@ QColor  atencao()
                     : QColor(QStringLiteral("#FFF3C4"));  // âmbar pastel (light)
 }
 
+// Cor do sublinhado pontilhado do cue de glossário (#166 §9.6).
+// CINZA dedicado — deliberadamente NÃO usa o azul accent (reservado a ações no
+// manual de estilo: pintar glossário de azul competiria com os CTAs). Um tom
+// mais firme que subtexto() + alpha alto (~86%) para ficar claramente visível
+// sem agredir. Light: cinza-ardósia escuro; Dark: cinza-ardósia claro.
+QColor  glossarioUnderline()
+{
+    QColor c = isDark() ? QColor(QStringLiteral("#9AA8BC"))  // cinza claro (dark)
+                        : QColor(QStringLiteral("#5A6B82")); // cinza escuro (light)
+    c.setAlpha(220); // ~86% — visível e elegante
+    return c;
+}
+
 // ── Emoji → QIcon ─────────────────────────────────────────────────────────────
 
 QIcon emojiIcon(const QString &emoji, int px)
