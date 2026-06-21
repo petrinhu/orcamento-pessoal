@@ -89,11 +89,47 @@ void LoginDialog::buildUi()
     root->setContentsMargins(40, 40, 40, 40);
     root->setSpacing(16);
 
-    // Title
-    auto *title = new QLabel(tr("Orçamento Pessoal"), this);
-    title->setObjectName(QStringLiteral("title"));
-    title->setAlignment(Qt::AlignCenter);
-    root->addWidget(title);
+    // ── Cabeçalho (#186): ícone @128px + tagline ────────────────────────────
+    // O ícone vem EXCLUSIVAMENTE do recurso embutido ":/icon/icon.png" (.qrc),
+    // que contém o squircle 1024×1024 com "PeuBud" — zero caminho de disco.
+    // Downscale 1024→128 via SmoothTransformation: suave e sem artefatos.
+    // Nenhum wordmark de texto separado: o ícone já comunica o app/nome.
+    auto *iconLabel = new QLabel(this);
+    {
+        QPixmap pix(QStringLiteral(":/icon/icon.png"));
+        if (!pix.isNull()) {
+            pix = pix.scaled(128, 128,
+                             Qt::KeepAspectRatio,
+                             Qt::SmoothTransformation);
+        }
+        iconLabel->setPixmap(pix);
+    }
+    iconLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+    iconLabel->setObjectName(QStringLiteral("loginIcon"));
+    root->addWidget(iconLabel);
+
+    // Tagline: Inter Regular 13px, cor subtexto, letter-spacing +1%.
+    // Sem itálico, sem negrito, sem sublinhado — intencional.
+    root->addSpacing(16);
+    auto *tagline = new QLabel(tr("Suas finanças, sem complicação"), this);
+    tagline->setObjectName(QStringLiteral("subtitle"));
+    tagline->setAlignment(Qt::AlignHCenter);
+    {
+        QFont f(QStringLiteral("Inter"), 13);
+        f.setWeight(QFont::Normal);
+        f.setItalic(false);
+        f.setUnderline(false);
+        // letter-spacing +0.01em ≈ 101% do espaçamento padrão
+        f.setLetterSpacing(QFont::PercentageSpacing, 101.0);
+        tagline->setFont(f);
+        // Cor subtexto via stylesheet (o QSS do tema pode já estilizar #subtitle;
+        // o setStyleSheet aqui garante a cor mesmo se o QSS não cobrir QLabel#subtitle
+        // dentro de QDialog::frameless).
+        tagline->setStyleSheet(
+            QStringLiteral("color: %1;").arg(Theme::subtexto())
+        );
+    }
+    root->addWidget(tagline);
 
     root->addSpacing(8);
 
@@ -203,9 +239,9 @@ void LoginDialog::buildUi()
 #endif
 
     // Largura mínima: 360px comporta os dois botões (≥80px cada) + margens 2×40
-    // + spacing 8px. Altura mínima: garante que checklist + campos + botões
-    // nunca ficam cortados ao redimensionar a janela para o menor tamanho útil.
-    setMinimumSize(360, 340);
+    // + spacing 8px. Altura mínima (#186): 128px (ícone) + 16px (spacing) +
+    // 20px (tagline) + 8px + campos + botões ≈ 500px release / 380px debug.
+    setMinimumSize(360, 380);
 }
 
 void LoginDialog::onNomeChanged(const QString &)

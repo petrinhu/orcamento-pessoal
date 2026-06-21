@@ -474,3 +474,34 @@ target_include_directories(test_login_enter PRIVATE
     ${LIBSECRET_INCLUDE_DIRS})
 set_tests_properties(test_login_enter PROPERTIES
     ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
+# Render offscreen do LoginDialog pos-#186: icone @128px + tagline.
+# Verifica: QLabel#loginIcon existe, pixmap nao-nulo 128x128 (:/icon/icon.png),
+# titulo de texto removido, tagline presente; salva light+dark em /tmp/.
+# Mesma cadeia de dependencias do test_login_enter (LoginDialog arrasta crypto
+# mesmo em QT_DEBUG, pois o .cpp inclui os headers de cripto no bloco #ifndef).
+# O resources.qrc e adicionado explicitamente para que :/icon/icon.png esteja
+# disponivel no contexto do teste (sem .qrc o pixmap seria nulo).
+peubud_add_test(test_login_header_render
+    ${CMAKE_SOURCE_DIR}/src/ui/LoginDialog.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/Theme.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/FocusVisibleFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/session/UserSession.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/SodiumCryptoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/AesCryptoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/KeyDerivation.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp
+    ${CMAKE_SOURCE_DIR}/resources/resources.qrc)
+# QT_DEBUG: pula o bloco de cripto/libsecret em runtime (LoginDialog).
+target_compile_definitions(test_login_header_render PRIVATE QT_DEBUG)
+target_link_libraries(test_login_header_render PRIVATE
+    OpenSSL::SSL
+    OpenSSL::Crypto
+    ${LIBSODIUM_LIBRARIES}
+    ${LIBSECRET_LIBRARIES})
+target_include_directories(test_login_header_render PRIVATE
+    ${LIBSODIUM_INCLUDE_DIRS}
+    ${LIBSECRET_INCLUDE_DIRS})
+set_tests_properties(test_login_header_render PROPERTIES
+    ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
