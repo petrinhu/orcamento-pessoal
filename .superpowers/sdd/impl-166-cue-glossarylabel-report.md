@@ -11,7 +11,7 @@
 ## Hash
 
 - `9085b84` — implementação inicial (GlossaryLabel, 4 pontos curados)
-- (2ª onda) — visibilidade reforçada + cobertura ampla (vide abaixo)
+- `f5be184` — visibilidade reforçada + cobertura ampla (vide abaixo)
 
 ---
 
