@@ -5,7 +5,6 @@
 #include <QLineEdit>
 #include <QToolButton>
 #include <QHBoxLayout>
-#include <QIcon>
 
 CalculadoraEdit::CalculadoraEdit(QWidget *parent) : QWidget(parent)
 {
@@ -22,14 +21,10 @@ CalculadoraEdit::CalculadoraEdit(QWidget *parent) : QWidget(parent)
     m_btn->setFocusPolicy(Qt::NoFocus);
     m_btn->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
 
-    const QIcon icon = QIcon::fromTheme(QStringLiteral("accessories-calculator"));
-    if (!icon.isNull()) {
-        m_btn->setIcon(icon);
-        m_btn->setIconSize(QSize(22, 22));
-    } else {
-        m_btn->setIcon(Theme::emojiIcon(QStringLiteral("🧮"), 22));
-        m_btn->setToolButtonStyle(Qt::ToolButtonIconOnly);
-    }
+    // #183: TUDO COLORIDO — emojiIcon direto, sem fromTheme (que renderizaria Breeze mono)
+    m_btn->setIcon(Theme::emojiIcon(QStringLiteral("🧮"), 22));
+    m_btn->setIconSize(QSize(22, 22));
+    m_btn->setToolButtonStyle(Qt::ToolButtonIconOnly);
 
     lay->addWidget(m_btn);
 

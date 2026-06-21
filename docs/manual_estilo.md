@@ -6,7 +6,9 @@
 > #166, #165) e é a referência única daqui pra frente: o que o `frontend-engineer`
 > consulta antes de mexer em qualquer pixel.
 >
-> **Status:** canônico · **Versão:** 1.0 · **Item:** #182 · **Atualizado:** 2026-06-20
+> **Status:** canônico · **Versão:** 1.1 · **Item:** #182, #183 · **Atualizado:** 2026-06-20
+> **v1.1 (#183):** seção 13 consagra a política única "TUDO COLORIDO" para ícones (fim da
+> inconsistência ícone-de-botão-cinza × emoji-colorido-da-ajuda).
 > **Autoridade de tokens:** `src/ui/Theme.cpp` (este manual reflete o código; em caso de
 > divergência, o `Theme.cpp` vence e este doc é corrigido).
 
@@ -506,13 +508,48 @@ horizontal fina é suficiente.
 O PeuBud usa **emoji colorido Noto** embutido (`NotoColorEmoji.ttf` via `.qrc`) como ícones,
 porque comunica de forma calorosa para o leigo. Mas emoji em UI tem armadilhas; daí as regras:
 
+> **Regra de ouro nº 0 — TUDO COLORIDO (política única, #183):** **todo ícone significativo do
+> app é colorido**, vindo do mesmo emoji Noto, esteja ele no **label de um botão**, no **chip de
+> um card**, na **seta de um card**, no **item da sidebar** ou **inline num bloco de ajuda**.
+> **Não existe ícone mono/cinza** como decisão de design. Um único registro visual: o ícone do
+> botão "🗑️ Excluir" é o **mesmo** 🗑️ que aparece colorido na instrução de ajuda. A inconsistência
+> que o líder apontou (ícone de botão cinza ≠ emoji colorido da ajuda) fica **proibida**.
+>
+> **Por que tudo colorido, e não uma regra dual (mono p/ utilitário + colorido p/ semântico):**
+> (1) a personalidade do PeuBud é "emoji colorido como guia visual" — cor é a linguagem, não
+> enfeite; (2) ~98% dos ícones já eram coloridos via `emojiIcon`, então "tudo colorido" elimina
+> as 2-3 exceções em vez de espalhar uma regra frágil de "quando cada um"; (3) para o leigo, dois
+> tratamentos de ícone (uns cinza, uns coloridos) leem como bug, não como hierarquia. Coerência
+> vence sofisticação aqui.
+
 > **Regra de ouro nº 1:** nos botões/ícones, emoji é **SEMPRE** via `Theme::emojiIcon` (gera um
-> `QIcon` a partir do glifo). **NUNCA** emoji-no-texto do botão. Isso garante render colorido
-> consistente em qualquer distro, independente da fonte de emoji do sistema.
+> `QIcon` a partir do glifo). **NUNCA** emoji-no-texto do botão, **nunca** `QIcon::fromTheme`/
+> `QStyle::standardIcon` (ícone Breeze é mono — viola a regra nº 0). Isso garante render colorido
+> consistente em qualquer distro, independente da fonte de emoji/tema de ícones do sistema.
 
 > **Regra de ouro nº 2 (FE0F / VS16):** o seletor de variação emoji (`️`, U+FE0F) força o Noto a
-> renderizar a **caixa colorida de media-button**. Para glifos que devem ser **monocromáticos**
-> (setas de texto, triângulos), **garantir que NÃO há VS16**.
+> renderizar a **caixa colorida de media-button**. Como a política é "tudo colorido", **manter o
+> VS16** nos glifos que ganham cor com ele (◀️▶️🖨️🔼🔽…). Só remover VS16 se algum dia se quiser
+> deliberadamente um glifo mono — o que, hoje, **não acontece em lugar nenhum** do app.
+
+### Estado desabilitado: o "cinza" legítimo (a ÚNICA exceção, e ela é automática)
+
+Há **um** cinza permitido, e ele **não é decisão de design**: quando um botão de ação está
+**`disabled`** (ex.: "Excluir"/"Editar" antes de selecionar uma linha), o Qt sintetiza a variante
+`QIcon::Disabled` e **acinzenta o emoji** automaticamente. Isso é **correto e desejado** — é o
+feedback universal de "indisponível agora", acompanha o texto também apagado, e some assim que o
+botão habilita. **Não confundir com a inconsistência do #183:** disabled-cinza é temporário e
+significa estado; o bug do #183 era ícone cinza em botão **habilitado**. Não tentar "colorir à
+força" o ícone desabilitado.
+
+> **Atalho mental:** ícone **habilitado** = sempre colorido. Ícone **desabilitado** = cinza
+> (automático do Qt, é estado, não estilo). Nada além disso é cinza.
+
+> **Nota técnica (`color:` no `#iconButton` é letra-morta p/ emoji):** o QSS do `#iconButton`
+> define `color: @@SUB@@` em repouso. Esse `color` só pinta **glifo de texto**; o `emojiIcon` é um
+> **bitmap** (QPixmap) e **ignora `color`**. Como o app sempre usa `setIcon(emojiIcon)`, o emoji
+> sai colorido de qualquer jeito — o que muda no hover é só o **fundo** do botão. O `color:` fica
+> mantido apenas para um eventual fallback de glifo-texto; **não** é o que controla a cor do ícone.
 
 ### Setas de navegação (decisão #165)
 
