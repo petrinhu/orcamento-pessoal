@@ -6,11 +6,9 @@
 
 ## Hash do commit
 
-| Mensagem |
-|---|
-| `feat(#167): skin novo das tabelas — cabecalho sutil, so divisorias horizontais, hover de linha, densidade confortavel + toggle compacta` |
-
-(hash preenchido após o commit — ver `git log -1`)
+| Hash | Mensagem |
+|---|---|
+| `89896e5` | `feat(#167): skin novo das tabelas — cabecalho sutil, so divisorias horizontais, hover de linha, densidade confortavel + toggle compacta` |
 
 ---
 
