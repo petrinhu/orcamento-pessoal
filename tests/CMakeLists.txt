@@ -145,7 +145,9 @@ peubud_add_test(test_glossario
     # #166 Peca 3: qssContemRegraQToolTip usa Theme::qssParaTeste().
     ${CMAKE_SOURCE_DIR}/src/ui/Theme.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp
-    ${CMAKE_SOURCE_DIR}/src/ui/FocusVisibleFilter.cpp)
+    ${CMAKE_SOURCE_DIR}/src/ui/FocusVisibleFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/TableHoverFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/TableHoverDelegate.cpp)
 # SecretStoreService puxa libsecret; linkar explicitamente.
 target_link_libraries(test_glossario PRIVATE ${LIBSECRET_LIBRARIES})
 target_include_directories(test_glossario PRIVATE ${LIBSECRET_INCLUDE_DIRS})
@@ -304,7 +306,9 @@ target_include_directories(test_categoria PRIVATE
 peubud_add_test(test_theme_tokens
     ${CMAKE_SOURCE_DIR}/src/ui/Theme.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp
-    ${CMAKE_SOURCE_DIR}/src/ui/FocusVisibleFilter.cpp)
+    ${CMAKE_SOURCE_DIR}/src/ui/FocusVisibleFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/TableHoverFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/TableHoverDelegate.cpp)
 set_tests_properties(test_theme_tokens PROPERTIES
     ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 
@@ -355,7 +359,9 @@ peubud_add_test(test_sidebar_nav
     ${CMAKE_SOURCE_DIR}/src/ui/widgets/SidebarNav.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/Theme.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp
-    ${CMAKE_SOURCE_DIR}/src/ui/FocusVisibleFilter.cpp)
+    ${CMAKE_SOURCE_DIR}/src/ui/FocusVisibleFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/TableHoverFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/TableHoverDelegate.cpp)
 set_tests_properties(test_sidebar_nav PROPERTIES
     ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 
@@ -372,6 +378,8 @@ peubud_add_test(test_sidebar_render
     ${CMAKE_SOURCE_DIR}/src/ui/Theme.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/FocusVisibleFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/TableHoverFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/TableHoverDelegate.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/NavRegistry.cpp)
 set_tests_properties(test_sidebar_render PROPERTIES
     ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
@@ -387,6 +395,8 @@ peubud_add_test(test_sidebar_repro
     ${CMAKE_SOURCE_DIR}/src/ui/Theme.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/FocusVisibleFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/TableHoverFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/TableHoverDelegate.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/NavRegistry.cpp
     ${CMAKE_SOURCE_DIR}/src/core/settings/AppSettings.cpp
     ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp
@@ -408,7 +418,9 @@ peubud_add_test(test_locale_meses)
 peubud_add_test(test_shadow_render
     ${CMAKE_SOURCE_DIR}/src/ui/Theme.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp
-    ${CMAKE_SOURCE_DIR}/src/ui/FocusVisibleFilter.cpp)
+    ${CMAKE_SOURCE_DIR}/src/ui/FocusVisibleFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/TableHoverFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/TableHoverDelegate.cpp)
 set_tests_properties(test_shadow_render PROPERTIES
     ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 
@@ -419,7 +431,9 @@ set_tests_properties(test_shadow_render PROPERTIES
 peubud_add_test(test_setas_mono_render
     ${CMAKE_SOURCE_DIR}/src/ui/Theme.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp
-    ${CMAKE_SOURCE_DIR}/src/ui/FocusVisibleFilter.cpp)
+    ${CMAKE_SOURCE_DIR}/src/ui/FocusVisibleFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/TableHoverFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/TableHoverDelegate.cpp)
 set_tests_properties(test_setas_mono_render PROPERTIES
     ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 
@@ -432,7 +446,9 @@ set_tests_properties(test_setas_mono_render PROPERTIES
 peubud_add_test(test_iconbtn_render
     ${CMAKE_SOURCE_DIR}/src/ui/Theme.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp
-    ${CMAKE_SOURCE_DIR}/src/ui/FocusVisibleFilter.cpp)
+    ${CMAKE_SOURCE_DIR}/src/ui/FocusVisibleFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/TableHoverFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/TableHoverDelegate.cpp)
 set_tests_properties(test_iconbtn_render PROPERTIES
     ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 
@@ -445,6 +461,8 @@ peubud_add_test(test_ajuda_render
     ${CMAKE_SOURCE_DIR}/src/ui/Theme.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/FocusVisibleFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/TableHoverFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/TableHoverDelegate.cpp
     ${CMAKE_SOURCE_DIR}/src/core/settings/AppSettings.cpp
     ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp
     # AppSettings::brapiToken usa SecretStoreService (libsecret).
@@ -466,6 +484,8 @@ peubud_add_test(test_login_enter
     ${CMAKE_SOURCE_DIR}/src/ui/Theme.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/FocusVisibleFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/TableHoverFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/TableHoverDelegate.cpp
     ${CMAKE_SOURCE_DIR}/src/core/session/UserSession.cpp
     ${CMAKE_SOURCE_DIR}/src/core/crypto/SodiumCryptoService.cpp
     ${CMAKE_SOURCE_DIR}/src/core/crypto/AesCryptoService.cpp
@@ -491,7 +511,9 @@ set_tests_properties(test_login_enter PROPERTIES
 peubud_add_test(test_tag_render
     ${CMAKE_SOURCE_DIR}/src/ui/Theme.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp
-    ${CMAKE_SOURCE_DIR}/src/ui/FocusVisibleFilter.cpp)
+    ${CMAKE_SOURCE_DIR}/src/ui/FocusVisibleFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/TableHoverFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/TableHoverDelegate.cpp)
 set_tests_properties(test_tag_render PROPERTIES
     ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 
@@ -502,7 +524,9 @@ set_tests_properties(test_tag_render PROPERTIES
 peubud_add_test(test_cards_render
     ${CMAKE_SOURCE_DIR}/src/ui/Theme.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp
-    ${CMAKE_SOURCE_DIR}/src/ui/FocusVisibleFilter.cpp)
+    ${CMAKE_SOURCE_DIR}/src/ui/FocusVisibleFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/TableHoverFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/TableHoverDelegate.cpp)
 set_tests_properties(test_cards_render PROPERTIES
     ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 
@@ -515,7 +539,9 @@ peubud_add_test(test_empty_state_render
     ${CMAKE_SOURCE_DIR}/src/ui/widgets/EmptyStateWidget.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/Theme.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp
-    ${CMAKE_SOURCE_DIR}/src/ui/FocusVisibleFilter.cpp)
+    ${CMAKE_SOURCE_DIR}/src/ui/FocusVisibleFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/TableHoverFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/TableHoverDelegate.cpp)
 set_tests_properties(test_empty_state_render PROPERTIES
     ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 
@@ -531,6 +557,8 @@ peubud_add_test(test_login_header_render
     ${CMAKE_SOURCE_DIR}/src/ui/Theme.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/FocusVisibleFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/TableHoverFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/TableHoverDelegate.cpp
     ${CMAKE_SOURCE_DIR}/src/core/session/UserSession.cpp
     ${CMAKE_SOURCE_DIR}/src/core/crypto/SodiumCryptoService.cpp
     ${CMAKE_SOURCE_DIR}/src/core/crypto/AesCryptoService.cpp
@@ -560,6 +588,8 @@ peubud_add_test(test_tab_shell_scroll
     ${CMAKE_SOURCE_DIR}/src/ui/Theme.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/FocusVisibleFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/TableHoverFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/TableHoverDelegate.cpp
     ${CMAKE_SOURCE_DIR}/src/core/settings/AppSettings.cpp
     ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp
@@ -584,7 +614,9 @@ peubud_add_test(test_glossary_label
     ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/Theme.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp
-    ${CMAKE_SOURCE_DIR}/src/ui/FocusVisibleFilter.cpp)
+    ${CMAKE_SOURCE_DIR}/src/ui/FocusVisibleFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/TableHoverFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/TableHoverDelegate.cpp)
 target_link_libraries(test_glossary_label PRIVATE ${LIBSECRET_LIBRARIES})
 target_include_directories(test_glossary_label PRIVATE ${LIBSECRET_INCLUDE_DIRS})
 set_tests_properties(test_glossary_label PROPERTIES
@@ -604,7 +636,9 @@ peubud_add_test(test_glossary_label_render
     ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/Theme.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp
-    ${CMAKE_SOURCE_DIR}/src/ui/FocusVisibleFilter.cpp)
+    ${CMAKE_SOURCE_DIR}/src/ui/FocusVisibleFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/TableHoverFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/TableHoverDelegate.cpp)
 target_link_libraries(test_glossary_label_render PRIVATE ${LIBSECRET_LIBRARIES})
 target_include_directories(test_glossary_label_render PRIVATE ${LIBSECRET_INCLUDE_DIRS})
 set_tests_properties(test_glossary_label_render PROPERTIES
@@ -626,8 +660,34 @@ peubud_add_test(test_glossary_coverage
     ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/Theme.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp
-    ${CMAKE_SOURCE_DIR}/src/ui/FocusVisibleFilter.cpp)
+    ${CMAKE_SOURCE_DIR}/src/ui/FocusVisibleFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/TableHoverFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/TableHoverDelegate.cpp)
 target_link_libraries(test_glossary_coverage PRIVATE ${LIBSECRET_LIBRARIES})
 target_include_directories(test_glossary_coverage PRIVATE ${LIBSECRET_INCLUDE_DIRS})
 set_tests_properties(test_glossary_coverage PROPERTIES
+    ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
+# Skin compartilhado das tabelas (#167 T1, §11 manual de estilo).
+# Verifica: QSS sem zebra poluída (alternate-background-color = fundo, não
+# @@ALT@@) e sem grade vertical (gridline transparente) em QTableWidget;
+# header com borda-bottom 2px accent + maiúsculas (text-transform); densidade
+# Confortável (48px, default) vs Compacta (34px) via
+# Theme::aplicarDensidadeTabela/aplicarDensidadeTabelas; TableHoverFilter
+# rastreia a linha certa sob o mouse (MouseMove/Leave sintéticos no viewport,
+# headless via QT_QPA_PLATFORM=offscreen — sem interação humana).
+# Salva /tmp/tabela_t1_{light,dark}.png para aprovação visual.
+peubud_add_test(test_table_skin
+    ${CMAKE_SOURCE_DIR}/src/ui/Theme.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/FocusVisibleFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/TableHoverFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/TableHoverDelegate.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/settings/AppSettings.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp)
+target_link_libraries(test_table_skin PRIVATE ${LIBSECRET_LIBRARIES})
+target_include_directories(test_table_skin PRIVATE ${LIBSECRET_INCLUDE_DIRS})
+set_tests_properties(test_table_skin PROPERTIES
     ENVIRONMENT "QT_QPA_PLATFORM=offscreen")

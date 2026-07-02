@@ -385,3 +385,17 @@ void AppSettings::setTabHelpExpanded(const QString &tabKey, const QString &bloco
     if (m_s.value(k, true).toBool() == expanded) return;
     m_s.setValue(k, expanded);
 }
+
+// ── Densidade das tabelas (#167 T1) ──────────────────────────────────────────
+
+bool AppSettings::tabelaDensidadeCompacta() const
+{
+    return m_s.value(QStringLiteral("ui/tabela_densidade_compacta"), false).toBool();
+}
+
+void AppSettings::setTabelaDensidadeCompacta(bool compacta)
+{
+    if (m_s.value(QStringLiteral("ui/tabela_densidade_compacta"), false).toBool() == compacta) return;
+    m_s.setValue(QStringLiteral("ui/tabela_densidade_compacta"), compacta);
+    emit tabelaDensidadeChanged(compacta);
+}

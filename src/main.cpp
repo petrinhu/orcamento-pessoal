@@ -30,6 +30,12 @@ int main(int argc, char *argv[])
 
     Theme::aplicar();
 
+    // #167 T1: sincroniza a densidade das tabelas persistida em AppSettings
+    // para o estado em memória do Theme (Theme.cpp fica desacoplado de
+    // AppSettings — ver comentário em Theme.h). PrefsWidget refaz essa
+    // sincronização ao vivo quando o toggle "Compacta" muda.
+    Theme::setDensidadeTabelasCompacta(AppSettings::instance().tabelaDensidadeCompacta());
+
     // ── Login + retry loop ─────────────────────────────────────────────────
     // Cria o diretório temporário data/ (banco decifrado em runtime).
     // O cofre cifrado vai para ~/peubud/save/<slug>/database.pbd (#181).

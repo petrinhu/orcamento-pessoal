@@ -46,6 +46,7 @@ private:
     // (#181) m_edtSavesFolder / m_edtAutosavesFolder removidos — paths são fixos.
     QComboBox    *m_comboInitialTab    = nullptr;
     QCheckBox    *m_chkIniciante       = nullptr;
+    QCheckBox    *m_chkTabelaCompacta  = nullptr; // #167 T1: densidade das tabelas
     ConfigCategoriasWidget*m_categorias= nullptr;
     ConfigFontesWidget   *m_fontes    = nullptr;
     ConfigPagadoresWidget*m_pagadores = nullptr;

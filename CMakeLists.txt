@@ -142,6 +142,8 @@ set(SOURCES
     src/ui/Theme.cpp
     src/ui/ButtonShadowFilter.cpp
     src/ui/FocusVisibleFilter.cpp
+    src/ui/TableHoverFilter.cpp
+    src/ui/TableHoverDelegate.cpp
     src/ui/GlossarioDecorator.cpp
     src/ui/GlossaryUnderlineFilter.cpp
     src/ui/LoginDialog.cpp

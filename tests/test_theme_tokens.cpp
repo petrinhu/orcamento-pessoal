@@ -43,8 +43,9 @@ private slots:
     // A cor negativa NÃO deve aparecer nas regras de borda dos inputs.
     void inputBorder_usaBordaNaoNegativa();
 
-    // Gridline da tabela deve ser borda, não negativa.
-    void gridline_usaBordaNaoNegativa();
+    // Gridline da tabela: transparente (sem grade vertical, #167 T1 §11) e
+    // nunca a cor negativa.
+    void gridline_transparenteNaoNegativa();
 
     // QMenuBar border-bottom deve ser borda, não negativa.
     void menuBarBorder_usaBordaNaoNegativa();
@@ -194,24 +195,25 @@ void TestThemeTokens::inputBorder_usaBordaNaoNegativa()
              qPrintable(QStringLiteral("Input border contém cor negativa (%1) — bug de token!").arg(corNegativa)));
 }
 
-void TestThemeTokens::gridline_usaBordaNaoNegativa()
+void TestThemeTokens::gridline_transparenteNaoNegativa()
 {
+    // #167 T1 (§11 manual de estilo): grade vertical removida — a única
+    // divisória é a horizontal fina no item (border-bottom). gridline-color
+    // é "transparent"; nunca a cor negativa (regressão do bug histórico de
+    // troca posicional neg/brd).
     const QString qss = Theme::qssParaTeste();
-    const QString corBorda    = Theme::borda();    // #E4EAF2
     const QString corNegativa = Theme::negativo(); // #EA3943
 
-    // Localiza a propriedade gridline-color dentro do bloco QTableWidget
     const QString prop = QStringLiteral("gridline-color:");
     const int posGl = qss.indexOf(prop);
     QVERIFY2(posGl >= 0, "Propriedade gridline-color ausente no QSS");
 
-    // Extrai o valor até o próximo ';'
     const int posSemicolon = qss.indexOf(';', posGl);
     QVERIFY(posSemicolon > posGl);
     const QString valor = qss.mid(posGl, posSemicolon - posGl);
 
-    QVERIFY2(valor.contains(corBorda),
-             qPrintable(QStringLiteral("gridline-color não usa cor de borda (%1)").arg(corBorda)));
+    QVERIFY2(valor.contains(QStringLiteral("transparent")),
+             "gridline-color não está transparente — grade vertical ainda visível (#167 T1)");
     QVERIFY2(!valor.contains(corNegativa),
              qPrintable(QStringLiteral("gridline-color usa cor negativa (%1) — bug de token!").arg(corNegativa)));
 }

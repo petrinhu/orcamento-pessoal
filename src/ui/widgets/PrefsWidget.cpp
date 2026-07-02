@@ -10,6 +10,7 @@
 #include "core/settings/AppSettings.h"
 #include "core/session/UserSession.h"
 #include "ui/NavRegistry.h"
+#include "ui/Theme.h"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -258,6 +259,23 @@ void PrefsWidget::buildUi()
     modoLay->addWidget(lblAviso);
     connect(m_chkIniciante, &QCheckBox::toggled,
             this, [](bool on) { AppSettings::instance().setModoIniciante(on); });
+
+    // #167 T1 (§11 manual de estilo): densidade das tabelas. Diferente do
+    // Modo Iniciante, este toggle aplica AO VIVO — Theme::aplicarDensidadeTabelas()
+    // varre todas as QTableWidget já construídas na sessão, sem reiniciar.
+    m_chkTabelaCompacta = new QCheckBox(
+        tr("Tabelas compactas (linhas mais estreitas)"), grpModo);
+    m_chkTabelaCompacta->setToolTip(tr(
+        "Confortável (padrão): linhas de ~48px, mais fáceis de tocar/ler. "
+        "Compacta: linhas de ~34px, mais itens visíveis por tela."));
+    m_chkTabelaCompacta->setChecked(AppSettings::instance().tabelaDensidadeCompacta());
+    modoLay->addWidget(m_chkTabelaCompacta);
+    connect(m_chkTabelaCompacta, &QCheckBox::toggled, this, [](bool on) {
+        AppSettings::instance().setTabelaDensidadeCompacta(on);
+        Theme::setDensidadeTabelasCompacta(on);
+        Theme::aplicarDensidadeTabelas();
+    });
+
     layGeral->addWidget(grpModo);
 
     layGeral->addStretch();

@@ -2,17 +2,20 @@
 
 #include "ButtonShadowFilter.h"
 #include "FocusVisibleFilter.h"
+#include "TableHoverFilter.h"
 #include "Tag.h"
 
 #include <QApplication>
 #include <QFontDatabase>
 #include <QGuiApplication>
+#include <QHeaderView>
 #include <QPainter>
 #include <QPixmap>
 #include <QProxyStyle>
 #include <QStyleFactory>
 #include <QStyleHints>
 #include <QPalette>
+#include <QTableWidget>
 
 namespace Theme {
 
@@ -181,6 +184,46 @@ QColor  glossarioUnderline()
     return c;
 }
 
+// ── Skin compartilhado das tabelas (#167 T1, §11 manual de estilo) ────────────
+
+// Fundo de hover de linha (token @@HOV@@). Mesmos tons usados em gerarQss()
+// (menu/toolbar hover) — reaproveitado aqui via getter para o TableHoverDelegate
+// pintar a linha inteira sem duplicar o hex.
+QString hoverBg()
+{
+    return isDark() ? QStringLiteral("#222D3D") : QStringLiteral("#DCE8FA");
+}
+
+// Estado em memória da densidade das tabelas. Default = Confortável (false).
+// Deliberadamente NÃO lê AppSettings aqui (ver comentário no .h): o caller
+// (main.cpp no boot, PrefsWidget::onDensidadeToggled no toggle) sincroniza.
+static bool g_densidadeTabelasCompacta = false;
+
+void setDensidadeTabelasCompacta(bool compacta) { g_densidadeTabelasCompacta = compacta; }
+bool densidadeTabelasCompacta() { return g_densidadeTabelasCompacta; }
+
+int alturaLinhaTabela()
+{
+    return g_densidadeTabelasCompacta ? kAlturaLinhaCompacta : kAlturaLinhaConfortavel;
+}
+
+void aplicarDensidadeTabela(QTableWidget *table)
+{
+    if (!table)
+        return;
+    table->verticalHeader()->setDefaultSectionSize(alturaLinhaTabela());
+}
+
+void aplicarDensidadeTabelas()
+{
+    const int h = alturaLinhaTabela();
+    const auto widgets = QApplication::allWidgets();
+    for (QWidget *w : widgets) {
+        if (auto *t = qobject_cast<QTableWidget *>(w))
+            t->verticalHeader()->setDefaultSectionSize(h);
+    }
+}
+
 // ── Emoji → QIcon ─────────────────────────────────────────────────────────────
 
 QIcon emojiIcon(const QString &emoji, int px)
@@ -222,9 +265,10 @@ static QString gerarQss()
     const QString sub  = dark ? Color::SubtextDark  : Color::SubtextLight;
     const QString neg  = dark ? Color::NegativeDark : Color::NegativeLight;
     // Alternating row — ligeiramente mais escuro que Surface2 para manter contraste
+    // (usado em QMenu/QListWidget etc.; QTableWidget NÃO usa mais zebra, #167 T1).
     const QString alt  = dark ? QStringLiteral("#171F2D") : Color::Surface2Light;
     // Hover background — mais suave que o accent
-    const QString hov  = dark ? QStringLiteral("#222D3D") : QStringLiteral("#DCE8FA");
+    const QString hov  = hoverBg();
     // Accent tints para feedback de botão: hover = acento mais claro, pressed = mais escuro.
     // Tons coerentes com o accent #3B82F6 da nova paleta (#164 Fase 1 fix):
     //   hover   = #60A5FA (blue-400 Tailwind — mais claro que o base)
@@ -428,11 +472,21 @@ static QString gerarQss()
             selection-background-color: @@ACC@@;
             selection-color: white;
         }
-        /* ── Table ── */
+        /* ── Table (§11 manual de estilo, #167 T1: skin compartilhado) ──────
+           Zebra REMOVIDA (alternate-background-color = mesmo tom do fundo:
+           neutraliza setAlternatingRowColors(true) chamado em ~24 widgets sem
+           precisar tocar cada um). Grade vertical REMOVIDA (gridline
+           transparente); a única divisória é a horizontal fina no item
+           (border-bottom). Hover de LINHA INTEIRA é pintado pelo
+           TableHoverDelegate (TableHoverFilter arma toda QTableWidget no
+           Show/Polish) — QSS por célula não bastaria. Densidade de linha
+           (Confortável 48px / Compacta 34px) é aplicada via
+           verticalHeader()->setDefaultSectionSize() pelo mesmo filter — QSS
+           não controla altura de linha de QTableView. */
         QTableWidget {
             background-color: @@SURF@@;
-            alternate-background-color: @@ALT@@;
-            gridline-color: @@BRD@@;
+            alternate-background-color: @@SURF@@;
+            gridline-color: transparent;
             border: 1px solid @@BRD@@;
             border-radius: 0px;
         }
@@ -440,10 +494,12 @@ static QString gerarQss()
             padding: 4px 8px;
             min-height: 34px;
             border: none;
+            border-bottom: 1px solid @@BRD@@;
         }
         QTableWidget::item:selected {
             background-color: @@ACC@@;
             color: white;
+            border-bottom: 1px solid @@ACC@@;
         }
         QHeaderView {
             background-color: @@BG@@;
@@ -451,12 +507,13 @@ static QString gerarQss()
         QHeaderView::section {
             background-color: @@BG@@;
             border: none;
-            border-right: 1px solid @@BRD@@;
             border-bottom: 2px solid @@ACC@@;
             padding: 6px 8px;
             font-weight: 600;
-            color: @@TXT@@;
             font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: @@TXT@@;
         }
         QHeaderView::section:hover { color: @@ACC@@; }
         /* ── Labels ── */
@@ -947,6 +1004,11 @@ void aplicar()
     // focus Qt gives the first focusable widget when a window becomes active.
     // Fixes #165 (caixa no ◀️ no 1º render). Idempotent; lives for the app lifetime.
     FocusVisibleFilter::install();
+
+    // App-wide skin de tabelas (#167 T1, §11 manual de estilo): arma toda
+    // QTableWidget no Show/Polish com mouse tracking + TableHoverDelegate
+    // (hover de linha inteira) + densidade de linha atual. Idempotente.
+    TableHoverFilter::install();
 
     // Re-apply when OS scheme changes (only matters in Auto mode)
     QObject::connect(

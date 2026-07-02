@@ -9,6 +9,8 @@
 
 #include "Tag.h"
 
+class QTableWidget;
+
 // Paleta azul-confiável (redesign Fase 1, #164) + Inter font + QSS.
 // Light/dark: respects OS setting (Auto) or overridden via setMode().
 namespace Theme {
@@ -121,5 +123,33 @@ QString helpEyebrow();   // cor do eyebrow/rótulo (blue-700 no light, AA garant
 // A propriedade dinâmica dispara re-avaliação do QSS automaticamente no Qt.
 // Caller é responsável pelo ownership (parent opcional).
 QLabel *criarTag(const QString &texto, Tag::Variante v, QWidget *parent = nullptr);
+
+// ── Skin compartilhado das tabelas (#167 T1, §11 manual de estilo) ──────────
+
+// Fundo de hover de linha inteira (token @@HOV@@). Usado pelo TableHoverDelegate.
+QString hoverBg();
+
+// Altura de linha (px) das QTableWidget: "Confortável" é o default do
+// redesign #167; "Compacta" é opt-in nas Preferências (PrefsWidget).
+inline constexpr int kAlturaLinhaConfortavel = 48;
+inline constexpr int kAlturaLinhaCompacta    = 34;
+
+// Estado em memória da densidade — quem PERSISTE é AppSettings; o caller
+// (main.cpp no boot, PrefsWidget no toggle) é responsável por sincronizar os
+// dois. Theme.cpp fica deliberadamente desacoplado de AppSettings/libsecret
+// para não arrastar essa dependência a todo alvo de teste que linka Theme.cpp.
+void setDensidadeTabelasCompacta(bool compacta);
+bool densidadeTabelasCompacta();
+int  alturaLinhaTabela(); // kAlturaLinhaCompacta ou kAlturaLinhaConfortavel
+
+// Aplica a altura de linha atual a UMA tabela. Chamado pelo TableHoverFilter
+// no Show/Polish de cada QTableWidget (mesma varredura que arma o hover) —
+// toda tabela nasce com a densidade correta sem código por-widget.
+void aplicarDensidadeTabela(QTableWidget *table);
+
+// Reaplica a densidade a TODAS as QTableWidget já construídas na sessão
+// (QApplication::allWidgets()). Chamado quando o toggle "Compacta" muda nas
+// Preferências, para efeito imediato sem reiniciar o app.
+void aplicarDensidadeTabelas();
 
 } // namespace Theme

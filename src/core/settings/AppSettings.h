@@ -100,12 +100,22 @@ public:
     bool tabHelpExpanded(const QString &tabKey, const QString &bloco) const;
     void setTabHelpExpanded(const QString &tabKey, const QString &bloco, bool expanded);
 
+    // ── Densidade das tabelas (redesign #167 T1, §11 manual de estilo) ────
+    // Default: false (Confortável, ~48px/linha). true = Compacta (~34px/linha).
+    // Toggle em Preferências > Geral > Apresentação. Aplica AO VIVO — o
+    // caller (PrefsWidget) também chama Theme::setDensidadeTabelasCompacta()
+    // + Theme::aplicarDensidadeTabelas() no mesmo handler (não precisa
+    // reabrir o app, diferente do Modo Iniciante).
+    bool tabelaDensidadeCompacta() const;
+    void setTabelaDensidadeCompacta(bool compacta);
+
 signals:
     void languageChanged(Language lang);
     void currencyChanged(const QString &code);
     void autosaveSettingsChanged();
     void marketSettingsChanged();
     void modoInicianteChanged(bool on);
+    void tabelaDensidadeChanged(bool compacta);
 
 private:
     explicit AppSettings();
