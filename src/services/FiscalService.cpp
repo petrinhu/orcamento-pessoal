@@ -184,6 +184,15 @@ double FiscalService::irRendaFixaPorDias(int dias)
     return 0.150;
 }
 
+double FiscalService::irRendaFixaPorMeses(double meses)
+{
+    // Fator medio real de dias corridos por mes de calendario (365,25/12 =
+    // 30,4375). round() half-away-from-zero; ver comentario no .h sobre por
+    // que 30 dias fixos reproduziria o bug #190.
+    const int dias = static_cast<int>(std::llround(meses * 365.25 / 12.0));
+    return irRendaFixaPorDias(dias);
+}
+
 double FiscalService::iofRendaFixaPorDias(int dias)
 {
     if (dias >= 30) return 0.0;

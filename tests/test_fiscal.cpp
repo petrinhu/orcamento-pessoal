@@ -5,6 +5,8 @@
 #include <QtTest/QtTest>
 #include "services/FiscalService.h"
 
+#include <cmath>
+
 class TestFiscal : public QObject
 {
     Q_OBJECT
@@ -47,6 +49,12 @@ private slots:
     void poupancaSelicBaixa();
     void irRendaFixaProgressao();
     void iofRegressivoAteJanela();
+
+    // #190 (ARQ-02): IR por meses de calendario -> dias reais (fix do bug
+    // do Wizard 12, que reimplementava a tabela em "meses" e cruzava a
+    // fronteira errada).
+    void irRendaFixaPorMesesFronteira6_12_24();
+    void irRendaFixaPorMesesConsistenteComDias();
 };
 
 void TestFiscal::inssIsentoZero()
@@ -165,6 +173,36 @@ void TestFiscal::iofRegressivoAteJanela()
     QCOMPARE(FiscalService::iofRendaFixaPorDias(29), 0.03);
     QCOMPARE(FiscalService::iofRendaFixaPorDias(30), 0.0);
     QCOMPARE(FiscalService::iofRendaFixaPorDias(60), 0.0);
+}
+
+void TestFiscal::irRendaFixaPorMesesFronteira6_12_24()
+{
+    // #190 (ARQ-02): bug era usar meses<=N diretamente. Prazos redondos de
+    // calendario tem MAIS dias corridos que 30*meses:
+    //   6 meses  = 182,625 dias -> round 183 -> FiscalService: 20,0% (nao 22,5%)
+    //   12 meses = 365,25  dias -> round 365 -> FiscalService: 17,5% (nao 20,0%)
+    //   24 meses = 730,5   dias -> round 731 -> FiscalService: 15,0% (nao 17,5%)
+    // Cada fronteira teria +2,5 p.p. de IR errado com a tabela antiga em meses.
+    QCOMPARE(FiscalService::irRendaFixaPorMeses(6.0),  0.200);
+    QCOMPARE(FiscalService::irRendaFixaPorMeses(12.0), 0.175);
+    QCOMPARE(FiscalService::irRendaFixaPorMeses(24.0), 0.150);
+
+    // Confere que NAO reproduz os valores antigos (regressao do bug).
+    QVERIFY(FiscalService::irRendaFixaPorMeses(6.0)  != 0.225);
+    QVERIFY(FiscalService::irRendaFixaPorMeses(12.0) != 0.200);
+    QVERIFY(FiscalService::irRendaFixaPorMeses(24.0) != 0.175);
+}
+
+void TestFiscal::irRendaFixaPorMesesConsistenteComDias()
+{
+    // irRendaFixaPorMeses(m) deve ser exatamente irRendaFixaPorDias(round(m*365.25/12))
+    // para qualquer prazo, nao so as fronteiras — garante que a conversao
+    // (nao um valor hardcoded) e a fonte da verdade.
+    for (const double meses : {1.0, 3.0, 6.0, 9.0, 12.0, 18.0, 24.0, 36.0, 60.0}) {
+        const int dias = static_cast<int>(std::llround(meses * 365.25 / 12.0));
+        QCOMPARE(FiscalService::irRendaFixaPorMeses(meses),
+                 FiscalService::irRendaFixaPorDias(dias));
+    }
 }
 
 // ── Ancoras de precisao (#113) ───────────────────────────────────────────────

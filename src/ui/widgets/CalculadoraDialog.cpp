@@ -1358,18 +1358,9 @@ void CalculadoraDialog::buildTabWizards(QWidget *tab)
             if (pv <= 0.0 || n <= 0.0 || k < 0.0 || k >= n) {
                 lblRes->setText(tr("Verifique os valores (k deve ser < N).")); lblRes->show(); return;
             }
-            double pmt = 0.0;
-            double sd  = 0.0;
-            // #69: dedup -> FinanceEngine::pmt (sinal invertido para Price BR)
-            pmt = -FinanceEngine::pmt(pv, 0.0, i, static_cast<int>(n));
-            if (i == 0.0) {
-                sd = pv - k * pmt;
-            } else {
-                // Saldo apos k parcelas: pv*(1+i)^k - pmt*((1+i)^k - 1)/i
-                // (sem FinanceEngine helper para essa formula derivada)
-                const double pot = std::pow(1.0 + i, k);
-                sd = pv * pot - pmt * (pot - 1.0) / i;
-            }
+            // #69/#190: dedup -> FinanceEngine::pmt / saldoDevedor
+            const double pmt = -FinanceEngine::pmt(pv, 0.0, i, static_cast<int>(n));
+            const double sd  = FinanceEngine::saldoDevedor(pv, i, static_cast<int>(n), k);
             *resVal = sd;
             lblRes->setText(
                 tr("Parcela (PMT): R$ %1<br>"
@@ -1420,7 +1411,9 @@ void CalculadoraDialog::buildTabWizards(QWidget *tab)
             if (pv <= 0.0 || fv <= pv || i <= 0.0) {
                 lblRes->setText(tr("Meta deve ser maior que o capital, e taxa > 0.")); lblRes->show(); return;
             }
-            const double n    = std::log(fv / pv) / std::log(1.0 + i);
+            // #190: dedup -> FinanceEngine::nper (pv investido negativo,
+            // fv meta positiva, sem aportes -> equivale a log(fv/pv)/log(1+i))
+            const double n    = FinanceEngine::nper(-pv, 0.0, fv, i);
             const int    nInt = static_cast<int>(std::ceil(n));
             const int    anos = nInt / 12;
             const int    mes  = nInt % 12;
@@ -1485,12 +1478,16 @@ void CalculadoraDialog::buildTabWizards(QWidget *tab)
             const double jurosOrigTotal = pmtOrig * nr - sd;
 
             if (rbRedN->isChecked()) {
-                const double arg = 1.0 - novoSD * i / pmtOrig;
-                if (arg <= 0.0) {
+                double nNovo = 0.0;
+                try {
+                    // #190: dedup -> FinanceEngine::nper (equivale
+                    // algebricamente a -log(1 - novoSD*i/pmtOrig)/log(1+i);
+                    // o domain_error cobre o guard "amortizacao insuficiente")
+                    nNovo = FinanceEngine::nper(-novoSD, pmtOrig, 0.0, i);
+                } catch (const std::domain_error &) {
                     lblRes->setText(tr("Amortização insuficiente para reduzir parcelas."));
                     lblRes->show(); return;
                 }
-                const double nNovo   = -std::log(arg) / std::log(1.0 + i);
                 const int    nInt    = static_cast<int>(std::ceil(nNovo));
                 const double jurosNovo = pmtOrig * nNovo - novoSD;
                 const double economia  = jurosOrigTotal - jurosNovo;
@@ -1563,24 +1560,27 @@ void CalculadoraDialog::buildTabWizards(QWidget *tab)
             const double meses = parseF(edtMeses);
             const double taxaCDB = parseF(edtCDB);
             const double taxaLCI = parseF(edtLCI);
-            if (valor <= 0.0 || meses <= 0.0 || taxaCDB <= 0.0) {
+            const int    n        = static_cast<int>(std::round(meses));
+            if (valor <= 0.0 || meses <= 0.0 || taxaCDB <= 0.0 || n <= 0) {
                 lblRes->setText(tr("Verifique os valores."));
                 lblRes->show(); return;
             }
-            // IR regressivo CDB
-            double ir = 0.225;
-            if (meses > 24.0)       ir = 0.15;
-            else if (meses > 12.0)  ir = 0.175;
-            else if (meses > 6.0)   ir = 0.20;
+            // #190 (ARQ-02, CRITICO): IR regressivo CDB via FiscalService,
+            // por DIAS CORRIDOS REAIS (nao "meses" aproximados por 30). O
+            // wizard reimplementava a tabela com meses<=N e cruzava a
+            // fronteira errada (6/12/24 meses de calendario tem MAIS dias
+            // corridos que 180/360/720) -> cobrava +2,5 p.p. de IR a mais.
+            const double ir = FiscalService::irRendaFixaPorMeses(meses);
 
-            // #69: dedup -> FinanceEngine::taxaEquivalente
+            // #69/#190: dedup -> FinanceEngine::taxaEquivalente / fv
             const double taxaCDBm = FinanceEngine::taxaEquivalente(taxaCDB / 100.0, 1, 12);
             const double taxaLCIm = FinanceEngine::taxaEquivalente(taxaLCI / 100.0, 1, 12);
-            const int    n        = static_cast<int>(std::round(meses));
 
-            const double brutosCDB  = valor * (std::pow(1.0 + taxaCDBm, n) - 1.0);
+            // FV = valor*(1+i)^n via FinanceEngine::fv (pv negativo = saida
+            // do bolso na convencao Excel/HP-12C); rendimento bruto = FV - valor.
+            const double brutosCDB  = FinanceEngine::fv(-valor, 0.0, taxaCDBm, n) - valor;
             const double liquidoCDB = brutosCDB * (1.0 - ir);
-            const double liquidoLCI = valor * (std::pow(1.0 + taxaLCIm, n) - 1.0);
+            const double liquidoLCI = FinanceEngine::fv(-valor, 0.0, taxaLCIm, n) - valor;
 
             // Break-even: taxa LCI/LCA que iguala CDB líquido
             const double breakEvenAA = (std::pow(1.0 + taxaCDB / 100.0, 1.0 - ir) - 1.0) * 100.0;
@@ -2044,7 +2044,9 @@ void CalculadoraDialog::buildTabWizards(QWidget *tab)
 
             auto tempoAcumular = [&](double i) -> double {
                 if (i <= 0.0) return std::ceil(gap / guarda);
-                return std::ceil(std::log(1.0 + gap * i / guarda) / std::log(1.0 + i));
+                // #190: dedup -> FinanceEngine::nper (pv=0, aporte mensal
+                // guarda, meta gap -> equivale a log(1+gap*i/guarda)/log(1+i))
+                return std::ceil(FinanceEngine::nper(0.0, -guarda, gap, i));
             };
             auto rendaMensal = [&](double i) { return meta * i; };
 

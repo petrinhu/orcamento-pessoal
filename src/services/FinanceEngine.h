@@ -44,6 +44,14 @@ public:
     [[nodiscard]] static double rate(double pv, double pmt, double fv, int n,
                                      bool begin = false);
 
+    // SALDO DEVEDOR (#190): saldo remanescente de um financiamento Price
+    // apos k parcelas pagas de um total de n, dado pv (valor financiado) e
+    // i (taxa por periodo). PMT e derivado internamente via pmt(pv,0,i,n).
+    // Formula: SD_k = pv*(1+i)^k - pmt*((1+i)^k - 1)/i  (i=0: pv - k*pmt).
+    // k pode ser fracionario (uso raro); deve estar em [0, n].
+    [[nodiscard]] static double saldoDevedor(double pv, double i, int n,
+                                             double k, bool begin = false);
+
     // ── Conversao de taxa entre periodicidades (#82) ─────────────────────────
     //
     // periodosDe / periodosPara: numero de periodos por unidade comum (ano).

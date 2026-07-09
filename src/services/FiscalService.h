@@ -52,6 +52,18 @@ public:
     // 20%, ate 180 -> 22,5%.
     [[nodiscard]] static double irRendaFixaPorDias(int dias);
 
+    // Aliquota de IR sobre rendimentos de CDB/Tesouro dado o PRAZO EM MESES
+    // de calendario (ex.: 6, 12, 24 - o formato que o usuario tipicamente
+    // informa). Converte para dias corridos reais com o fator medio
+    // 365,25/12 (~30,4375 dias/mes) e delega a irRendaFixaPorDias.
+    //
+    // NAO usar 30 dias fixos por mes: prazos redondos de calendario tem
+    // MAIS dias corridos que 30*meses (ex.: 6 meses = 182-183 dias, nao
+    // 180), o que cruzaria a fronteira regressiva errada e cobraria IR a
+    // mais (bug #190: wizard reimplementava a tabela em "meses" e chegava
+    // a 22,5% aos 6 meses quando o correto, por dias, e 20%).
+    [[nodiscard]] static double irRendaFixaPorMeses(double meses);
+
     // Aliquota de IOF regressivo sobre rendimentos para resgates < 30 dias.
     // dia 1 = 96%, dia 30 = 0%; lookup por dia mantido.
     [[nodiscard]] static double iofRendaFixaPorDias(int dias);

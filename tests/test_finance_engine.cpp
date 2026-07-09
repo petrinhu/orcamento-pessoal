@@ -11,6 +11,8 @@
 #include <QtTest/QtTest>
 #include "services/FinanceEngine.h"
 
+#include <stdexcept>
+
 class TestFinanceEngine : public QObject
 {
     Q_OBJECT
@@ -33,6 +35,18 @@ private slots:
     // RATE (Newton-Raphson)
     void rateCdb();
     void rateGuessExtremo();
+
+    // SALDO DEVEDOR (#190)
+    void saldoDevedorAposKParcelas();
+    void saldoDevedorTaxaZero();
+    void saldoDevedorNoInicioIgualPv();
+    void saldoDevedorForaDoIntervaloLanca();
+
+    // NPER — dedup de wizards 10/11/19 (#190): golden values capturados das
+    // formulas log() inline ANTES do dedup, provando equivalencia algebrica.
+    void nperEquivaleAMetaFinanceiraWizard10();
+    void nperEquivaleARecalculoAmortizacaoWizard11();
+    void nperEquivaleATempoAcumuloWizard19();
 
     // Conversao de taxa (#82)
     void taxaActuarielAnualParaMensal();
@@ -127,6 +141,70 @@ void TestFinanceEngine::rateGuessExtremo()
     const double i = FinanceEngine::rate(1500.0, -100.0, 0.0, 24, false);
     QVERIFY2(qAbs(i - 0.0416) < 1e-3,
              qPrintable(QStringLiteral("i = %1, esperado ~0.0416").arg(i, 0, 'g', 10)));
+}
+
+void TestFinanceEngine::saldoDevedorAposKParcelas()
+{
+    // #190 (dedup Wizard 9): PV=50000, i=1,5% a.m., n=60, apos k=12 parcelas.
+    // Golden value capturado da formula inline original ANTES do dedup:
+    // pv*(1+i)^k - pmt*((1+i)^k - 1)/i, com pmt = -FinanceEngine::pmt(pv,0,i,n).
+    const double sd = FinanceEngine::saldoDevedor(50000.0, 0.015, 60, 12.0);
+    QVERIFY2(qAbs(sd - 43222.8558) < TOL_MONEY,
+        qPrintable(QStringLiteral("SD = %1, esperado ~43222.8558 (golden pre-#190)").arg(sd, 0, 'f', 4)));
+}
+
+void TestFinanceEngine::saldoDevedorTaxaZero()
+{
+    // i=0: SD = pv - k*pmt, pmt = pv/n. PV=12000, n=12, k=5 -> pmt=1000,
+    // SD = 12000 - 5*1000 = 7000 (golden pre-#190).
+    const double sd = FinanceEngine::saldoDevedor(12000.0, 0.0, 12, 5.0);
+    QVERIFY2(qAbs(sd - 7000.0) < TOL_MONEY,
+        qPrintable(QStringLiteral("SD = %1, esperado 7000").arg(sd)));
+}
+
+void TestFinanceEngine::saldoDevedorNoInicioIgualPv()
+{
+    // k=0 -> nada foi pago ainda, saldo = pv integral.
+    QCOMPARE(FinanceEngine::saldoDevedor(10000.0, 0.01, 24, 0.0), 10000.0);
+}
+
+void TestFinanceEngine::saldoDevedorForaDoIntervaloLanca()
+{
+    // k negativo ou k>n nao faz sentido (parcelas pagas nao pode exceder o
+    // total nem ser negativo) -> domain_error, nao valor silenciosamente
+    // errado.
+    QVERIFY_EXCEPTION_THROWN((void)FinanceEngine::saldoDevedor(10000.0, 0.01, 24, -1.0),
+                             std::domain_error);
+    QVERIFY_EXCEPTION_THROWN((void)FinanceEngine::saldoDevedor(10000.0, 0.01, 24, 25.0),
+                             std::domain_error);
+}
+
+void TestFinanceEngine::nperEquivaleAMetaFinanceiraWizard10()
+{
+    // Wizard 10 (Meta financeira): capital=10000, meta=25000, i=1% a.m.
+    // Golden pre-#190 (formula original log(fv/pv)/log(1+i)): 92.0864587716.
+    const double n = FinanceEngine::nper(-10000.0, 0.0, 25000.0, 0.01);
+    QVERIFY2(qAbs(n - 92.0864587716) < 1e-6,
+        qPrintable(QStringLiteral("n = %1, esperado 92.0864587716").arg(n, 0, 'f', 10)));
+}
+
+void TestFinanceEngine::nperEquivaleARecalculoAmortizacaoWizard11()
+{
+    // Wizard 11 (reduzir N): saldo=50000, i=1,5% a.m., nr=48, amort=15000
+    // -> pmtOrig ~ 1553.5497..., novoSD=35000.
+    // Golden pre-#190 (formula original -log(arg)/log(1+i)): 29.7076497179.
+    const double pmtOrig = -FinanceEngine::pmt(50000.0, 0.0, 0.015, 48);
+    const double n = FinanceEngine::nper(-35000.0, pmtOrig, 0.0, 0.015);
+    QVERIFY2(qAbs(n - 29.7076497179) < 1e-6,
+        qPrintable(QStringLiteral("n = %1, esperado 29.7076497179").arg(n, 0, 'f', 10)));
+}
+
+void TestFinanceEngine::nperEquivaleATempoAcumuloWizard19()
+{
+    // Wizard 19 (tempo p/ reserva): gap=15000, aporte=500, i=0,8% a.m.
+    // Golden pre-#190 (formula original ceil(log(1+gap*i/guarda)/log(1+i))): 27.
+    const double n = std::ceil(FinanceEngine::nper(0.0, -500.0, 15000.0, 0.008));
+    QCOMPARE(n, 27.0);
 }
 
 void TestFinanceEngine::taxaActuarielAnualParaMensal()

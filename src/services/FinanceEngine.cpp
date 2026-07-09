@@ -157,6 +157,26 @@ double FinanceEngine::rate(double pv, double pmt, double fv, int n, bool begin)
     throw std::domain_error("rate: Newton-Raphson nao convergiu em 50 iteracoes");
 }
 
+// ── Saldo devedor (#190) ─────────────────────────────────────────────────────
+double FinanceEngine::saldoDevedor(double pv, double i, int n, double k, bool begin)
+{
+    if (n <= 0) throw std::domain_error("saldoDevedor: n must be > 0");
+    if (k < 0.0 || k > static_cast<double>(n)) {
+        throw std::domain_error("saldoDevedor: k fora do intervalo [0,n]");
+    }
+    if (k == 0.0) return pv;
+
+    // Pagamento periodico (positivo, ja com o sinal invertido da convencao
+    // Excel/HP-12C de pmt(), para casar com a formula classica de saldo).
+    const double pagamento = -pmt(pv, 0.0, i, n, begin);
+
+    if (i == 0.0) {
+        return pv - k * pagamento;
+    }
+    const double pot = std::pow(1.0 + i, k);
+    return pv * pot - pagamento * (pot - 1.0) / i;
+}
+
 // ── Conversao de taxa (#82) ──────────────────────────────────────────────────
 double FinanceEngine::taxaEquivalente(double i, int periodosDe, int periodosPara)
 {
