@@ -75,7 +75,21 @@ int main(int argc, char *argv[])
 
     const int ret = app.exec();
 
-    DatabaseManager::instance().close();
+    // (#191/FIN-02) close() cifra o .db → .pbd (release). Se o integrity_check
+    // reprovar o banco (corrupção), o save é ABORTADO e o cofre anterior
+    // (último .pbd bom) é preservado — alertar aqui é o "alertar" do work
+    // order, já que closeEvent() já tratou o caso normal de "Salvar" via
+    // onSalvar()/save() (que também está sob o mesmo gate).
+    if (!DatabaseManager::instance().close()) {
+        QMessageBox::critical(nullptr,
+            QStringLiteral("Falha ao salvar"),
+            QStringLiteral(
+                "O banco de dados apresentou um problema de integridade ao "
+                "fechar e a gravação foi cancelada para não sobrescrever o "
+                "último arquivo salvo válido.\n\n"
+                "O cofre da sessão anterior permanece intacto, mas as "
+                "alterações feitas agora podem ter sido perdidas."));
+    }
     UserSession::instance().logout();
 
     return ret;

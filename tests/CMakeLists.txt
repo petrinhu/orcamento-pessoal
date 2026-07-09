@@ -779,6 +779,57 @@ target_include_directories(test_repository_naonulo_domino PRIVATE
     ${LIBSODIUM_INCLUDE_DIRS}
     ${LIBSECRET_INCLUDE_DIRS})
 
+# Durabilidade do banco (#191, FIN-02, Onda U-1): journal_mode=DELETE
+# (crash-safe, sem residuo tipo -wal) + PRAGMA integrity_check como gate
+# dentro de encryptAndSave() antes de cifrar por cima do ultimo .pbd bom.
+# Cadeia identica a test_audit_triggers/test_categoria: precisa do
+# DatabaseManager real (createSchema + triggers) e da cascata que ele
+# arrasta, mais AppSettings::savePathFixo() para localizar o cofre .pbd.
+#
+# QT_NO_DEBUG (nao QT_DEBUG): o proprio header do Qt (qtconfigmacros.h)
+# auto-define QT_DEBUG quando NEM QT_DEBUG NEM QT_NO_DEBUG sao passados via
+# -D -- e exatamente o caso do target de app em CMAKE_BUILD_TYPE=Debug deste
+# projeto (ver CMakeLists.txt raiz: so build-rel passa -DQT_NO_DEBUG).
+# encryptAndSave()/checkFileIntegrity() (o cerne do #191) so rodam no ramo
+# `#ifndef QT_DEBUG` de save()/close() -- sem esta definicao o teste
+# compilaria no ramo "debug" (sem persistir .pbd) e NUNCA exercitaria o gate
+# de integrity_check, mesmo dentro do `build/` (Debug) padrao do ctest.
+peubud_add_test(test_db_durabilidade
+    ${CMAKE_SOURCE_DIR}/src/core/database/DatabaseManager.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/AuditLogService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/AjusteCorporativoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FechamentoMensalService.cpp
+    # #144: FechamentoMensalService::simulate delega ao ResumoService; arrastar
+    # sua cadeia para resolver o link mesmo neste teste que so exercita
+    # save()/close()/checkFileIntegrity().
+    ${CMAKE_SOURCE_DIR}/src/services/ResumoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/EntradaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/CompraService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/GastoAvulsoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/LancamentoInvestimentoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/LancamentoEntradaRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/FonteRendaRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/CompraRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/ParcelaRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/CartaoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/ProventoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/SodiumCryptoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/AesCryptoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/KeyDerivation.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/settings/AppSettings.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp)
+target_compile_definitions(test_db_durabilidade PRIVATE QT_NO_DEBUG)
+target_link_libraries(test_db_durabilidade PRIVATE
+    OpenSSL::SSL
+    OpenSSL::Crypto
+    ${LIBSODIUM_LIBRARIES}
+    ${LIBSECRET_LIBRARIES})
+target_include_directories(test_db_durabilidade PRIVATE
+    ${LIBSODIUM_INCLUDE_DIRS}
+    ${LIBSECRET_INCLUDE_DIRS})
+
 # Skin compartilhado das tabelas (#167 T1, §11 manual de estilo).
 # Verifica: QSS sem zebra poluída (alternate-background-color = fundo, não
 # @@ALT@@) e sem grade vertical (gridline transparente) em QTableWidget;

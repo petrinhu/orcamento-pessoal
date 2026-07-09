@@ -13,6 +13,7 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QDebug>
+#include <QUuid>
 #include <stdexcept>
 
 #include <sys/stat.h>   // chmod — restringe o diretório de dados a 0700
@@ -27,6 +28,16 @@ void ensureDataDirSecure()
     const QString dataDir = QStringLiteral("data");
     QDir().mkpath(dataDir);
     ::chmod(QFile::encodeName(dataDir).constData(), S_IRWXU);
+}
+
+// (#191/FIN-02) Executa um PRAGMA de setup checando o retorno; falha genuína
+// (ex.: disco cheio, arquivo corrompido) fica logada em vez de passar em
+// silêncio — antes os 3 PRAGMAs de open()/importFromFile() ignoravam bool.
+void execPragmaComAviso(QSqlQuery &q, const QString &sql)
+{
+    if (!q.exec(sql))
+        qWarning() << "DatabaseManager: PRAGMA falhou —" << sql
+                   << "-" << q.lastError().text();
 }
 
 #ifndef QT_DEBUG
@@ -145,9 +156,17 @@ bool DatabaseManager::open(const QString &slug,
     }
 
     QSqlQuery q(m_db);
-    q.exec(QStringLiteral("PRAGMA journal_mode = MEMORY"));
-    q.exec(QStringLiteral("PRAGMA foreign_keys = ON"));
-    q.exec(QStringLiteral("PRAGMA synchronous = NORMAL"));
+    // (#191/FIN-02) DELETE (não MEMORY): journal em disco, mas TRANSITÓRIO —
+    // só existe durante uma transação aberta, é apagado no commit. Crash-safe
+    // (recupera via rollback journal no próximo open), ao contrário de MEMORY
+    // (journal em RAM — crash no meio de uma transação pode corromper o .db).
+    // Preserva a intenção original de "mínimo resíduo persistente" do projeto
+    // (o .db em claro já é sensível): ao contrário de WAL, não deixa um -wal
+    // residente entre sessões. synchronous=NORMAL mantido (combo recomendado
+    // pelo SQLite para DELETE/WAL).
+    execPragmaComAviso(q, QStringLiteral("PRAGMA journal_mode = DELETE"));
+    execPragmaComAviso(q, QStringLiteral("PRAGMA foreign_keys = ON"));
+    execPragmaComAviso(q, QStringLiteral("PRAGMA synchronous = NORMAL"));
 
     createSchema();
     return true;
@@ -165,19 +184,28 @@ bool DatabaseManager::save()
 #endif
 }
 
-void DatabaseManager::close()
+bool DatabaseManager::close()
 {
-    if (!m_db.isOpen()) return;
+    if (!m_db.isOpen()) return true; // nada a fechar — não é falha
 
     const QString dbPath = m_db.databaseName();
     m_db.close();
     m_db = QSqlDatabase();  // libera a referência antes de removeDatabase
     QSqlDatabase::removeDatabase(QStringLiteral("main"));
 
+    bool ok = true;
 #ifndef QT_DEBUG
     // (#181) Caminho fixo — ~/peubud/save/<slug>/database.pbd
+    // (#191/FIN-02) encryptAndSave() roda PRAGMA integrity_check em dbPath
+    // ANTES de cifrar; se o .db estiver corrompido, ABORTA e retorna false
+    // sem tocar em pbdPath — o cofre bom anterior permanece intacto.
     const QString pbdPath = AppSettings::savePathFixo(m_slug);
-    encryptAndSave(dbPath, m_key, pbdPath);
+    ok = encryptAndSave(dbPath, m_key, pbdPath);
+    if (!ok) {
+        qWarning() << "DatabaseManager::close: integrity_check reprovou o banco"
+                      " em" << dbPath << "— save abortado, cofre anterior"
+                      " preservado em" << pbdPath;
+    }
 #endif
 
     QFile::remove(dbPath);
@@ -193,6 +221,8 @@ void DatabaseManager::close()
         sodium_memzero(m_keyLegacy.data(), static_cast<size_t>(m_keyLegacy.size()));
     m_key.clear();
     m_keyLegacy.clear();
+
+    return ok;
 }
 
 bool DatabaseManager::isOpen() const
@@ -247,9 +277,11 @@ bool DatabaseManager::importFromFile(const QString &srcPath)
     if (!m_db.open()) return false;
 
     QSqlQuery q(m_db);
-    q.exec(QStringLiteral("PRAGMA journal_mode = MEMORY"));
-    q.exec(QStringLiteral("PRAGMA foreign_keys = ON"));
-    q.exec(QStringLiteral("PRAGMA synchronous = NORMAL"));
+    // (#191/FIN-02) Mesmo setup de open() — ver comentário lá para a
+    // justificativa de DELETE (não MEMORY nem WAL).
+    execPragmaComAviso(q, QStringLiteral("PRAGMA journal_mode = DELETE"));
+    execPragmaComAviso(q, QStringLiteral("PRAGMA foreign_keys = ON"));
+    execPragmaComAviso(q, QStringLiteral("PRAGMA synchronous = NORMAL"));
     return true;
 }
 
@@ -635,10 +667,72 @@ void DatabaseManager::createSchema()
     }
 }
 
+// (#191/FIN-02) Verifica a integridade de um arquivo SQLite via
+// `PRAGMA integrity_check`, usando uma conexão QSQLITE própria e
+// somente-leitura — não depende de m_db estar aberto (funciona chamado
+// antes OU depois de m_db.close(), e não interfere com sessões vivas de
+// outra conexão apontando para o mesmo arquivo). Nome de conexão único
+// (QUuid) evita colidir com "main" ou com chamadas concorrentes/repetidas
+// (ex.: em testes).
+bool DatabaseManager::checkFileIntegrity(const QString &dbFilePath)
+{
+    if (!QFile::exists(dbFilePath)) {
+        qWarning() << "DatabaseManager::checkFileIntegrity: arquivo não encontrado —"
+                   << dbFilePath;
+        return false;
+    }
+
+    const QString connName = QStringLiteral("integrity_check_%1")
+        .arg(QUuid::createUuid().toString(QUuid::WithoutBraces));
+
+    bool ok = false;
+    {
+        QSqlDatabase check = QSqlDatabase::addDatabase(QStringLiteral("QSQLITE"), connName);
+        check.setDatabaseName(dbFilePath);
+        // Somente-leitura: um arquivo que não é SQLite válido (ou corrompido a
+        // ponto de não ter cabeçalho reconhecível) não deve ser silenciosamente
+        // "reparado" ou ter um DB novo criado por cima ao abrir.
+        check.setConnectOptions(QStringLiteral("QSQLITE_OPEN_READONLY"));
+
+        if (!check.open()) {
+            qWarning() << "DatabaseManager::checkFileIntegrity: falha ao abrir"
+                       << dbFilePath << "-" << check.lastError().text();
+        } else {
+            QSqlQuery q(check);
+            if (!q.exec(QStringLiteral("PRAGMA integrity_check"))) {
+                qWarning() << "DatabaseManager::checkFileIntegrity:"
+                              " PRAGMA integrity_check falhou —" << q.lastError().text();
+            } else if (!q.next()) {
+                qWarning() << "DatabaseManager::checkFileIntegrity:"
+                              " integrity_check sem resultado (arquivo vazio/inválido)";
+            } else {
+                const QString resultado = q.value(0).toString();
+                ok = (resultado == QLatin1String("ok"));
+                if (!ok)
+                    qWarning() << "DatabaseManager::checkFileIntegrity:"
+                                  " banco corrompido —" << resultado;
+            }
+            check.close();
+        }
+    }
+    QSqlDatabase::removeDatabase(connName);
+    return ok;
+}
+
 bool DatabaseManager::encryptAndSave(const QString &srcDbPath,
                                      const QByteArray &key,
                                      const QString &destPath)
 {
+    // (#191/FIN-02) GATE único: os 3 chamadores (save/close/exportToFile)
+    // passam por aqui. Se o .db em claro estiver corrompido, ABORTA antes de
+    // ler+cifrar — nunca sobrescreve o último .pbd bom com lixo. O chamador
+    // recebe false e decide como alertar o usuário; nada é escrito em destPath.
+    if (!checkFileIntegrity(srcDbPath)) {
+        qWarning() << "DatabaseManager::encryptAndSave: integrity_check reprovou"
+                   << srcDbPath << "— save ABORTADO, preservando" << destPath;
+        return false;
+    }
+
     QFile f(srcDbPath);
     if (!f.open(QIODevice::ReadOnly)) return false;
     const QByteArray plain = f.readAll();

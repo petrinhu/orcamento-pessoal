@@ -23,7 +23,12 @@ public:
               const QByteArray &keyNew    = {},
               const QByteArray &keyLegacy = {});
     bool save();  // flush DB → .pbd sem fechar (release); no-op em debug
-    void close();
+    // Fecha a conexão e persiste (release: cifra .db → .pbd). Retorna false
+    // se a cifragem foi ABORTADA por falha de integrity_check (#191/FIN-02):
+    // nesse caso o .pbd anterior (último bom) é preservado intacto — o
+    // chamador deve alertar o usuário (dado da sessão pode ter sido perdido,
+    // mas o cofre em disco não foi corrompido).
+    bool close();
     bool isOpen() const;
 
     // File-level operations (release mode only; debug: plain copy)
@@ -31,6 +36,16 @@ public:
     bool importFromFile(const QString &srcPath);  // decrypt srcPath → replace session
 
     QSqlDatabase db() const { return m_db; }
+
+    // (#191/FIN-02) Verifica a integridade de um arquivo SQLite via
+    // `PRAGMA integrity_check`, usando uma conexão própria e somente-leitura
+    // (não interfere com m_db). Retorna true SOMENTE quando o resultado é
+    // exatamente "ok". Falha ao abrir, arquivo ausente, ou qualquer resultado
+    // diferente de "ok" retornam false (fail-safe: na dúvida, não persiste).
+    // Público e static para ser testável isoladamente (sem depender do
+    // singleton nem de uma sessão aberta) e para servir de gate único dentro
+    // de encryptAndSave() (chamado por save()/close()/exportToFile()).
+    static bool checkFileIntegrity(const QString &dbFilePath);
 
 private:
     DatabaseManager() = default;
