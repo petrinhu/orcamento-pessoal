@@ -889,3 +889,14 @@ peubud_add_test(test_about_dialog_render
     ${CMAKE_SOURCE_DIR}/src/ui/widgets/AboutDialog.cpp)
 target_compile_definitions(test_about_dialog_render PRIVATE
     PEUBUD_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+
+# #96 (Onda U, DIST-01): CPACK_SOURCE_IGNORE_FILES nao excluia models/
+# (670MB terceiros), build-rel/, build-verif/, .superpowers/ -> cpack
+# package_source vazava tudo. Gate real: roda cpack contra a
+# CPackSourceConfig.cmake gerada por ESTE build (mesma CMakeLists.txt de
+# producao) e inspeciona o tarball resultante.
+peubud_add_test(test_package_source_gate
+    ${CMAKE_SOURCE_DIR}/src/services/external/ExternalProcessProvider.cpp)
+target_compile_definitions(test_package_source_gate PRIVATE
+    PEUBUD_SOURCE_DIR="${CMAKE_SOURCE_DIR}"
+    PEUBUD_BINARY_DIR="${CMAKE_BINARY_DIR}")

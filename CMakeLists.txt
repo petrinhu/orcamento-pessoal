@@ -381,11 +381,19 @@ set(CPACK_SOURCE_IGNORE_FILES
     "/build/"
     "/build-test/"
     "/build-sanitize/"
+    "/build-rel/"
+    "/build-verif/"
     "/\\\\.git/"
     "/\\\\.idea/"
+    "/\\\\.superpowers/"
     "/data/"
     "\\\\.user$"
     "\\\\.qm$"
+    # #96 (Onda U, DIST-01): exclui SO o models/ da RAIZ do projeto (apps de
+    # referencia de terceiros, 670MB) - ancorado em CMAKE_SOURCE_DIR para nao
+    # colidir com src/models/ (domain structs POD legitimos, tem que ir no
+    # tarball fonte).
+    "^${CMAKE_SOURCE_DIR}/models/"
 )
 
 # ── DEB ─────────────────────────────────────────────────────────────────────
