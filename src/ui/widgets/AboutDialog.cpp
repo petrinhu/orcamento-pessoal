@@ -45,7 +45,10 @@ AboutDialog::AboutDialog(QWidget *parent)
     auto *lblDesc = new QLabel(
         tr("Desenvolvido por <b>Petrus Silva Costa</b> — © 2026<br><br>"
            "Aplicativo de orçamento pessoal em C++20/Qt6.<br>"
-           "Banco de dados criptografado com AES-256-CBC."), this);
+           "Banco de dados protegido por criptografia autenticada AEAD "
+           "(AES-256-GCM ou XChaCha20-Poly1305) com chave derivada por "
+           "Argon2id. Arquivos no formato legado AES-256-CBC continuam "
+           "sendo lidos e migrados automaticamente."), this);
     lblDesc->setWordWrap(true);
     lblDesc->setAlignment(Qt::AlignCenter);
     layout->addWidget(lblDesc);
@@ -71,8 +74,9 @@ AboutDialog::AboutDialog(QWidget *parent)
     // ── License ───────────────────────────────────────────────────────────
     auto *lblLic = new QLabel(
         tr("<b>Licença: GNU Affero General Public License v3.0 (AGPL-3.0)</b><br>"
-           "✓ Uso pessoal, distribuição e modificação: <b>permitidos</b>.<br>"
-           "✗ Uso comercial ou venda: <b>proibidos</b>."), this);
+           "✓ Uso pessoal, comercial, distribuição e modificação: <b>permitidos</b>.<br>"
+           "⚠ Ao distribuir ou disponibilizar em rede uma versão modificada, "
+           "é obrigatório oferecer o código-fonte correspondente aos usuários."), this);
     lblLic->setWordWrap(true);
     lblLic->setAlignment(Qt::AlignCenter);
     layout->addWidget(lblLic);

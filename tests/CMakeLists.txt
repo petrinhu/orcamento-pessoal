@@ -880,3 +880,12 @@ target_link_libraries(test_table_skin PRIVATE ${LIBSECRET_LIBRARIES})
 target_include_directories(test_table_skin PRIVATE ${LIBSECRET_INCLUDE_DIRS})
 set_tests_properties(test_table_skin PROPERTIES
     ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
+# #193 (Onda U, DIST-02): AboutDialog nao pode afirmar que a AGPL-3.0 proibe
+# uso comercial (falso) nem descrever a cripto ATIVA como AES-256-CBC (e o
+# formato legado, so leitura). Render offscreen + gate regex estatico em
+# AboutDialog.cpp e peubud_en.ts (fonte + traducao, sincronizado com #154).
+peubud_add_test(test_about_dialog_render
+    ${CMAKE_SOURCE_DIR}/src/ui/widgets/AboutDialog.cpp)
+target_compile_definitions(test_about_dialog_render PRIVATE
+    PEUBUD_SOURCE_DIR="${CMAKE_SOURCE_DIR}")

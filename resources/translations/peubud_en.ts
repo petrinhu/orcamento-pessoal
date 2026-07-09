@@ -20,18 +20,18 @@
     </message>
     <message>
         <location filename="../../src/ui/widgets/AboutDialog.cpp" line="46"/>
-        <source>Desenvolvido por &lt;b&gt;Petrus Silva Costa&lt;/b&gt; — © 2026&lt;br&gt;&lt;br&gt;Aplicativo de orçamento pessoal em C++20/Qt6.&lt;br&gt;Banco de dados criptografado com AES-256-CBC.</source>
-        <translation>Developed by &lt;b&gt;Petrus Silva Costa&lt;/b&gt; — © 2026&lt;br&gt;&lt;br&gt;Personal budget app in C++20/Qt6.&lt;br&gt;Encrypted database with AES-256-CBC.</translation>
+        <source>Desenvolvido por &lt;b&gt;Petrus Silva Costa&lt;/b&gt; — © 2026&lt;br&gt;&lt;br&gt;Aplicativo de orçamento pessoal em C++20/Qt6.&lt;br&gt;Banco de dados protegido por criptografia autenticada AEAD (AES-256-GCM ou XChaCha20-Poly1305) com chave derivada por Argon2id. Arquivos no formato legado AES-256-CBC continuam sendo lidos e migrados automaticamente.</source>
+        <translation>Developed by &lt;b&gt;Petrus Silva Costa&lt;/b&gt; — © 2026&lt;br&gt;&lt;br&gt;Personal budget app in C++20/Qt6.&lt;br&gt;Database protected by AEAD authenticated encryption (AES-256-GCM or XChaCha20-Poly1305) with a key derived via Argon2id. Files in the legacy AES-256-CBC format are still read and automatically migrated.</translation>
     </message>
     <message>
-        <location filename="../../src/ui/widgets/AboutDialog.cpp" line="56"/>
+        <location filename="../../src/ui/widgets/AboutDialog.cpp" line="59"/>
         <source>Repositório: codeberg.org/petrinhu/orcamento_pessoal</source>
         <translation>Repository: codeberg.org/petrinhu/orcamento_pessoal</translation>
     </message>
     <message>
-        <location filename="../../src/ui/widgets/AboutDialog.cpp" line="73"/>
-        <source>&lt;b&gt;Licença: GNU Affero General Public License v3.0 (AGPL-3.0)&lt;/b&gt;&lt;br&gt;✓ Uso pessoal, distribuição e modificação: &lt;b&gt;permitidos&lt;/b&gt;.&lt;br&gt;✗ Uso comercial ou venda: &lt;b&gt;proibidos&lt;/b&gt;.</source>
-        <translation>&lt;b&gt;License: GNU Affero General Public License v3.0 (AGPL-3.0)&lt;/b&gt;&lt;br&gt;✓ Personal use, distribution and modification: &lt;b&gt;allowed&lt;/b&gt;.&lt;br&gt;✗ Commercial use or sale: &lt;b&gt;forbidden&lt;/b&gt;.</translation>
+        <location filename="../../src/ui/widgets/AboutDialog.cpp" line="76"/>
+        <source>&lt;b&gt;Licença: GNU Affero General Public License v3.0 (AGPL-3.0)&lt;/b&gt;&lt;br&gt;✓ Uso pessoal, comercial, distribuição e modificação: &lt;b&gt;permitidos&lt;/b&gt;.&lt;br&gt;⚠ Ao distribuir ou disponibilizar em rede uma versão modificada, é obrigatório oferecer o código-fonte correspondente aos usuários.</source>
+        <translation>&lt;b&gt;License: GNU Affero General Public License v3.0 (AGPL-3.0)&lt;/b&gt;&lt;br&gt;✓ Personal, commercial, distribution and modification use: &lt;b&gt;allowed&lt;/b&gt;.&lt;br&gt;⚠ If you distribute or make a modified version available over a network, you must provide the corresponding source code to users.</translation>
     </message>
 </context>
 <context>
