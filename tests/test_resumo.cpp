@@ -17,9 +17,16 @@
 #include <QByteArray>
 #include <QDate>
 #include <QDir>
+#include <QSqlDriver>
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QTemporaryDir>
+#include <QVariant>
+
+// #195 (Onda U, PERF-03): sqlite3_trace_v2 na conexao real do QSQLITE para
+// contar queries fim-a-fim (nao mock -- prova o comportamento contra o
+// SQLite de producao). Ver ESPEC 13 (serieQueryCountLimitadoMxC).
+#include <sqlite3.h>
 
 #include "core/database/DatabaseManager.h"
 #include "models/Compra.h"
@@ -37,6 +44,18 @@
 #include "services/EntradaService.h"
 #include "services/ParcelaService.h"
 #include "services/ResumoService.h"
+
+// ── Contador de queries via sqlite3_trace_v2 (#195/PERF-03) ────────────────────
+// SQLITE_TRACE_STMT dispara 1x por statement top-level executado -- equivale
+// a 1 round-trip de query. Contador global simples (suite single-threaded).
+static int g_queryCount = 0;
+
+static int traceStmtCallback(unsigned /*type*/, void * /*ctx*/,
+                              void * /*p*/, void * /*x*/)
+{
+    ++g_queryCount;
+    return 0;
+}
 
 class TestResumo : public QObject
 {
@@ -469,6 +488,87 @@ private slots:
         const QVector<ResumoMensal> inv2 = ResumoService().serie(
             QDate(), QDate(2025, 3, 1));
         QCOMPARE(inv2.size(), 0);
+    }
+
+    // ESPEC 13 (#195/PERF-03, CRITICO): serie(M=6, C=50) faz <= 10 queries.
+    // Antes do fix: N+1 dentro de resumoDoMes (svc.compras() + 1 query por
+    // parcela de cada compra), chamado 1x por mes dentro de serie() -> custo
+    // M*(4+C) = 6*(4+50) = 324 queries. Depois do fix: compras/parcelas/
+    // entradas/gastos/investimentos sao buscados 1x fora do laco de meses e
+    // agrupados em memoria por (ano,mes) -- custo constante independente de
+    // M e C. Instrumentado via sqlite3_trace_v2 na conexao real (nao mock).
+    void serieQueryCountLimitadoMxC()
+    {
+        // C = 50 compras de 1 parcela cada, distribuidas ciclicamente pelos
+        // M = 6 meses (jan..jun/2025).
+        qint64 totalParcelasEsperado = 0;
+        for (int i = 0; i < 50; ++i) {
+            const int mes = (i % 6) + 1;
+            const qint64 valor = 1000 + i;
+            addCompraParcelada(mes, 2025, 1, valor);
+            totalParcelasEsperado += valor;
+        }
+        // Dado nas demais tabelas em todos os 6 meses, para garantir que o
+        // batch cobre todas as fontes agregadas por ResumoMensal.
+        qint64 totalEntradasEsperado = 0;
+        for (int mes = 1; mes <= 6; ++mes) {
+            addEntrada(mes, 2025, 100000, 10000, 5000);
+            addGasto(mes, 2025, 20000);
+            addInvestimento(mes, 2025, QStringLiteral("aporte"), 5000);
+            totalEntradasEsperado += (100000 - 10000 - 5000);
+        }
+
+        QSqlDatabase db = DatabaseManager::instance().db();
+        const QVariant handleVar = db.driver()->handle();
+        QVERIFY2(handleVar.isValid()
+                     && qstrcmp(handleVar.typeName(), "sqlite3*") == 0,
+                 "driver handle nao expoe sqlite3* -- driver Qt trocado?");
+        sqlite3 *handle = *static_cast<sqlite3 *const *>(handleVar.constData());
+        QVERIFY(handle != nullptr);
+
+        g_queryCount = 0;
+        sqlite3_trace_v2(handle, SQLITE_TRACE_STMT, traceStmtCallback, nullptr);
+
+        const QVector<ResumoMensal> s = ResumoService().serie(
+            QDate(2025, 1, 1), QDate(2025, 6, 30));
+
+        sqlite3_trace_v2(handle, 0, nullptr, nullptr); // desregistra
+
+        QCOMPARE(s.size(), 6);
+        QVERIFY2(g_queryCount <= 10,
+                 qPrintable(QStringLiteral(
+                     "serie(M=6,C=50) fez %1 queries (teto <=10, #195/PERF-03)")
+                                .arg(g_queryCount)));
+
+        // Regressao numerica: totais da serie batem com o esperado, e cada
+        // item continua identico ao resumoDoMes correspondente (ESPEC 10).
+        qint64 totalParcelas = 0;
+        qint64 totalEntradas = 0;
+        for (const auto &r : s) {
+            totalParcelas += r.parcelas;
+            totalEntradas += r.entradasLiquidas;
+        }
+        QCOMPARE(totalParcelas, totalParcelasEsperado);
+        QCOMPARE(totalEntradas, totalEntradasEsperado);
+
+        ResumoService svc;
+        for (const ResumoMensal &item : s) {
+            const ResumoMensal esperado = svc.resumoDoMes(item.mes, item.ano);
+            QCOMPARE(item.entradasBrutas,    esperado.entradasBrutas);
+            QCOMPARE(item.irpfRetido,        esperado.irpfRetido);
+            QCOMPARE(item.inssRetido,        esperado.inssRetido);
+            QCOMPARE(item.entradasLiquidas,  esperado.entradasLiquidas);
+            QCOMPARE(item.gastos,            esperado.gastos);
+            QCOMPARE(item.parcelas,          esperado.parcelas);
+            QCOMPARE(item.aportes,           esperado.aportes);
+            QCOMPARE(item.resgates,          esperado.resgates);
+            QCOMPARE(item.investimentosNet,  esperado.investimentosNet);
+            QCOMPARE(item.cntEntradas,       esperado.cntEntradas);
+            QCOMPARE(item.cntGastos,         esperado.cntGastos);
+            QCOMPARE(item.cntParcelas,       esperado.cntParcelas);
+            QCOMPARE(item.saldoMes,          esperado.saldoMes);
+            QCOMPARE(item.saldoLiquido,      esperado.saldoLiquido);
+        }
     }
 };
 

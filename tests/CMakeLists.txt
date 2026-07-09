@@ -1,6 +1,11 @@
 # PeuBud - bootstrap de testes (#102)
 # Cada teste vira um executable separado. Use peubud_add_test() para adicionar.
 
+# #195 (Onda U, PERF-03): sqlite3_trace_v2 para contar queries reais na
+# conexao do QSQLITE (nao mock) -- usado por test_resumo para travar o teto
+# de queries de ResumoService::serie(). PkgConfig ja resolvido no CMakeLists raiz.
+pkg_check_modules(SQLITE3 REQUIRED sqlite3)
+
 # Helper: adiciona executable de teste + registra no ctest.
 # Uso: peubud_add_test(test_nome [arquivo_extra1.cpp arquivo_extra2.cpp ...])
 function(peubud_add_test test_name)
@@ -202,10 +207,12 @@ target_link_libraries(test_resumo PRIVATE
     OpenSSL::SSL
     OpenSSL::Crypto
     ${LIBSODIUM_LIBRARIES}
-    ${LIBSECRET_LIBRARIES})
+    ${LIBSECRET_LIBRARIES}
+    ${SQLITE3_LIBRARIES})
 target_include_directories(test_resumo PRIVATE
     ${LIBSODIUM_INCLUDE_DIRS}
-    ${LIBSECRET_INCLUDE_DIRS})
+    ${LIBSECRET_INCLUDE_DIRS}
+    ${SQLITE3_INCLUDE_DIRS})
 
 # Teste do FechamentoMensalService (#144). Espelha a cadeia de test_resumo:
 # simulate() delega ao ResumoService, logo precisa da mesma arvore de servicos,
