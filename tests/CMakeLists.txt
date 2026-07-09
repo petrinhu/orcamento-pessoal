@@ -968,3 +968,96 @@ peubud_add_test(test_package_source_gate
 target_compile_definitions(test_package_source_gate PRIVATE
     PEUBUD_SOURCE_DIR="${CMAKE_SOURCE_DIR}"
     PEUBUD_BINARY_DIR="${CMAKE_BINARY_DIR}")
+
+# #199 (Onda U, QA-03): uifmt::parseCentavos("1.234") truncava p/ R$ 1,23
+# (ramo "so ponto" caia em toDouble literal). Fix: heuristica de milhar.
+peubud_add_test(test_ui_formatters
+    ${CMAKE_SOURCE_DIR}/src/ui/UiFormatters.cpp)
+
+# #199 (Onda U, QA-01): parser posicional B3 COTAHIST lia PREMED em vez de
+# PREULT em `fechamento` (dormente -- CotahistProvider.cpp/.h ficam FORA do
+# CMakeLists do app, Bolsa congelada, e alem do bug de campo tinham erros de
+# compilacao Qt6 nao relacionados -- QTextCodec/setCodec removidos, atributo
+# QNetworkRequest::FollowRedirectsAttribute removido, bug de captura de
+# lambda -- nunca portados, fora de escopo de QA-01). O parser foi extraido
+# p/ services/CotahistParser.h/.cpp (funcao livre, sem QObject/rede/DB,
+# mesmo padrao de BankPDFParsers) -- compila limpo e isolado.
+peubud_add_test(test_cotahist_parser
+    ${CMAKE_SOURCE_DIR}/src/services/CotahistParser.cpp)
+
+# #199 (Onda U, QA-04): ParcelaService::dataParaParcela/gerarDatas sem teste
+# (virada de ano, offset negativo de parcelaInicial, N grande).
+# (ja adicionado como slots extras em test_parcela_service, ver abaixo)
+
+# #199 (Onda U, QA-06): round-trip XLSX (export->import->centavos iguais)
+# nunca foi provado -- so OFX tinha (test_export::roundTripOfxPreservaCentavos).
+# Alvo separado porque precisa linkar QXlsx::QXlsx + QXLSX_LIBRARY (os alvos
+# test_export/test_import existentes NAO linkam QXlsx -> caem no stub #else
+# de toXlsx/fromXlsx e nunca exercitam o parser real).
+peubud_add_test(test_xlsx_roundtrip
+    ${CMAKE_SOURCE_DIR}/src/services/ExportService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/ImportService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/import/BankPDFParsers.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/import/IMatchFinder.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp)
+target_link_libraries(test_xlsx_roundtrip PRIVATE QXlsx::QXlsx)
+target_compile_definitions(test_xlsx_roundtrip PRIVATE QXLSX_LIBRARY)
+
+# #199 (Onda U, QA-07): 4 dos 6 repos de dinheiro apontados pela auditoria
+# sem prova INSERT->SELECT (Divida/Meta ja cobertos por
+# test_divida_repository/test_meta_repository, ainda que como regressao
+# FIN-01, nao CRUD generico). Cobre Orcamento/Price/Lembrete/Pagador.
+peubud_add_test(test_repos_sem_cobertura
+    ${CMAKE_SOURCE_DIR}/src/repositories/OrcamentoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/PriceRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/LembreteRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/PagadorRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/database/DatabaseManager.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/AuditLogService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/AjusteCorporativoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FechamentoMensalService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/ResumoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/EntradaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/CompraService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/GastoAvulsoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/LancamentoInvestimentoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/LancamentoEntradaRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/FonteRendaRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/CompraRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/ParcelaRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/CartaoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/ProventoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/SodiumCryptoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/AesCryptoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/KeyDerivation.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/settings/AppSettings.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp)
+target_link_libraries(test_repos_sem_cobertura PRIVATE
+    OpenSSL::SSL
+    OpenSSL::Crypto
+    ${LIBSODIUM_LIBRARIES}
+    ${LIBSECRET_LIBRARIES})
+target_include_directories(test_repos_sem_cobertura PRIVATE
+    ${LIBSODIUM_INCLUDE_DIRS}
+    ${LIBSECRET_INCLUDE_DIRS})
+
+# #199 (Onda U, QA-05): providers de mercado (BrapiProvider/OAuthDeviceFlow)
+# sem suite -- gate de processo (nao fechar #45/#58 sem teste de contrato).
+# fetchQuote/fetchOHLCV/onPollReply tinham a conversao JSON->struct inline
+# nas lambdas de QNetworkReply::finished (sem rede real, intestavel). Extraidos
+# em metodos static puros (BrapiProvider::parseQuoteJson/parseOhlcvJson,
+# OAuthDeviceFlow::classifyPollResponse) -- refactor comportamento-preservado,
+# testados aqui com fixture JSON (resposta real brapi.dev / RFC 8628 sec 3.5).
+peubud_add_test(test_market_providers_contract
+    ${CMAKE_SOURCE_DIR}/src/services/BrapiProvider.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/IMarketDataProvider.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/OAuthDeviceFlow.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/settings/AppSettings.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp)
+target_link_libraries(test_market_providers_contract PRIVATE ${LIBSECRET_LIBRARIES})
+target_include_directories(test_market_providers_contract PRIVATE ${LIBSECRET_INCLUDE_DIRS})

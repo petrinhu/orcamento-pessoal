@@ -406,6 +406,16 @@ qint64 ParcelaService::parsearValor(const QString &texto)
         s.replace(QLatin1Char(','), QLatin1Char('.'));
     } else if (s.contains(QLatin1Char(','))) {
         s.replace(QLatin1Char(','), QLatin1Char('.'));
+    } else if (s.contains(QLatin1Char('.'))) {
+        // #199 (QA-03): gêmeo de uifmt::parseCentavos. "1.234" (só ponto,
+        // sem vírgula) — dinheiro nunca tem 3 casas decimais, então grupos
+        // EXATOS de 3 dígitos após ponto(s) são separador de milhar, não
+        // decimal. Qualquer outro formato ("12.5", "1234.56") permanece
+        // decimal (comportamento anterior).
+        static const QRegularExpression rxMilhar(
+            QStringLiteral("^\\d{1,3}(\\.\\d{3})+$"));
+        if (rxMilhar.match(s).hasMatch())
+            s.remove(QLatin1Char('.'));
     }
     bool ok = false;
     double v = s.toDouble(&ok);

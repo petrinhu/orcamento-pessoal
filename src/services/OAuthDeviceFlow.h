@@ -4,9 +4,32 @@
 #include <QString>
 #include <QUrl>
 
+class QJsonObject;
 class QNetworkAccessManager;
 class QNetworkReply;
 class QTimer;
+
+// #199 (QA-05): classificacao pura (sem rede/timer) da resposta de polling
+// RFC 8628 sec 3.5 -- extraida de OAuthDeviceFlow::onPollReply para permitir
+// teste de contrato com fixture JSON (authorization_pending/slow_down/
+// expired_token/access_denied/sucesso), sem precisar de mock de rede.
+enum class OAuthPollOutcome {
+    Pending,        // authorization_pending -- continua polling
+    SlowDown,       // slow_down -- aumenta intervalo em 5s
+    Success,        // access_token presente
+    Terminal,       // expired_token | access_denied -- aborta
+    Unknown,        // resposta nao reconhecida -- aborta com o `error` cru
+    NotJsonObject,  // corpo nao era objeto JSON valido
+};
+
+struct OAuthPollResult {
+    OAuthPollOutcome outcome = OAuthPollOutcome::NotJsonObject;
+    QString accessToken;
+    QString tokenType;
+    QString refreshToken;
+    int     expiresIn = 0;
+    QString error;     // codigo RFC 8628 cru (vazio se nao aplicavel)
+};
 
 // OAuthDeviceFlow (#83) - implementacao do RFC 8628 (Device Authorization Grant).
 //
@@ -50,6 +73,10 @@ public:
 
     // Aborta fluxo em andamento (cancela polling).
     void cancel();
+
+    // #199 (QA-05): parser puro do corpo de resposta do polling (RFC 8628
+    // sec 3.5). static + public para teste de contrato com fixture JSON.
+    static OAuthPollResult classifyPollResponse(const QJsonObject &obj);
 
 signals:
     // Emitido apos step 1 OK: UI deve mostrar userCode e abrir verificationUri.

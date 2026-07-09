@@ -14,6 +14,7 @@ private slots:
     void jurosMensaisFromCetInverso();
     void formatarValorBRL();
     void parsearValorBRComDecimal();
+    void parsearValorSoPontoGrupoDeMilhar();
     void simboloMoedaConhecidas();
 
     // ── Amortizacao Price (#114) ─────────────────────────────────────────────
@@ -30,6 +31,11 @@ private slots:
     void resolverTaxaSemJurosRetornaZero();
     void resolverTaxaParcelaUnicaSemCrash();
     void resolverTaxaPmtZeroSemCrash();
+
+    // ── dataParaParcela/gerarDatas (#199, Onda U, QA-04) ─────────────────────
+    void dataParaParcelaViradaDeAno();
+    void dataParaParcelaOffsetNegativo();
+    void gerarDatasNGrandePrimeiraEUltima();
 };
 
 // Helper: monta Compra para amortizacao. jurosMensais armazenado como % x 10000.
@@ -81,6 +87,18 @@ void TestParcelaService::parsearValorBRComDecimal()
     // Sem prefixo
     QCOMPARE(ParcelaService::parsearValor(QStringLiteral("99,90")),
              qint64(9990));
+}
+
+// ESPEC RED->GREEN (#199/QA-03): gemeo de uifmt::parseCentavos. "1.234" (so
+// ponto, sem virgula) DEVE ser 123400 centavos (R$ 1.234,00), nao 123
+// centavos (R$ 1,23 -- bug original, toDouble("1.234")==1.234).
+void TestParcelaService::parsearValorSoPontoGrupoDeMilhar()
+{
+    QCOMPARE(ParcelaService::parsearValor(QStringLiteral("1.234")), qint64(123400));
+    QVERIFY2(ParcelaService::parsearValor(QStringLiteral("1.234")) != qint64(123),
+        "regressao: '1.234' voltou a truncar para R$ 1,23");
+    // Decimal com ponto (2 casas) continua decimal, sem regressao.
+    QCOMPARE(ParcelaService::parsearValor(QStringLiteral("1234.56")), qint64(123456));
 }
 
 void TestParcelaService::simboloMoedaConhecidas()
@@ -272,6 +290,54 @@ void TestParcelaService::resolverTaxaPmtZeroSemCrash()
     // recalcular nao resolve Taxa quando valorParcela<=0 (guard); permanece 0.
     const DadosFinanceiros out = ParcelaService::recalcular(d, SolveFor::Taxa);
     QCOMPARE(out.jurosMensaisPct, 0.0);
+}
+
+// ── dataParaParcela/gerarDatas (#199, Onda U, QA-04) ─────────────────────────
+//
+// dataParaParcela(c, numero): offset = numero - parcelaInicial; mes/ano
+// normalizados por while-loop (aceita offset negativo e mes fora de 1..12
+// antes de normalizar). Sem teste ate #199 -- casos derivados a mao
+// (conferidos via oraculo Python, mesmo algoritmo de normalizacao).
+
+void TestParcelaService::dataParaParcelaViradaDeAno()
+{
+    // parcelaInicial=1, mesInicio=nov/2025. Parcela numero 3 (offset=+2)
+    // cai em nov+2 = jan/2026 -- virada de ano.
+    Compra c = makeCompra(120000, 12, 0.0);
+    c.parcelaInicial = 1;
+    c.mesInicio       = 11;
+    c.anoInicio        = 2025;
+
+    const QDate d = ParcelaService::dataParaParcela(c, 3);
+    QCOMPARE(d, QDate(2026, 1, 1));
+}
+
+void TestParcelaService::dataParaParcelaOffsetNegativo()
+{
+    // Compra ja na 5a parcela (mar/2025) quando cadastrada retroativamente.
+    // Parcela numero 1 (a primeira, ja paga) tem offset = 1-5 = -4:
+    // mar/2025 - 4 meses = nov/2024.
+    Compra c = makeCompra(500000, 10, 0.0);
+    c.parcelaInicial = 5;
+    c.mesInicio       = 3;
+    c.anoInicio        = 2025;
+
+    const QDate d = ParcelaService::dataParaParcela(c, 1);
+    QCOMPARE(d, QDate(2024, 11, 1));
+}
+
+void TestParcelaService::gerarDatasNGrandePrimeiraEUltima()
+{
+    // N=420 (35 anos de parcelas) -- normalizacao nao pode estourar/travar.
+    Compra c = makeCompra(42000000, 420, 0.0);
+    c.parcelaInicial = 1;
+    c.mesInicio       = 1;
+    c.anoInicio        = 2025;
+
+    const QList<QDate> datas = ParcelaService::gerarDatas(c);
+    QCOMPARE(datas.size(), 420);
+    QCOMPARE(datas.first(), QDate(2025, 1, 1));
+    QCOMPARE(datas.last(),  QDate(2059, 12, 1));
 }
 
 QTEST_GUILESS_MAIN(TestParcelaService)

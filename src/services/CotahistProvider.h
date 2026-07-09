@@ -42,11 +42,15 @@ private slots:
     void onError(QNetworkReply::NetworkError code);
 
 private:
-    void downloadAndExtractZip(const QUrl &url, const QString &destPath);
-    void processCotahistFile(const QString &filePath, 
+    bool downloadAndExtractZip(const QUrl &url, const QString &destPath);
+    void processCotahistFile(const QString &filePath,
                             std::function<void(const QList<PrecoAtivo>&)> callback);
-    PrecoAtivo parseCotahistLine(const QString &line);
-    bool isValidRecord(const QString &line) const;
+    // #199 (QA-01): parser real movido para cotahist::parseLine/isValidRecord
+    // (services/CotahistParser.h) -- função livre, sem QObject/rede/DB,
+    // testável isoladamente. Estes métodos ficam como fininos delegates
+    // para não quebrar a API interna do provider.
+    static PrecoAtivo parseCotahistLine(const QString &line);
+    static bool isValidRecord(const QString &line);
 
     QNetworkAccessManager *m_networkManager;
     QString m_downloadPath;

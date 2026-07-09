@@ -1,6 +1,7 @@
 #include "UiFormatters.h"
 
 #include <QLatin1Char>
+#include <QRegularExpression>
 #include <QStringLiteral>
 
 #include <cmath>
@@ -17,6 +18,16 @@ qint64 parseCentavos(const QString &txt)
         s.replace(QLatin1Char(','), QLatin1Char('.'));
     } else if (s.contains(QLatin1Char(','))) {
         s.replace(QLatin1Char(','), QLatin1Char('.'));
+    } else if (s.contains(QLatin1Char('.'))) {
+        // #199 (QA-03): só ponto, sem vírgula. Dinheiro nunca tem 3 casas
+        // decimais -- se o padrão é EXATAMENTE grupos de 3 dígitos após
+        // ponto(s) ("1.234", "12.345.678"), é milhar, não decimal.
+        static const QRegularExpression rxMilhar(
+            QStringLiteral("^-?\\d{1,3}(\\.\\d{3})+$"));
+        if (rxMilhar.match(s).hasMatch())
+            s.remove(QLatin1Char('.'));
+        // Senão (ex. "12.5", "1234.56"): mantém como decimal (comportamento
+        // anterior, ponto já é o separador decimal esperado por toDouble).
     }
     bool ok = false;
     const double val = s.toDouble(&ok);

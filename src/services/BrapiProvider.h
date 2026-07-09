@@ -2,6 +2,9 @@
 
 #include "IMarketDataProvider.h"
 
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QNetworkAccessManager>
 #include <QString>
 
@@ -46,6 +49,13 @@ public:
     // Testa conectividade + autorizacao. Chama callback com (ok, mensagem).
     // Usa GET /api/quote/PETR4 (sandbox-friendly).
     void testarConexao(std::function<void(bool, const QString&)> callback);
+
+    // #199 (QA-05): parsers JSON puros (sem rede), extraidos das lambdas de
+    // fetchQuote/fetchOHLCV para permitir teste de contrato com fixture
+    // (resposta real da brapi.dev), sem precisar mockar QNetworkAccessManager.
+    // static + public: mesma logica de conversao usada em producao.
+    static CotacaoRT parseQuoteJson(const QJsonDocument &doc);
+    static QList<PrecoAtivo> parseOhlcvJson(const QJsonDocument &doc, const QString &ticker);
 
 private:
     QString token() const;

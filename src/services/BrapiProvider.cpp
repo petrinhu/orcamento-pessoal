@@ -35,6 +35,32 @@ static QNetworkRequest makeRequest(const QUrl &url, const QString &bearer)
     return req;
 }
 
+CotacaoRT BrapiProvider::parseQuoteJson(const QJsonDocument &doc)
+{
+    CotacaoRT rt;
+    rt.ticker = QString();
+    const auto results = doc.object().value(QStringLiteral("results")).toArray();
+    if (!results.isEmpty()) {
+        const auto r = results.first().toObject();
+        rt.ticker = r.value(QStringLiteral("symbol")).toString();
+        rt.preco       = static_cast<qint64>(std::round(
+            r.value(QStringLiteral("regularMarketPrice")).toDouble() * 100.0));
+        rt.variacaoPct = static_cast<qint32>(std::round(
+            r.value(QStringLiteral("regularMarketChangePercent")).toDouble() * 10000.0));
+        rt.abertura    = static_cast<qint64>(std::round(
+            r.value(QStringLiteral("regularMarketOpen")).toDouble() * 100.0));
+        rt.minima      = static_cast<qint64>(std::round(
+            r.value(QStringLiteral("regularMarketDayLow")).toDouble() * 100.0));
+        rt.maxima      = static_cast<qint64>(std::round(
+            r.value(QStringLiteral("regularMarketDayHigh")).toDouble() * 100.0));
+        rt.volume = static_cast<qint64>(
+            r.value(QStringLiteral("regularMarketVolume")).toDouble());
+        rt.timestamp = QDateTime::fromString(
+            r.value(QStringLiteral("regularMarketTime")).toString(), Qt::ISODate);
+    }
+    return rt;
+}
+
 void BrapiProvider::fetchQuote(const QString &ticker,
                                 std::function<void(const CotacaoRT&)> callback)
 {
@@ -44,30 +70,44 @@ void BrapiProvider::fetchQuote(const QString &ticker,
         CotacaoRT rt;
         rt.ticker = QString();
         if (reply->error() == QNetworkReply::NoError) {
-            const auto doc = QJsonDocument::fromJson(reply->readAll());
-            const auto results = doc.object().value(QStringLiteral("results")).toArray();
-            if (!results.isEmpty()) {
-                const auto r = results.first().toObject();
-                rt.ticker = r.value(QStringLiteral("symbol")).toString();
-                rt.preco       = static_cast<qint64>(std::round(
-                    r.value(QStringLiteral("regularMarketPrice")).toDouble() * 100.0));
-                rt.variacaoPct = static_cast<qint32>(std::round(
-                    r.value(QStringLiteral("regularMarketChangePercent")).toDouble() * 10000.0));
-                rt.abertura    = static_cast<qint64>(std::round(
-                    r.value(QStringLiteral("regularMarketOpen")).toDouble() * 100.0));
-                rt.minima      = static_cast<qint64>(std::round(
-                    r.value(QStringLiteral("regularMarketDayLow")).toDouble() * 100.0));
-                rt.maxima      = static_cast<qint64>(std::round(
-                    r.value(QStringLiteral("regularMarketDayHigh")).toDouble() * 100.0));
-                rt.volume = static_cast<qint64>(
-                    r.value(QStringLiteral("regularMarketVolume")).toDouble());
-                rt.timestamp = QDateTime::fromString(
-                    r.value(QStringLiteral("regularMarketTime")).toString(), Qt::ISODate);
-            }
+            rt = parseQuoteJson(QJsonDocument::fromJson(reply->readAll()));
         }
         reply->deleteLater();
         callback(rt);
     });
+}
+
+QList<PrecoAtivo> BrapiProvider::parseOhlcvJson(const QJsonDocument &doc, const QString &ticker)
+{
+    QList<PrecoAtivo> list;
+    const auto results = doc.object().value(QStringLiteral("results")).toArray();
+    if (!results.isEmpty()) {
+        const auto hist = results.first().toObject()
+                            .value(QStringLiteral("historicalDataPrice")).toArray();
+        for (const auto &v : hist) {
+            const auto o = v.toObject();
+            PrecoAtivo p;
+            p.ticker  = ticker.toUpper();
+            p.fonte   = QStringLiteral("brapi");
+            const qint64 ts = static_cast<qint64>(
+                o.value(QStringLiteral("date")).toDouble());
+            p.data    = QDate::fromString(
+                QDateTime::fromSecsSinceEpoch(ts).toString(QStringLiteral("yyyy-MM-dd")),
+                QStringLiteral("yyyy-MM-dd"));
+            p.abertura = static_cast<qint64>(std::round(
+                o.value(QStringLiteral("open")).toDouble() * 100.0));
+            p.maxima   = static_cast<qint64>(std::round(
+                o.value(QStringLiteral("high")).toDouble() * 100.0));
+            p.minima   = static_cast<qint64>(std::round(
+                o.value(QStringLiteral("low")).toDouble() * 100.0));
+            p.fechamento = static_cast<qint64>(std::round(
+                o.value(QStringLiteral("close")).toDouble() * 100.0));
+            p.volume = static_cast<qint64>(
+                o.value(QStringLiteral("volume")).toDouble());
+            list.append(p);
+        }
+    }
+    return list;
 }
 
 void BrapiProvider::fetchOHLCV(const QString &ticker,
@@ -89,34 +129,7 @@ void BrapiProvider::fetchOHLCV(const QString &ticker,
     connect(reply, &QNetworkReply::finished, this, [reply, ticker, callback]() {
         QList<PrecoAtivo> list;
         if (reply->error() == QNetworkReply::NoError) {
-            const auto doc = QJsonDocument::fromJson(reply->readAll());
-            const auto results = doc.object().value(QStringLiteral("results")).toArray();
-            if (!results.isEmpty()) {
-                const auto hist = results.first().toObject()
-                                    .value(QStringLiteral("historicalDataPrice")).toArray();
-                for (const auto &v : hist) {
-                    const auto o = v.toObject();
-                    PrecoAtivo p;
-                    p.ticker  = ticker.toUpper();
-                    p.fonte   = QStringLiteral("brapi");
-                    const qint64 ts = static_cast<qint64>(
-                        o.value(QStringLiteral("date")).toDouble());
-                    p.data    = QDate::fromString(
-                        QDateTime::fromSecsSinceEpoch(ts).toString(QStringLiteral("yyyy-MM-dd")),
-                        QStringLiteral("yyyy-MM-dd"));
-                    p.abertura = static_cast<qint64>(std::round(
-                        o.value(QStringLiteral("open")).toDouble() * 100.0));
-                    p.maxima   = static_cast<qint64>(std::round(
-                        o.value(QStringLiteral("high")).toDouble() * 100.0));
-                    p.minima   = static_cast<qint64>(std::round(
-                        o.value(QStringLiteral("low")).toDouble() * 100.0));
-                    p.fechamento = static_cast<qint64>(std::round(
-                        o.value(QStringLiteral("close")).toDouble() * 100.0));
-                    p.volume = static_cast<qint64>(
-                        o.value(QStringLiteral("volume")).toDouble());
-                    list.append(p);
-                }
-            }
+            list = parseOhlcvJson(QJsonDocument::fromJson(reply->readAll()), ticker);
         }
         reply->deleteLater();
         callback(list);

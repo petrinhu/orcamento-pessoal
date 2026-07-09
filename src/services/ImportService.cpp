@@ -362,8 +362,16 @@ ImportService::Result ImportService::fromXlsx(const QString &path)
         qint64 val = 0;
         if (vAmt.typeId() == QMetaType::Double || vAmt.typeId() == QMetaType::LongLong || vAmt.typeId() == QMetaType::Int)
             val = static_cast<qint64>(std::round(std::abs(vAmt.toDouble()) * 100.0));
-        else
-            val = parseAmount(vAmt.toString(), QLatin1Char('.'));
+        else {
+            // #199 (QA-06): decimalSep NAO pode ser fixo em '.' — celulas de
+            // planilha em pt-BR (ex.: ExportService::fmtBrl -> "1234,56") usam
+            // virgula decimal. Com '.' fixo, parseAmount tratava a virgula
+            // como separador de milhar e removia -> "123456" interpretado
+            // como 123456,00, inflando o valor em 100x no round-trip.
+            // detectDecimal (mesma heuristica do fromCsv) decide por celula.
+            const QString raw = vAmt.toString();
+            val = parseAmount(raw, detectDecimal(raw));
+        }
         if (val <= 0) continue;
 
         Compra c;

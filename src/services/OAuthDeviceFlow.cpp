@@ -116,6 +116,36 @@ void OAuthDeviceFlow::onPollTick()
     connect(reply, &QNetworkReply::finished, this, &OAuthDeviceFlow::onPollReply);
 }
 
+OAuthPollResult OAuthDeviceFlow::classifyPollResponse(const QJsonObject &obj)
+{
+    OAuthPollResult res;
+
+    const QString accessToken = obj.value(QStringLiteral("access_token")).toString();
+    if (!accessToken.isEmpty()) {
+        res.outcome      = OAuthPollOutcome::Success;
+        res.accessToken  = accessToken;
+        res.tokenType    = obj.value(QStringLiteral("token_type")).toString(QStringLiteral("Bearer"));
+        res.refreshToken = obj.value(QStringLiteral("refresh_token")).toString();
+        res.expiresIn    = obj.value(QStringLiteral("expires_in")).toInt(0);
+        return res;
+    }
+
+    // RFC 8628 sec 3.5 — codigos de erro do polling.
+    const QString err = obj.value(QStringLiteral("error")).toString();
+    res.error = err;
+    if (err == QStringLiteral("authorization_pending")) {
+        res.outcome = OAuthPollOutcome::Pending;
+    } else if (err == QStringLiteral("slow_down")) {
+        res.outcome = OAuthPollOutcome::SlowDown;
+    } else if (err == QStringLiteral("expired_token")
+               || err == QStringLiteral("access_denied")) {
+        res.outcome = OAuthPollOutcome::Terminal;
+    } else {
+        res.outcome = OAuthPollOutcome::Unknown;
+    }
+    return res;
+}
+
 void OAuthDeviceFlow::onPollReply()
 {
     auto *reply = qobject_cast<QNetworkReply *>(sender());
@@ -131,38 +161,28 @@ void OAuthDeviceFlow::onPollReply()
 
     const QJsonDocument doc = QJsonDocument::fromJson(reply->readAll());
     if (!doc.isObject()) return;
-    const QJsonObject obj = doc.object();
 
-    // Sucesso?
-    const QString accessToken = obj.value(QStringLiteral("access_token")).toString();
-    if (!accessToken.isEmpty()) {
+    const OAuthPollResult res = classifyPollResponse(doc.object());
+    switch (res.outcome) {
+    case OAuthPollOutcome::Success:
         cancel();
-        emit accessTokenReceived(
-            accessToken,
-            obj.value(QStringLiteral("token_type")).toString(QStringLiteral("Bearer")),
-            obj.value(QStringLiteral("refresh_token")).toString(),
-            obj.value(QStringLiteral("expires_in")).toInt(0));
+        emit accessTokenReceived(res.accessToken, res.tokenType, res.refreshToken, res.expiresIn);
         return;
-    }
-
-    // Erro? RFC 8628 codes:
-    const QString err = obj.value(QStringLiteral("error")).toString();
-    if (err == QStringLiteral("authorization_pending")) {
+    case OAuthPollOutcome::Pending:
         return; // continuar polling no proximo tick
-    }
-    if (err == QStringLiteral("slow_down")) {
+    case OAuthPollOutcome::SlowDown:
         // Aumenta intervalo em 5s (per RFC 8628 sec 3.5)
         m_intervalMs += 5000;
         m_pollTimer->setInterval(m_intervalMs);
         return;
-    }
-    if (err == QStringLiteral("expired_token")
-        || err == QStringLiteral("access_denied")) {
+    case OAuthPollOutcome::Terminal:
         cancel();
-        emit flowError(err);
+        emit flowError(res.error);
+        return;
+    case OAuthPollOutcome::Unknown:
+    case OAuthPollOutcome::NotJsonObject:
+        cancel();
+        emit flowError(res.error.isEmpty() ? tr("Resposta inesperada do servidor") : res.error);
         return;
     }
-    // Erro desconhecido: cancela
-    cancel();
-    emit flowError(err.isEmpty() ? tr("Resposta inesperada do servidor") : err);
 }

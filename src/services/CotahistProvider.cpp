@@ -1,11 +1,12 @@
 #include "services/CotahistProvider.h"
+#include "services/CotahistParser.h"
 #include "repositories/PriceRepository.h"
 #include <QDir>
 #include <QStandardPaths>
 #include <QDebug>
 #include <QFileInfo>
 #include <QProcess>
-#include <QTextCodec>
+#include <QStringConverter>
 
 CotahistProvider::CotahistProvider(QObject *parent)
     : IMarketDataProvider(parent)
@@ -236,8 +237,11 @@ void CotahistProvider::processCotahistFile(const QString &filePath,
     }
 
     QTextStream in(&file);
-    // COTAHIST usa codificação Windows-1252 (ISO-8859-1)
-    in.setCodec(QTextCodec::codecForName("Windows-1252"));
+    // COTAHIST usa codificação Windows-1252 (ISO-8859-1). Qt6 removeu
+    // QTextCodec (Qt5) -- QStringConverter::Latin1 é a aproximação mais
+    // próxima disponível sem depender de Qt6Core5Compat (não linkado neste
+    // projeto); ticker/nome de ativo são ASCII na prática, sem perda real.
+    in.setEncoding(QStringConverter::Latin1);
 
     QList<PrecoAtivo> lote;
     int linhaNum = 0;
@@ -272,77 +276,17 @@ void CotahistProvider::processCotahistFile(const QString &filePath,
              << "→" << lote.size() << "registros válidos";
 }
 
+// #199 (QA-01): logica real movida para cotahist::parseLine (function livre,
+// sem QObject/rede/DB -- ver services/CotahistParser.h/.cpp). Inclui o fix
+// do campo `fechamento` (lia PREMED mid(95,13); correto e PREULT mid(108,13)).
 PrecoAtivo CotahistProvider::parseCotahistLine(const QString &line)
 {
-    PrecoAtivo p;
-    if (line.length() < 200) return p;
-
-    // Tipo (1-indexed: 1-2)
-    QString tipo = line.mid(0, 2);
-    if (tipo != "01") return p;
-
-    // Data do pregão (positions 3-10, 0-indexed mid(2,8))
-    QString dataStr = line.mid(2, 8);
-    QDate data = QDate::fromString(dataStr, "yyyyMMdd");
-    if (!data.isValid()) return p;
-
-    // Ticker (positions 13-24, 0-indexed mid(12,12))
-    QString ticker = line.mid(12, 12).trimmed();
-    if (ticker.isEmpty()) return p;
-
-    // Helper para converter string monetária (ex: "  12345,67") para centavos
-    auto monetToCents = [](const QString &s) -> qint64 {
-        if (s.isEmpty()) return 0;
-        QString limpo = s.trimmed();
-        if (limpo.length() < 3) return 0;
-        // Separar parte inteira e decimal (2 dígitos)
-        QString parteInt = limpo.left(limpo.length() - 2);
-        QString parteDec = limpo.mid(limpo.length() - 2);
-        bool ok1, ok2;
-        int i = parteInt.toInt(&ok1);
-        int d = parteDec.toInt(&ok2);
-        if (!ok1 || !ok2) return 0;
-        return static_cast<qint64>(i) * 100 + d;
-    };
-
-    // Helper para volume (inteiro longo)
-    auto strToLongLong = [](const QString &s) -> qint64 {
-        if (s.isEmpty()) return 0;
-        QString limpo = s.trimmed();
-        bool ok;
-        qint64 v = limpo.toLongLong(&ok);
-        return ok ? v : 0;
-    };
-
-    // Preços: abertura (57-69), máxima (70-82), mínima (83-95), último (96-108)
-    // 0-indexed: abertura mid(56,13), maxima mid(69,13), minimas mid(82,13), ultimo mid(95,13)
-    QString aberturaStr = line.mid(56, 13);
-    QString maximaStr   = line.mid(69, 13);
-    QString minimaStr   = line.mid(82, 13);
-    QString ultimoStr   = line.mid(95, 13);
-    // Volume: positions 171-188, 0-indexed mid(170, 18)
-    QString volumeStr   = line.mid(170, 18);
-
-    p.ticker = ticker;
-    p.data = data;
-    p.abertura = monetToCents(aberturaStr);
-    p.maxima = monetToCents(maximaStr);
-    p.minima = monetToCents(minimaStr);
-    p.fechamento = monetToCents(ultimoStr);
-    p.volume = strToLongLong(volumeStr);
-    p.fonte = "COTAHIST_B3";
-    p.atualizado = QDateTime::currentDateTime();
-
-    return p;
+    return cotahist::parseLine(line);
 }
 
-bool CotahistProvider::isValidRecord(const QString &line) const
+bool CotahistProvider::isValidRecord(const QString &line)
 {
-    if (line.length() < 200) {
-        return false;
-    }
-    QString tipo = line.mid(0, 2);
-    return (tipo == "01"); // apenas registros de preço
+    return cotahist::isValidRecord(line);
 }
 
 // ====================================================================

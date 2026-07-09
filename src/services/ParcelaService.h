@@ -60,6 +60,11 @@ public:
     // Handles month rollover / year wrap correctly.
     static QDate dataParaParcela(const Compra &c, int numero);
 
+    // Generate N monthly dates starting from (mes, ano) for parcelaInicial.
+    // #199 (QA-04): tornado publico p/ teste direto (era private, so testado
+    // indiretamente via recalcularAposEdicao/tabelaAmortizacao).
+    static QList<QDate> gerarDatas(const Compra &c);
+
     // ── Re-calculation after manual cell edit ────────────────────────────────
 
     enum class RecalcMode {
@@ -100,7 +105,9 @@ public:
     // Format centavos as "R$ 1.234,56" (or other currency symbol)
     static QString formatarValor(qint64 centavos, const QString &moeda = QStringLiteral("BRL"));
 
-    // Parse "1.234,56" → centavos
+    // Parse "1.234,56" → centavos. #199 (QA-03): "só ponto" ("1.234") é
+    // tratado como milhar quando casa com grupos de 3 dígitos (dinheiro
+    // nunca tem 3 casas decimais) — ver uifmt::parseCentavos (gêmeo).
     static qint64 parsearValor(const QString &texto);
 
     // Currency symbol for ISO code
@@ -109,7 +116,4 @@ public:
 private:
     // Newton-Raphson solver: finds monthly rate i for VP = PMT * [1-(1+i)^-n]/i
     static double resolverTaxa(qint64 vp, qint64 pmt, int n);
-
-    // Generate N monthly dates starting from (mes, ano) for parcelaInicial
-    static QList<QDate> gerarDatas(const Compra &c);
 };
