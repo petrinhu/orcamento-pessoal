@@ -1,4 +1,5 @@
 #include "TransacaoRecorrenteRepository.h"
+#include "RepositoryUtils.h"
 #include "core/database/DatabaseManager.h"
 
 #include <QSqlQuery>
@@ -46,20 +47,20 @@ bool TransacaoRecorrenteRepository::insert(TransacaoRecorrente &t)
         " frequencia, data_inicio, data_fim, ativo, ultimo_lancamento, criado_em) "
         "VALUES (:descricao, :tipo, :valor, :fonte_id, :fonte, :categoria, :tipo_pgto, :obs, "
         "        :frequencia, :data_inicio, :data_fim, :ativo, :ultimo_lancamento, :criado_em)"));
-    q.bindValue(QStringLiteral(":descricao"),         t.descricao);
-    q.bindValue(QStringLiteral(":tipo"),              t.tipo);
+    q.bindValue(QStringLiteral(":descricao"),         naoNulo(t.descricao));
+    q.bindValue(QStringLiteral(":tipo"),              naoNulo(t.tipo));
     q.bindValue(QStringLiteral(":valor"),             t.valor);
     q.bindValue(QStringLiteral(":fonte_id"),          t.fonteId > 0 ? QVariant(t.fonteId) : QVariant());
-    q.bindValue(QStringLiteral(":fonte"),             t.fonte);
-    q.bindValue(QStringLiteral(":categoria"),         t.categoria);
-    q.bindValue(QStringLiteral(":tipo_pgto"),         t.tipoPgto);
-    q.bindValue(QStringLiteral(":obs"),               t.obs);
-    q.bindValue(QStringLiteral(":frequencia"),        t.frequencia);
-    q.bindValue(QStringLiteral(":data_inicio"),       t.dataInicio.toString(Qt::ISODate));
+    q.bindValue(QStringLiteral(":fonte"),             naoNulo(t.fonte));
+    q.bindValue(QStringLiteral(":categoria"),         naoNulo(t.categoria));
+    q.bindValue(QStringLiteral(":tipo_pgto"),         naoNulo(t.tipoPgto));
+    q.bindValue(QStringLiteral(":obs"),               naoNulo(t.obs));
+    q.bindValue(QStringLiteral(":frequencia"),        naoNulo(t.frequencia));
+    q.bindValue(QStringLiteral(":data_inicio"),       naoNulo(t.dataInicio.toString(Qt::ISODate)));
     q.bindValue(QStringLiteral(":data_fim"),          t.dataFim.isValid() ? QVariant(t.dataFim.toString(Qt::ISODate)) : QVariant());
     q.bindValue(QStringLiteral(":ativo"),             t.ativo ? 1 : 0);
     q.bindValue(QStringLiteral(":ultimo_lancamento"), t.ultimoLancamento.isValid() ? QVariant(t.ultimoLancamento.toString(Qt::ISODate)) : QVariant());
-    q.bindValue(QStringLiteral(":criado_em"),         t.criadoEm);
+    q.bindValue(QStringLiteral(":criado_em"),         naoNulo(t.criadoEm));
     if (!q.exec()) {
         qWarning() << "TransacaoRecorrenteRepository::insert:" << q.lastError().text();
         return false;
@@ -77,16 +78,16 @@ bool TransacaoRecorrenteRepository::update(const TransacaoRecorrente &t)
         "categoria=:categoria, tipo_pgto=:tipo_pgto, obs=:obs, frequencia=:frequencia, "
         "data_inicio=:data_inicio, data_fim=:data_fim, ativo=:ativo, ultimo_lancamento=:ultimo_lancamento "
         "WHERE id=:id"));
-    q.bindValue(QStringLiteral(":descricao"),         t.descricao);
-    q.bindValue(QStringLiteral(":tipo"),              t.tipo);
+    q.bindValue(QStringLiteral(":descricao"),         naoNulo(t.descricao));
+    q.bindValue(QStringLiteral(":tipo"),              naoNulo(t.tipo));
     q.bindValue(QStringLiteral(":valor"),             t.valor);
     q.bindValue(QStringLiteral(":fonte_id"),          t.fonteId > 0 ? QVariant(t.fonteId) : QVariant());
-    q.bindValue(QStringLiteral(":fonte"),             t.fonte);
-    q.bindValue(QStringLiteral(":categoria"),         t.categoria);
-    q.bindValue(QStringLiteral(":tipo_pgto"),         t.tipoPgto);
-    q.bindValue(QStringLiteral(":obs"),               t.obs);
-    q.bindValue(QStringLiteral(":frequencia"),        t.frequencia);
-    q.bindValue(QStringLiteral(":data_inicio"),       t.dataInicio.toString(Qt::ISODate));
+    q.bindValue(QStringLiteral(":fonte"),             naoNulo(t.fonte));
+    q.bindValue(QStringLiteral(":categoria"),         naoNulo(t.categoria));
+    q.bindValue(QStringLiteral(":tipo_pgto"),         naoNulo(t.tipoPgto));
+    q.bindValue(QStringLiteral(":obs"),               naoNulo(t.obs));
+    q.bindValue(QStringLiteral(":frequencia"),        naoNulo(t.frequencia));
+    q.bindValue(QStringLiteral(":data_inicio"),       naoNulo(t.dataInicio.toString(Qt::ISODate)));
     q.bindValue(QStringLiteral(":data_fim"),          t.dataFim.isValid() ? QVariant(t.dataFim.toString(Qt::ISODate)) : QVariant());
     q.bindValue(QStringLiteral(":ativo"),             t.ativo ? 1 : 0);
     q.bindValue(QStringLiteral(":ultimo_lancamento"), t.ultimoLancamento.isValid() ? QVariant(t.ultimoLancamento.toString(Qt::ISODate)) : QVariant());

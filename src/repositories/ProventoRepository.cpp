@@ -1,4 +1,5 @@
 #include "ProventoRepository.h"
+#include "RepositoryUtils.h"
 #include "core/database/DatabaseManager.h"
 
 #include <QDateTime>
@@ -58,14 +59,14 @@ bool ProventoRepository::insert(Provento &p)
             (:ticker, :tipo, :data, :bruto, :liquido,
              :poracao, :qty, :obs, :criado)
     )"));
-    q.bindValue(QStringLiteral(":ticker"),  p.ticker.toUpper());
-    q.bindValue(QStringLiteral(":tipo"),    p.tipo);
-    q.bindValue(QStringLiteral(":data"),    p.dataEvento.toString(Qt::ISODate));
+    q.bindValue(QStringLiteral(":ticker"),  naoNulo(p.ticker.toUpper()));
+    q.bindValue(QStringLiteral(":tipo"),    naoNulo(p.tipo));
+    q.bindValue(QStringLiteral(":data"),    naoNulo(p.dataEvento.toString(Qt::ISODate)));
     q.bindValue(QStringLiteral(":bruto"),   p.valorBrutoCent);
     q.bindValue(QStringLiteral(":liquido"), p.valorLiquidoCent);
     q.bindValue(QStringLiteral(":poracao"), p.porAcao);
     q.bindValue(QStringLiteral(":qty"),     p.quantidade);
-    q.bindValue(QStringLiteral(":obs"),     p.observacao);
+    q.bindValue(QStringLiteral(":obs"),     naoNulo(p.observacao));
     q.bindValue(QStringLiteral(":criado"),
                 QDateTime::currentDateTime().toString(Qt::ISODate));
     if (!q.exec()) {
@@ -86,14 +87,14 @@ bool ProventoRepository::update(const Provento &p)
             por_acao = :poracao, quantidade = :qty, observacao = :obs
         WHERE id = :id
     )"));
-    q.bindValue(QStringLiteral(":ticker"),  p.ticker.toUpper());
-    q.bindValue(QStringLiteral(":tipo"),    p.tipo);
-    q.bindValue(QStringLiteral(":data"),    p.dataEvento.toString(Qt::ISODate));
+    q.bindValue(QStringLiteral(":ticker"),  naoNulo(p.ticker.toUpper()));
+    q.bindValue(QStringLiteral(":tipo"),    naoNulo(p.tipo));
+    q.bindValue(QStringLiteral(":data"),    naoNulo(p.dataEvento.toString(Qt::ISODate)));
     q.bindValue(QStringLiteral(":bruto"),   p.valorBrutoCent);
     q.bindValue(QStringLiteral(":liquido"), p.valorLiquidoCent);
     q.bindValue(QStringLiteral(":poracao"), p.porAcao);
     q.bindValue(QStringLiteral(":qty"),     p.quantidade);
-    q.bindValue(QStringLiteral(":obs"),     p.observacao);
+    q.bindValue(QStringLiteral(":obs"),     naoNulo(p.observacao));
     q.bindValue(QStringLiteral(":id"),      p.id);
     return q.exec();
 }

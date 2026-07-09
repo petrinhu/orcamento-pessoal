@@ -1,4 +1,5 @@
 #include "MetaRepository.h"
+#include "RepositoryUtils.h"
 #include "core/database/DatabaseManager.h"
 
 #include <QSqlQuery>
@@ -38,14 +39,14 @@ bool MetaRepository::insert(Meta &m)
             (:nome, :categoria, :valor_meta, :valor_atual,
              :data_inicio, :data_prazo, :status, :obs, :criado_em)
     )"));
-    q.bindValue(QStringLiteral(":nome"),        m.nome);
-    q.bindValue(QStringLiteral(":categoria"),   m.categoria);
+    q.bindValue(QStringLiteral(":nome"),        naoNulo(m.nome));
+    q.bindValue(QStringLiteral(":categoria"),   naoNulo(m.categoria));
     q.bindValue(QStringLiteral(":valor_meta"),  m.valorMeta);
     q.bindValue(QStringLiteral(":valor_atual"), m.valorAtual);
-    q.bindValue(QStringLiteral(":data_inicio"), m.dataInicio);
-    q.bindValue(QStringLiteral(":data_prazo"),  m.dataPrazo);
-    q.bindValue(QStringLiteral(":status"),      m.status);
-    q.bindValue(QStringLiteral(":obs"),         m.obs);
+    q.bindValue(QStringLiteral(":data_inicio"), naoNulo(m.dataInicio));
+    q.bindValue(QStringLiteral(":data_prazo"),  naoNulo(m.dataPrazo));
+    q.bindValue(QStringLiteral(":status"),      naoNulo(m.status));
+    q.bindValue(QStringLiteral(":obs"),         naoNulo(m.obs));
     q.bindValue(QStringLiteral(":criado_em"),
                 QDateTime::currentDateTime().toString(Qt::ISODate));
     if (!q.exec()) {
@@ -71,14 +72,14 @@ bool MetaRepository::update(const Meta &m)
             obs         = :obs
         WHERE id = :id
     )"));
-    q.bindValue(QStringLiteral(":nome"),        m.nome);
-    q.bindValue(QStringLiteral(":categoria"),   m.categoria);
+    q.bindValue(QStringLiteral(":nome"),        naoNulo(m.nome));
+    q.bindValue(QStringLiteral(":categoria"),   naoNulo(m.categoria));
     q.bindValue(QStringLiteral(":valor_meta"),  m.valorMeta);
     q.bindValue(QStringLiteral(":valor_atual"), m.valorAtual);
-    q.bindValue(QStringLiteral(":data_inicio"), m.dataInicio);
-    q.bindValue(QStringLiteral(":data_prazo"),  m.dataPrazo);
-    q.bindValue(QStringLiteral(":status"),      m.status);
-    q.bindValue(QStringLiteral(":obs"),         m.obs);
+    q.bindValue(QStringLiteral(":data_inicio"), naoNulo(m.dataInicio));
+    q.bindValue(QStringLiteral(":data_prazo"),  naoNulo(m.dataPrazo));
+    q.bindValue(QStringLiteral(":status"),      naoNulo(m.status));
+    q.bindValue(QStringLiteral(":obs"),         naoNulo(m.obs));
     q.bindValue(QStringLiteral(":id"),          m.id);
     if (!q.exec()) {
         qWarning() << "MetaRepository::update:" << q.lastError().text();

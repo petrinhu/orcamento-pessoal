@@ -1,4 +1,5 @@
 #include "FonteRendaRepository.h"
+#include "RepositoryUtils.h"
 #include "core/database/DatabaseManager.h"
 
 #include <QSqlQuery>
@@ -14,7 +15,7 @@ bool FonteRendaRepository::insert(FonteRenda &f)
 {
     QSqlQuery q(db());
     q.prepare(QStringLiteral("INSERT INTO fontes_renda (nome) VALUES (:nome)"));
-    q.bindValue(QStringLiteral(":nome"), f.nome);
+    q.bindValue(QStringLiteral(":nome"), naoNulo(f.nome));
     if (!q.exec()) {
         qWarning() << "FonteRendaRepository::insert:" << q.lastError().text();
         return false;
@@ -27,7 +28,7 @@ bool FonteRendaRepository::update(const FonteRenda &f)
 {
     QSqlQuery q(db());
     q.prepare(QStringLiteral("UPDATE fontes_renda SET nome = :nome WHERE id = :id"));
-    q.bindValue(QStringLiteral(":nome"), f.nome);
+    q.bindValue(QStringLiteral(":nome"), naoNulo(f.nome));
     q.bindValue(QStringLiteral(":id"),   f.id);
     if (!q.exec()) {
         qWarning() << "FonteRendaRepository::update:" << q.lastError().text();

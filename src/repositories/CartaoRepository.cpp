@@ -1,4 +1,5 @@
 #include "CartaoRepository.h"
+#include "RepositoryUtils.h"
 #include "core/database/DatabaseManager.h"
 
 #include <QSqlQuery>
@@ -14,7 +15,7 @@ bool CartaoRepository::insert(Cartao &c)
 {
     QSqlQuery q(db());
     q.prepare(QStringLiteral("INSERT INTO cartoes (apelido) VALUES (:ap)"));
-    q.bindValue(QStringLiteral(":ap"), c.apelido);
+    q.bindValue(QStringLiteral(":ap"), naoNulo(c.apelido));
     if (!q.exec()) {
         qWarning() << "CartaoRepository::insert:" << q.lastError().text();
         return false;
@@ -27,7 +28,7 @@ bool CartaoRepository::update(const Cartao &c)
 {
     QSqlQuery q(db());
     q.prepare(QStringLiteral("UPDATE cartoes SET apelido = :ap WHERE id = :id"));
-    q.bindValue(QStringLiteral(":ap"), c.apelido);
+    q.bindValue(QStringLiteral(":ap"), naoNulo(c.apelido));
     q.bindValue(QStringLiteral(":id"), c.id);
     if (!q.exec()) {
         qWarning() << "CartaoRepository::update:" << q.lastError().text();

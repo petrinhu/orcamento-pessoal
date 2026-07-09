@@ -668,6 +668,117 @@ target_include_directories(test_glossary_coverage PRIVATE ${LIBSECRET_INCLUDE_DI
 set_tests_properties(test_glossary_coverage PROPERTIES
     ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 
+# FIN-01/#146 (Onda U-1): regressao de perda de dado silenciosa em Meta "sem
+# prazo" -- MetaRepository::insert()/update() com dataPrazo/obs QString() null
+# (estado padrao do MetaDialog). Cadeia identica a test_categoria: precisa do
+# DatabaseManager real (createSchema + triggers de auditoria) e da cascata que
+# ele arrasta (AjusteCorporativoService/AuditLogService/FechamentoMensalService
+# -> ResumoService -> repos + crypto).
+peubud_add_test(test_meta_repository
+    ${CMAKE_SOURCE_DIR}/src/repositories/MetaRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/database/DatabaseManager.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/AuditLogService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/AjusteCorporativoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FechamentoMensalService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/ResumoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/EntradaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/CompraService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/GastoAvulsoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/LancamentoInvestimentoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/LancamentoEntradaRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/FonteRendaRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/CompraRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/ParcelaRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/CartaoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/ProventoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/SodiumCryptoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/AesCryptoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/KeyDerivation.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/settings/AppSettings.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp)
+target_link_libraries(test_meta_repository PRIVATE
+    OpenSSL::SSL
+    OpenSSL::Crypto
+    ${LIBSODIUM_LIBRARIES}
+    ${LIBSECRET_LIBRARIES})
+target_include_directories(test_meta_repository PRIVATE
+    ${LIBSODIUM_INCLUDE_DIRS}
+    ${LIBSECRET_INCLUDE_DIRS})
+
+# FIN-01/#146 (Onda U-1): mesma regressao, para Divida "sem vencimento"
+# (DividaDialog). Mesma cadeia de dependencias de test_meta_repository.
+peubud_add_test(test_divida_repository
+    ${CMAKE_SOURCE_DIR}/src/repositories/DividaRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/database/DatabaseManager.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/AuditLogService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/AjusteCorporativoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FechamentoMensalService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/ResumoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/EntradaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/CompraService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/GastoAvulsoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/LancamentoInvestimentoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/LancamentoEntradaRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/FonteRendaRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/CompraRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/ParcelaRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/CartaoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/ProventoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/SodiumCryptoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/AesCryptoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/KeyDerivation.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/settings/AppSettings.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp)
+target_link_libraries(test_divida_repository PRIVATE
+    OpenSSL::SSL
+    OpenSSL::Crypto
+    ${LIBSODIUM_LIBRARIES}
+    ${LIBSECRET_LIBRARIES})
+target_include_directories(test_divida_repository PRIVATE
+    ${LIBSODIUM_INCLUDE_DIRS}
+    ${LIBSECRET_INCLUDE_DIRS})
+
+# FIN-01/#146 (Onda U-1): varredura dominio -- 2 casos CONFIRMADOS adicionais
+# de QString null em coluna TEXT NOT NULL (TransacaoRecorrenteRepository via
+# RecorrenciaDialog::resultado().clear(), LancamentoInvestimentoRepository via
+# InvestimentoDialog::lancamentos().clear()). Mesma cadeia de dependencias.
+peubud_add_test(test_repository_naonulo_domino
+    ${CMAKE_SOURCE_DIR}/src/repositories/TransacaoRecorrenteRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/database/DatabaseManager.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/AuditLogService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/AjusteCorporativoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FechamentoMensalService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/ResumoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/EntradaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/CompraService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/GastoAvulsoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/LancamentoInvestimentoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/LancamentoEntradaRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/FonteRendaRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/CompraRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/ParcelaRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/CartaoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/ProventoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/SodiumCryptoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/AesCryptoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/KeyDerivation.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/settings/AppSettings.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp)
+target_link_libraries(test_repository_naonulo_domino PRIVATE
+    OpenSSL::SSL
+    OpenSSL::Crypto
+    ${LIBSODIUM_LIBRARIES}
+    ${LIBSECRET_LIBRARIES})
+target_include_directories(test_repository_naonulo_domino PRIVATE
+    ${LIBSODIUM_INCLUDE_DIRS}
+    ${LIBSECRET_INCLUDE_DIRS})
+
 # Skin compartilhado das tabelas (#167 T1, §11 manual de estilo).
 # Verifica: QSS sem zebra poluída (alternate-background-color = fundo, não
 # @@ALT@@) e sem grade vertical (gridline transparente) em QTableWidget;

@@ -1,4 +1,5 @@
 #include "OrcamentoRepository.h"
+#include "RepositoryUtils.h"
 #include "core/database/DatabaseManager.h"
 
 #include <QSqlQuery>
@@ -32,10 +33,10 @@ bool OrcamentoRepository::insert(ItemOrcamento &item)
         VALUES
             (:nome, :tipo, :valor_mensal, :categoria_ref, :criado_em)
     )"));
-    q.bindValue(QStringLiteral(":nome"),          item.nome);
-    q.bindValue(QStringLiteral(":tipo"),          item.tipo);
+    q.bindValue(QStringLiteral(":nome"),          naoNulo(item.nome));
+    q.bindValue(QStringLiteral(":tipo"),          naoNulo(item.tipo));
     q.bindValue(QStringLiteral(":valor_mensal"),  item.valorMensal);
-    q.bindValue(QStringLiteral(":categoria_ref"), item.categoriaRef);
+    q.bindValue(QStringLiteral(":categoria_ref"), naoNulo(item.categoriaRef));
     q.bindValue(QStringLiteral(":criado_em"),
                 QDateTime::currentDateTime().toString(Qt::ISODate));
     if (!q.exec()) {
@@ -57,10 +58,10 @@ bool OrcamentoRepository::update(const ItemOrcamento &item)
             categoria_ref = :categoria_ref
         WHERE id = :id
     )"));
-    q.bindValue(QStringLiteral(":nome"),          item.nome);
-    q.bindValue(QStringLiteral(":tipo"),          item.tipo);
+    q.bindValue(QStringLiteral(":nome"),          naoNulo(item.nome));
+    q.bindValue(QStringLiteral(":tipo"),          naoNulo(item.tipo));
     q.bindValue(QStringLiteral(":valor_mensal"),  item.valorMensal);
-    q.bindValue(QStringLiteral(":categoria_ref"), item.categoriaRef);
+    q.bindValue(QStringLiteral(":categoria_ref"), naoNulo(item.categoriaRef));
     q.bindValue(QStringLiteral(":id"),            item.id);
     if (!q.exec()) {
         qWarning() << "OrcamentoRepository::update:" << q.lastError().text();

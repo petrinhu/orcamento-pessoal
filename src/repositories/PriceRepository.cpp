@@ -1,4 +1,5 @@
 #include "PriceRepository.h"
+#include "RepositoryUtils.h"
 #include "core/database/DatabaseManager.h"
 
 #include <QSqlQuery>
@@ -59,15 +60,15 @@ bool PriceRepository::upsert(const PrecoAtivo &p)
         VALUES
             (:ticker, :data, :abertura, :maxima, :minima, :fechamento, :volume, :fonte, :atualizado)
     )"));
-    q.bindValue(QStringLiteral(":ticker"),     p.ticker);
-    q.bindValue(QStringLiteral(":data"),       p.data.toString(Qt::ISODate));
+    q.bindValue(QStringLiteral(":ticker"),     naoNulo(p.ticker));
+    q.bindValue(QStringLiteral(":data"),       naoNulo(p.data.toString(Qt::ISODate)));
     q.bindValue(QStringLiteral(":abertura"),   p.abertura);
     q.bindValue(QStringLiteral(":maxima"),     p.maxima);
     q.bindValue(QStringLiteral(":minima"),     p.minima);
     q.bindValue(QStringLiteral(":fechamento"), p.fechamento);
     q.bindValue(QStringLiteral(":volume"),     p.volume);
-    q.bindValue(QStringLiteral(":fonte"),      p.fonte);
-    q.bindValue(QStringLiteral(":atualizado"), p.atualizado.toString(Qt::ISODate));
+    q.bindValue(QStringLiteral(":fonte"),      naoNulo(p.fonte));
+    q.bindValue(QStringLiteral(":atualizado"), naoNulo(p.atualizado.toString(Qt::ISODate)));
     if (!q.exec()) {
         qWarning() << "PriceRepository::upsert:" << q.lastError().text();
         return false;
@@ -95,15 +96,15 @@ bool PriceRepository::upsertBatch(const QList<PrecoAtivo> &lista)
     )"));
 
     for (const PrecoAtivo &p : lista) {
-        q.bindValue(QStringLiteral(":ticker"),     p.ticker);
-        q.bindValue(QStringLiteral(":data"),       p.data.toString(Qt::ISODate));
+        q.bindValue(QStringLiteral(":ticker"),     naoNulo(p.ticker));
+        q.bindValue(QStringLiteral(":data"),       naoNulo(p.data.toString(Qt::ISODate)));
         q.bindValue(QStringLiteral(":abertura"),   p.abertura);
         q.bindValue(QStringLiteral(":maxima"),     p.maxima);
         q.bindValue(QStringLiteral(":minima"),     p.minima);
         q.bindValue(QStringLiteral(":fechamento"), p.fechamento);
         q.bindValue(QStringLiteral(":volume"),     p.volume);
-        q.bindValue(QStringLiteral(":fonte"),      p.fonte);
-        q.bindValue(QStringLiteral(":atualizado"), p.atualizado.toString(Qt::ISODate));
+        q.bindValue(QStringLiteral(":fonte"),      naoNulo(p.fonte));
+        q.bindValue(QStringLiteral(":atualizado"), naoNulo(p.atualizado.toString(Qt::ISODate)));
         if (!q.exec()) {
             qWarning() << "PriceRepository::upsertBatch:" << q.lastError().text();
             d.rollback();
@@ -238,14 +239,14 @@ bool PriceRepository::upsertRT(const CotacaoRT &c)
         VALUES
             (:ticker, :preco, :variacao_pct, :abertura, :minima, :maxima, :volume, :timestamp)
     )"));
-    q.bindValue(QStringLiteral(":ticker"),      c.ticker);
+    q.bindValue(QStringLiteral(":ticker"),      naoNulo(c.ticker));
     q.bindValue(QStringLiteral(":preco"),       c.preco);
     q.bindValue(QStringLiteral(":variacao_pct"),c.variacaoPct);
     q.bindValue(QStringLiteral(":abertura"),    c.abertura);
     q.bindValue(QStringLiteral(":minima"),      c.minima);
     q.bindValue(QStringLiteral(":maxima"),      c.maxima);
     q.bindValue(QStringLiteral(":volume"),      c.volume);
-    q.bindValue(QStringLiteral(":timestamp"),   c.timestamp.toString(Qt::ISODate));
+    q.bindValue(QStringLiteral(":timestamp"),   naoNulo(c.timestamp.toString(Qt::ISODate)));
     if (!q.exec()) {
         qWarning() << "PriceRepository::upsertRT:" << q.lastError().text();
         return false;

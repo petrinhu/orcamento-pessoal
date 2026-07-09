@@ -1,4 +1,5 @@
 #include "DividaRepository.h"
+#include "RepositoryUtils.h"
 #include "core/database/DatabaseManager.h"
 
 #include <QSqlQuery>
@@ -40,16 +41,16 @@ bool DividaRepository::insert(Divida &d)
             (:tipo, :contraparte, :descricao, :valor_total, :valor_pago,
              :juros_mensal, :data_inicio, :data_venc, :status, :obs, :criado_em)
     )"));
-    q.bindValue(QStringLiteral(":tipo"),         d.tipo);
-    q.bindValue(QStringLiteral(":contraparte"),  d.contraparte);
-    q.bindValue(QStringLiteral(":descricao"),    d.descricao);
+    q.bindValue(QStringLiteral(":tipo"),         naoNulo(d.tipo));
+    q.bindValue(QStringLiteral(":contraparte"),  naoNulo(d.contraparte));
+    q.bindValue(QStringLiteral(":descricao"),    naoNulo(d.descricao));
     q.bindValue(QStringLiteral(":valor_total"),  d.valorTotal);
     q.bindValue(QStringLiteral(":valor_pago"),   d.valorPago);
     q.bindValue(QStringLiteral(":juros_mensal"), d.jurosMensal);
-    q.bindValue(QStringLiteral(":data_inicio"),  d.dataInicio);
-    q.bindValue(QStringLiteral(":data_venc"),    d.dataVenc);
-    q.bindValue(QStringLiteral(":status"),       d.status);
-    q.bindValue(QStringLiteral(":obs"),          d.obs);
+    q.bindValue(QStringLiteral(":data_inicio"),  naoNulo(d.dataInicio));
+    q.bindValue(QStringLiteral(":data_venc"),    naoNulo(d.dataVenc));
+    q.bindValue(QStringLiteral(":status"),       naoNulo(d.status));
+    q.bindValue(QStringLiteral(":obs"),          naoNulo(d.obs));
     q.bindValue(QStringLiteral(":criado_em"),
                 QDateTime::currentDateTime().toString(Qt::ISODate));
     if (!q.exec()) {
@@ -77,16 +78,16 @@ bool DividaRepository::update(const Divida &d)
             obs          = :obs
         WHERE id = :id
     )"));
-    q.bindValue(QStringLiteral(":tipo"),         d.tipo);
-    q.bindValue(QStringLiteral(":contraparte"),  d.contraparte);
-    q.bindValue(QStringLiteral(":descricao"),    d.descricao);
+    q.bindValue(QStringLiteral(":tipo"),         naoNulo(d.tipo));
+    q.bindValue(QStringLiteral(":contraparte"),  naoNulo(d.contraparte));
+    q.bindValue(QStringLiteral(":descricao"),    naoNulo(d.descricao));
     q.bindValue(QStringLiteral(":valor_total"),  d.valorTotal);
     q.bindValue(QStringLiteral(":valor_pago"),   d.valorPago);
     q.bindValue(QStringLiteral(":juros_mensal"), d.jurosMensal);
-    q.bindValue(QStringLiteral(":data_inicio"),  d.dataInicio);
-    q.bindValue(QStringLiteral(":data_venc"),    d.dataVenc);
-    q.bindValue(QStringLiteral(":status"),       d.status);
-    q.bindValue(QStringLiteral(":obs"),          d.obs);
+    q.bindValue(QStringLiteral(":data_inicio"),  naoNulo(d.dataInicio));
+    q.bindValue(QStringLiteral(":data_venc"),    naoNulo(d.dataVenc));
+    q.bindValue(QStringLiteral(":status"),       naoNulo(d.status));
+    q.bindValue(QStringLiteral(":obs"),          naoNulo(d.obs));
     q.bindValue(QStringLiteral(":id"),           d.id);
     if (!q.exec()) {
         qWarning() << "DividaRepository::update:" << q.lastError().text();

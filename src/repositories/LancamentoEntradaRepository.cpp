@@ -1,4 +1,5 @@
 #include "LancamentoEntradaRepository.h"
+#include "RepositoryUtils.h"
 #include "core/database/DatabaseManager.h"
 
 #include <QSqlQuery>
@@ -9,15 +10,6 @@
 static QSqlDatabase db()
 {
     return DatabaseManager::instance().db();
-}
-
-// #146: colunas TEXT NOT NULL (fonte) e NOT NULL DEFAULT '' (categoria, obs).
-// bindValue de QString() null insere NULL explicito -> viola NOT NULL (o DEFAULT
-// so vale quando a coluna e OMITIDA). Normaliza null -> "" para evitar falha
-// silenciosa do INSERT/UPDATE.
-static QString naoNulo(const QString &s)
-{
-    return s.isNull() ? QString::fromLatin1("") : s;
 }
 
 static LancamentoEntrada fromQuery(const QSqlQuery &q)

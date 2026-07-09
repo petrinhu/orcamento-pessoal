@@ -1,4 +1,5 @@
 #include "LembreteRepository.h"
+#include "RepositoryUtils.h"
 #include "core/database/DatabaseManager.h"
 
 #include <QSqlQuery>
@@ -37,13 +38,13 @@ bool LembreteRepository::insert(Lembrete &l)
             (:descricao, :valor, :data_venc, :frequencia,
              :debito_automatico, :status, :obs, :criado_em)
     )"));
-    q.bindValue(QStringLiteral(":descricao"),        l.descricao);
+    q.bindValue(QStringLiteral(":descricao"),        naoNulo(l.descricao));
     q.bindValue(QStringLiteral(":valor"),             l.valor);
-    q.bindValue(QStringLiteral(":data_venc"),         l.dataVenc);
-    q.bindValue(QStringLiteral(":frequencia"),        l.frequencia);
+    q.bindValue(QStringLiteral(":data_venc"),         naoNulo(l.dataVenc));
+    q.bindValue(QStringLiteral(":frequencia"),        naoNulo(l.frequencia));
     q.bindValue(QStringLiteral(":debito_automatico"), l.debitoAutomatico ? 1 : 0);
-    q.bindValue(QStringLiteral(":status"),            l.status);
-    q.bindValue(QStringLiteral(":obs"),               l.obs);
+    q.bindValue(QStringLiteral(":status"),            naoNulo(l.status));
+    q.bindValue(QStringLiteral(":obs"),               naoNulo(l.obs));
     q.bindValue(QStringLiteral(":criado_em"),
                 QDateTime::currentDateTime().toString(Qt::ISODate));
     if (!q.exec()) {
@@ -68,13 +69,13 @@ bool LembreteRepository::update(const Lembrete &l)
             obs              = :obs
         WHERE id = :id
     )"));
-    q.bindValue(QStringLiteral(":descricao"),        l.descricao);
+    q.bindValue(QStringLiteral(":descricao"),        naoNulo(l.descricao));
     q.bindValue(QStringLiteral(":valor"),             l.valor);
-    q.bindValue(QStringLiteral(":data_venc"),         l.dataVenc);
-    q.bindValue(QStringLiteral(":frequencia"),        l.frequencia);
+    q.bindValue(QStringLiteral(":data_venc"),         naoNulo(l.dataVenc));
+    q.bindValue(QStringLiteral(":frequencia"),        naoNulo(l.frequencia));
     q.bindValue(QStringLiteral(":debito_automatico"), l.debitoAutomatico ? 1 : 0);
-    q.bindValue(QStringLiteral(":status"),            l.status);
-    q.bindValue(QStringLiteral(":obs"),               l.obs);
+    q.bindValue(QStringLiteral(":status"),            naoNulo(l.status));
+    q.bindValue(QStringLiteral(":obs"),               naoNulo(l.obs));
     q.bindValue(QStringLiteral(":id"),                l.id);
     if (!q.exec()) {
         qWarning() << "LembreteRepository::update:" << q.lastError().text();

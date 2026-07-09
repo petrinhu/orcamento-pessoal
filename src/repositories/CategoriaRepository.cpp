@@ -1,4 +1,5 @@
 #include "CategoriaRepository.h"
+#include "RepositoryUtils.h"
 #include "core/database/DatabaseManager.h"
 
 #include <QSqlQuery>
@@ -26,8 +27,8 @@ int CategoriaRepository::insert(const Categoria &c)
     q.prepare(QStringLiteral(
         "INSERT INTO categorias (nome, tipo, pai_id, fixo) "
         "VALUES (:nome, :tipo, :pai_id, :fixo)"));
-    q.bindValue(QStringLiteral(":nome"),   c.nome);
-    q.bindValue(QStringLiteral(":tipo"),   c.tipo);
+    q.bindValue(QStringLiteral(":nome"),   naoNulo(c.nome));
+    q.bindValue(QStringLiteral(":tipo"),   naoNulo(c.tipo));
     if (c.paiId > 0)
         q.bindValue(QStringLiteral(":pai_id"), c.paiId);
     else
@@ -47,8 +48,8 @@ bool CategoriaRepository::update(const Categoria &c)
     q.prepare(QStringLiteral(
         "UPDATE categorias SET nome=:nome, tipo=:tipo, pai_id=:pai_id, fixo=:fixo "
         "WHERE id=:id"));
-    q.bindValue(QStringLiteral(":nome"),   c.nome);
-    q.bindValue(QStringLiteral(":tipo"),   c.tipo);
+    q.bindValue(QStringLiteral(":nome"),   naoNulo(c.nome));
+    q.bindValue(QStringLiteral(":tipo"),   naoNulo(c.tipo));
     if (c.paiId > 0)
         q.bindValue(QStringLiteral(":pai_id"), c.paiId);
     else

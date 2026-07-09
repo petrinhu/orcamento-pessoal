@@ -1,4 +1,5 @@
 #include "CompraRepository.h"
+#include "RepositoryUtils.h"
 #include "core/database/DatabaseManager.h"
 
 #include <QSqlQuery>
@@ -25,14 +26,14 @@ bool CompraRepository::insert(Compra &compra)
              :receipt)
     )"));
 
-    q.bindValue(QStringLiteral(":nome"),            compra.nome);
+    q.bindValue(QStringLiteral(":nome"),            naoNulo(compra.nome));
     q.bindValue(QStringLiteral(":valor_total"),     compra.valorTotal ? QVariant(compra.valorTotal) : QVariant());
     q.bindValue(QStringLiteral(":num_parcelas"),    compra.numParcelas);
     q.bindValue(QStringLiteral(":parcela_inicial"), compra.parcelaInicial);
     q.bindValue(QStringLiteral(":mes_inicio"),      compra.mesInicio);
     q.bindValue(QStringLiteral(":ano_inicio"),      compra.anoInicio);
     q.bindValue(QStringLiteral(":juros_mensais"),   compra.jurosMensais ? QVariant(compra.jurosMensais) : QVariant());
-    q.bindValue(QStringLiteral(":moeda"),           compra.moeda);
+    q.bindValue(QStringLiteral(":moeda"),           naoNulo(compra.moeda));
     q.bindValue(QStringLiteral(":cartao_id"),       compra.cartaoId ? QVariant(compra.cartaoId) : QVariant());
     q.bindValue(QStringLiteral(":criado_em"),
                 QDateTime::currentDateTime().toString(Qt::ISODate));
@@ -64,14 +65,14 @@ bool CompraRepository::update(const Compra &compra)
         WHERE id = :id
     )"));
 
-    q.bindValue(QStringLiteral(":nome"),            compra.nome);
+    q.bindValue(QStringLiteral(":nome"),            naoNulo(compra.nome));
     q.bindValue(QStringLiteral(":valor_total"),     compra.valorTotal ? QVariant(compra.valorTotal) : QVariant());
     q.bindValue(QStringLiteral(":num_parcelas"),    compra.numParcelas);
     q.bindValue(QStringLiteral(":parcela_inicial"), compra.parcelaInicial);
     q.bindValue(QStringLiteral(":mes_inicio"),      compra.mesInicio);
     q.bindValue(QStringLiteral(":ano_inicio"),      compra.anoInicio);
     q.bindValue(QStringLiteral(":juros_mensais"),   compra.jurosMensais ? QVariant(compra.jurosMensais) : QVariant());
-    q.bindValue(QStringLiteral(":moeda"),           compra.moeda);
+    q.bindValue(QStringLiteral(":moeda"),           naoNulo(compra.moeda));
     q.bindValue(QStringLiteral(":cartao_id"),       compra.cartaoId ? QVariant(compra.cartaoId) : QVariant());
     q.bindValue(QStringLiteral(":receipt"),         compra.receipt.isEmpty() ? QVariant() : QVariant(compra.receipt));
     q.bindValue(QStringLiteral(":id"),              compra.id);

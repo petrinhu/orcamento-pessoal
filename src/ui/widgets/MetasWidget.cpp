@@ -6,6 +6,7 @@
 #include "ui/Theme.h"
 
 #include <QUndoStack>
+#include <memory>
 
 #include <QLabel>
 #include <QStackedWidget>
@@ -343,19 +344,26 @@ void MetasWidget::onNova()
         Meta m = dlg->meta();
         if (m.nome.isEmpty()) return;
 
-        const Meta saved = m;
-        auto undo = [this, saved]() {
-            MetaRepository().remove(saved.id);
-            emit dadosAlterados();
-        };
-        auto redo = [this, m]() mutable {
-            MetaRepository().insert(m);
-            emit dadosAlterados();
-        };
+        // #146 (FIN-01): salva ANTES de empilhar no undo stack — LambdaCommand
+        // ignora a 1ª chamada de redo() (QUndoStack::push() já dispara redo()
+        // uma vez; o padrão documentado em UndoCommands.h assume que a
+        // operação real já foi feita aqui). Fazer o insert só dentro do lambda
+        // "redo" (como antes) fazia o insert NUNCA rodar na criação inicial.
+        auto item = std::make_shared<Meta>(m);
+        if (!MetaRepository().insert(*item)) {
+            QMessageBox::warning(this, tr("Nova meta"),
+                tr("Não foi possível salvar a meta. Tente novamente."));
+            return;
+        }
+
         if (m_undoStack)
-            m_undoStack->push(new LambdaCommand(tr("Nova meta"), redo, undo));
-        else
-            redo();
+            m_undoStack->push(new LambdaCommand(
+                tr("Nova meta"),
+                [item]() { item->id = 0; MetaRepository().insert(*item); },
+                [item]() { MetaRepository().remove(item->id); }
+            ));
+        recarregar();
+        emit dadosAlterados();
     });
     dlg->open();
 }
@@ -371,18 +379,20 @@ void MetasWidget::onEditar()
         Meta m = dlg->meta();
         if (m.nome.isEmpty()) return;
 
-        auto undo = [this, before]() {
-            MetaRepository().update(before);
-            emit dadosAlterados();
-        };
-        auto redo = [this, m]() {
-            MetaRepository().update(m);
-            emit dadosAlterados();
-        };
+        if (!MetaRepository().update(m)) {
+            QMessageBox::warning(this, tr("Editar meta"),
+                tr("Não foi possível salvar as alterações. Tente novamente."));
+            return;
+        }
+
         if (m_undoStack)
-            m_undoStack->push(new LambdaCommand(tr("Editar meta"), redo, undo));
-        else
-            redo();
+            m_undoStack->push(new LambdaCommand(
+                tr("Editar meta"),
+                [m]()      { MetaRepository().update(m); },
+                [before]() { MetaRepository().update(before); }
+            ));
+        recarregar();
+        emit dadosAlterados();
     });
     dlg->open();
 }
@@ -398,19 +408,21 @@ void MetasWidget::onExcluir()
             QMessageBox::Yes | QMessageBox::No) != QMessageBox::Yes)
         return;
 
-    const Meta backup = *opt;
-    auto undo = [this, backup]() mutable {
-        MetaRepository().insert(const_cast<Meta&>(backup));
-        emit dadosAlterados();
-    };
-    auto redo = [this, id = backup.id]() {
-        MetaRepository().remove(id);
-        emit dadosAlterados();
-    };
+    auto item = std::make_shared<Meta>(*opt);
+    if (!MetaRepository().remove(item->id)) {
+        QMessageBox::warning(this, tr("Excluir meta"),
+            tr("Não foi possível excluir a meta. Tente novamente."));
+        return;
+    }
+
     if (m_undoStack)
-        m_undoStack->push(new LambdaCommand(tr("Excluir meta"), redo, undo));
-    else
-        redo();
+        m_undoStack->push(new LambdaCommand(
+            tr("Excluir meta"),
+            [item]() { MetaRepository().remove(item->id); },
+            [item]() { item->id = 0; MetaRepository().insert(*item); }
+        ));
+    recarregar();
+    emit dadosAlterados();
 }
 
 void MetasWidget::onAporte()
@@ -447,19 +459,21 @@ void MetasWidget::onAporte()
         updated.status = QStringLiteral("concluida");
     }
 
-    auto undo = [this, before = *opt]() {
-        MetaRepository().update(before);
-        emit dadosAlterados();
-    };
-    auto redo = [this, updated]() {
-        MetaRepository().update(updated);
-        emit dadosAlterados();
-    };
+    const Meta before = *opt;
+    if (!MetaRepository().update(updated)) {
+        QMessageBox::warning(this, tr("Registrar aporte"),
+            tr("Não foi possível registrar o aporte. Tente novamente."));
+        return;
+    }
+
     if (m_undoStack)
         m_undoStack->push(new LambdaCommand(
-            tr("Aporte em meta"), redo, undo));
-    else
-        redo();
+            tr("Aporte em meta"),
+            [updated]() { MetaRepository().update(updated); },
+            [before]()  { MetaRepository().update(before); }
+        ));
+    recarregar();
+    emit dadosAlterados();
 
     Q_UNUSED(anterior)
 }

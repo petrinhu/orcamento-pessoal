@@ -1,4 +1,5 @@
 #include "PagadorRepository.h"
+#include "RepositoryUtils.h"
 #include "core/database/DatabaseManager.h"
 
 #include <QSqlQuery>
@@ -27,9 +28,9 @@ bool PagadorRepository::insert(Pagador &p)
         INSERT INTO pagadores (nome, tipo, obs)
         VALUES (:nome, :tipo, :obs)
     )"));
-    q.bindValue(QStringLiteral(":nome"), p.nome);
-    q.bindValue(QStringLiteral(":tipo"), p.tipo);
-    q.bindValue(QStringLiteral(":obs"),  p.obs);
+    q.bindValue(QStringLiteral(":nome"), naoNulo(p.nome));
+    q.bindValue(QStringLiteral(":tipo"), naoNulo(p.tipo));
+    q.bindValue(QStringLiteral(":obs"),  naoNulo(p.obs));
     if (!q.exec()) {
         qWarning() << "PagadorRepository::insert:" << q.lastError().text();
         return false;
@@ -45,9 +46,9 @@ bool PagadorRepository::update(const Pagador &p)
         UPDATE pagadores SET nome = :nome, tipo = :tipo, obs = :obs
         WHERE id = :id
     )"));
-    q.bindValue(QStringLiteral(":nome"), p.nome);
-    q.bindValue(QStringLiteral(":tipo"), p.tipo);
-    q.bindValue(QStringLiteral(":obs"),  p.obs);
+    q.bindValue(QStringLiteral(":nome"), naoNulo(p.nome));
+    q.bindValue(QStringLiteral(":tipo"), naoNulo(p.tipo));
+    q.bindValue(QStringLiteral(":obs"),  naoNulo(p.obs));
     q.bindValue(QStringLiteral(":id"),   p.id);
     if (!q.exec()) {
         qWarning() << "PagadorRepository::update:" << q.lastError().text();

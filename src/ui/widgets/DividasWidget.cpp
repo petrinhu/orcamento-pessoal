@@ -330,8 +330,14 @@ void DividasWidget::onCellDoubleClicked(int row, int /*col*/)
     connect(dlg, &QDialog::accepted, this, [this, dlg, id]() {
         Divida updated = dlg->divida();
         updated.id = id;
-        const Divida original = *DividaRepository().findById(id);
-        DividaRepository().update(updated);
+        const auto origOpt = DividaRepository().findById(id);
+        if (!origOpt) return;
+        const Divida original = *origOpt;
+        if (!DividaRepository().update(updated)) {
+            QMessageBox::warning(this, tr("Editar dívida"),
+                tr("Não foi possível salvar as alterações. Tente novamente."));
+            return;
+        }
         if (m_undoStack) {
             m_undoStack->push(new LambdaCommand(
                 tr("Editar dívida"),
@@ -357,7 +363,11 @@ void DividasWidget::onNova()
     dlg->setAttribute(Qt::WA_DeleteOnClose);
     connect(dlg, &QDialog::accepted, this, [this, dlg]() {
         auto item = std::make_shared<Divida>(dlg->divida());
-        DividaRepository().insert(*item);
+        if (!DividaRepository().insert(*item)) {
+            QMessageBox::warning(this, tr("Nova dívida"),
+                tr("Não foi possível salvar a dívida. Tente novamente."));
+            return;
+        }
         if (m_undoStack) {
             m_undoStack->push(new LambdaCommand(
                 tr("Nova dívida"),
@@ -390,7 +400,11 @@ void DividasWidget::onEditar()
         const auto origOpt = DividaRepository().findById(m_selectedId);
         if (!origOpt) return;
         const Divida original = *origOpt;
-        DividaRepository().update(updated);
+        if (!DividaRepository().update(updated)) {
+            QMessageBox::warning(this, tr("Editar dívida"),
+                tr("Não foi possível salvar as alterações. Tente novamente."));
+            return;
+        }
         if (m_undoStack) {
             m_undoStack->push(new LambdaCommand(
                 tr("Editar dívida"),
@@ -418,7 +432,11 @@ void DividasWidget::onExcluir()
     if (res != QMessageBox::Yes) return;
 
     const Divida snap = *opt;
-    DividaRepository().remove(m_selectedId);
+    if (!DividaRepository().remove(m_selectedId)) {
+        QMessageBox::warning(this, tr("Excluir dívida"),
+            tr("Não foi possível excluir a dívida. Tente novamente."));
+        return;
+    }
     if (m_undoStack) {
         m_undoStack->push(new LambdaCommand(
             tr("Excluir dívida"),
@@ -446,7 +464,11 @@ void DividasWidget::onQuitar()
     const Divida original = *opt;
     updated.status  = QStringLiteral("quitado");
     updated.valorPago = updated.valorTotal;
-    DividaRepository().update(updated);
+    if (!DividaRepository().update(updated)) {
+        QMessageBox::warning(this, tr("Quitar dívida"),
+            tr("Não foi possível quitar a dívida. Tente novamente."));
+        return;
+    }
 
     if (m_undoStack) {
         m_undoStack->push(new LambdaCommand(

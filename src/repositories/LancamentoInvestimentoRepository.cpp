@@ -1,4 +1,5 @@
 #include "LancamentoInvestimentoRepository.h"
+#include "RepositoryUtils.h"
 #include "core/database/DatabaseManager.h"
 
 #include <QSqlQuery>
@@ -47,18 +48,18 @@ bool LancamentoInvestimentoRepository::insert(LancamentoInvestimento &l)
     q.bindValue(QStringLiteral(":mes"),           l.mes);
     q.bindValue(QStringLiteral(":ano"),           l.ano);
     q.bindValue(QStringLiteral(":dia"),           l.dia);
-    q.bindValue(QStringLiteral(":nome"),          l.nome);
-    q.bindValue(QStringLiteral(":tipo_ativo"),    l.tipoAtivo);
-    q.bindValue(QStringLiteral(":tipo_operacao"), l.tipoOperacao);
+    q.bindValue(QStringLiteral(":nome"),          naoNulo(l.nome));
+    q.bindValue(QStringLiteral(":tipo_ativo"),    naoNulo(l.tipoAtivo));
+    q.bindValue(QStringLiteral(":tipo_operacao"), naoNulo(l.tipoOperacao));
     q.bindValue(QStringLiteral(":valor"),        l.valor);
-    q.bindValue(QStringLiteral(":categoria"),    l.categoria);
+    q.bindValue(QStringLiteral(":categoria"),    naoNulo(l.categoria));
     q.bindValue(QStringLiteral(":categoria_id"),
                 l.categoriaId > 0 ? QVariant(l.categoriaId) : QVariant(QMetaType::fromType<int>()));
-    q.bindValue(QStringLiteral(":obs"),          l.obs);
+    q.bindValue(QStringLiteral(":obs"),          naoNulo(l.obs));
     q.bindValue(QStringLiteral(":criado_em"),
                 QDateTime::currentDateTime().toString(Qt::ISODate));
     q.bindValue(QStringLiteral(":receipt"),      l.receipt.isEmpty() ? QVariant() : QVariant(l.receipt));
-    q.bindValue(QStringLiteral(":ticker"),         l.ticker);
+    q.bindValue(QStringLiteral(":ticker"),         naoNulo(l.ticker));
     q.bindValue(QStringLiteral(":quantidade"),     l.quantidade);
     q.bindValue(QStringLiteral(":preco_unitario"), l.precoUnitario);
     if (!q.exec()) {
@@ -93,16 +94,16 @@ bool LancamentoInvestimentoRepository::update(const LancamentoInvestimento &l)
     q.bindValue(QStringLiteral(":mes"),           l.mes);
     q.bindValue(QStringLiteral(":ano"),           l.ano);
     q.bindValue(QStringLiteral(":dia"),           l.dia);
-    q.bindValue(QStringLiteral(":nome"),          l.nome);
-    q.bindValue(QStringLiteral(":tipo_ativo"),    l.tipoAtivo);
-    q.bindValue(QStringLiteral(":tipo_operacao"), l.tipoOperacao);
+    q.bindValue(QStringLiteral(":nome"),          naoNulo(l.nome));
+    q.bindValue(QStringLiteral(":tipo_ativo"),    naoNulo(l.tipoAtivo));
+    q.bindValue(QStringLiteral(":tipo_operacao"), naoNulo(l.tipoOperacao));
     q.bindValue(QStringLiteral(":valor"),        l.valor);
-    q.bindValue(QStringLiteral(":categoria"),    l.categoria);
+    q.bindValue(QStringLiteral(":categoria"),    naoNulo(l.categoria));
     q.bindValue(QStringLiteral(":categoria_id"),
                 l.categoriaId > 0 ? QVariant(l.categoriaId) : QVariant(QMetaType::fromType<int>()));
-    q.bindValue(QStringLiteral(":obs"),          l.obs);
+    q.bindValue(QStringLiteral(":obs"),          naoNulo(l.obs));
     q.bindValue(QStringLiteral(":receipt"),      l.receipt.isEmpty() ? QVariant() : QVariant(l.receipt));
-    q.bindValue(QStringLiteral(":ticker"),         l.ticker);
+    q.bindValue(QStringLiteral(":ticker"),         naoNulo(l.ticker));
     q.bindValue(QStringLiteral(":quantidade"),     l.quantidade);
     q.bindValue(QStringLiteral(":preco_unitario"), l.precoUnitario);
     q.bindValue(QStringLiteral(":id"),            l.id);

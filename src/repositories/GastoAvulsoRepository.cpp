@@ -1,4 +1,5 @@
 #include "GastoAvulsoRepository.h"
+#include "RepositoryUtils.h"
 #include "core/database/DatabaseManager.h"
 
 #include <QSqlQuery>
@@ -9,15 +10,6 @@
 static QSqlDatabase db()
 {
     return DatabaseManager::instance().db();
-}
-
-// #146: colunas TEXT NOT NULL DEFAULT '' (descricao, categoria, tipo_pgto, obs,
-// pagador). bindValue de um QString() null insere NULL explicito -> viola a
-// constraint NOT NULL (o DEFAULT so vale quando a coluna e OMITIDA, nao quando
-// recebe NULL). Normaliza null -> "" para nao falhar silenciosamente.
-static QString naoNulo(const QString &s)
-{
-    return s.isNull() ? QString::fromLatin1("") : s;
 }
 
 static GastoAvulso fromQuery(const QSqlQuery &q)
