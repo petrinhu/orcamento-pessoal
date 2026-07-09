@@ -35,6 +35,7 @@
 #include <QScrollBar>
 #include <QShortcut>
 #include <algorithm>
+#include <stdexcept>
 
 #include "core/settings/AppSettings.h"
 #include "services/CurrencyService.h"
@@ -380,21 +381,36 @@ void ParcelasWidget::populateTable()
         if (monthTotals[k] == 0) continue;
         const QString tgtCur = AppSettings::instance().defaultCurrency();
         qint64 displayVal = monthTotals[k];
+        // Moeda de exibição efetiva: só vira tgtCur se a conversão realmente
+        // aconteceu. Nunca rotular um valor não-convertido (BRL) com o
+        // símbolo de outra moeda — isso seria mostrar valor fabricado.
+        QString curExibida = QStringLiteral("BRL");
+        bool semCotacao = false;
         if (tgtCur != QStringLiteral("BRL")) {
             try {
-                displayVal = CurrencyService::instance().converter(
+                displayVal  = CurrencyService::instance().converter(
                     displayVal, QStringLiteral("BRL"), tgtCur);
-            } catch (...) {
-                displayVal = monthTotals[k]; // fallback: show BRL on error
+                curExibida = tgtCur;
+            } catch (const std::exception &e) {
+                // Moeda sem cotação no provider (#156): mantém o valor na
+                // moeda original (BRL) em vez de fabricar uma conversão.
+                semCotacao = true;
+                displayVal = monthTotals[k];
+                qWarning() << "ParcelasWidget: sem cotacao BRL->" << tgtCur
+                           << "-" << e.what();
             }
         }
         auto *cell = new QTableWidgetItem(
-            ParcelaService::formatarValor(displayVal, tgtCur));
+            ParcelaService::formatarValor(displayVal, curExibida));
         cell->setFlags(cell->flags() & ~Qt::ItemIsEditable);
         cell->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
         QFont bf = cell->font();
         bf.setBold(true);
         cell->setFont(bf);
+        if (semCotacao) {
+            cell->setToolTip(tr("Sem cotação disponível para %1 — exibindo em BRL")
+                                  .arg(tgtCur));
+        }
         m_table->setItem(totalRow, COL_FIRST_MONTH + k, cell);
     }
 

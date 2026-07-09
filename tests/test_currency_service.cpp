@@ -29,10 +29,13 @@ private slots:
     void moedasListadas();
     void provedorIndisponivel();
     // ── Bordas (#132) ───────────────────────────────────────────────────────
-    void moedaDestinoAusenteUsaFallbackUm();
+    void moedaDestinoAusenteLancaExcecao();
     void moedaOrigemAusenteLancaExcecao();
     void taxaOrigemZeroLancaExcecao();
     void idaVoltaPreservaComArredondamento();
+    // ── QA-02 / #189: aritmetica inteira, sem perda de centavo em double ────
+    void converterEmpateExatoDeCentavoArrendondaHalfUp();
+    void converterValorGrandeUsaWideningSemOverflow();
 };
 
 void TestCurrencyService::taxaBrlParaUsd()
@@ -98,39 +101,44 @@ void TestCurrencyService::provedorIndisponivel()
     QVERIFY(!svc.disponivel());
 }
 
-// ── Bordas (#132): protecao contra divisao por zero / moeda ausente ──────────
+// ── Bordas (#132 / #156): protecao contra divisao por zero / moeda ausente ───
 
-void TestCurrencyService::moedaDestinoAusenteUsaFallbackUm()
+void TestCurrencyService::moedaDestinoAusenteLancaExcecao()
 {
-    // Moeda destino (JPY) NAO esta no provider. taxa() usa value(para, 1.0),
-    // entao retorna rPara=1.0 / rDe. FIXA o comportamento REAL: nao lanca,
-    // nao divide por zero — usa fallback 1.0 para o destino.
-    // ACHADO documentado: destino ausente vira taxa "silenciosa" (=1/rDe),
-    // sem sinalizar erro ao chamador. Ver relatorio.
+    // Moeda destino (JPY) NAO esta no provider. Antes do fix (#156),
+    // taxa() usava value(para, 1.0) e fabricava uma taxa 1.0 falsa,
+    // silenciosamente. Comportamento correto: lancar, nunca fabricar.
     auto mock = std::make_unique<MockProvider>();
     mock->ratesFixed.insert(QStringLiteral("BRL"), 1.0);   // 1 BRL = 1 BRL
     // JPY ausente de proposito.
     CurrencyService svc(std::move(mock));
 
-    const double t = svc.taxa(QStringLiteral("BRL"), QStringLiteral("JPY"));
-    QVERIFY2(qAbs(t - 1.0) < 1e-9,
-        qPrintable(QStringLiteral("destino ausente: taxa=%1, esperado fallback 1.0").arg(t)));
+    bool throwed = false;
+    try {
+        svc.taxa(QStringLiteral("BRL"), QStringLiteral("JPY"));
+    } catch (const std::runtime_error &) {
+        throwed = true;
+    }
+    QVERIFY2(throwed, "moeda destino ausente deveria lancar runtime_error (#156)");
 }
 
 void TestCurrencyService::moedaOrigemAusenteLancaExcecao()
 {
-    // Moeda origem ausente -> value(de, 1.0) = 1.0, NAO dispara o guard
-    // (guard so trava se rDe < 1e-12). Logo origem ausente tambem cai no
-    // fallback 1.0 e NAO lanca. FIXA o comportamento REAL.
+    // Moeda origem ausente do mapa do provider. Antes do fix (#156),
+    // value(de, 1.0) devolvia 1.0 e nao disparava o guard (que so travava
+    // rDe < 1e-12). Comportamento correto: lancar, nunca fabricar taxa 1.0.
     auto mock = std::make_unique<MockProvider>();
     mock->ratesFixed.insert(QStringLiteral("BRL"), 1.0);
     mock->ratesFixed.insert(QStringLiteral("USD"), 0.20);
     CurrencyService svc(std::move(mock));
 
-    // origem "XAU" ausente -> rDe=1.0; destino USD=0.20 -> taxa=0.20.
-    const double t = svc.taxa(QStringLiteral("XAU"), QStringLiteral("USD"));
-    QVERIFY2(qAbs(t - 0.20) < 1e-9,
-        qPrintable(QStringLiteral("origem ausente: taxa=%1, esperado 0.20 (fallback)").arg(t)));
+    bool throwed = false;
+    try {
+        svc.taxa(QStringLiteral("XAU"), QStringLiteral("USD"));
+    } catch (const std::runtime_error &) {
+        throwed = true;
+    }
+    QVERIFY2(throwed, "moeda origem ausente deveria lancar runtime_error (#156)");
 }
 
 void TestCurrencyService::taxaOrigemZeroLancaExcecao()
@@ -154,8 +162,11 @@ void TestCurrencyService::taxaOrigemZeroLancaExcecao()
 
 void TestCurrencyService::idaVoltaPreservaComArredondamento()
 {
-    // Conversao ida-volta A->B->A: por arredondamento de centavos, o valor
-    // pode oscilar +-1 centavo. Tolerancia DOCUMENTADA: |delta| <= 1 cent.
+    // Conversao ida-volta A->B->A com aritmetica inteira (QA-02/#189):
+    // half-up half-up cancelam exatamente para este par de valores/taxa
+    // (provado a mao: BRL->USD arredonda 23827.008 p/ baixo=23827;
+    // USD->BRL arredonda 123455.9586 p/ cima=123456). Asserção EXATA —
+    // a tolerancia +-1 antiga MASCARAVA a perda de centavo do double.
     auto mock = std::make_unique<MockProvider>();
     mock->ratesFixed.insert(QStringLiteral("BRL"), 1.0);
     mock->ratesFixed.insert(QStringLiteral("USD"), 0.193); // taxa "feia" de proposito
@@ -165,9 +176,41 @@ void TestCurrencyService::idaVoltaPreservaComArredondamento()
     const qint64 emUsd = svc.converter(original, QStringLiteral("BRL"), QStringLiteral("USD"));
     const qint64 deVolta = svc.converter(emUsd, QStringLiteral("USD"), QStringLiteral("BRL"));
 
-    QVERIFY2(qAbs(deVolta - original) <= 1,
-        qPrintable(QStringLiteral("ida-volta: original=%1, voltou=%2 (delta=%3, tol=1 cent)")
-            .arg(original).arg(deVolta).arg(deVolta - original)));
+    QCOMPARE(deVolta, original);
+}
+
+void TestCurrencyService::converterEmpateExatoDeCentavoArrendondaHalfUp()
+{
+    // QA-02: 38075 centavos x taxa 2.78 = 105848.50 EXATO (empate de meio
+    // centavo). O bug antigo (std::round sobre double) perdia esse centavo
+    // em ~32% dos empates por imprecisao binaria (2.78 nao e representavel
+    // exatamente em double). Com aritmetica inteira (micro-unidades +
+    // __int128 + half-up explicito) o resultado e' deterministico: 105849.
+    auto mock = std::make_unique<MockProvider>();
+    mock->ratesFixed.insert(QStringLiteral("BRL"), 1.0);
+    mock->ratesFixed.insert(QStringLiteral("XXX"), 2.78);
+    CurrencyService svc(std::move(mock));
+
+    QCOMPARE(svc.converter(38075, QStringLiteral("BRL"), QStringLiteral("XXX")),
+              qint64(105849));
+}
+
+void TestCurrencyService::converterValorGrandeUsaWideningSemOverflow()
+{
+    // Prova a necessidade do widening p/ __int128: centavos * taxaMicro
+    // excede o range de int64 (9.2e18) para valores grandes combinados com
+    // taxa de moeda fraca. R$ 90 bilhoes (9e12 centavos) x taxa 5000 ->
+    // produto intermediario ~4.5e19 (> INT64_MAX) mas resultado final
+    // (4.5e16) cabe em qint64 — a conta so funciona se o produto
+    // intermediario nao estourar antes da divisao.
+    auto mock = std::make_unique<MockProvider>();
+    mock->ratesFixed.insert(QStringLiteral("BRL"), 1.0);
+    mock->ratesFixed.insert(QStringLiteral("WEAK"), 5000.0);
+    CurrencyService svc(std::move(mock));
+
+    const qint64 centavos = 9'000'000'000'000LL; // R$ 90 bilhoes
+    QCOMPARE(svc.converter(centavos, QStringLiteral("BRL"), QStringLiteral("WEAK")),
+              qint64(45'000'000'000'000'000LL));
 }
 
 QTEST_GUILESS_MAIN(TestCurrencyService)
