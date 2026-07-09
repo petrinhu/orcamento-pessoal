@@ -21,6 +21,7 @@
 
 #include <QtTest/QtTest>
 
+#include <QByteArray>
 #include <QDate>
 #include <QDir>
 #include <QSqlError>
@@ -50,6 +51,8 @@ class TestFechamento : public QObject
 private:
     QTemporaryDir m_tmp;
     QString       m_prevCwd;
+    QByteArray    m_prevHome;
+    bool          m_prevHomeSet = false;
 
     // ── Remove triggers de auditoria (mesmo workaround de test_resumo) ───────
     void dropTriggersAudit()
@@ -166,6 +169,12 @@ private slots:
         QVERIFY(m_tmp.isValid());
         m_prevCwd = QDir::currentPath();
         QVERIFY(QDir::setCurrent(m_tmp.path()));
+        // (#192) AppSettings::workingDbPath() usa QStandardPaths::AppDataLocation
+        // (HOME/XDG_DATA_HOME), nao mais CWD-relativo -- isolar HOME tambem,
+        // senao o .db em claro deste teste vaza pro ambiente real do dev.
+        m_prevHome    = qgetenv("HOME");
+        m_prevHomeSet = qEnvironmentVariableIsSet("HOME");
+        qputenv("HOME", m_tmp.path().toUtf8());
 
         const bool ok = DatabaseManager::instance().open(
             QStringLiteral("test-fechamento"));
@@ -180,6 +189,10 @@ private slots:
 
     void cleanupTestCase()
     {
+        if (m_prevHomeSet)
+            qputenv("HOME", m_prevHome);
+        else
+            qunsetenv("HOME");
         if (!m_prevCwd.isEmpty())
             QDir::setCurrent(m_prevCwd);
     }

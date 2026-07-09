@@ -14,6 +14,7 @@
 
 #include <QtTest/QtTest>
 
+#include <QByteArray>
 #include <QDate>
 #include <QDir>
 #include <QSqlError>
@@ -44,6 +45,8 @@ class TestResumo : public QObject
 private:
     QTemporaryDir m_tmp;          // diretorio de trabalho isolado
     QString       m_prevCwd;      // cwd original (restaurado no fim)
+    QByteArray    m_prevHome;
+    bool          m_prevHomeSet = false;
 
     // ── Remove triggers de auditoria (workaround do bug de produto) ──────────
     void dropTriggersAudit()
@@ -178,6 +181,12 @@ private slots:
         m_prevCwd = QDir::currentPath();
         // DatabaseManager usa caminhos relativos ("data/<slug>.db"); isolar cwd.
         QVERIFY(QDir::setCurrent(m_tmp.path()));
+        // (#192) AppSettings::workingDbPath() usa QStandardPaths::AppDataLocation
+        // (HOME/XDG_DATA_HOME), nao mais CWD-relativo -- isolar HOME tambem,
+        // senao o .db em claro deste teste vaza pro ambiente real do dev.
+        m_prevHome    = qgetenv("HOME");
+        m_prevHomeSet = qEnvironmentVariableIsSet("HOME");
+        qputenv("HOME", m_tmp.path().toUtf8());
 
         const bool ok = DatabaseManager::instance().open(
             QStringLiteral("test-resumo"));
@@ -198,6 +207,10 @@ private slots:
     {
         // Nao chamamos close() para evitar criptografia em build release;
         // apenas restaura o cwd. O QTemporaryDir e removido no destrutor.
+        if (m_prevHomeSet)
+            qputenv("HOME", m_prevHome);
+        else
+            qunsetenv("HOME");
         if (!m_prevCwd.isEmpty())
             QDir::setCurrent(m_prevCwd);
     }

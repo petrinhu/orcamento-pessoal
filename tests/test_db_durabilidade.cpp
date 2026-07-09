@@ -18,9 +18,10 @@
 //
 // Isolamento: HOME e CWD do processo sao redirecionados para um
 // QTemporaryDir. savePathFixo()/autosavePathFixo() (#181) usam
-// QDir::homePath() (~/peubud/save/<slug>/...) e o .db em claro usa caminho
-// relativo ao CWD ("data/.<slug>.db") -- sem isolar HOME, este teste
-// escreveria no ~/peubud/save/ REAL de quem roda o ctest.
+// QDir::homePath() (~/peubud/save/<slug>/...) e (#192) o .db em claro usa
+// AppSettings::workingDbPath() (QStandardPaths::AppDataLocation, baseado em
+// HOME/XDG_DATA_HOME) -- sem isolar HOME, este teste escreveria no
+// ~/peubud/save/ E no ~/.local/share/ REAIS de quem roda o ctest.
 
 #include <QtTest/QtTest>
 
@@ -54,12 +55,12 @@ private:
     QSqlDatabase db() const { return DatabaseManager::instance().db(); }
 
     // Caminho do .db em claro que DatabaseManager::open() usa internamente
-    // (convencao "data/.<slug>.db", relativo ao CWD isolado -- ver
-    // DatabaseManager::open(); mesma suposicao ja feita por
-    // test_audit_triggers.cpp).
+    // (#192: AppSettings::workingDbPath() -- QStandardPaths::AppDataLocation,
+    // isolado por HOME neste teste -- substitui o antigo "data/.<slug>.db"
+    // relativo ao CWD, CWD-relative sendo exatamente o bug DIST-03/SEC-02).
     static QString dbPlanoPath(const QString &slug)
     {
-        return QStringLiteral("data/.%1.db").arg(slug);
+        return AppSettings::workingDbPath(slug);
     }
 
 private slots:

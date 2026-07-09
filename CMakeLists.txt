@@ -100,6 +100,9 @@ set(SOURCES
     # Core — database
     src/core/database/DatabaseManager.cpp
 
+    # Core — platform (#192: handler de sinal SIGTERM/SIGINT via self-pipe)
+    src/core/platform/UnixSignalHandler.cpp
+
     # Core — session
     src/core/session/UserSession.cpp
 

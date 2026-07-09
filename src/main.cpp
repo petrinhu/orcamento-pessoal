@@ -3,11 +3,12 @@
 #include "ui/MainWindow.h"
 #include "ui/widgets/OnboardingDialog.h"
 #include "core/database/DatabaseManager.h"
+#include "core/platform/UnixSignalHandler.h"
 #include "core/session/UserSession.h"
 #include "core/settings/AppSettings.h"
 
 #include <QApplication>
-#include <QDir>
+#include <QDebug>
 #include <QIcon>
 #include <QMessageBox>
 #include <QTranslator>
@@ -20,6 +21,21 @@ int main(int argc, char *argv[])
     app.setApplicationVersion(QStringLiteral("0.1.0"));
     app.setOrganizationName(QStringLiteral("petrinhu"));
     app.setWindowIcon(QIcon(QStringLiteral(":/icon/icon.png")));
+
+    // ── Graceful shutdown por sinal (#192/SEC-02) ────────────────────────────
+    // SIGTERM (default de `kill`)/SIGINT sem handler matam o processo sem
+    // rodar DatabaseManager::close() — o .db em claro (dado financeiro
+    // descriptografado) fica órfão em disco. terminationRequested() chega via
+    // event loop (self-pipe, nunca síncrono dentro do handler de sinal — ver
+    // UnixSignalHandler); QApplication::quit() faz app.exec() retornar e cair
+    // no MESMO caminho de cleanup do fechamento normal, logo abaixo.
+    if (!UnixSignalHandler::instance().install()) {
+        qWarning() << "main: graceful shutdown por sinal indisponível —"
+                      " SIGTERM/SIGINT ainda vão matar o processo sem salvar.";
+    }
+    QObject::connect(&UnixSignalHandler::instance(),
+                      &UnixSignalHandler::terminationRequested,
+                      &app, &QApplication::quit);
 
     // ── Translator ─────────────────────────────────────────────────────────
     QTranslator translator;
@@ -37,9 +53,10 @@ int main(int argc, char *argv[])
     Theme::setDensidadeTabelasCompacta(AppSettings::instance().tabelaDensidadeCompacta());
 
     // ── Login + retry loop ─────────────────────────────────────────────────
-    // Cria o diretório temporário data/ (banco decifrado em runtime).
+    // (#192) O diretório do .db decifrado em runtime agora é criado por
+    // DatabaseManager::open() (AppSettings::workingDbPath(), local FIXO —
+    // não mais "data/" relativo ao CWD, que era exatamente o bug DIST-03).
     // O cofre cifrado vai para ~/peubud/save/<slug>/database.pbd (#181).
-    QDir().mkpath(QStringLiteral("data"));
 
     LoginDialog login;
     for (;;) {

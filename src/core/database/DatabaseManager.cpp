@@ -21,15 +21,6 @@
 
 namespace {
 
-// Garante que o diretório temporário `data/` (onde o `.db` em claro vive
-// durante a sessão) exista com permissões 0700.
-void ensureDataDirSecure()
-{
-    const QString dataDir = QStringLiteral("data");
-    QDir().mkpath(dataDir);
-    ::chmod(QFile::encodeName(dataDir).constData(), S_IRWXU);
-}
-
 // (#191/FIN-02) Executa um PRAGMA de setup checando o retorno; falha genuína
 // (ex.: disco cheio, arquivo corrompido) fica logada em vez de passar em
 // silêncio — antes os 3 PRAGMAs de open()/importFromFile() ignoravam bool.
@@ -115,13 +106,16 @@ bool DatabaseManager::open(const QString &slug,
                            const QByteArray &keyNew,
                            const QByteArray &keyLegacy)
 {
-    ensureDataDirSecure();   // mkpath + chmod 0700 no diretório de dados temporário
-
     m_slug        = slug;
     m_key         = keyNew;
     m_keyLegacy   = keyLegacy;
     m_needsReencrypt = false;
-    m_dbPath      = QStringLiteral("data/.%1.db").arg(slug);
+    // (#192/DIST-03/SEC-02) Local FIXO (QStandardPaths::AppDataLocation),
+    // não mais "data/" relativo ao CWD do processo — o `.desktop` do pacote
+    // não seta `Path=`, então o lançamento via menu tinha CWD imprevisível,
+    // quebrando 100% na 1ª execução do pacote instalado. mkpath + chmod
+    // 0700 do diretório são garantidos dentro de workingDbPath().
+    m_dbPath      = AppSettings::workingDbPath(slug);
 
 #ifndef QT_DEBUG
     // (#181) Caminho fixo do cofre: ~/peubud/save/<slug>/database.pbd

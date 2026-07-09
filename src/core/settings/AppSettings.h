@@ -54,6 +54,18 @@ public:
     // data/<slug>.pbd (relativo ao CWD — antigo padrão pré-#181)
     static QString saveLegadoData(const QString &slug);
 
+    // (#192/DIST-03/SEC-02) Diretório FIXO (QStandardPaths::AppDataLocation
+    // — $XDG_DATA_HOME/<org>/<app> no Linux) onde o .db em claro de trabalho
+    // vive durante a sessão. Antes era "data/" relativo ao CWD do processo:
+    // o `.desktop` do pacote não seta `Path=`, então o lançamento via menu
+    // tinha CWD imprevisível — quebrava 100% na 1ª execução do pacote
+    // instalado. mkpath + chmod 0700 são garantidos a cada chamada
+    // (idempotente).
+    static QString workingDbDir();
+    // (#192) workingDbDir() + "/.<slug>.db" — mesmo nome de arquivo de
+    // antes, só o diretório-base deixou de ser relativo ao CWD.
+    static QString workingDbPath(const QString &slug);
+
     // Deprecated (#181): callers legados (BackupService usa diretorioPadrao próprio).
     // Mantidos para não quebrar callers externos; internamente não usados mais.
     QString savesFolder() const;

@@ -3,7 +3,10 @@
 #include "core/secret/SecretStoreService.h"
 
 #include <QDir>
+#include <QFile>
 #include <QStandardPaths>
+
+#include <sys/stat.h>   // chmod — restringe o diretório de dados a 0700 (#192)
 
 // App name compartilhado com o cofre do sistema (mesmo usado para o salt
 // no LoginDialog). Mantém os segredos do PeuBud agrupados na mesma coleção.
@@ -93,6 +96,26 @@ QString AppSettings::autosavePathFixo(const QString &slug)
 QString AppSettings::saveLegadoData(const QString &slug)
 {
     return QStringLiteral("data/") + slug + QStringLiteral(".pbd");
+}
+
+// (#192/DIST-03/SEC-02) Diretório fixo para o .db de trabalho em claro —
+// substitui o antigo "data/" relativo ao CWD (bug: lançamento via .desktop
+// tem CWD imprevisível, quebrando 100% na 1ª execução do pacote instalado).
+// QStandardPaths::AppDataLocation resolve para $XDG_DATA_HOME/<org>/<app>
+// (Linux), fixo e independente de onde o processo foi lançado.
+QString AppSettings::workingDbDir()
+{
+    QString dir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    if (dir.isEmpty()) // fallback raríssimo (XDG_DATA_HOME e HOME ambos vazios)
+        dir = QDir::homePath() + QStringLiteral("/.local/share/PeuBud");
+    QDir().mkpath(dir);
+    ::chmod(QFile::encodeName(dir).constData(), S_IRWXU); // best-effort 0700
+    return dir;
+}
+
+QString AppSettings::workingDbPath(const QString &slug)
+{
+    return workingDbDir() + QStringLiteral("/.") + slug + QStringLiteral(".db");
 }
 
 bool AppSettings::autosaveEnabled() const

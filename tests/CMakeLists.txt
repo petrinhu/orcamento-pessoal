@@ -37,6 +37,26 @@ peubud_add_test(test_dir_guard)
 # Depende apenas de Qt::Core + Qt::Test — sem DB, cripto ou rede.
 peubud_add_test(test_pastas_fixas)
 
+# #192 (Onda U, DIST-03/SEC-02): .db de trabalho em local FIXO
+# (QStandardPaths::AppDataLocation), nao mais "data/" relativo ao CWD do
+# processo (quebrava 100% do lancamento via .desktop, CWD imprevisivel).
+# AppSettings::brapiToken() usa SecretStoreService (libsecret); ParcelaService
+# arrasta FinanceEngine.
+peubud_add_test(test_working_db_path
+    ${CMAKE_SOURCE_DIR}/src/core/settings/AppSettings.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp)
+target_link_libraries(test_working_db_path PRIVATE ${LIBSECRET_LIBRARIES})
+target_include_directories(test_working_db_path PRIVATE ${LIBSECRET_INCLUDE_DIRS})
+
+# #192 (Onda U, SEC-02): handler de SIGTERM/SIGINT via self-pipe -- prova que
+# o handler POSIX (so write(), async-signal-safe) acorda o event loop do Qt
+# via QSocketNotifier e emite terminationRequested(); a limpeza real (fechar/
+# cifrar o banco) roda la, nunca dentro do handler de sinal.
+peubud_add_test(test_unix_signal_handler
+    ${CMAKE_SOURCE_DIR}/src/core/platform/UnixSignalHandler.cpp)
+
 # #132: CalculadoraService — funcoes puras (sem dependencias externas).
 peubud_add_test(test_calculadora
     ${CMAKE_SOURCE_DIR}/src/services/CalculadoraService.cpp)

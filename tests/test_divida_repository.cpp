@@ -17,6 +17,7 @@
 // test_categoria/test_meta_repository).
 
 #include <QtTest/QtTest>
+#include <QByteArray>
 #include <QDir>
 #include <QSqlError>
 #include <QSqlQuery>
@@ -33,6 +34,8 @@ class TestDividaRepository : public QObject
 private:
     QTemporaryDir m_tmp;
     QString       m_prevCwd;
+    QByteArray    m_prevHome;
+    bool          m_prevHomeSet = false;
 
     QSqlDatabase db() const { return DatabaseManager::instance().db(); }
 
@@ -42,6 +45,12 @@ private slots:
         QVERIFY(m_tmp.isValid());
         m_prevCwd = QDir::currentPath();
         QVERIFY(QDir::setCurrent(m_tmp.path()));
+        // (#192) AppSettings::workingDbPath() usa QStandardPaths::AppDataLocation
+        // (HOME/XDG_DATA_HOME), nao mais CWD-relativo -- isolar HOME tambem,
+        // senao o .db em claro deste teste vaza pro ambiente real do dev.
+        m_prevHome    = qgetenv("HOME");
+        m_prevHomeSet = qEnvironmentVariableIsSet("HOME");
+        qputenv("HOME", m_tmp.path().toUtf8());
 
         const bool ok = DatabaseManager::instance().open(
             QStringLiteral("test-divida-repository"));
@@ -51,6 +60,10 @@ private slots:
 
     void cleanupTestCase()
     {
+        if (m_prevHomeSet)
+            qputenv("HOME", m_prevHome);
+        else
+            qunsetenv("HOME");
         if (!m_prevCwd.isEmpty())
             QDir::setCurrent(m_prevCwd);
     }
