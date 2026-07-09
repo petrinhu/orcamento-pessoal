@@ -355,23 +355,41 @@ QStringList GlossarioService::termos()
 QString GlossarioService::primeiroTermoEncontrado(const QString &texto)
 {
     if (texto.isEmpty()) return {};
-    const QString upper = texto.toUpper();
-    // Procura termos cadastrados como substring delimitada por word boundary.
-    // Ordena por tamanho decrescente para evitar match parcial (LCI antes de
-    // LCIA, IGP-M antes de IGPM, etc).
-    QStringList chaves = tabela().keys();
-    std::sort(chaves.begin(), chaves.end(), [](const QString &a, const QString &b) {
-        return a.size() > b.size();
-    });
-    for (const QString &k : chaves) {
+
+    // #194 (Onda U, PERF-01): ANTES compilava 1 QRegularExpression NOVA por
+    // termo, TODA chamada (92 termos x N chamadas = O(termos) compilations
+    // repetidas) — medido em ~365ms/55% do buildUi (1200-1700x mais lento
+    // que o fix). AGORA: uma unica alternation-regex, construida 1x (static,
+    // magic-static thread-safe) e otimizada (optimize() pre-compila o JIT
+    // interno do PCRE2 na 1a construcao, nao a cada match).
+    //
+    // Ordena por tamanho decrescente ANTES de montar a alternation: PCRE2
+    // tenta as alternativas na ORDEM listada (nao "mais longa primeiro"), entao
+    // sem isso "\b(IPCA|IPCA\+)\b" casaria so "IPCA" dentro de "IPCA+" (o "+"
+    // e nao-word-char, entao ha boundary ali). Mesmo motivo para
+    // RENDIMENTO/RENDIMENTO FII, ACAO/ACAO ON/ACAO PN.
+    static const QRegularExpression rx = [] {
+        QStringList chaves = tabela().keys();
+        std::sort(chaves.begin(), chaves.end(), [](const QString &a, const QString &b) {
+            return a.size() > b.size();
+        });
+        QStringList escapadas;
+        escapadas.reserve(chaves.size());
+        for (const QString &k : chaves)
+            escapadas << QRegularExpression::escape(k);
+
+        // Grupo de captura 1 = o termo que casou (retorno via captured(1)).
         // UseUnicodePropertiesOption: trata letras acentuadas (í, ç, ã…) como
-        // word-chars. Sem isso, "\bDAS\b" casa em "Conclu[í]DAS" (boundary falso
-        // antes de letra acentuada) — falso-positivo que pintaria sublinhado/
-        // tooltip de "DAS" em "Concluídas". (#166 §9.6: corrige precisão da varredura.)
-        const QRegularExpression rx(
-            QStringLiteral("\\b") + QRegularExpression::escape(k) + QStringLiteral("\\b"),
+        // word-chars. Sem isso, "\bDAS\b" casa em "Conclu[í]DAS" (boundary
+        // falso antes de letra acentuada) — falso-positivo que pintaria
+        // sublinhado/tooltip de "DAS" em "Concluídas". (#166 §9.6, preservado.)
+        QRegularExpression regex(
+            QStringLiteral("\\b(") + escapadas.join(QLatin1Char('|')) + QStringLiteral(")\\b"),
             QRegularExpression::UseUnicodePropertiesOption);
-        if (rx.match(upper).hasMatch()) return k;
-    }
-    return {};
+        regex.optimize();
+        return regex;
+    }();
+
+    const QRegularExpressionMatch m = rx.match(texto.toUpper());
+    return m.hasMatch() ? m.captured(1) : QString();
 }

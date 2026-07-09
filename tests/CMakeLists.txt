@@ -178,6 +178,15 @@ target_link_libraries(test_glossario PRIVATE ${LIBSECRET_LIBRARIES})
 target_include_directories(test_glossario PRIVATE ${LIBSECRET_INCLUDE_DIRS})
 set_tests_properties(test_glossario PROPERTIES
     ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
+# #194 (Onda U, PERF-01): budget de performance de
+# GlossarioService::primeiroTermoEncontrado -- 1000 chamadas sem match
+# devem rodar em <5ms (alternation-regex static+optimize() em vez de
+# recompilar 92 regexes por chamada). So depende de GlossarioService.cpp
+# (sem UI/DB/cripto).
+peubud_add_test(test_glossario_perf
+    ${CMAKE_SOURCE_DIR}/src/services/GlossarioService.cpp)
+
 peubud_add_test(test_resumo
     ${CMAKE_SOURCE_DIR}/src/services/ResumoService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/EntradaService.cpp
