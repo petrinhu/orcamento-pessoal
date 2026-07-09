@@ -566,6 +566,65 @@ peubud_add_test(test_cards_render
 set_tests_properties(test_cards_render PROPERTIES
     ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 
+# #196 (Onda U, UX-01): card "Parcelas" do Dashboard perde a contagem real
+# (sobrescrita por rotulo fixo do glossario coloquial). Instancia o
+# DashboardWidget de verdade (sem abrir DB — atualizarDados() so precisa que
+# os repositorios nao crashem com QSqlDatabase invalida, o que ja e o
+# contrato deles) e prova que GlossarioDecorator::aplicarLabelsColoquiais NAO
+# altera o sub-label "N parcela(s)". Cadeia de dependencia espelha
+# test_fechamento (DashboardWidget arrasta ResumoService -> FechamentoMensalService
+# -> DatabaseManager -> crypto) + GastoService/CategoriaRepository (card
+# "Fixos x Variaveis") + UserSession (onFecharMes) + Theme/filters (emojiIcon,
+# QSS) + Glossario* (mecanismo sob teste).
+peubud_add_test(test_dashboard_glossario
+    ${CMAKE_SOURCE_DIR}/src/ui/widgets/DashboardWidget.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/Theme.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/FocusVisibleFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/TableHoverFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/TableHoverDelegate.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/GlossarioDecorator.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/GlossaryUnderlineFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/widgets/GlossaryUnderline.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/GlossarioService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/GastoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/CategoriaRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/session/UserSession.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/ResumoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/EntradaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/CompraService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/GastoAvulsoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/LancamentoInvestimentoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/ProventoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/LancamentoEntradaRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/FonteRendaRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/CompraRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/ParcelaRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/CartaoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/database/DatabaseManager.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/AjusteCorporativoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FechamentoMensalService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/AuditLogService.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/SodiumCryptoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/AesCryptoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/KeyDerivation.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/settings/AppSettings.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp)
+target_link_libraries(test_dashboard_glossario PRIVATE
+    Qt6::Charts
+    Qt6::PrintSupport
+    OpenSSL::SSL
+    OpenSSL::Crypto
+    ${LIBSODIUM_LIBRARIES}
+    ${LIBSECRET_LIBRARIES})
+target_include_directories(test_dashboard_glossario PRIVATE
+    ${LIBSODIUM_INCLUDE_DIRS}
+    ${LIBSECRET_INCLUDE_DIRS})
+set_tests_properties(test_dashboard_glossario PROPERTIES
+    ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
 # Empty states guiados (#166 Peça 2): EmptyStateWidget com emoji+título+frase+CTA.
 # Verifica: labels corretos, copy exata das 12 telas, CTA presente/ausente conforme
 # tabela, QSS contém seletores #emptyStateTitle/#emptyStateFrase, sem tokens

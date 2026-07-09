@@ -108,6 +108,15 @@ QWidget *DashboardWidget::makeCard(const QString &title,
     QFont ft = lblTitle->font();
     ft.setPointSize(10);
     lblTitle->setFont(ft);
+    // #196 (Onda U, UX-01): labels do card sao conteudo pre-formatado do
+    // Dashboard (contagens/valores dinamicos atualizados por atualizarDados()),
+    // nao rotulos de campo genericos. GlossarioDecorator::aplicarLabelsColoquiais
+    // (chamado 1x no ctor da MainWindow, DEPOIS que este card ja exibe dado
+    // real) casava "PARCELA(S)" em "0 parcela(s)" e sobrescrevia com o rotulo
+    // coloquial fixo "Parcela mensal" -- destruindo a contagem real na 1a tela
+    // de todo usuario novo (modoIniciante e default). O mecanismo ja respeita
+    // a property; makeCard() marca todos os labels que cria por padrao.
+    lblTitle->setProperty("glossarioIgnore", true);
     lay->addWidget(lblTitle);
 
     // Arrow hint for clickable cards
@@ -130,6 +139,7 @@ QWidget *DashboardWidget::makeCard(const QString &title,
     fv.setPointSize(18);
     fv.setBold(true);
     lblValue->setFont(fv);
+    lblValue->setProperty("glossarioIgnore", true); // #196 (UX-01) — ver comentario acima
     lay->addWidget(lblValue);
 
     if (outSub) {
@@ -138,6 +148,7 @@ QWidget *DashboardWidget::makeCard(const QString &title,
         QFont fs = lblSub->font();
         fs.setPointSize(9);
         lblSub->setFont(fs);
+        lblSub->setProperty("glossarioIgnore", true); // #196 (UX-01) — ver comentario acima
         lay->addWidget(lblSub);
         *outSub = lblSub;
     }
