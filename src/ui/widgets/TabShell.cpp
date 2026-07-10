@@ -179,29 +179,11 @@ QFrame *TabShell::montarCallout(const QString &bloco,
                               : QStringLiteral("helpInstrBox"));
     box->setProperty("glossarioIgnore", true);
 
-    // Estilo inline garante que border-radius e border-left funcionem no Fusion
-    // style, que pode sobrescrever bordas de QFrame via QStyle::drawPrimitive.
-    // Os valores são lidos dos tokens do tema ativo no momento da construção;
-    // se o tema mudar, Theme::aplicar() reaplica o QSS global (seletor #name)
-    // e o inline é redundante — mas preservado por segurança no offscreen.
-    if (ehDesc) {
-        box->setStyleSheet(
-            QStringLiteral("QFrame#helpDescBox {"
-                           "  background-color: %1;"
-                           "  border: 1px solid rgba(59,130,246,0.22);"
-                           "  border-left: 3px solid %2;"
-                           "  border-radius: 9px;"
-                           "}")
-                .arg(Theme::helpDescBg(), Theme::helpDescBar()));
-    } else {
-        box->setStyleSheet(
-            QStringLiteral("QFrame#helpInstrBox {"
-                           "  background-color: %1;"
-                           "  border: 1px solid rgba(59,130,246,0.16);"
-                           "  border-radius: 9px;"
-                           "}")
-                .arg(Theme::helpInstrBg()));
-    }
+    // (#201, FE-01) Sem setStyleSheet() inline: o QSS global do Theme já cobre
+    // #helpDescBox/#helpInstrBox (Theme.cpp) com os mesmos tokens de cor. O
+    // inline anterior era avaliado 1× aqui no construtor e MATAVA a cascata —
+    // ao trocar de tema (Theme::setMode + qApp->setStyleSheet), os callouts
+    // ficavam presos na cor do boot. Deixar o QSS global assumir.
 
     auto *boxLayout = new QVBoxLayout(box);
     boxLayout->setContentsMargins(13, 10, 13, 12);
@@ -217,11 +199,8 @@ QFrame *TabShell::montarCallout(const QString &bloco,
         box);
     outEyebrow->setObjectName(QStringLiteral("helpEyebrow"));
     outEyebrow->setProperty("glossarioIgnore", true);
-    // Cor e peso inline: QSS global define via seletor #helpEyebrow,
-    // mas inline garante que Fusion/palette não sobrescreva em subwidgets.
-    outEyebrow->setStyleSheet(
-        QStringLiteral("QLabel { color: %1; background: transparent; }")
-            .arg(Theme::helpEyebrow()));
+    // (#201, FE-01) Cor via QSS global (seletor #helpEyebrow) — sem inline
+    // (ver comentário acima, mesmo motivo: preservar a cascata de tema).
     // Font: 11px SemiBold (QSS letter-spacing não funciona em Qt; peso via QFont).
     QFont fEyebrow = outEyebrow->font();
     fEyebrow.setPixelSize(11);
@@ -446,6 +425,11 @@ void TabShell::setContent(QWidget *content)
     if (m_content) {
         m_contentSlot->removeWidget(m_content);
         m_content->setParent(nullptr);
+        // (#201, FE-03) setParent(nullptr) sozinho não destrói o widget —
+        // se setContent for reusado (contrato público prevê), o conteúdo
+        // antigo vazava. deleteLater() agenda a destruição no próximo ciclo
+        // do event loop (seguro mesmo se algum sinal ainda estiver em voo).
+        m_content->deleteLater();
     }
     m_content = content;
     if (m_content) {

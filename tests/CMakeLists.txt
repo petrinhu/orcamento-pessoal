@@ -1203,3 +1203,38 @@ peubud_add_test(test_market_providers_contract
     ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp)
 target_link_libraries(test_market_providers_contract PRIVATE ${LIBSECRET_LIBRARIES})
 target_include_directories(test_market_providers_contract PRIVATE ${LIBSECRET_INCLUDE_DIRS})
+
+# #201 (Onda U-4): 3 fixes bounded — SEC-01 (senha em claro não limpa no
+# sucesso do LoginDialog), FE-01 (setStyleSheet inline mata QSS global do
+# callout do TabShell), FE-03 (leak em TabShell::setContent sem deleteLater).
+# QT_NO_DEBUG (não QT_DEBUG) força o ramo release do LoginDialog — mesmo
+# motivo de test_a11y_botoes_icone: precisa do campo de senha + botão olho
+# existirem para exercitar o fluxo de login completo (com libsecret real).
+peubud_add_test(test_tabshell_seguranca
+    ${CMAKE_SOURCE_DIR}/src/ui/LoginDialog.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/widgets/TabShell.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/TabHelp.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/Theme.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/FocusVisibleFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/TableHoverFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/TableHoverDelegate.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/settings/AppSettings.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/session/UserSession.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/SodiumCryptoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/AesCryptoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/KeyDerivation.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp)
+target_compile_definitions(test_tabshell_seguranca PRIVATE QT_NO_DEBUG)
+target_link_libraries(test_tabshell_seguranca PRIVATE
+    OpenSSL::SSL
+    OpenSSL::Crypto
+    ${LIBSODIUM_LIBRARIES}
+    ${LIBSECRET_LIBRARIES})
+target_include_directories(test_tabshell_seguranca PRIVATE
+    ${LIBSODIUM_INCLUDE_DIRS}
+    ${LIBSECRET_INCLUDE_DIRS})
+set_tests_properties(test_tabshell_seguranca PROPERTIES
+    ENVIRONMENT "QT_QPA_PLATFORM=offscreen")

@@ -365,6 +365,12 @@ void LoginDialog::onEntrar()
         m_chaveOld = legacy.deriveKey(m_senha->text(), salt);
     }
 
+    // (#201, SEC-01) Zera o campo de senha em claro no caminho de sucesso.
+    // A partir daqui só as chaves derivadas (m_chave/m_chaveOld) são usadas;
+    // sem este clear(), a senha em texto puro ficava viva em m_senha até o
+    // fim do processo (o sodium_memzero do destrutor só cobre as chaves).
+    m_senha->clear();
+
     UserSession::instance().login(n, m_chave);
     accept();
 #endif
