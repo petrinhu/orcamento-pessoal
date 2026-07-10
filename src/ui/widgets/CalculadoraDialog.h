@@ -1,6 +1,7 @@
 #pragma once
 #include <QDialog>
 #include <QStringList>
+#include <memory>
 
 class QKeyEvent;
 class QLineEdit;
@@ -54,6 +55,39 @@ private:
     void buildTabIrTributos    (QWidget *tab);  // #56
     void buildTabInflacaoCambio(QWidget *tab);  // #57
     QPushButton *makeBtnCalc(const QString &label, QWidget *parent);
+
+    // ── Wizards (tab Wizards) — ARQ-03 (auditoria 2026-06-22 §3.3) ─────────
+    // buildTabWizards() era uma god-function (~1.388 linhas). Cada painel foi
+    // extraído para um método próprio; buildTabWizards() ficou como
+    // registrador fino (cria o combo/stack e chama os 20 buildWizardX() na
+    // mesma ordem, preservando o mapeamento índice-combo <-> índice-stack).
+    // Helpers compartilhados (eram lambdas locais duplicadas em cada painel):
+    [[nodiscard]] static double  wizParseF(QLineEdit *le);
+    [[nodiscard]] static QString wizFmtF(double v, int dec = 4);
+    static QLineEdit *wizMakeLE(QWidget *parent);
+    static QLabel     *wizMakeResLbl(QWidget *parent);
+    QPushButton *wizMakeUsarBtn(QWidget *parent, std::shared_ptr<double> val);
+
+    QWidget *buildWizardCetTaxaMensal();
+    QWidget *buildWizardEquivalenciaTaxas();
+    QWidget *buildWizardParcelasPrice();
+    QWidget *buildWizardParcelasSac();
+    QWidget *buildWizardValorFuturo();
+    QWidget *buildWizardRendaPassiva();
+    QWidget *buildWizardRoi();
+    QWidget *buildWizardComprometimentoRenda();
+    QWidget *buildWizardSaldoDevedor();
+    QWidget *buildWizardMetaFinanceira();
+    QWidget *buildWizardAmortizacaoParcial();
+    QWidget *buildWizardComparadorRf();
+    QWidget *buildWizardFireNumber();
+    QWidget *buildWizardLeanFire();
+    QWidget *buildWizardFatFire();
+    QWidget *buildWizardCoastFire();
+    QWidget *buildWizardBaristaFire();
+    QWidget *buildWizardGeographicArbitrage();
+    QWidget *buildWizardReservaEmergencia();
+    QWidget *buildWizardCltVsPj();
 
     // ── Calculator logic (tab Comum) ──────────────────────────────────────
     void pressDigito(int d);

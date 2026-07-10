@@ -838,6 +838,36 @@ target_include_directories(test_a11y_botoes_icone PRIVATE
 set_tests_properties(test_a11y_botoes_icone PROPERTIES
     ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 
+# ARQ-03 (auditoria 2026-06-22 §3.3): caracterização da aba Wizards da
+# CalculadoraDialog (buildTabWizards era god-function ~1.388 linhas, virou
+# registrador fino + 20 buildWizardX()). Instância real offscreen: prova
+# que os 20 painéis continuam na mesma ordem combo<->stack e que o fluxo
+# digitar->Calcular->ler resultado produz o MESMO texto de antes do refactor.
+peubud_add_test(test_calculadora_dialog_wizards
+    ${CMAKE_SOURCE_DIR}/src/ui/widgets/CalculadoraDialog.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/CalculadoraService.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/widgets/GlossaryLabel.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/GlossarioDecorator.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/GlossaryUnderlineFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/widgets/GlossaryUnderline.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/GlossarioService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/TvmService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FiscalService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/UiFormatters.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/settings/AppSettings.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/Theme.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/FocusVisibleFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/TableHoverFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/TableHoverDelegate.cpp)
+target_link_libraries(test_calculadora_dialog_wizards PRIVATE ${LIBSECRET_LIBRARIES})
+target_include_directories(test_calculadora_dialog_wizards PRIVATE ${LIBSECRET_INCLUDE_DIRS})
+set_tests_properties(test_calculadora_dialog_wizards PROPERTIES
+    ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
 # Empty states guiados (#166 Peça 2): EmptyStateWidget com emoji+título+frase+CTA.
 # Verifica: labels corretos, copy exata das 12 telas, CTA presente/ausente conforme
 # tabela, QSS contém seletores #emptyStateTitle/#emptyStateFrase, sem tokens
