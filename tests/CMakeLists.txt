@@ -1294,6 +1294,33 @@ peubud_add_test(test_market_providers_contract
 target_link_libraries(test_market_providers_contract PRIVATE ${LIBSECRET_LIBRARIES})
 target_include_directories(test_market_providers_contract PRIVATE ${LIBSECRET_INCLUDE_DIRS})
 
+# UX-02 (auditoria 2026-06-22, Onda U-5): combo de provider da Bolsa com
+# jargao cru + status falso (default "frankfurter" nunca registrado no
+# MarketDataService, cai pra "brapi" em silencio mas a UI confirmava sucesso)
+# + busca sem timeout (ficava "Buscando..." pra sempre). Fix: rotulos
+# amigaveis via MarketProviderCatalog, status honesto via
+# MarketDataService::activeProviderName() + BolsaWidget::mensagemStatusProvider
+# (logica pura extraida da UI), timeout de busca com mensagem de erro.
+peubud_add_test(test_ux02_provider_bolsa
+    ${CMAKE_SOURCE_DIR}/src/ui/widgets/BolsaWidget.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/widgets/EmptyStateWidget.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/Theme.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/FocusVisibleFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/TableHoverFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/TableHoverDelegate.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/MarketDataService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/MarketProviderCatalog.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/IMarketDataProvider.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/settings/AppSettings.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp)
+target_link_libraries(test_ux02_provider_bolsa PRIVATE ${LIBSECRET_LIBRARIES})
+target_include_directories(test_ux02_provider_bolsa PRIVATE ${LIBSECRET_INCLUDE_DIRS})
+set_tests_properties(test_ux02_provider_bolsa PROPERTIES
+    ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
 # #201 (Onda U-4): 3 fixes bounded — SEC-01 (senha em claro não limpa no
 # sucesso do LoginDialog), FE-01 (setStyleSheet inline mata QSS global do
 # callout do TabShell), FE-03 (leak em TabShell::setContent sem deleteLater).

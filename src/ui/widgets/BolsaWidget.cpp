@@ -4,6 +4,7 @@
 
 #include "core/settings/AppSettings.h"
 #include "services/MarketDataService.h"
+#include "services/MarketProviderCatalog.h"
 
 #include <QComboBox>
 #include <QHBoxLayout>
@@ -14,17 +15,8 @@
 #include <QPushButton>
 #include <QStackedWidget>
 #include <QTableWidget>
+#include <QTimer>
 #include <QVBoxLayout>
-
-namespace {
-const QStringList kProviders = {
-    QStringLiteral("none"),
-    QStringLiteral("frankfurter"),
-    QStringLiteral("brapi"),
-    QStringLiteral("b3direct"),
-    QStringLiteral("cotahist"),
-};
-}
 
 BolsaWidget::BolsaWidget(MarketDataService *service, QWidget *parent)
     : QWidget(parent), m_service(service)
@@ -44,7 +36,11 @@ void BolsaWidget::buildUi()
     bar->addWidget(new QLabel(tr("Provider:"), this));
 
     m_cbProvider = new QComboBox(this);
-    for (const QString &p : kProviders) m_cbProvider->addItem(p, p);
+    const QStringList &provKeys = MarketProviderCatalog::keys();
+    const QStringList &provLabels = MarketProviderCatalog::labels();
+    for (int i = 0; i < provKeys.size(); ++i) {
+        m_cbProvider->addItem(provLabels[i], provKeys[i]);
+    }
     bar->addWidget(m_cbProvider);
     bar->addSpacing(12);
 
@@ -108,12 +104,56 @@ void BolsaWidget::carregarProvider()
     if (idx >= 0) m_cbProvider->setCurrentIndex(idx);
 }
 
+void BolsaWidget::setBuscaTimeoutMsParaTeste(int ms)
+{
+    m_buscaTimeoutMs = ms;
+}
+
+QString BolsaWidget::mensagemStatusProvider(const QString &solicitado,
+                                            bool sucesso,
+                                            const QString &ativoReal)
+{
+    if (ativoReal.isEmpty()) {
+        return tr("Nenhum provedor de cotação está ativo no momento. "
+                  "Configure um em Preferências → Mercado.");
+    }
+    if (sucesso) {
+        return tr("Provedor de cotação ativo: %1")
+            .arg(MarketProviderCatalog::labelFor(ativoReal));
+    }
+    // UX-02: nunca confirmar `solicitado` como ativo se ele não ficou ativo
+    // de fato — a mensagem sempre reflete o provider REAL (`ativoReal`).
+    return tr("%1 não está disponível agora — usando %2 em vez disso.")
+        .arg(MarketProviderCatalog::labelFor(solicitado),
+             MarketProviderCatalog::labelFor(ativoReal));
+}
+
+QString BolsaWidget::mensagemTimeoutBusca(const QString &query)
+{
+    return tr("Não foi possível buscar \"%1\" — o provedor não respondeu. "
+              "Verifique sua conexão ou tente outro provedor em "
+              "Preferências → Mercado.").arg(query);
+}
+
 void BolsaWidget::onProviderChanged(int idx)
 {
-    const QString p = m_cbProvider->itemData(idx).toString();
-    AppSettings::instance().setMarketDefaultProvider(p);
-    if (m_service) m_service->setActiveProvider(p);
-    m_lblStatus->setText(tr("Provider ativo: %1").arg(p));
+    const QString solicitado = m_cbProvider->itemData(idx).toString();
+
+    if (!m_service) {
+        m_lblStatus->setText(mensagemStatusProvider(solicitado, false, QString()));
+        return;
+    }
+
+    const bool sucesso = m_service->setActiveProvider(solicitado);
+    const QString ativoReal = m_service->activeProviderName();
+
+    // Só persiste como preferência default o que de fato funcionou — salvar
+    // um provider que sabemos que falha repetiria a mentira no próximo
+    // lançamento do app (MainWindow chama setActiveProvider com o default
+    // salvo, sem checar o retorno).
+    if (sucesso) AppSettings::instance().setMarketDefaultProvider(solicitado);
+
+    m_lblStatus->setText(mensagemStatusProvider(solicitado, sucesso, ativoReal));
 }
 
 void BolsaWidget::onBuscar()
@@ -126,9 +166,28 @@ void BolsaWidget::onBuscar()
         return;
     }
 
-    m_lblStatus->setText(tr("Buscando '%1' em %2…")
-        .arg(q, m_cbProvider->currentData().toString()));
-    m_service->search(q, [this, q](const QStringList &results) {
+    const quint64 seq = ++m_buscaSeq; // invalida callback/timeout de busca anterior
+    const QString providerAtual = m_service->activeProviderName();
+
+    m_lblStatus->setText(tr("Buscando \"%1\" em %2…")
+        .arg(q, MarketProviderCatalog::labelFor(providerAtual)));
+
+    if (m_timeoutBusca) {
+        m_timeoutBusca->stop();
+        m_timeoutBusca->deleteLater();
+    }
+    m_timeoutBusca = new QTimer(this);
+    m_timeoutBusca->setSingleShot(true);
+    connect(m_timeoutBusca, &QTimer::timeout, this, [this, seq, q]() {
+        if (seq != m_buscaSeq) return; // busca já resolvida ou substituída
+        m_lblStatus->setText(mensagemTimeoutBusca(q));
+    });
+    m_timeoutBusca->start(m_buscaTimeoutMs);
+
+    m_service->search(q, [this, seq, q](const QStringList &results) {
+        if (seq != m_buscaSeq) return; // resposta de uma busca já expirada/substituída
+        if (m_timeoutBusca) m_timeoutBusca->stop();
+
         m_tabela->setRowCount(results.size());
         for (int i = 0; i < results.size(); ++i) {
             m_tabela->setItem(i, 0, new QTableWidgetItem(results[i]));
@@ -139,6 +198,6 @@ void BolsaWidget::onBuscar()
         }
         // Alterna stack: tabela (1) quando há resultados, empty state (0) quando não.
         m_stack->setCurrentIndex(results.isEmpty() ? 0 : 1);
-        m_lblStatus->setText(tr("%1 resultados para '%2'").arg(results.size()).arg(q));
+        m_lblStatus->setText(tr("%1 resultados para \"%2\"").arg(results.size()).arg(q));
     });
 }

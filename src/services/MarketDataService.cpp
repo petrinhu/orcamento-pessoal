@@ -40,6 +40,12 @@ IMarketDataProvider* MarketDataService::activeProvider() const
     return m_activeProvider;
 }
 
+QString MarketDataService::activeProviderName() const
+{
+    if (!m_activeProvider) return QString();
+    return m_providers.key(m_activeProvider, QString());
+}
+
 IMarketDataProvider* MarketDataService::provider(const QString &name) const
 {
     return m_providers.value(name, nullptr);

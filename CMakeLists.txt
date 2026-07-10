@@ -184,6 +184,7 @@ set(SOURCES
     src/services/CurrencyService.cpp
     src/services/ImportService.cpp
     src/services/MarketDataService.cpp
+    src/services/MarketProviderCatalog.cpp
     src/services/IMarketDataProvider.cpp
     src/services/BrapiProvider.cpp
     src/services/import/IMatchFinder.cpp

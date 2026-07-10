@@ -22,7 +22,13 @@ public:
     
     // Get the currently active provider
     IMarketDataProvider* activeProvider() const;
-    
+
+    // UX-02: nome (chave) registrado do provider REALMENTE ativo agora —
+    // não confundir com o que foi pedido em setActiveProvider(); se o pedido
+    // falhar (nome não registrado), o ativo real continua sendo o anterior.
+    // String vazia se nenhum provider está ativo.
+    QString activeProviderName() const;
+
     // Get provider by name
     IMarketDataProvider* provider(const QString &name) const;
     

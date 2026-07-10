@@ -2,6 +2,7 @@
 
 #include "core/settings/AppSettings.h"
 #include "services/BrapiProvider.h"
+#include "services/MarketProviderCatalog.h"
 
 #include <QCheckBox>
 #include <QComboBox>
@@ -15,22 +16,6 @@
 #include <QVBoxLayout>
 
 namespace {
-const QStringList kProviders = {
-    QStringLiteral("none"),
-    QStringLiteral("frankfurter"),
-    QStringLiteral("brapi"),
-    QStringLiteral("b3direct"),
-    QStringLiteral("cotahist"),
-};
-
-const QStringList kProviderLabels = {
-    QObject::tr("Nenhum (manual)"),
-    QStringLiteral("Frankfurter (ECB, sem chave)"),
-    QStringLiteral("Brapi (token Bearer)"),
-    QStringLiteral("B3 oficial (key id)"),
-    QStringLiteral("COTAHIST (histórico)"),
-};
-
 const QStringList kMoedas = {
     QStringLiteral("USD"), QStringLiteral("EUR"), QStringLiteral("GBP"),
     QStringLiteral("JPY"), QStringLiteral("CHF"), QStringLiteral("ARS"),
@@ -56,8 +41,10 @@ void MarketConfigWidget::buildUi()
 
     // ── Provider padrão ────────────────────────────────────────────────────
     m_cbProvider = new QComboBox(this);
-    for (int i = 0; i < kProviders.size(); ++i) {
-        m_cbProvider->addItem(kProviderLabels[i], kProviders[i]);
+    const QStringList &provKeys = MarketProviderCatalog::keys();
+    const QStringList &provLabels = MarketProviderCatalog::labels();
+    for (int i = 0; i < provKeys.size(); ++i) {
+        m_cbProvider->addItem(provLabels[i], provKeys[i]);
     }
     form->addRow(tr("Provider padrão:"), m_cbProvider);
 
