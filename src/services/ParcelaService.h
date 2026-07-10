@@ -102,7 +102,10 @@ public:
 
     // ── Utility ──────────────────────────────────────────────────────────────
 
-    // Format centavos as "R$ 1.234,56" (or other currency symbol)
+    // Format centavos as a DISPLAY money value, locale-aware by
+    // AppSettings::language() (pt-BR "R$ 1.234,56" / en-US "$1,234.56"),
+    // explicit ISO currency `moeda` (default "BRL") -- integer arithmetic
+    // only (#204, gêmeo de uifmt::formatCentavosBRL/#197 I18N-01).
     static QString formatarValor(qint64 centavos, const QString &moeda = QStringLiteral("BRL"));
 
     // Parse "1.234,56" → centavos. #199 (QA-03): "só ponto" ("1.234") é

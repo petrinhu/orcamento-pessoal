@@ -12,7 +12,7 @@ Arquivo canônico de pendências, auditoria técnica e conformidade com o contra
 - **Status**: ✅ Concluído · 🔄 Em andamento · 🟡 Parcial · ⏳ Pendente · ❄️ Congelado pós-1.0 · 💡 Decisão tomada · 🎨 Pendente design · 🔍 Pendente verificação · ❌ Cancelado
 - **Estado Auditado**: `—` (não auditado) · `✓` (auditado e aprovado) · `⚠` (auditado com ressalvas)
 
-> **Convenção de ID:** `#NN` mantido como identificador estável — usado em commits (`feat(#44): ...`), branches e referências cruzadas. Próximo ID disponível: **#204**.
+> **Convenção de ID:** `#NN` mantido como identificador estável — usado em commits (`feat(#44): ...`), branches e referências cruzadas. Próximo ID disponível: **#205**.
 >
 > **Hierarquia:** itens filhos só começam após pai ✅; irmãos com mesmo prefixo numérico (ex.: `1.2.1` e `1.2.2`) são paralelos.
 
@@ -53,6 +53,7 @@ Arquivo canônico de pendências, auditoria técnica e conformidade com o contra
 | U-4 | #200 | REFACTOR | **[ARQ-01,03,05]** inversão de camada no `DatabaseManager`, god-function `buildTabWizards` (~1.4k linhas), OCP do export (Strategy `IExportWriter`). §3.3 | Média | #190 | Alta | ⏳ Pendente | — |
 | U-4 | #201 | BUG | **[SEC-01,FE-01,FE-03]** senha bruta viva na sessão, callouts de ajuda não seguem o toggle de tema, leak latente no `TabShell::setContent`. §3.6/3.7 | Média | — | Baixa | ⏳ Pendente | — |
 | U-4 | #202 | INFRA | **[DIST-04..09]** Qt `GuiPrivate` quebra Debian/Arch (elevar #148), 59 commits sem CI, licença Inter/OFL ausente, clang-tidy religar, cppcheck gate real, No PIE. §4 | Média | — | Alta | ⏳ Pendente | — |
+| U-4 | #204 | I18N | **[I18N-01, follow-up]** `ParcelaService::formatarValor` era 2º formatador de moeda locale-naive (gêmeo do #197, ~23 call-sites em Cartões/Calculadora/Amortização) — não pego pelo grep do auditor original (só contou `formatCentavosBRL`). **Entregue:** mesma abordagem inteira do #197 (`QLocale`/`AppSettings::language()`, sem `double`); moeda continua explícita por chamador (Compra pode divergir da moeda padrão ativa). `uifmt::formatCentavosBRL` virou wrapper fino de `formatarValor` (DRY, elimina a duplicação nos dois sentidos). `test_parcela_service` ganhou 5 casos golden (pt-BR intacto+agrupado, EN/USD, sinal, moeda explícita≠ativa). §3.8 | Média | #197 | Baixa | 🔍 Pendente verificação | — |
 | — | #203 | VÁRIOS | **[cosméticos, pós-1.0]** FIN-06, ARQ-04 (ISecretStore morta), SEC-03/04, FE-02 (bg2 ghost), I18N-06, UX-04 (Contraparte), A11Y-07 (cor sozinha), DIST-10 (pipeline pré-release). §3/§4 | Baixa | — | Baixa | 🔵 Pós-1.0 | — |
 
 ### Onda 0 — Precisão (pré-tudo · GATE de 1.0)

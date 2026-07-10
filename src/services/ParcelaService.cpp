@@ -1,5 +1,6 @@
 #include "ParcelaService.h"
 
+#include "core/settings/AppSettings.h"
 #include "services/FinanceEngine.h"
 
 #include <cmath>
@@ -384,14 +385,36 @@ QList<AmortizacaoRow> ParcelaService::tabelaAmortizacao(const Compra &c)
 
 QString ParcelaService::formatarValor(qint64 centavos, const QString &moeda)
 {
-    const qint64 abs_c = std::abs(centavos);
-    const QString sign = centavos < 0 ? QStringLiteral("-") : QString();
-    const QString sym  = simboloMoeda(moeda);
-    return QStringLiteral("%1%2 %3,%4")
-        .arg(sign)
-        .arg(sym)
-        .arg(abs_c / 100)
-        .arg(abs_c % 100, 2, 10, QLatin1Char('0'));
+    // #204 (Onda U, follow-up de i18n do #197/I18N-01): gêmeo locale-naive de
+    // uifmt::formatCentavosBRL -- concatenava "R$"/símbolo + vírgula fixos,
+    // sem separador de milhar e ignorando AppSettings::language() (~23
+    // call-sites em Cartões/Calculadora/Amortização). O auditor do #197 só
+    // pegou formatCentavosBRL no grep; este é o 2º formatador com o mesmo bug.
+    //
+    // Fix: MESMA abordagem íntegra do #197 -- aritmética 100% inteira (sem
+    // double), agrupamento de milhar via QLocale::toString(qint64), separador
+    // decimal e posição do sinal por switch(AppSettings::language()).
+    //
+    // Diferença de formatCentavosBRL: aqui a MOEDA é explícita por chamador
+    // (uma Compra pode estar em moeda != moeda padrão do app) -- só o
+    // idioma/locale de exibição (separadores, posição do sinal) segue
+    // AppSettings::language(), não a moeda em si.
+    const bool en = AppSettings::instance().language() == AppSettings::Language::EnIntl;
+
+    const qint64 abs_c    = std::abs(centavos);
+    const qint64 inteiro  = abs_c / 100;
+    const qint64 fracao   = abs_c % 100;
+    const QString sinal   = centavos < 0 ? QStringLiteral("-") : QString();
+    const QString simbolo = simboloMoeda(moeda);
+
+    const QLocale loc = en ? QLocale(QLocale::English, QLocale::UnitedStates)
+                            : QLocale(QLocale::Portuguese, QLocale::Brazil);
+    const QString inteiroFmt = loc.toString(inteiro); // agrupado: "1,234" / "1.234"
+    const QString fracaoFmt  = QStringLiteral("%1").arg(fracao, 2, 10, QLatin1Char('0'));
+
+    if (en)
+        return QStringLiteral("%1%2%3.%4").arg(sinal, simbolo, inteiroFmt, fracaoFmt);
+    return QStringLiteral("%1 %2%3,%4").arg(simbolo, sinal, inteiroFmt, fracaoFmt);
 }
 
 qint64 ParcelaService::parsearValor(const QString &texto)
