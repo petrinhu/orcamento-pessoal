@@ -61,9 +61,15 @@ jobs:
             gcc-c++ cmake make git clang-tools-extra cppcheck nodejs
       - name: Checkout
         uses: actions/checkout@v4
+      # continue-on-error: o gate cppcheck (abaixo) escaneia `src` direto e NÃO
+      # depende deste configure — só o clang-tidy informativo usa compile_commands.
+      # XLSX OFF + TESTING OFF removem o FetchContent(QXlsx) (git-clone) do
+      # configure, que era o passo bloqueante frágil no runner sandboxed (rede).
       - name: Configure (gera compile_commands.json)
+        continue-on-error: true
         run: cmake -B build -DCMAKE_BUILD_TYPE=Debug \
-                            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+                            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+                            -DPEUBUD_HAS_XLSX=OFF -DBUILD_TESTING=OFF
 
       # GATE real (DIST-08): mesma categoria/config do pre-commit hook local
       # (scripts/pre-commit) — --enable=warning (só bugs prováveis, sem
