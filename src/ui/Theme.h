@@ -37,6 +37,13 @@ namespace Color {
     extern const QString AccTextLight;
     extern const QString PositiveLight;
     extern const QString NegativeLight;
+    // A11Y-05 (WCAG 1.4.3): positivo()/negativo() crus reprovam AA como TEXTO
+    // sobre @@SURF@@/@@BG@@ (positivo 2.20:1 light; negativo 4.07:1 light /
+    // 3.85:1 dark). Variantes dedicadas SÓ para texto (fills/badges/barras
+    // continuam com o token cru — regra de ouro preservada). Mesma família de
+    // tom das TagSucessoFg/TagPerigoFg (#166, já verificadas AA).
+    extern const QString PositiveTextLight;
+    extern const QString NegativeTextLight;
     extern const QString DouradoLight;    // novo (#164)
     extern const QString Sidebar1Light;   // novo (#164)
     extern const QString Sidebar2Light;   // novo (#164)
@@ -53,6 +60,8 @@ namespace Color {
     extern const QString AccTextDark; // #198 (A11Y-04): idem, tom claro sobre fundo escuro.
     extern const QString PositiveDark;
     extern const QString NegativeDark;
+    extern const QString PositiveTextDark; // A11Y-05: idem, tom claro sobre fundo escuro.
+    extern const QString NegativeTextDark; // A11Y-05: idem, tom claro sobre fundo escuro.
     extern const QString DouradoDark;     // novo (#164)
     extern const QString Sidebar1Dark;    // novo (#164)
     extern const QString Sidebar2Dark;    // novo (#164)
@@ -83,6 +92,13 @@ QString acento();
 QString acentoTexto();
 QString negativo();
 QString positivo();
+// A11Y-05 (WCAG 1.4.3): variantes AA-safe de negativo()/positivo() para uso
+// EXCLUSIVO como cor de TEXTO (setForeground de item de tabela, color: de
+// QLabel). NÃO usar em fills/badges/barras/tags — nesses, negativo()/
+// positivo() crus continuam corretos (regra de ouro "negativo sempre
+// #EA3943" preservada para preenchimentos, ver §17 manual de estilo).
+QString negativoTexto();
+QString positivoTexto();
 QString background();
 QString surface();
 QString texto();

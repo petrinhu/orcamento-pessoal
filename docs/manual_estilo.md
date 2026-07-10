@@ -213,9 +213,26 @@ Quando um gráfico precisa de várias séries, a ordem harmônica é:
 | `@@ACC_TEXT@@` / `acentoTexto()` | Acento como **TEXTO** (hover de botão, header hover, glifo de icon-button) — AA-safe (#198, A11Y-04) | `#1D4ED8` | `#7FB0FF` |
 | `@@HOV@@` / hover bg | Fundo de hover (linha, icon-button) | `#DCE8FA` | `#222D3D` |
 | `@@ALT@@` / alt | Fundo pressed / linha alternada | `#F7FAFD` | `#171F2D` |
-| `@@NEG@@` / negativo | Gasto, saldo negativo, erro | `#EA3943` | `#EA3943` |
-| positivo | Entrada, saldo positivo | `#16C784` | `#16C784` |
+| `@@NEG@@` / negativo | Gasto, saldo negativo, erro — **fills/badges/barras/tags** | `#EA3943` | `#EA3943` |
+| positivo | Entrada, saldo positivo — **fills/badges/barras/tags** | `#16C784` | `#16C784` |
+| `negativoTexto()` | Negativo como **TEXTO** (setForeground de célula, `color:`) — AA-safe (A11Y-05) | `#9B1C1C` | `#FCA5A5` |
+| `positivoTexto()` | Positivo como **TEXTO** — AA-safe (A11Y-05) | `#0D7A50` | `#34D399` |
 | dourado | Meta, aviso, destaque | `#E8A93B` | `#E8A93B` |
+
+> **A11Y-05 (WCAG 1.4.3) — por que dois pares.** `positivo()`/`negativo()` crus
+> reprovam AA quando pintados como cor de TEXTO: `positivo()` = 2.20:1 sobre
+> `@@SURF@@` (light); `negativo()` = 4.07:1 (light) / 3.85:1 (dark) — ambos
+> abaixo do mínimo 4.5:1. `positivoTexto()`/`negativoTexto()` são variantes
+> dedicadas (mesma família de tom do `TagSucessoFg`/`TagPerigoFg`, §6.1) para
+> uso **exclusivo** como texto (`setForeground` em tabela, `color:` de
+> `QLabel`) — ver LoginDialog (checklist de senha), MetasWidget (dias
+> atrasados), PlanejamentoWidget (aderência). **A regra de ouro "negativo
+> sempre `#EA3943`; positivo sempre `#16C784`" continua valendo para
+> preenchimentos/badges/barras/tags** (§17) — só a cor de TEXTO muda. Exceção
+> documentada: `CurrencyPanelWidget` usa `positivo()` cru como texto porque o
+> fundo é o navy fixo da statusbar (`@@SIDEBAR2@@`), não `@@SURF@@`/`@@BG@@` —
+> nesse fundo escuro `positivo()` já passa AA (6.56–7.14:1); trocar por
+> `positivoTexto()` (variante escura pensada para fundo claro) regrediria.
 
 > **Atenção (divergência resolvida):** um design doc inicial citava `hover #5CC6FA / pressed
 > #1F7AAD` para o acento. O **`Theme.cpp` é a autoridade** e usa **`accHover #60A5FA`**
@@ -420,6 +437,16 @@ coloridas conforme a categoria. Texto curto, peso Medium.
 Termos que o leigo não conhece (IRRF, INSS, CET, DY...) recebem **sublinhado pontilhado**
 → no hover, tooltip escuro explicando em **linguagem simples**. (Substitui o GlossarioDecorator
 e seu bug de sobrescrever.)
+
+**Acesso por teclado e leitor de tela (A11Y-06, WCAG 2.1.1/1.4.13).** O tooltip por
+hover de mouse não alcança quem navega só por teclado nem quem usa leitor de tela.
+`GlossaryLabel` (termo reconhecido) resolve com **mínima poluição da tab order**:
+`setAccessibleDescription()` com a definição (Orca/NVDA lê independente de foco) +
+`Qt::TabFocus` (alcançável por Tab, sem virar alvo de clique — `QLabel` não é
+controle de mouse) + `focusInEvent` mostra a mesma definição via `QToolTip::showText`
+(equivalente visual ao hover, agora também por teclado), `focusOutEvent` esconde.
+Termo **não** reconhecido pelo glossário permanece `Qt::NoFocus` — não decora, não
+entra na tab order.
 
 ### 9.7 Empty states guiados
 
@@ -627,6 +654,10 @@ Pares já verificados (blocos de ajuda, #166):
 | `#iconButton:hover` texto: `@@ACC@@` sobre `@@HOV@@` (#198) | 2.97:1 ❌ **REJEITADO** | 3.78:1 ❌ **REJEITADO** |
 | `#iconButton:hover` texto: `@@ACC_TEXT@@` sobre `@@HOV@@` (#198, fix) | 5.41:1 ✅ | 6.33:1 ✅ |
 | `@@ACC@@` como borda de foco sobre navy sidebar (#198, A11Y-02, não-texto ≥3:1) | 3.93–4.27:1 ✅ | 3.93–4.27:1 ✅ |
+| `positivo()` texto sobre `@@SURF@@` (A11Y-05) | 2.20:1 ❌ **REJEITADO** | 7.11:1 ✅ |
+| `negativo()` texto sobre `@@SURF@@` (A11Y-05) | 4.07:1 ❌ **REJEITADO** | 3.85:1 ❌ **REJEITADO** |
+| `positivoTexto()` (`#0D7A50`/`#34D399`) sobre `@@SURF@@` (A11Y-05, fix) | 5.36:1 ✅ | 8.14:1 ✅ |
+| `negativoTexto()` (`#9B1C1C`/`#FCA5A5`) sobre `@@SURF@@` (A11Y-05, fix) | 8.15:1 ✅ | 8.25:1 ✅ |
 
 > **Regra de ouro do contraste:** **`#3B82F6` NÃO pode ser usado como texto sobre fundo
 > azul-claro no light** (reprova AA). Nestes casos use **blue-700 `#1D4ED8`** (light) /
@@ -634,6 +665,14 @@ Pares já verificados (blocos de ajuda, #166):
 > eyebrow e número de passo (#166) e propagado a `QPushButton:hover`, `#iconButton`
 > hover/pressed e `QHeaderView::section:hover` (#198) — mesma classe de bug, três locais
 > adicionais achados por varredura.
+
+> **A11Y-05 — mesma classe de bug, aplicada às cores de status.** `positivo()`/`negativo()`
+> crus reprovam AA como TEXTO (ver tabela acima); `positivoTexto()`/`negativoTexto()` são
+> o fix, usados em LoginDialog (checklist), MetasWidget (dias atrasados) e
+> PlanejamentoWidget (aderência de meta). **Fills/badges/barras/tags continuam com o
+> token cru** — a regra de ouro "negativo sempre `#EA3943`" (§17) não muda, só a cor de
+> TEXTO ganha uma variante à parte. Decisão do líder aprovada 2026-07-10 (auditoria
+> `AUDITORIA_2026-06-22.md` §3.10).
 
 ### Cor nunca sozinha
 
@@ -652,6 +691,8 @@ com palavra. Os emojis 🟢🔵🔴 da microcopy sempre acompanham a palavra.
   de mouse é "hold" (pressionar e segurar), o equivalente de teclado é um **toggle** explícito
   via `eventFilter` — não o `animateClick()` padrão do Qt (que solta sozinho em ~100ms).
 - **Todo botão icon-only precisa de `accessibleName`** (#198, A11Y-01, WCAG 4.1.2) — ver §9.3.
+- **Cue de glossário acessível por teclado/leitor de tela** (A11Y-06, WCAG 2.1.1/1.4.13):
+  `GlossaryLabel` não pode depender só de hover de mouse — ver §9.6.
 
 ---
 
@@ -681,7 +722,9 @@ com palavra. Os emojis 🟢🔵🔴 da microcopy sempre acompanham a palavra.
 1. 🎯 **A personalidade decide tudo.** Na dúvida, escolha o mais **calmo, claro e acolhedor**
    para o leigo.
 2. 🎨 **Token, nunca hex solto.** Toda cor é `@@TOKEN@@` semântico. Hex espalhado quebra o dark.
-3. 🟥 **Valor negativo é SEMPRE `#EA3943`; positivo SEMPRE `#16C784`.** Nunca inverter.
+3. 🟥 **Valor negativo é SEMPRE `#EA3943`; positivo SEMPRE `#16C784`** em fills/badges/
+   barras/tags. Nunca inverter. **Como cor de TEXTO** (setForeground/`color:`), use
+   `negativoTexto()`/`positivoTexto()` (A11Y-05, WCAG 1.4.3) — os crus reprovam AA ali.
 4. 🌈 **Cor nunca sozinha.** Status sempre com sinal/rótulo/ícone também (daltônicos).
 5. 😀 **Emoji só via `Theme::emojiIcon`** nos botões, nunca emoji-no-texto. E cuidado com o
    **VS16/FE0F** (força caixa colorida onde se quer mono).

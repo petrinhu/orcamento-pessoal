@@ -249,10 +249,14 @@ void PlanejamentoWidget::recarregar()
     m_table->setRowCount(nRows);
     m_itemIds.resize(nRows, 0);
 
-    // Color palette (tokens do Theme — coerentes com light/dark)
-    const QColor colGreen(Theme::positivo());   // bem dentro / acima da meta de receita
-    const QColor colBlue(Theme::acento());      // dentro de ±10%
-    const QColor colRed(Theme::negativo());     // estourou / abaixo da meta de receita
+    // Color palette (tokens do Theme — coerentes com light/dark).
+    // A11Y-05 (WCAG 1.4.3): as 3 cores abaixo são usadas via setForeground()
+    // (cor de TEXTO de célula) mais adiante — positivo()/negativo()/acento()
+    // crus reprovam AA aqui; usar as variantes *Texto() (acentoTexto() já
+    // existe desde #198/A11Y-04).
+    const QColor colGreen(Theme::positivoTexto()); // bem dentro / acima da meta de receita
+    const QColor colBlue(Theme::acentoTexto());    // dentro de ±10%
+    const QColor colRed(Theme::negativoTexto());   // estourou / abaixo da meta de receita
 
     int row = 0;
 

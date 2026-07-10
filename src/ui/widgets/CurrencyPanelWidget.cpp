@@ -31,6 +31,11 @@ void aplicarEstiloModerno(QLabel *lblPar, QLabel *lblValor, bool semValor)
         .arg(Theme::sidebarText()));
 
     // Valor: verde quando presente, subtexto quando "--".
+    // A11Y-05: NÃO trocar por positivoTexto() aqui — este label fica sobre o
+    // navy fixo da statusbar (@@SIDEBAR2@@), não sobre @@SURF@@/@@BG@@.
+    // positivo() cru já passa AA sobre o navy (6.56:1/7.14:1); positivoTexto()
+    // é uma variante ESCURA pensada para fundo claro e sobre o navy regrediria
+    // (2.69:1, reprova). Ver Theme.h (positivoTexto() é para @@SURF@@/@@BG@@).
     const QString corValor = semValor ? Theme::subtexto() : Theme::positivo();
     lblValor->setStyleSheet(
         QStringLiteral("QLabel { color: %1; font-size: 13px; font-weight: 600;"

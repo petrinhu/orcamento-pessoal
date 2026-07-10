@@ -212,7 +212,9 @@ void MetasWidget::populateTable(const QList<Meta> &lista)
             else if (dias == 0) diasTxt = tr("Hoje");
             else                diasTxt = tr("%1d").arg(dias);
             auto *diasItem = roItem(diasTxt, Qt::AlignVCenter | Qt::AlignRight);
-            if (dias < 0) diasItem->setForeground(QColor(Theme::negativo()));
+            // A11Y-05 (WCAG 1.4.3): setForeground = cor de TEXTO da célula ->
+            // negativoTexto() (negativo() cru reprova AA aqui).
+            if (dias < 0) diasItem->setForeground(QColor(Theme::negativoTexto()));
             m_table->setItem(r, ColRestam, diasItem);
         } else {
             m_table->setItem(r, ColRestam, roItem(QStringLiteral("—"),

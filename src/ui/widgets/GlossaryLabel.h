@@ -11,6 +11,17 @@
 //   2. Tooltip escuro setado a partir de GlossarioService::definicao(termo).
 //   3. Cursor Qt::WhatsThisCursor (simbolo "?") para indicar "ha informacao aqui".
 //
+// Acessibilidade (A11Y-06, WCAG 2.1.1 / 1.4.13): o tooltip por hover de mouse
+// nao alcanca teclado nem leitor de tela. Quando o termo e reconhecido:
+//   - setAccessibleDescription(definicao) — leitor de tela (Orca/NVDA) le a
+//     definicao ao anunciar o label, mesmo sem foco.
+//   - setFocusPolicy(Qt::TabFocus) — alcancavel por Tab (so teclado, sem
+//     roubar foco de clique — QLabel nao e um controle de clique).
+//   - focusInEvent mostra a definicao via QToolTip::showText (mesmo texto do
+//     hover, agora tambem visivel para quem navega por teclado); focusOutEvent
+//     esconde. Termo desconhecido (sem tooltip) fica NoFocus — nao entra na
+//     tab order (minima poluicao: so labels com conteudo real sao focaveis).
+//
 // Garantias:
 //   - text() NUNCA e alterado. O widget e nao-destrutivo.
 //   - Idempotente: multiplas chamadas ao construtor nao duplicam efeito.
@@ -39,6 +50,10 @@ public:
 
 protected:
     void paintEvent(QPaintEvent *e) override;
+    // A11Y-06: mostra/esconde a definicao via QToolTip quando o foco de
+    // teclado chega/sai (equivalente ao hover de mouse).
+    void focusInEvent(QFocusEvent *e) override;
+    void focusOutEvent(QFocusEvent *e) override;
 
 private:
     void aplicarCue(const QString &termo);

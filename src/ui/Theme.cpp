@@ -34,6 +34,14 @@ namespace Color {
     const QString AccTextLight    = QStringLiteral("#1D4ED8");
     const QString PositiveLight   = QStringLiteral("#16C784");
     const QString NegativeLight   = QStringLiteral("#EA3943");
+    // A11Y-05: positivo() cru (#16C784) = 2.20:1 sobre SurfaceLight, reprova
+    // AA como texto. Emerald-700, mesmo tom do TagSucessoFgLight (#166) —
+    // 5.36:1 sobre SurfaceLight / 4.81:1 sobre BgLight, ambos ≥4.5:1.
+    const QString PositiveTextLight = QStringLiteral("#0D7A50");
+    // A11Y-05: negativo() cru (#EA3943) = 4.07:1 sobre SurfaceLight, reprova
+    // AA (mínimo 4.5:1). Red-800, mesmo tom do TagPerigoFgLight (#166) —
+    // 8.15:1 sobre SurfaceLight / 7.31:1 sobre BgLight.
+    const QString NegativeTextLight = QStringLiteral("#9B1C1C");
     const QString DouradoLight    = QStringLiteral("#E8A93B");
     const QString Sidebar1Light   = QStringLiteral("#1B2A41");
     const QString Sidebar2Light   = QStringLiteral("#16233A");
@@ -52,6 +60,15 @@ namespace Color {
     const QString AccTextDark     = QStringLiteral("#7FB0FF");
     const QString PositiveDark    = QStringLiteral("#16C784");
     const QString NegativeDark    = QStringLiteral("#EA3943");
+    // A11Y-05: negativo() cru (#EA3943) = 3.85:1 sobre SurfaceDark, reprova
+    // AA. Red-300, mesmo tom do TagPerigoFgDark (#166) — 8.25:1 sobre
+    // SurfaceDark / 9.41:1 sobre BgDark.
+    const QString NegativeTextDark  = QStringLiteral("#FCA5A5");
+    // A11Y-05: positivo() cru já passa AA sobre SurfaceDark (7.11:1), mas o
+    // getter usa o mesmo tom "Text" nos dois modos por consistência de API.
+    // Emerald-400, mesmo tom do TagSucessoFgDark (#166) — 8.14:1 sobre
+    // SurfaceDark / 9.29:1 sobre BgDark.
+    const QString PositiveTextDark  = QStringLiteral("#34D399");
     const QString DouradoDark     = QStringLiteral("#E8A93B");
     // Sidebar dark = mesmo navy do light (tom próprio, não inverte com o tema)
     const QString Sidebar1Dark    = QStringLiteral("#1B2A41");
@@ -148,6 +165,9 @@ QString acento()     { return isDark() ? Color::AccentDark      : Color::AccentL
 QString acentoTexto(){ return isDark() ? Color::AccTextDark     : Color::AccTextLight;     } // #198 (A11Y-04)
 QString negativo()   { return isDark() ? Color::NegativeDark    : Color::NegativeLight;    }
 QString positivo()   { return isDark() ? Color::PositiveDark    : Color::PositiveLight;    }
+// A11Y-05: cor de TEXTO — NÃO usar em fills/badges/barras/tags (ver Theme.h).
+QString negativoTexto() { return isDark() ? Color::NegativeTextDark : Color::NegativeTextLight; }
+QString positivoTexto() { return isDark() ? Color::PositiveTextDark : Color::PositiveTextLight; }
 QString background() { return isDark() ? Color::BgDark          : Color::BgLight;          }
 QString surface()    { return isDark() ? Color::SurfaceDark     : Color::SurfaceLight;     }
 QString texto()      { return isDark() ? Color::TextDark        : Color::TextLight;        }

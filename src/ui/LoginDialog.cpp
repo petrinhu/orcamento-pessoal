@@ -304,8 +304,10 @@ void LoginDialog::updateChecklist()
     m_chkLen->setText  ((okLen   ? ok : bad) + tr("Mínimo 8 caracteres"));
     m_chkUpper->setText((okUpper ? ok : bad) + tr("Uma letra maiúscula"));
     m_chkDigit->setText((okDigit ? ok : bad) + tr("Um número"));
-    const QString green = Theme::positivo();
-    const QString red   = Theme::negativo();
+    // A11Y-05 (WCAG 1.4.3): cor de TEXTO — positivo()/negativo() crus reprovam
+    // AA aqui (checklist é texto, não badge/fill); usar as variantes *Texto().
+    const QString green = Theme::positivoTexto();
+    const QString red   = Theme::negativoTexto();
     m_chkLen->setStyleSheet  (QStringLiteral("color: %1").arg(okLen   ? green : red));
     m_chkUpper->setStyleSheet(QStringLiteral("color: %1").arg(okUpper ? green : red));
     m_chkDigit->setStyleSheet(QStringLiteral("color: %1").arg(okDigit ? green : red));

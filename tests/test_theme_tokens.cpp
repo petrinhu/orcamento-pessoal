@@ -92,6 +92,20 @@ private slots:
     // (WCAG 2.4.7). Fix: fundo sutil + borda 1px @@ACC@@ (não-texto, >=3:1).
     void navItemFoco_temIndicadorVisivel();
     void navItemFoco_contrasteBordaSobreNavy_AA();
+
+    // ── A11Y-05: positivoTexto()/negativoTexto() — texto AA-safe de status ────
+    // positivo()/negativo() crus reprovam AA como cor de TEXTO (2.20:1 e
+    // 4.07/3.85:1 sobre @@SURF@@) — usados como setForeground em tabelas
+    // (Metas, Planejamento) e color: (checklist de senha do LoginDialog).
+    // Fills/badges/barras continuam com o token cru (regra de ouro preservada).
+    void positivoTexto_light();
+    void positivoTexto_dark();
+    void negativoTexto_light();
+    void negativoTexto_dark();
+    void positivoCru_comoTexto_reprovaAA_regressao_light();
+    void negativoCru_comoTexto_reprovaAA_regressao();
+    void positivoTexto_comoTexto_passaAA_light_e_dark();
+    void negativoTexto_comoTexto_passaAA_light_e_dark();
 };
 
 // ── Helper de contraste WCAG (luminância relativa, mesma fórmula do spec) ──
@@ -572,6 +586,95 @@ void TestThemeTokens::navItemFoco_contrasteBordaSobreNavy_AA()
     QVERIFY2(c2 >= 3.0,
         qPrintable(QStringLiteral("borda de foco (%1) sobre sidebar2 (%2) = %3:1 — abaixo do mínimo 3:1 não-texto")
             .arg(Theme::acento(), Theme::sidebar2()).arg(c2, 0, 'f', 2)));
+}
+
+// ── A11Y-05: positivoTexto()/negativoTexto() ─────────────────────────────────
+
+void TestThemeTokens::positivoTexto_light()
+{
+    Theme::setMode(Theme::ThemeMode::Light);
+    QCOMPARE(Theme::positivoTexto(), QStringLiteral("#0D7A50"));
+}
+
+void TestThemeTokens::positivoTexto_dark()
+{
+    Theme::setMode(Theme::ThemeMode::Dark);
+    QCOMPARE(Theme::positivoTexto(), QStringLiteral("#34D399"));
+    Theme::setMode(Theme::ThemeMode::Light); // restaura
+}
+
+void TestThemeTokens::negativoTexto_light()
+{
+    Theme::setMode(Theme::ThemeMode::Light);
+    QCOMPARE(Theme::negativoTexto(), QStringLiteral("#9B1C1C"));
+}
+
+void TestThemeTokens::negativoTexto_dark()
+{
+    Theme::setMode(Theme::ThemeMode::Dark);
+    QCOMPARE(Theme::negativoTexto(), QStringLiteral("#FCA5A5"));
+    Theme::setMode(Theme::ThemeMode::Light); // restaura
+}
+
+// RED->GREEN anchor (A11Y-05): prova o "porquê" do fix — positivo()/negativo()
+// crus, usados como TEXTO sobre @@SURF@@, reprovam AA. Se este teste um dia
+// passar a QVERIFY(...>= 4.5), a paleta mudou e as variantes *Texto() podem
+// ter deixado de ser necessárias (revisar a decisão A11Y-05).
+void TestThemeTokens::positivoCru_comoTexto_reprovaAA_regressao_light()
+{
+    Theme::setMode(Theme::ThemeMode::Light);
+    const qreal c = contraste(QColor(Theme::positivo()), QColor(Theme::surface()));
+    QVERIFY2(c < 4.5,
+        qPrintable(QStringLiteral("positivo() cru sobre surface (light) = %1:1 — esperava <4.5 (reprova AA)")
+            .arg(c, 0, 'f', 2)));
+}
+
+void TestThemeTokens::negativoCru_comoTexto_reprovaAA_regressao()
+{
+    Theme::setMode(Theme::ThemeMode::Light);
+    const qreal cLight = contraste(QColor(Theme::negativo()), QColor(Theme::surface()));
+    QVERIFY2(cLight < 4.5,
+        qPrintable(QStringLiteral("negativo() cru sobre surface (light) = %1:1 — esperava <4.5 (reprova AA)")
+            .arg(cLight, 0, 'f', 2)));
+
+    Theme::setMode(Theme::ThemeMode::Dark);
+    const qreal cDark = contraste(QColor(Theme::negativo()), QColor(Theme::surface()));
+    Theme::setMode(Theme::ThemeMode::Light); // restaura
+    QVERIFY2(cDark < 4.5,
+        qPrintable(QStringLiteral("negativo() cru sobre surface (dark) = %1:1 — esperava <4.5 (reprova AA)")
+            .arg(cDark, 0, 'f', 2)));
+}
+
+void TestThemeTokens::positivoTexto_comoTexto_passaAA_light_e_dark()
+{
+    Theme::setMode(Theme::ThemeMode::Light);
+    const qreal cLight = contraste(QColor(Theme::positivoTexto()), QColor(Theme::surface()));
+    QVERIFY2(cLight >= 4.5,
+        qPrintable(QStringLiteral("positivoTexto() sobre surface (light) = %1:1 — esperava >=4.5")
+            .arg(cLight, 0, 'f', 2)));
+
+    Theme::setMode(Theme::ThemeMode::Dark);
+    const qreal cDark = contraste(QColor(Theme::positivoTexto()), QColor(Theme::surface()));
+    Theme::setMode(Theme::ThemeMode::Light); // restaura
+    QVERIFY2(cDark >= 4.5,
+        qPrintable(QStringLiteral("positivoTexto() sobre surface (dark) = %1:1 — esperava >=4.5")
+            .arg(cDark, 0, 'f', 2)));
+}
+
+void TestThemeTokens::negativoTexto_comoTexto_passaAA_light_e_dark()
+{
+    Theme::setMode(Theme::ThemeMode::Light);
+    const qreal cLight = contraste(QColor(Theme::negativoTexto()), QColor(Theme::surface()));
+    QVERIFY2(cLight >= 4.5,
+        qPrintable(QStringLiteral("negativoTexto() sobre surface (light) = %1:1 — esperava >=4.5")
+            .arg(cLight, 0, 'f', 2)));
+
+    Theme::setMode(Theme::ThemeMode::Dark);
+    const qreal cDark = contraste(QColor(Theme::negativoTexto()), QColor(Theme::surface()));
+    Theme::setMode(Theme::ThemeMode::Light); // restaura
+    QVERIFY2(cDark >= 4.5,
+        qPrintable(QStringLiteral("negativoTexto() sobre surface (dark) = %1:1 — esperava >=4.5")
+            .arg(cDark, 0, 'f', 2)));
 }
 
 QTEST_MAIN(TestThemeTokens)

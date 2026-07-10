@@ -41,6 +41,13 @@ private slots:
 
     // (f) ":" final e ignorado no lookup
     void doisPontosFinaisIgnoradosNoLookup();
+
+    // A11Y-06 (WCAG 2.1.1/1.4.13): acessivel por teclado/leitor de tela
+    void accessibleDescription_naoVaziaParaTermoCadastrado();
+    void accessibleDescription_matchaTooltip();
+    void accessibleDescription_vaziaParaTermoDesconhecido();
+    void focavelPorTeclado_termoCadastrado();
+    void naoFocavel_termoDesconhecido();
 };
 
 // ── (a) text() preservado ─────────────────────────────────────────────────────
@@ -132,6 +139,44 @@ void TestGlossaryLabel::doisPontosFinaisIgnoradosNoLookup()
     // text() preservado (com ":" no primeiro)
     QCOMPARE(lblComDoisPontos.text(), QStringLiteral("CET:"));
     QCOMPARE(lblSemDoisPontos.text(), QStringLiteral("CET"));
+}
+
+// ── A11Y-06: acessivel por teclado/leitor de tela ────────────────────────────
+
+void TestGlossaryLabel::accessibleDescription_naoVaziaParaTermoCadastrado()
+{
+    GlossaryLabel lbl(QStringLiteral("CET"));
+    QVERIFY2(!lbl.accessibleDescription().isEmpty(),
+        "GlossaryLabel com termo cadastrado deve ter accessibleDescription "
+        "nao-vazia (leitor de tela precisa ler a definicao sem depender de hover)");
+}
+
+void TestGlossaryLabel::accessibleDescription_matchaTooltip()
+{
+    GlossaryLabel lbl(QStringLiteral("CDI"));
+    QCOMPARE(lbl.accessibleDescription(), lbl.toolTip());
+}
+
+void TestGlossaryLabel::accessibleDescription_vaziaParaTermoDesconhecido()
+{
+    GlossaryLabel lbl(QStringLiteral("XYZQ999"));
+    QVERIFY(lbl.accessibleDescription().isEmpty());
+}
+
+void TestGlossaryLabel::focavelPorTeclado_termoCadastrado()
+{
+    GlossaryLabel lbl(QStringLiteral("PV"));
+    // TabFocus: alcancavel por Tab (WCAG 2.1.1), sem virar alvo de clique
+    // (QLabel nao e um controle interativo de mouse).
+    QCOMPARE(lbl.focusPolicy(), Qt::TabFocus);
+}
+
+void TestGlossaryLabel::naoFocavel_termoDesconhecido()
+{
+    // Termo sem definicao: nao decora, nao entra na tab order (minima
+    // poluicao — so labels com conteudo real ficam focaveis).
+    GlossaryLabel lbl(QStringLiteral("ZZZUNKNOWN123"));
+    QCOMPARE(lbl.focusPolicy(), Qt::NoFocus);
 }
 
 QTEST_MAIN(TestGlossaryLabel)
