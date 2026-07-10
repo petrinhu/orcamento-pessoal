@@ -52,31 +52,20 @@ jobs:
     container:
       image: fedora:42
     steps:
-      - name: Install dependencies
-        run: |
-          dnf install -y --setopt=install_weak_deps=False \
-            qt6-qtbase-devel qt6-qtbase-private-devel qt6-qtcharts-devel qt6-qttools-devel \
-            openssl-devel libsecret-devel libsodium-devel \
-            poppler-qt6-devel \
-            gcc-c++ cmake make git clang-tools-extra cppcheck nodejs
+      # O gate cppcheck (bloqueante, abaixo) precisa APENAS do cppcheck:
+      # --library=qt usa o qt.cfg EMBUTIDO no cppcheck, sem headers do Qt.
+      # Manter o passo bloqueante com deps mínimas o torna imune a falha do
+      # install pesado (Qt6 devel etc.) no runner sandboxed (rede/recurso/disco).
+      # git+nodejs são exigidos pelo actions/checkout@v4.
+      - name: Install cppcheck (mínimo para o gate)
+        run: dnf install -y cppcheck git nodejs
       - name: Checkout
         uses: actions/checkout@v4
-      # continue-on-error: o gate cppcheck (abaixo) escaneia `src` direto e NÃO
-      # depende deste configure — só o clang-tidy informativo usa compile_commands.
-      # XLSX OFF + TESTING OFF removem o FetchContent(QXlsx) (git-clone) do
-      # configure, que era o passo bloqueante frágil no runner sandboxed (rede).
-      - name: Configure (gera compile_commands.json)
-        continue-on-error: true
-        run: cmake -B build -DCMAKE_BUILD_TYPE=Debug \
-                            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
-                            -DPEUBUD_HAS_XLSX=OFF -DBUILD_TESTING=OFF
 
       # GATE real (DIST-08): mesma categoria/config do pre-commit hook local
-      # (scripts/pre-commit) — --enable=warning (só bugs prováveis, sem
-      # style/performance/portability que viram ruído), .cppcheck-suppressions
-      # já cobre falsos-positivos Qt (Q_OBJECT, aggregate-init de POD, etc).
-      # error-exitcode=2 real: falha o job se achar bug de verdade — valida
-      # 0 achados nessa categoria em todo o /src antes deste commit.
+      # (scripts/pre-commit) — --enable=warning (só bugs prováveis);
+      # .cppcheck-suppressions cobre falsos-positivos Qt. error-exitcode=2:
+      # falha o job só se achar bug de verdade em todo o /src.
       - name: cppcheck (gate — categoria "warning", mesma do pre-commit hook)
         run: |
           cppcheck --enable=warning \
@@ -87,6 +76,24 @@ jobs:
                    --error-exitcode=2 \
                    --quiet \
                    src
+
+      # ── Daqui pra baixo é tudo INFORMATIVO (continue-on-error): o install
+      #    pesado + configure + clang-tidy ficam ISOLADOS do gate. Se o runner
+      #    não der conta do pesado (rede/recurso), o gate acima já validou e o
+      #    job NÃO cai por causa disso.
+      - name: Install deps completas (informativo — para clang-tidy)
+        continue-on-error: true
+        run: |
+          dnf install -y --setopt=install_weak_deps=False \
+            qt6-qtbase-devel qt6-qtbase-private-devel qt6-qtcharts-devel qt6-qttools-devel \
+            openssl-devel libsecret-devel libsodium-devel \
+            poppler-qt6-devel \
+            gcc-c++ cmake make clang-tools-extra
+      - name: Configure (informativo — gera compile_commands.json p/ clang-tidy)
+        continue-on-error: true
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Debug \
+                            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+                            -DPEUBUD_HAS_XLSX=OFF -DBUILD_TESTING=OFF
 
       # INFORMATIVO (não bloqueia): categorias mais ruidosas (style/
       # performance/portability) ficam de backlog de triagem futura —
