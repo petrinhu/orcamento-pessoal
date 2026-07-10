@@ -3,6 +3,8 @@
 #include <QSqlDatabase>
 #include <QString>
 #include <QByteArray>
+#include <functional>
+#include <vector>
 
 // Manages the SQLite connection lifecycle:
 //   open (decrypt .pbd → .db) / close (encrypt .db → .pbd)
@@ -47,6 +49,22 @@ public:
     // de encryptAndSave() (chamado por save()/close()/exportToFile()).
     static bool checkFileIntegrity(const QString &dbFilePath);
 
+    // (#200/ARQ-01) Injeção de schema Mid/Backend — rompe a inversão de
+    // camada em que o Foundation (`DatabaseManager`) conhecia 4 classes
+    // concretas (`FechamentoMensalService`, `AuditLogService`,
+    // `ProventoRepository`, `AjusteCorporativoService`) para criar as
+    // próprias tabelas. Mesmo padrão de DI via std::function já usado em
+    // `BackupService::ExportFn` (#79).
+    //
+    // O ponto de composição registra os providers ANTES do primeiro
+    // open() — em produção isso é `AppBootstrap::registerCoreSchemaProviders()`
+    // (chamado em main.cpp); suítes de teste que abrem o DB diretamente
+    // (sem passar por main()) chamam o mesmo método em initTestCase().
+    // createSchema() invoca os providers registrados, na ordem de registro,
+    // depois de criar as 16 tabelas inline do Foundation.
+    using SchemaProvider = std::function<void(QSqlDatabase &)>;
+    static void registerSchemaProvider(SchemaProvider provider);
+
 private:
     DatabaseManager() = default;
     ~DatabaseManager();
@@ -63,4 +81,6 @@ private:
     QByteArray   m_key;        // Argon2id key (new format)
     QByteArray   m_keyLegacy;  // PBKDF2 key (legacy format — cleared after migration)
     bool         m_needsReencrypt = false; // true when a legacy file was opened
+
+    static std::vector<SchemaProvider> &schemaProviders();
 };

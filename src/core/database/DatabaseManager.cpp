@@ -2,10 +2,6 @@
 #include "core/crypto/AesCryptoService.h"
 #include "core/crypto/SodiumCryptoService.h"
 #include "core/settings/AppSettings.h"
-#include "services/FechamentoMensalService.h"
-#include "services/AuditLogService.h"
-#include "repositories/ProventoRepository.h"
-#include "services/AjusteCorporativoService.h"
 
 #include <QSqlQuery>
 #include <QSqlError>
@@ -640,25 +636,29 @@ void DatabaseManager::createSchema()
                 "ADD COLUMN preco_unitario INTEGER NOT NULL DEFAULT 0"));
     }
 
-    // #66: tabela proventos_recebidos (tracker dividendos/JCP/rendimento FII)
-    if (!ProventoRepository::ensureSchema()) {
-        qWarning() << "DatabaseManager: falha ao criar schema de proventos_recebidos";
+    // (#200/ARQ-01) Tabelas Mid/Backend (proventos_recebidos #66,
+    // ajustes_corporativos #65, fechamentos_mensais #88, audit_log #92) não
+    // são mais criadas por chamadas diretas a classes concretas aqui — o
+    // Foundation não conhece mais FechamentoMensalService/AuditLogService/
+    // ProventoRepository/AjusteCorporativoService. Os providers são
+    // registrados no ponto de composição (AppBootstrap::
+    // registerCoreSchemaProviders(), chamado em main.cpp e em cada suíte de
+    // teste que abre o DB diretamente) via registerSchemaProvider(); aqui só
+    // invocamos o que foi registrado, na ordem de registro.
+    for (const auto &provider : schemaProviders()) {
+        provider(m_db);
     }
+}
 
-    // #65: tabela ajustes_corporativos (splits/inplits/bonificacoes)
-    if (!AjusteCorporativoService::ensureSchema()) {
-        qWarning() << "DatabaseManager: falha ao criar schema de ajustes_corporativos";
-    }
+std::vector<DatabaseManager::SchemaProvider> &DatabaseManager::schemaProviders()
+{
+    static std::vector<SchemaProvider> providers;
+    return providers;
+}
 
-    // #88: tabela fechamentos_mensais (snapshot imutavel mes contabil)
-    if (!FechamentoMensalService::ensureSchema(m_db)) {
-        qWarning() << "DatabaseManager: falha ao criar schema de fechamentos_mensais";
-    }
-
-    // #92: audit_log + triggers AFTER INSERT/UPDATE/DELETE em 7 tabelas
-    if (!AuditLogService::ensureSchema(m_db)) {
-        qWarning() << "DatabaseManager: falha ao criar schema de audit_log";
-    }
+void DatabaseManager::registerSchemaProvider(SchemaProvider provider)
+{
+    schemaProviders().push_back(std::move(provider));
 }
 
 // (#191/FIN-02) Verifica a integridade de um arquivo SQLite via

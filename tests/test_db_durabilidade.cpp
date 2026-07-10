@@ -35,6 +35,7 @@
 #include <QTemporaryDir>
 
 #include "core/database/DatabaseManager.h"
+#include "core/AppBootstrap.h"
 #include "core/settings/AppSettings.h"
 
 class TestDbDurabilidade : public QObject
@@ -74,6 +75,12 @@ private slots:
         // Isola savePathFixo()/autosavePathFixo() dentro do QTemporaryDir --
         // nunca tocar o ~/peubud/ real de quem roda o ctest.
         qputenv("HOME", m_tmp.path().toUtf8());
+
+        // (#200/ARQ-01) registra os providers de schema Mid/Backend ANTES de
+        // qualquer DatabaseManager::instance().open() desta suíte -- ver
+        // AppBootstrap.h. Idempotente; uma única chamada cobre todos os
+        // open() dos slots abaixo.
+        AppBootstrap::registerCoreSchemaProviders();
     }
 
     void cleanupTestCase()

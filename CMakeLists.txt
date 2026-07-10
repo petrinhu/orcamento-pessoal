@@ -149,6 +149,9 @@ set(SOURCES
     # Core — database
     src/core/database/DatabaseManager.cpp
 
+    # Core — composition root do schema Mid/Backend (#200/ARQ-01)
+    src/core/AppBootstrap.cpp
+
     # Core — platform (#192: handler de sinal SIGTERM/SIGINT via self-pipe)
     src/core/platform/UnixSignalHandler.cpp
 
@@ -186,6 +189,10 @@ set(SOURCES
     src/services/import/IMatchFinder.cpp
     src/services/import/BankPDFParsers.cpp
     src/services/ExportService.cpp
+
+    # Export writers Strategy (#200/ARQ-05)
+    src/services/export/ExportWriters.cpp
+    src/services/export/ExportWriterRegistry.cpp
 
     # UI
     src/ui/UiFormatters.cpp

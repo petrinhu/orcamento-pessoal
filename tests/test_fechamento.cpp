@@ -29,6 +29,7 @@
 #include <QTemporaryDir>
 
 #include "core/database/DatabaseManager.h"
+#include "core/AppBootstrap.h"
 #include "models/Compra.h"
 #include "models/FechamentoMensal.h"
 #include "models/GastoAvulso.h"
@@ -175,6 +176,10 @@ private slots:
         m_prevHome    = qgetenv("HOME");
         m_prevHomeSet = qEnvironmentVariableIsSet("HOME");
         qputenv("HOME", m_tmp.path().toUtf8());
+
+        // (#200/ARQ-01) registra os providers de schema Mid/Backend ANTES
+        // do open() -- ver AppBootstrap.h.
+        AppBootstrap::registerCoreSchemaProviders();
 
         const bool ok = DatabaseManager::instance().open(
             QStringLiteral("test-fechamento"));

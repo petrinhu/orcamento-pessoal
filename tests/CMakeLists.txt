@@ -134,6 +134,24 @@ peubud_add_test(test_export
     ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp)
 target_link_libraries(test_export PRIVATE ${LIBSECRET_LIBRARIES})
 target_include_directories(test_export PRIVATE ${LIBSECRET_INCLUDE_DIRS})
+
+# (#200/ARQ-05) Golden-file: cada IExportWriter deve produzir saída
+# byte-idêntica (ou, p/ xlsx com timestamp embutido, equivalente) ao método
+# estático de ExportService que ele encapsula — prova que o Strategy não
+# mudou comportamento. Nao precisa da cadeia de import (sem reimportacao).
+peubud_add_test(test_export_writers
+    ${CMAKE_SOURCE_DIR}/src/services/ExportService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/export/ExportWriters.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/export/ExportWriterRegistry.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/settings/AppSettings.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp)
+target_link_libraries(test_export_writers PRIVATE ${LIBSECRET_LIBRARIES})
+target_include_directories(test_export_writers PRIVATE ${LIBSECRET_INCLUDE_DIRS})
+# toMultiPdf() usa QFont/QTextDocument (QGuiApplication) — QTEST_MAIN, offscreen.
+set_tests_properties(test_export_writers PROPERTIES
+    ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 peubud_add_test(test_match_finder ${CMAKE_SOURCE_DIR}/src/services/import/IMatchFinder.cpp)
 peubud_add_test(test_fiscal ${CMAKE_SOURCE_DIR}/src/services/FiscalService.cpp)
 peubud_add_test(test_backup ${CMAKE_SOURCE_DIR}/src/services/BackupService.cpp)
@@ -224,6 +242,7 @@ peubud_add_test(test_resumo
     ${CMAKE_SOURCE_DIR}/src/repositories/ParcelaRepository.cpp
     ${CMAKE_SOURCE_DIR}/src/repositories/CartaoRepository.cpp
     ${CMAKE_SOURCE_DIR}/src/core/database/DatabaseManager.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/AppBootstrap.cpp
     ${CMAKE_SOURCE_DIR}/src/services/AjusteCorporativoService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/FechamentoMensalService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/AuditLogService.cpp
@@ -264,6 +283,7 @@ peubud_add_test(test_fechamento
     ${CMAKE_SOURCE_DIR}/src/repositories/ParcelaRepository.cpp
     ${CMAKE_SOURCE_DIR}/src/repositories/CartaoRepository.cpp
     ${CMAKE_SOURCE_DIR}/src/core/database/DatabaseManager.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/AppBootstrap.cpp
     ${CMAKE_SOURCE_DIR}/src/services/AjusteCorporativoService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/AuditLogService.cpp
     ${CMAKE_SOURCE_DIR}/src/core/crypto/SodiumCryptoService.cpp
@@ -287,6 +307,7 @@ target_include_directories(test_fechamento PRIVATE
 # DatabaseManager + AuditLogService + crypto.
 peubud_add_test(test_audit_triggers
     ${CMAKE_SOURCE_DIR}/src/core/database/DatabaseManager.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/AppBootstrap.cpp
     ${CMAKE_SOURCE_DIR}/src/services/AuditLogService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/AjusteCorporativoService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/FechamentoMensalService.cpp
@@ -320,11 +341,49 @@ target_include_directories(test_audit_triggers PRIVATE
     ${LIBSODIUM_INCLUDE_DIRS}
     ${LIBSECRET_INCLUDE_DIRS})
 
+# Smoke test de schema (#200/ARQ-01): banco novo -> as 16 tabelas inline do
+# Foundation + as 4 tabelas Mid/Backend criadas via
+# DatabaseManager::registerSchemaProvider (AppBootstrap) existem todas.
+# Cadeia identica a test_audit_triggers (mesma dependencia de createSchema).
+peubud_add_test(test_schema_smoke
+    ${CMAKE_SOURCE_DIR}/src/core/database/DatabaseManager.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/AppBootstrap.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/AuditLogService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/AjusteCorporativoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FechamentoMensalService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/ResumoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/EntradaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/CompraService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/GastoAvulsoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/LancamentoInvestimentoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/LancamentoEntradaRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/FonteRendaRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/CompraRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/ParcelaRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/CartaoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/ProventoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/SodiumCryptoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/AesCryptoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/KeyDerivation.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/settings/AppSettings.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp)
+target_link_libraries(test_schema_smoke PRIVATE
+    OpenSSL::SSL
+    OpenSSL::Crypto
+    ${LIBSODIUM_LIBRARIES}
+    ${LIBSECRET_LIBRARIES})
+target_include_directories(test_schema_smoke PRIVATE
+    ${LIBSODIUM_INCLUDE_DIRS}
+    ${LIBSECRET_INCLUDE_DIRS})
+
 # Teste de Categoria (#118): classificacao fixo/variavel (TipoDespesa).
 # Exercita a migration #118 (coluna `fixo`) + round-trip pelo repo, com o
 # schema real (createSchema) e triggers de auditoria ativos.
 peubud_add_test(test_categoria
     ${CMAKE_SOURCE_DIR}/src/core/database/DatabaseManager.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/AppBootstrap.cpp
     ${CMAKE_SOURCE_DIR}/src/repositories/CategoriaRepository.cpp
     ${CMAKE_SOURCE_DIR}/src/services/AuditLogService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/AjusteCorporativoService.cpp
@@ -378,6 +437,7 @@ peubud_add_test(test_gasto_service
     ${CMAKE_SOURCE_DIR}/src/repositories/CategoriaRepository.cpp
     ${CMAKE_SOURCE_DIR}/src/repositories/GastoAvulsoRepository.cpp
     ${CMAKE_SOURCE_DIR}/src/core/database/DatabaseManager.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/AppBootstrap.cpp
     ${CMAKE_SOURCE_DIR}/src/services/AuditLogService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/AjusteCorporativoService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/FechamentoMensalService.cpp
@@ -900,6 +960,7 @@ set_tests_properties(test_glossary_coverage PROPERTIES
 peubud_add_test(test_meta_repository
     ${CMAKE_SOURCE_DIR}/src/repositories/MetaRepository.cpp
     ${CMAKE_SOURCE_DIR}/src/core/database/DatabaseManager.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/AppBootstrap.cpp
     ${CMAKE_SOURCE_DIR}/src/services/AuditLogService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/AjusteCorporativoService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/FechamentoMensalService.cpp
@@ -935,6 +996,7 @@ target_include_directories(test_meta_repository PRIVATE
 peubud_add_test(test_divida_repository
     ${CMAKE_SOURCE_DIR}/src/repositories/DividaRepository.cpp
     ${CMAKE_SOURCE_DIR}/src/core/database/DatabaseManager.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/AppBootstrap.cpp
     ${CMAKE_SOURCE_DIR}/src/services/AuditLogService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/AjusteCorporativoService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/FechamentoMensalService.cpp
@@ -972,6 +1034,7 @@ target_include_directories(test_divida_repository PRIVATE
 peubud_add_test(test_repository_naonulo_domino
     ${CMAKE_SOURCE_DIR}/src/repositories/TransacaoRecorrenteRepository.cpp
     ${CMAKE_SOURCE_DIR}/src/core/database/DatabaseManager.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/AppBootstrap.cpp
     ${CMAKE_SOURCE_DIR}/src/services/AuditLogService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/AjusteCorporativoService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/FechamentoMensalService.cpp
@@ -1019,6 +1082,7 @@ target_include_directories(test_repository_naonulo_domino PRIVATE
 # de integrity_check, mesmo dentro do `build/` (Debug) padrao do ctest.
 peubud_add_test(test_db_durabilidade
     ${CMAKE_SOURCE_DIR}/src/core/database/DatabaseManager.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/AppBootstrap.cpp
     ${CMAKE_SOURCE_DIR}/src/services/AuditLogService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/AjusteCorporativoService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/FechamentoMensalService.cpp
@@ -1156,6 +1220,7 @@ peubud_add_test(test_repos_sem_cobertura
     ${CMAKE_SOURCE_DIR}/src/repositories/LembreteRepository.cpp
     ${CMAKE_SOURCE_DIR}/src/repositories/PagadorRepository.cpp
     ${CMAKE_SOURCE_DIR}/src/core/database/DatabaseManager.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/AppBootstrap.cpp
     ${CMAKE_SOURCE_DIR}/src/services/AuditLogService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/AjusteCorporativoService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/FechamentoMensalService.cpp

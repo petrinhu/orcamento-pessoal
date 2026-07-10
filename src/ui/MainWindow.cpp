@@ -31,6 +31,7 @@
 #include "ui/UiFormatters.h"
 #include "services/ImportService.h"
 #include "services/ExportService.h"
+#include "services/export/ExportWriterRegistry.h"
 #include "widgets/ExportDialog.h"
 #include "repositories/CompraRepository.h"
 #include "repositories/ParcelaRepository.h"
@@ -1209,17 +1210,12 @@ void MainWindow::onExportar(const QString &format)
     }
 
     // ── Step 4: exportar ──────────────────────────────────────────────────────
+    // (#200/ARQ-05) Lookup no registry de writers em vez de switch(string) —
+    // formato novo = novo IExportWriter registrado em ExportWriterRegistry,
+    // sem tocar MainWindow nem ExportService.h/.cpp (OCP).
     bool ok = false;
-    if      (fmt == QStringLiteral("ofx"))  ok = ExportService::toMultiOfx(path, txs);
-    else if (fmt == QStringLiteral("qif"))  ok = ExportService::toMultiQif(path, txs);
-    else if (fmt == QStringLiteral("csv"))  ok = ExportService::toMultiCsv(path, sections);
-    else if (fmt == QStringLiteral("xlsx") ||
-             fmt == QStringLiteral("xls")) ok = ExportService::toMultiXlsx(path, sections);
-    else if (fmt == QStringLiteral("json")) ok = ExportService::toMultiJson(path, sections);
-    else if (fmt == QStringLiteral("md"))   ok = ExportService::toMultiMarkdown(path, sections);
-    else if (fmt == QStringLiteral("html")) ok = ExportService::toMultiHtml(path, sections);
-    else if (fmt == QStringLiteral("pdf"))  ok = ExportService::toMultiPdf(path, sections);
-    else if (fmt == QStringLiteral("txt"))  ok = ExportService::toMultiTxt(path, sections);
+    if (const IExportWriter *writer = ExportWriterRegistry::find(fmt))
+        ok = writer->write(path, sections, txs);
 
     if (!ok)
         QMessageBox::warning(this, tr("Exportar"),

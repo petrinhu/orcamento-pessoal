@@ -3,6 +3,7 @@
 #include "ui/MainWindow.h"
 #include "ui/widgets/OnboardingDialog.h"
 #include "core/database/DatabaseManager.h"
+#include "core/AppBootstrap.h"
 #include "core/platform/UnixSignalHandler.h"
 #include "core/session/UserSession.h"
 #include "core/settings/AppSettings.h"
@@ -58,6 +59,10 @@ int main(int argc, char *argv[])
     // DatabaseManager::open() (AppSettings::workingDbPath(), local FIXO —
     // não mais "data/" relativo ao CWD, que era exatamente o bug DIST-03).
     // O cofre cifrado vai para ~/peubud/save/<slug>/database.pbd (#181).
+
+    // (#200/ARQ-01) Registra os providers de schema Mid/Backend ANTES do
+    // primeiro DatabaseManager::instance().open() — ver AppBootstrap.h.
+    AppBootstrap::registerCoreSchemaProviders();
 
     LoginDialog login;
     for (;;) {
