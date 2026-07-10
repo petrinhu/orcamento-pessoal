@@ -3,8 +3,13 @@ name: build
 on:
   push:
     branches: [main]
+    tags: ['v*']          # releases também disparam o CI pesado
   pull_request:
     branches: [main]
+# Política (2026-07-10): build/ASan pesados rodam no runner self-hosted 'claudio'
+# (label docker, máquina do líder), NÃO nos runners voluntários do Codeberg.
+# Escopo: só PR→main + push→main + tags de release — nunca push de branch de
+# feature (o pre-commit local/ctest é o gate rápido do dia a dia).
 
 # Nota de portabilidade:
 #   O projeto usa QXlsx, que depende da API PRIVADA do Qt (QZipReader via
@@ -24,7 +29,8 @@ on:
 jobs:
   build:
     name: Build + Test (Fedora)
-    runs-on: codeberg-medium
+    # runner self-hosted 'claudio' (label docker) — tira o build pesado do Codeberg
+    runs-on: docker
     container:
       image: fedora:42
     steps:
@@ -128,7 +134,8 @@ jobs:
 
   sanitizers:
     name: ASan + UBSan (Fedora)
-    runs-on: codeberg-medium
+    # runner self-hosted 'claudio' (label docker) — tira o ASan pesado do Codeberg
+    runs-on: docker
     container:
       image: fedora:42
     steps:
