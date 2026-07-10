@@ -21,3 +21,9 @@ unknownMacro:Q_SLOT
 # projeto (todos os models são POD com `{...}`); cppcheck não entende aggregate-init.
 uninitMemberVarNoCtor
 uninitMemberVar
+
+# Nota informativa de profundidade de análise (não é achado). O cppcheck do CI
+# (fedora:42 = 2.18) IMPRIME esta mensagem `information` em arquivos complexos e,
+# com --error-exitcode=2, ela derruba o gate; o cppcheck local mais novo (2.21)
+# nem a emite. Suprimir alinha CI×local sem afrouxar o gate para bugs reais.
+normalCheckLevelMaxBranches
