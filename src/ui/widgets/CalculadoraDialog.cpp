@@ -7,6 +7,7 @@
 #include "services/ParcelaService.h"
 #include "services/FinanceEngine.h"
 #include "services/FiscalService.h"
+#include "services/CalculadoraService.h"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -2010,64 +2011,53 @@ void CalculadoraDialog::buildTabWizards(QWidget *tab)
         lay->addWidget(btnUsar);
         lay->addStretch();
 
+        // FIN-04 (auditoria 2026-06-22 §3.1): calculo migrado para
+        // CalculadoraService::calcularReservaEmergencia (qint64 centavos).
+        // Campos monetarios via uifmt::parseCentavos (nao mais parseF/double);
+        // parseF/fmtF ficam so para os campos NAO-monetarios (meses, Selic%)
+        // e para FORMATAR o resultado na exibicao (regra: virgula so na
+        // formatacao final).
         connect(btnCalc, &QPushButton::clicked, this, [=]() {
-            const double desp   = parseF(edtDesp);
-            double       meses  = parseF(edtMeses);
-            const double selic  = parseF(edtSelic) / 100.0;
-            const double guarda = parseF(edtGuarda);
-            const double atual  = parseF(edtAtual);
-            if (meses <= 0.0) meses = 6.0;
-            if (desp <= 0.0) {
+            const qint64 despCent   = uifmt::parseCentavos(edtDesp->text());
+            double       meses      = parseF(edtMeses);
+            const double selic      = parseF(edtSelic) / 100.0;
+            const qint64 guardaCent = uifmt::parseCentavos(edtGuarda->text());
+            const qint64 atualCent  = uifmt::parseCentavos(edtAtual->text());
+
+            if (despCent <= 0) {
                 lblRes->setText(tr("Informe as despesas."));
                 lblRes->show(); return;
             }
 
-            const double meta = desp * meses;
-            const double gap  = std::max(0.0, meta - atual);
-            *resVal = meta;
+            const auto r = CalculadoraService::calcularReservaEmergencia(
+                despCent, meses, selic, guardaCent, atualCent);
+            if (meses <= 0.0) meses = 6.0;
+            *resVal = CalculadoraService::fromCentavos(r.metaCentavos);
 
             QString txt = tr("Meta: <b>R$ %1</b> (%2× despesas mensais)<br>"
                              "Gap atual: <b>R$ %3</b><br><br>")
-                              .arg(fmtF(meta, 2), fmtF(meses, 0), fmtF(gap, 2));
+                              .arg(fmtF(CalculadoraService::fromCentavos(r.metaCentavos), 2),
+                                   fmtF(meses, 0),
+                                   fmtF(CalculadoraService::fromCentavos(r.gapCentavos), 2));
 
-            if (selic <= 0.0 || guarda <= 0.0) {
+            if (!r.temComparativo) {
                 txt += tr("<i>Informe Selic e aporte para comparativo de aplicações.</i>");
                 lblRes->setText(txt); lblRes->show(); btnUsar->show(); return;
             }
-
-            // Taxas mensais liquidas (assumindo >720d -> IR 15% em CDB/Tesouro)
-            const double mPoup     = FiscalService::poupancaMensal(selic);
-            const double cdiAnual  = selic; // CDB 100% CDI ~ Selic
-            const double mBruta    = FinanceEngine::taxaEquivalente(cdiAnual, 1, 12);
-            const double irRF      = FiscalService::irRendaFixaPorDias(721); // 15%
-            const double mCDB      = mBruta * (1.0 - irRF);
-            const double mTesouro  = mCDB; // mesma aliquota, custodia 0,2% a.a.
-                                          // simplificada como 0 aqui
-
-            auto tempoAcumular = [&](double i) -> double {
-                if (i <= 0.0) return std::ceil(gap / guarda);
-                // #190: dedup -> FinanceEngine::nper (pv=0, aporte mensal
-                // guarda, meta gap -> equivale a log(1+gap*i/guarda)/log(1+i))
-                return std::ceil(FinanceEngine::nper(0.0, -guarda, gap, i));
-            };
-            auto rendaMensal = [&](double i) { return meta * i; };
 
             txt += tr("<table cellspacing='4'>"
                       "<tr><th align='left'>Aplicação</th>"
                       "<th align='right'>Taxa líq./mês</th>"
                       "<th align='right'>Meses p/ meta</th>"
                       "<th align='right'>Renda plena</th></tr>");
-            auto linha = [&](const QString &nome, double m) {
+            for (const auto &a : r.aplicacoes) {
                 txt += tr("<tr><td>%1</td><td align='right'>%2%</td>"
                           "<td align='right'>%3</td>"
                           "<td align='right'>R$ %4</td></tr>")
-                          .arg(nome, fmtF(m * 100.0, 4),
-                               fmtF(tempoAcumular(m), 0),
-                               fmtF(rendaMensal(m), 2));
-            };
-            linha(tr("Poupança"),      mPoup);
-            linha(tr("CDB 100% CDI"),  mCDB);
-            linha(tr("Tesouro Selic"), mTesouro);
+                          .arg(a.nome, fmtF(a.taxaMensalLiquida * 100.0, 4),
+                               fmtF(static_cast<double>(a.mesesParaMeta), 0),
+                               fmtF(CalculadoraService::fromCentavos(a.rendaMensalPlenaCentavos), 2));
+            }
             txt += QStringLiteral("</table>");
 
             lblRes->setText(txt);
@@ -2126,46 +2116,30 @@ void CalculadoraDialog::buildTabWizards(QWidget *tab)
         lay->addWidget(btnUsar);
         lay->addStretch();
 
+        // FIN-04 (auditoria 2026-06-22 §3.1): calculo migrado para
+        // CalculadoraService::calcularCltVsPj (qint64 centavos). Antes:
+        // `double impPJ = pjFat * aliqPJ` -- multiplicacao monetaria simples
+        // (NAO transcendental) em double, 100% inteirizavel. Parse dos
+        // campos monetarios via uifmt::parseCentavos (nao mais parseF/
+        // QString::toDouble, que nao reconhece milhar sem virgula -- ver
+        // test_calculadora.cpp::provaBugParseFAntigoInterpretaMilharComoDecimal).
+        // parseF/fmtF ficam so para exibicao/campos nao-monetarios.
         connect(btnCalc, &QPushButton::clicked, this, [=]() {
-            const double bruto = parseF(edtCLT);
-            const double pjFat = parseF(edtPJ);
-            const int    reg   = cbReg->currentData().toInt();
-            if (bruto <= 0.0 || pjFat <= 0.0) {
+            const qint64 brutoCent = uifmt::parseCentavos(edtCLT->text());
+            const qint64 pjFatCent = uifmt::parseCentavos(edtPJ->text());
+            const int    reg       = cbReg->currentData().toInt();
+            if (brutoCent <= 0 || pjFatCent <= 0) {
                 lblRes->setText(tr("Verifique os valores.")); lblRes->show(); return;
             }
 
-            // CLT via FiscalService
-            const qint64 brutoCent = static_cast<qint64>(std::round(bruto * 100.0));
-            const qint64 inssCent  = FiscalService::inssMensal2024(brutoCent);
-            const qint64 baseCent  = brutoCent - inssCent;
-            const qint64 irpfCent  = FiscalService::irpfMensal2024(baseCent);
-            const double inss      = inssCent / 100.0;
-            const double irpf      = irpfCent / 100.0;
-            const double liqCLT    = bruto - inss - irpf;
+            const auto r = CalculadoraService::calcularCltVsPj(brutoCent, pjFatCent, reg);
+            const QString regNome = (reg == 0)
+                ? tr("Lucro Presumido (serviços)")
+                : cbReg->currentText();
 
-            // PJ via Simples (RBT12 = faturamento * 12) ou Lucro Presumido
-            double aliqPJ = 0.0;
-            QString regNome;
-            if (reg == 0) {
-                aliqPJ = FiscalService::lucroPresumidoServicosAliquota();
-                regNome = tr("Lucro Presumido (serviços)");
-            } else {
-                const qint64 rbt12 = static_cast<qint64>(std::round(pjFat * 12.0 * 100.0));
-                aliqPJ = FiscalService::simplesAliquotaEfetiva(reg, rbt12);
-                regNome = cbReg->currentText();
-            }
-            const double impPJ = pjFat * aliqPJ;
-            const double liqPJ = pjFat - impPJ;
-            const double diff  = liqPJ - liqCLT;
-            *resVal = diff;
+            *resVal = CalculadoraService::fromCentavos(r.diferencaCentavos);
 
-            // Break-even: faturamento PJ que iguala liqCLT
-            // pjFat * (1 - aliq) = liqCLT  ->  pjFat = liqCLT / (1 - aliq)
-            // (aproximacao: aliq constante; no Simples, RBT12 cresce com pjFat,
-            // entao o resultado real e maior; suficiente para orientacao)
-            const double breakEven = aliqPJ < 1.0 ? liqCLT / (1.0 - aliqPJ) : 0.0;
-
-            const QString sinal = diff >= 0.0 ? QStringLiteral("+") : QString();
+            const QString sinal = r.diferencaCentavos >= 0 ? QStringLiteral("+") : QString();
             lblRes->setText(
                 tr("<b>CLT</b><br>"
                    "&nbsp;&nbsp;INSS: R$ %1 · IRPF: R$ %2 · <b>Líquido: R$ %3</b><br><br>"
@@ -2174,16 +2148,16 @@ void CalculadoraDialog::buildTabWizards(QWidget *tab)
                    "&nbsp;&nbsp;Impostos: R$ %6 · <b>Líquido: R$ %7</b><br><br>"
                    "Diferença PJ − CLT: <b>%8R$ %9</b><br>"
                    "Break-even PJ (≈ liq. CLT): <b>R$ %10/mês</b>")
-                .arg(fmtF(inss, 2),
-                     fmtF(irpf, 2),
-                     fmtF(liqCLT, 2),
+                .arg(fmtF(CalculadoraService::fromCentavos(r.inssCentavos), 2),
+                     fmtF(CalculadoraService::fromCentavos(r.irpfCentavos), 2),
+                     fmtF(CalculadoraService::fromCentavos(r.liquidoCltCentavos), 2),
                      regNome,
-                     fmtF(aliqPJ * 100.0, 4),
-                     fmtF(impPJ, 2),
-                     fmtF(liqPJ, 2),
+                     fmtF(r.aliquotaPj * 100.0, 4),
+                     fmtF(CalculadoraService::fromCentavos(r.impostosPjCentavos), 2),
+                     fmtF(CalculadoraService::fromCentavos(r.liquidoPjCentavos), 2),
                      sinal,
-                     fmtF(std::abs(diff), 2),
-                     fmtF(breakEven, 2)));
+                     fmtF(CalculadoraService::fromCentavos(qAbs(r.diferencaCentavos)), 2),
+                     fmtF(CalculadoraService::fromCentavos(r.breakEvenCentavos), 2)));
             lblRes->show();
             btnUsar->show();
         });

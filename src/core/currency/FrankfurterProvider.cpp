@@ -8,9 +8,10 @@
 #include <QUrl>
 #include <QUrlQuery>
 #include <QDebug>
+#include <utility>
 
-FrankfurterProvider::FrankfurterProvider(QObject *parent)
-    : QObject(parent)
+FrankfurterProvider::FrankfurterProvider(QObject *parent, QString baseUrl)
+    : QObject(parent), m_baseUrl(std::move(baseUrl))
 {}
 
 bool FrankfurterProvider::isAvailable() const
@@ -32,8 +33,8 @@ QMap<QString, double> FrankfurterProvider::fetchRates(const QString &base)
 
 QMap<QString, double> FrankfurterProvider::fetchSync(const QString &base)
 {
-    // GET https://api.frankfurter.app/latest?from=BRL
-    QUrl url(QStringLiteral("https://api.frankfurter.app/latest"));
+    // GET https://api.frankfurter.dev/v1/latest?from=BRL (ou base injetada em teste)
+    QUrl url(m_baseUrl);
     QUrlQuery query;
     query.addQueryItem(QStringLiteral("from"), base);
     url.setQuery(query);
@@ -41,6 +42,9 @@ QMap<QString, double> FrankfurterProvider::fetchSync(const QString &base)
     QNetworkRequest req(url);
     req.setHeader(QNetworkRequest::UserAgentHeader,
                   QStringLiteral("orcamento-pessoal/0.1"));
+    // FIN-05: sem isso, um servidor que aceita a conexao e nunca responde
+    // trava fetchSync() (e a GUI thread que a chama) para sempre.
+    req.setTransferTimeout(FrankfurterProvider::kTransferTimeoutMs);
 
     QNetworkReply *reply = m_nam.get(req);
 

@@ -62,9 +62,13 @@ target_include_directories(test_working_db_path PRIVATE ${LIBSECRET_INCLUDE_DIRS
 peubud_add_test(test_unix_signal_handler
     ${CMAKE_SOURCE_DIR}/src/core/platform/UnixSignalHandler.cpp)
 
-# #132: CalculadoraService — funcoes puras (sem dependencias externas).
+# #132: CalculadoraService — funcoes puras. FIN-04 (auditoria 2026-06-22
+# §3.1) acrescentou calcularReservaEmergencia/calcularCltVsPj, que delegam
+# taxa/aliquota a FiscalService/FinanceEngine -- arrasta os dois.
 peubud_add_test(test_calculadora
-    ${CMAKE_SOURCE_DIR}/src/services/CalculadoraService.cpp)
+    ${CMAKE_SOURCE_DIR}/src/services/CalculadoraService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FiscalService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp)
 
 # #132: RecorrenciaService::proximaApos — funcao PURA de data. O .cpp tambem
 # contem gerarPendentes(), que arrasta repos/servicos/DatabaseManager/crypto;
@@ -170,6 +174,17 @@ peubud_add_test(test_parcela_service
     ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp)
 target_link_libraries(test_parcela_service PRIVATE ${LIBSECRET_LIBRARIES})
 target_include_directories(test_parcela_service PRIVATE ${LIBSECRET_INCLUDE_DIRS})
+
+# FIN-03 (auditoria 2026-06-22 §3.1): prova congelada de precisao -- sweep
+# PV ate R$100M / taxa 0,05-20% a.m. / ate 480 parcelas contra oraculo
+# long double (maior precisao que o double de producao).
+peubud_add_test(test_parcela_service_oracle
+    ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/settings/AppSettings.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp)
+target_link_libraries(test_parcela_service_oracle PRIVATE ${LIBSECRET_LIBRARIES})
+target_include_directories(test_parcela_service_oracle PRIVATE ${LIBSECRET_INCLUDE_DIRS})
 peubud_add_test(test_tvm
     ${CMAKE_SOURCE_DIR}/src/services/TvmService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp
@@ -182,6 +197,16 @@ target_include_directories(test_tvm PRIVATE ${LIBSECRET_INCLUDE_DIRS})
 peubud_add_test(test_currency_service
     ${CMAKE_SOURCE_DIR}/src/services/CurrencyService.cpp
     ${CMAKE_SOURCE_DIR}/src/core/currency/FrankfurterProvider.cpp)
+
+# FIN-05 (auditoria 2026-06-22 §3.1): fetchSync() sem setTransferTimeout()
+# travava a GUI indefinidamente se o servidor aceitasse a conexao e nunca
+# respondesse. TIMEOUT de ctest = watchdog de seguranca: se alguem remover
+# o fix, o teste falha por timeout do ctest (30s) em vez de travar a
+# maquina de CI para sempre.
+peubud_add_test(test_frankfurter_provider
+    ${CMAKE_SOURCE_DIR}/src/core/currency/FrankfurterProvider.cpp)
+set_tests_properties(test_frankfurter_provider PROPERTIES TIMEOUT 30)
+
 peubud_add_test(test_reconciliacao
     ${CMAKE_SOURCE_DIR}/src/services/ReconciliacaoAutomatica.cpp)
 peubud_add_test(test_indicadores
