@@ -7,6 +7,7 @@
 #include <QJsonObject>
 #include <QNetworkAccessManager>
 #include <QString>
+#include <QUrl>
 
 // BrapiProvider (#58) - impl de IMarketDataProvider usando brapi.dev API.
 //
@@ -56,6 +57,12 @@ public:
     // static + public: mesma logica de conversao usada em producao.
     static CotacaoRT parseQuoteJson(const QJsonDocument &doc);
     static QList<PrecoAtivo> parseOhlcvJson(const QJsonDocument &doc, const QString &ticker);
+
+    // (#203a/SEC-03) monta a URL de /quote/{ticker} com o ticker
+    // percent-encoded no segmento de path (defesa em profundidade — a
+    // validação primária é o QRegularExpressionValidator nos campos
+    // `m_edtTicker` da UI). static + public: testável sem rede.
+    static QUrl buildQuoteUrl(const QString &ticker);
 
 private:
     QString token() const;

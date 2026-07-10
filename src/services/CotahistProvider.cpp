@@ -8,6 +8,15 @@
 #include <QProcess>
 #include <QStringConverter>
 
+namespace {
+// (#203a/SEC-04) teto de tamanho da resposta do download COTAHIST. O ZIP
+// anual real da B3 fica na casa de 40-60MB; 200MB dá margem generosa sem
+// deixar o processo vulnerável a um endpoint comprometido/redirecionado
+// devolvendo um payload sem limite (memory exhaustion via
+// QNetworkReply::readAll() sem teto).
+constexpr qint64 kCotahistMaxBytes = 200LL * 1024 * 1024;
+}
+
 CotahistProvider::CotahistProvider(QObject *parent)
     : IMarketDataProvider(parent)
     , m_networkManager(nullptr)
@@ -186,11 +195,34 @@ bool CotahistProvider::downloadAndExtractZip(const QUrl &url, const QString &des
     }
 
     QNetworkRequest request(url);
-    request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
+    // (#203a/SEC-04) teto de redirecionamentos — a política padrão do Qt6
+    // (NoLessSafeRedirectPolicy) já segue redirect automaticamente; sem
+    // teto explícito o máximo default é 50 hops. `FollowRedirectsAttribute`
+    // (usado aqui antes) foi removido no Qt6 — API atual é
+    // setMaximumRedirectsAllowed().
+    request.setMaximumRedirectsAllowed(5);
     QNetworkReply *reply = m_networkManager->get(request);
     m_activeDownloads.insert(destPath, reply);
 
-    connect(reply, &QNetworkReply::finished, this, [this, reply, destPath]() {
+    // (#203a/SEC-04) aborta o download se a resposta ultrapassar o teto de
+    // bytes — protege contra memory exhaustion se o endpoint (ou um
+    // redirect malicioso dentro do teto acima) responder com um payload
+    // sem limite; `reply->readAll()` abaixo não teria teto próprio.
+    connect(reply, &QNetworkReply::downloadProgress, this,
+            [reply](qint64 bytesReceived, qint64 /*bytesTotal*/) {
+        if (bytesReceived > kCotahistMaxBytes) {
+            qWarning() << "CotahistProvider: download excedeu o teto de"
+                       << kCotahistMaxBytes << "bytes — abortando";
+            reply->abort();
+        }
+    });
+
+    // (#203a) bug pré-existente adjacente: capture list não incluía `url`
+    // (usado no qWarning abaixo) — erro de compilação real, não coberto
+    // pelo escopo original de QA-01 ("erros de compilação Qt6 não
+    // relacionados... fora de escopo"); corrigido aqui por estar dentro do
+    // mesmo bloco tocado pelo fix de SEC-04.
+    connect(reply, &QNetworkReply::finished, this, [this, reply, destPath, url]() {
         m_activeDownloads.remove(destPath);
         if (reply->error() != QNetworkReply::NoError) {
             qWarning() << "Erro no download de" << url << ":" << reply->errorString();
@@ -199,6 +231,12 @@ bool CotahistProvider::downloadAndExtractZip(const QUrl &url, const QString &des
         }
 
         QByteArray zipData = reply->readAll();
+        if (zipData.size() > kCotahistMaxBytes) {
+            qWarning() << "CotahistProvider: resposta" << zipData.size()
+                       << "bytes excede o teto de" << kCotahistMaxBytes
+                       << "— descartando (não grava em disco)";
+            return;
+        }
         QFile outFile(destPath);
         if (!outFile.open(QIODevice::WriteOnly)) {
             qWarning() << "Não foi possível salvar" << destPath;

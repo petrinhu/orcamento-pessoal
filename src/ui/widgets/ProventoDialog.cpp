@@ -10,6 +10,7 @@
 #include <QFormLayout>
 #include <QLineEdit>
 #include <QPushButton>
+#include <QRegularExpressionValidator>
 #include <QVBoxLayout>
 #include <cmath>
 
@@ -46,6 +47,12 @@ void ProventoDialog::buildUi()
     m_edtTicker = new QLineEdit(this);
     m_edtTicker->setText(m_original.ticker);
     m_edtTicker->setPlaceholderText(QStringLiteral("ex: PETR4, HGLG11"));
+    // (#203a/SEC-03) ticker alfanumérico até 12 chars — mesmo texto que
+    // acaba no path da URL do BrapiProvider/B3DirectQuoteProvider (via
+    // consultas de cotação por ticker); barra na borda além do
+    // percent-encoding defensivo no provider.
+    m_edtTicker->setValidator(new QRegularExpressionValidator(
+        QRegularExpression(QStringLiteral("[A-Za-z0-9]{1,12}")), m_edtTicker));
     form->addRow(tr("Ticker:"), m_edtTicker);
 
     m_cbTipo = new QComboBox(this);

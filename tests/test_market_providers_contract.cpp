@@ -10,10 +10,14 @@
 //   OAuthDeviceFlow::classifyPollResponse
 // Este arquivo testa esses parsers com fixture JSON (resposta real brapi.dev
 // / RFC 8628 sec 3.5), sem nenhuma chamada de rede.
+//
+// #203a (Onda U, SEC-03): BrapiProvider::buildQuoteUrl tambem extraido para
+// provar o percent-encoding do ticker no path da URL.
 
 #include <QtTest/QtTest>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QUrl>
 
 #include "services/BrapiProvider.h"
 #include "services/OAuthDeviceFlow.h"
@@ -100,6 +104,29 @@ private slots:
         const QList<PrecoAtivo> serie = BrapiProvider::parseOhlcvJson(
             QJsonDocument::fromJson(json), QStringLiteral("PETR4"));
         QVERIFY(serie.isEmpty());
+    }
+
+    // ── BrapiProvider::buildQuoteUrl (#203a/SEC-03) ──────────────────────────
+
+    void buildQuoteUrlTickerNormalUppercaseNaMudaEstrutura()
+    {
+        const QUrl url = BrapiProvider::buildQuoteUrl(QStringLiteral("petr4"));
+        QCOMPARE(url.toString(), QStringLiteral("https://brapi.dev/api/quote/PETR4"));
+    }
+
+    void buildQuoteUrlCaracterEspecialFicaPercentEncoded()
+    {
+        // "/" no ticker nao pode virar um segmento de path extra (path
+        // traversal); espaco nao pode quebrar a URL.
+        const QUrl url = BrapiProvider::buildQuoteUrl(QStringLiteral("PETR4/../x y"));
+        const QString s = url.toString(QUrl::FullyEncoded);
+        QVERIFY2(!s.contains(QStringLiteral("/../")),
+                  qPrintable(QStringLiteral("URL nao deveria conter path traversal cru: ") + s));
+        QVERIFY(s.startsWith(QStringLiteral("https://brapi.dev/api/quote/PETR4")));
+        // decodifica de volta e confirma que o path original foi preservado
+        // como UM segmento so (contagem de "/" apos o prefixo fixo == 0).
+        const QString suffix = s.mid(QStringLiteral("https://brapi.dev/api/quote/").size());
+        QVERIFY(!suffix.contains(QLatin1Char('/')));
     }
 
     // ── OAuthDeviceFlow::classifyPollResponse (RFC 8628 sec 3.5) ─────────────

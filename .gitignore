@@ -45,3 +45,6 @@ data/
 .*.db
 *.qm
 
+# Logs do pipeline pré-release (#203a, DIST-10) — runtime, não versionar
+reports/
+

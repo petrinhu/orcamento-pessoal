@@ -19,6 +19,7 @@
 #include <QDateEdit>
 #include <QSpinBox>
 #include <QRadioButton>
+#include <QRegularExpressionValidator>
 #include <cmath>
 #include <QGroupBox>
 #include <QDialogButtonBox>
@@ -203,6 +204,12 @@ void InvestimentoDialog::buildUi(const QList<Categoria> &categorias)
     m_edtTicker = new QLineEdit(this);
     m_edtTicker->setPlaceholderText(tr("ex: PETR4, MGLU3, BTC (opcional)"));
     m_edtTicker->setText(m_original.ticker);
+    // (#203a/SEC-03) ver comentário gêmeo em ProventoDialog::buildUi. Campo
+    // opcional — regex `{1,12}` mais o comportamento padrão do
+    // QRegularExpressionValidator (string vazia = Intermediate) preserva o
+    // "opcional" do placeholder.
+    m_edtTicker->setValidator(new QRegularExpressionValidator(
+        QRegularExpression(QStringLiteral("[A-Za-z0-9]{1,12}")), m_edtTicker));
     form->addRow(tr("Ticker:"), m_edtTicker);
 
     m_spnQty = new QDoubleSpinBox(this);

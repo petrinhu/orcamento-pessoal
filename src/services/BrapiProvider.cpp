@@ -61,10 +61,21 @@ CotacaoRT BrapiProvider::parseQuoteJson(const QJsonDocument &doc)
     return rt;
 }
 
+QUrl BrapiProvider::buildQuoteUrl(const QString &ticker)
+{
+    // ticker percent-encoded no segmento de path — o validator da UI
+    // (`m_edtTicker`) já restringe a `[A-Za-z0-9]{1,12}`, mas este provider
+    // é chamado por outros caminhos (import/CLI/teste) que não passam pela
+    // UI; encoding explícito evita path/query injection se um ticker
+    // malformado chegar aqui.
+    return QUrl(apiBase() + QStringLiteral("/quote/") +
+                QString::fromUtf8(QUrl::toPercentEncoding(ticker.toUpper())));
+}
+
 void BrapiProvider::fetchQuote(const QString &ticker,
                                 std::function<void(const CotacaoRT&)> callback)
 {
-    QUrl url(apiBase() + QStringLiteral("/quote/") + ticker.toUpper());
+    QUrl url = buildQuoteUrl(ticker);
     auto *reply = m_net->get(makeRequest(url, token()));
     connect(reply, &QNetworkReply::finished, this, [reply, callback]() {
         CotacaoRT rt;
@@ -116,7 +127,7 @@ void BrapiProvider::fetchOHLCV(const QString &ticker,
                                 const QString &intervalo,
                                 std::function<void(const QList<PrecoAtivo>&)> callback)
 {
-    QUrl url(apiBase() + QStringLiteral("/quote/") + ticker.toUpper());
+    QUrl url = buildQuoteUrl(ticker);
     QUrlQuery q;
     q.addQueryItem(QStringLiteral("interval"), intervalo);
     if (inicio.isValid())

@@ -1,6 +1,7 @@
 #include "B3DirectQuoteProvider.h"
 #include <QJsonArray>
 #include <QDebug>
+#include <QUrl>
 
 B3DirectQuoteProvider::B3DirectQuoteProvider(QObject *parent)
     : IMarketDataProvider(parent),
@@ -14,7 +15,10 @@ B3DirectQuoteProvider::~B3DirectQuoteProvider()
 
 void B3DirectQuoteProvider::fetchQuote(const QString &ticker, std::function<void(const CotacaoRT&)> callback)
 {
-    QString urlStr = QString("https://cotacao.b3.com.br/mds/api/v1/instrumentQuotation/%1").arg(ticker.toUpper());
+    // (#203a/SEC-03) ticker percent-encoded — ver comentário gêmeo em
+    // BrapiProvider::fetchQuote.
+    const QString encoded = QString::fromUtf8(QUrl::toPercentEncoding(ticker.toUpper()));
+    QString urlStr = QString("https://cotacao.b3.com.br/mds/api/v1/instrumentQuotation/%1").arg(encoded);
     QUrl url(urlStr);
     
     QNetworkReply *reply = m_networkManager->get(QNetworkRequest(url));

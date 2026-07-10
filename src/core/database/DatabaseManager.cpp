@@ -27,6 +27,25 @@ void execPragmaComAviso(QSqlQuery &q, const QString &sql)
                    << "-" << q.lastError().text();
 }
 
+// (#203a/FIN-06) Executa um exec() de createSchema() (CREATE TABLE / ALTER
+// TABLE / PRAGMA table_info) checando o retorno. As 16 tabelas base e as
+// migrations incrementais são idempotentes (IF NOT EXISTS / guard via
+// PRAGMA table_info), então uma falha isolada não trava o boot — mas antes
+// os ~41 exec() de createSchema() ignoravam bool systematicamente, e uma
+// falha genuína (disco cheio, arquivo corrompido, permissão) passava
+// 100% em silêncio. Agora fica logada com o contexto (nome da
+// tabela/coluna), preservando o comportamento auto-curativo mas tornando
+// a falha observável.
+bool execSchemaComAviso(QSqlQuery &q, const QString &sql, const char *contexto)
+{
+    if (!q.exec(sql)) {
+        qWarning() << "DatabaseManager::createSchema:" << contexto
+                   << "falhou -" << q.lastError().text();
+        return false;
+    }
+    return true;
+}
+
 #ifndef QT_DEBUG
 // (#181) Garante que a pasta-pai do caminho fixo ~/peubud/save/<slug>/
 // exista e tenha permissões 0700. O `.db` em claro vive em data/ (CWD)
@@ -279,14 +298,14 @@ void DatabaseManager::createSchema()
 {
     QSqlQuery q(m_db);
 
-    q.exec(QStringLiteral(R"(
+    execSchemaComAviso(q, QStringLiteral(R"(
         CREATE TABLE IF NOT EXISTS cartoes (
             id      INTEGER PRIMARY KEY AUTOINCREMENT,
             apelido TEXT NOT NULL UNIQUE
         )
-    )"));
+    )"), "CREATE TABLE cartoes");
 
-    q.exec(QStringLiteral(R"(
+    execSchemaComAviso(q, QStringLiteral(R"(
         CREATE TABLE IF NOT EXISTS compras (
             id               INTEGER PRIMARY KEY AUTOINCREMENT,
             nome             TEXT    NOT NULL,
@@ -300,9 +319,9 @@ void DatabaseManager::createSchema()
             cartao_id        INTEGER REFERENCES cartoes(id) ON DELETE SET NULL,
             criado_em        TEXT    NOT NULL
         )
-    )"));
+    )"), "CREATE TABLE compras");
 
-    q.exec(QStringLiteral(R"(
+    execSchemaComAviso(q, QStringLiteral(R"(
         CREATE TABLE IF NOT EXISTS parcelas (
             id          INTEGER PRIMARY KEY AUTOINCREMENT,
             compra_id   INTEGER NOT NULL REFERENCES compras(id) ON DELETE CASCADE,
@@ -311,16 +330,16 @@ void DatabaseManager::createSchema()
             data_fatura TEXT,
             modificada  INTEGER NOT NULL DEFAULT 0
         )
-    )"));
+    )"), "CREATE TABLE parcelas");
 
-    q.exec(QStringLiteral(R"(
+    execSchemaComAviso(q, QStringLiteral(R"(
         CREATE TABLE IF NOT EXISTS fontes_renda (
             id   INTEGER PRIMARY KEY AUTOINCREMENT,
             nome TEXT    NOT NULL UNIQUE
         )
-    )"));
+    )"), "CREATE TABLE fontes_renda");
 
-    q.exec(QStringLiteral(R"(
+    execSchemaComAviso(q, QStringLiteral(R"(
         CREATE TABLE IF NOT EXISTS lancamentos_entradas (
             id          INTEGER PRIMARY KEY AUTOINCREMENT,
             mes         INTEGER NOT NULL,
@@ -334,9 +353,9 @@ void DatabaseManager::createSchema()
             obs         TEXT    NOT NULL DEFAULT '',
             criado_em   TEXT    NOT NULL
         )
-    )"));
+    )"), "CREATE TABLE lancamentos_entradas");
 
-    q.exec(QStringLiteral(R"(
+    execSchemaComAviso(q, QStringLiteral(R"(
         CREATE TABLE IF NOT EXISTS lancamentos_gastos (
             id          INTEGER PRIMARY KEY AUTOINCREMENT,
             mes         INTEGER NOT NULL,
@@ -349,9 +368,9 @@ void DatabaseManager::createSchema()
             obs         TEXT    NOT NULL DEFAULT '',
             criado_em   TEXT    NOT NULL
         )
-    )"));
+    )"), "CREATE TABLE lancamentos_gastos");
 
-    q.exec(QStringLiteral(R"(
+    execSchemaComAviso(q, QStringLiteral(R"(
         CREATE TABLE IF NOT EXISTS orcamento_itens (
             id             INTEGER PRIMARY KEY AUTOINCREMENT,
             nome           TEXT    NOT NULL,
@@ -360,9 +379,9 @@ void DatabaseManager::createSchema()
             categoria_ref  TEXT    NOT NULL DEFAULT '',
             criado_em      TEXT    NOT NULL
         )
-    )"));
+    )"), "CREATE TABLE orcamento_itens");
 
-    q.exec(QStringLiteral(R"(
+    execSchemaComAviso(q, QStringLiteral(R"(
         CREATE TABLE IF NOT EXISTS lancamentos_investimentos (
             id             INTEGER PRIMARY KEY AUTOINCREMENT,
             mes            INTEGER NOT NULL,
@@ -375,9 +394,9 @@ void DatabaseManager::createSchema()
             obs            TEXT    NOT NULL DEFAULT '',
             criado_em      TEXT    NOT NULL
         )
-    )"));
+    )"), "CREATE TABLE lancamentos_investimentos");
 
-    q.exec(QStringLiteral(R"(
+    execSchemaComAviso(q, QStringLiteral(R"(
         CREATE TABLE IF NOT EXISTS transacoes_recorrentes (
             id                INTEGER PRIMARY KEY AUTOINCREMENT,
             descricao         TEXT    NOT NULL DEFAULT '',
@@ -395,27 +414,27 @@ void DatabaseManager::createSchema()
             ultimo_lancamento TEXT,
             criado_em         TEXT    NOT NULL
         )
-    )"));
+    )"), "CREATE TABLE transacoes_recorrentes");
 
-    q.exec(QStringLiteral(R"(
+    execSchemaComAviso(q, QStringLiteral(R"(
         CREATE TABLE IF NOT EXISTS categorias (
             id      INTEGER PRIMARY KEY AUTOINCREMENT,
             nome    TEXT    NOT NULL,
             tipo    TEXT    NOT NULL DEFAULT 'gasto',
             pai_id  INTEGER REFERENCES categorias(id) ON DELETE SET NULL
         )
-    )"));
+    )"), "CREATE TABLE categorias");
 
-    q.exec(QStringLiteral(R"(
+    execSchemaComAviso(q, QStringLiteral(R"(
         CREATE TABLE IF NOT EXISTS pagadores (
             id   INTEGER PRIMARY KEY AUTOINCREMENT,
             nome TEXT    NOT NULL UNIQUE,
             tipo TEXT    NOT NULL DEFAULT 'ambos',
             obs  TEXT    NOT NULL DEFAULT ''
         )
-    )"));
+    )"), "CREATE TABLE pagadores");
 
-    q.exec(QStringLiteral(R"(
+    execSchemaComAviso(q, QStringLiteral(R"(
         CREATE TABLE IF NOT EXISTS dividas (
             id            INTEGER PRIMARY KEY AUTOINCREMENT,
             tipo          TEXT    NOT NULL DEFAULT 'divida',
@@ -430,9 +449,9 @@ void DatabaseManager::createSchema()
             obs           TEXT    NOT NULL DEFAULT '',
             criado_em     TEXT    NOT NULL DEFAULT ''
         )
-    )"));
+    )"), "CREATE TABLE dividas");
 
-    q.exec(QStringLiteral(R"(
+    execSchemaComAviso(q, QStringLiteral(R"(
         CREATE TABLE IF NOT EXISTS metas (
             id          INTEGER PRIMARY KEY AUTOINCREMENT,
             nome        TEXT    NOT NULL DEFAULT '',
@@ -445,9 +464,9 @@ void DatabaseManager::createSchema()
             obs         TEXT    NOT NULL DEFAULT '',
             criado_em   TEXT    NOT NULL DEFAULT ''
         )
-    )"));
+    )"), "CREATE TABLE metas");
 
-    q.exec(QStringLiteral(R"(
+    execSchemaComAviso(q, QStringLiteral(R"(
         CREATE TABLE IF NOT EXISTS lembretes (
             id                INTEGER PRIMARY KEY AUTOINCREMENT,
             descricao         TEXT    NOT NULL DEFAULT '',
@@ -459,9 +478,9 @@ void DatabaseManager::createSchema()
             obs               TEXT    NOT NULL DEFAULT '',
             criado_em         TEXT    NOT NULL DEFAULT ''
         )
-    )"));
+    )"), "CREATE TABLE lembretes");
 
-    q.exec(QStringLiteral(R"(
+    execSchemaComAviso(q, QStringLiteral(R"(
         CREATE TABLE IF NOT EXISTS precos_ativos (
             ticker      TEXT    NOT NULL,
             data        TEXT    NOT NULL,
@@ -474,9 +493,9 @@ void DatabaseManager::createSchema()
             atualizado  TEXT    NOT NULL DEFAULT '',
             PRIMARY KEY (ticker, data)
         )
-    )"));
+    )"), "CREATE TABLE precos_ativos");
 
-    q.exec(QStringLiteral(R"(
+    execSchemaComAviso(q, QStringLiteral(R"(
         CREATE TABLE IF NOT EXISTS cotacoes_tempo_real (
             ticker          TEXT    PRIMARY KEY,
             preco           INTEGER NOT NULL DEFAULT 0,
@@ -487,12 +506,13 @@ void DatabaseManager::createSchema()
             volume          INTEGER NOT NULL DEFAULT 0,
             timestamp       TEXT    NOT NULL DEFAULT ''
         )
-    )"));
+    )"), "CREATE TABLE cotacoes_tempo_real");
 
     // Migration: add pagador columns to lancamentos_gastos (guard via PRAGMA).
     {
         QSqlQuery pq(m_db);
-        pq.exec(QStringLiteral("PRAGMA table_info(lancamentos_gastos)"));
+        execSchemaComAviso(pq, QStringLiteral("PRAGMA table_info(lancamentos_gastos)"),
+                           "PRAGMA table_info(lancamentos_gastos) [pagador]");
         bool hasPagador = false, hasPagadorId = false;
         while (pq.next()) {
             const QString col = pq.value(1).toString();
@@ -500,36 +520,41 @@ void DatabaseManager::createSchema()
             if (col == QLatin1String("pagador_id")) hasPagadorId = true;
         }
         if (!hasPagador)
-            q.exec(QStringLiteral(
+            execSchemaComAviso(q, QStringLiteral(
                 "ALTER TABLE lancamentos_gastos "
-                "ADD COLUMN pagador TEXT NOT NULL DEFAULT ''"));
+                "ADD COLUMN pagador TEXT NOT NULL DEFAULT ''"),
+                "ALTER lancamentos_gastos ADD pagador");
         if (!hasPagadorId)
-            q.exec(QStringLiteral(
+            execSchemaComAviso(q, QStringLiteral(
                 "ALTER TABLE lancamentos_gastos "
                 "ADD COLUMN pagador_id INTEGER "
-                "REFERENCES pagadores(id) ON DELETE SET NULL"));
+                "REFERENCES pagadores(id) ON DELETE SET NULL"),
+                "ALTER lancamentos_gastos ADD pagador_id");
     }
 
     // Migration: add categoria_id to lancamentos_gastos
     {
         QSqlQuery pq(m_db);
-        pq.exec(QStringLiteral("PRAGMA table_info(lancamentos_gastos)"));
+        execSchemaComAviso(pq, QStringLiteral("PRAGMA table_info(lancamentos_gastos)"),
+                           "PRAGMA table_info(lancamentos_gastos) [categoria_id]");
         bool hasCatId = false;
         while (pq.next()) {
             if (pq.value(1).toString() == QLatin1String("categoria_id"))
                 hasCatId = true;
         }
         if (!hasCatId)
-            q.exec(QStringLiteral(
+            execSchemaComAviso(q, QStringLiteral(
                 "ALTER TABLE lancamentos_gastos "
                 "ADD COLUMN categoria_id INTEGER "
-                "REFERENCES categorias(id) ON DELETE SET NULL"));
+                "REFERENCES categorias(id) ON DELETE SET NULL"),
+                "ALTER lancamentos_gastos ADD categoria_id");
     }
 
     // Migration: add categoria + categoria_id to lancamentos_entradas
     {
         QSqlQuery pq(m_db);
-        pq.exec(QStringLiteral("PRAGMA table_info(lancamentos_entradas)"));
+        execSchemaComAviso(pq, QStringLiteral("PRAGMA table_info(lancamentos_entradas)"),
+                           "PRAGMA table_info(lancamentos_entradas) [categoria]");
         bool hasCat = false, hasCatId = false;
         while (pq.next()) {
             const QString col = pq.value(1).toString();
@@ -537,20 +562,23 @@ void DatabaseManager::createSchema()
             if (col == QLatin1String("categoria_id")) hasCatId = true;
         }
         if (!hasCat)
-            q.exec(QStringLiteral(
+            execSchemaComAviso(q, QStringLiteral(
                 "ALTER TABLE lancamentos_entradas "
-                "ADD COLUMN categoria TEXT NOT NULL DEFAULT ''"));
+                "ADD COLUMN categoria TEXT NOT NULL DEFAULT ''"),
+                "ALTER lancamentos_entradas ADD categoria");
         if (!hasCatId)
-            q.exec(QStringLiteral(
+            execSchemaComAviso(q, QStringLiteral(
                 "ALTER TABLE lancamentos_entradas "
                 "ADD COLUMN categoria_id INTEGER "
-                "REFERENCES categorias(id) ON DELETE SET NULL"));
+                "REFERENCES categorias(id) ON DELETE SET NULL"),
+                "ALTER lancamentos_entradas ADD categoria_id");
     }
 
     // Migration: add categoria + categoria_id to lancamentos_investimentos
     {
         QSqlQuery pq(m_db);
-        pq.exec(QStringLiteral("PRAGMA table_info(lancamentos_investimentos)"));
+        execSchemaComAviso(pq, QStringLiteral("PRAGMA table_info(lancamentos_investimentos)"),
+                           "PRAGMA table_info(lancamentos_investimentos) [categoria]");
         bool hasCat = false, hasCatId = false;
         while (pq.next()) {
             const QString col = pq.value(1).toString();
@@ -558,14 +586,16 @@ void DatabaseManager::createSchema()
             if (col == QLatin1String("categoria_id")) hasCatId = true;
         }
         if (!hasCat)
-            q.exec(QStringLiteral(
+            execSchemaComAviso(q, QStringLiteral(
                 "ALTER TABLE lancamentos_investimentos "
-                "ADD COLUMN categoria TEXT NOT NULL DEFAULT ''"));
+                "ADD COLUMN categoria TEXT NOT NULL DEFAULT ''"),
+                "ALTER lancamentos_investimentos ADD categoria");
         if (!hasCatId)
-            q.exec(QStringLiteral(
+            execSchemaComAviso(q, QStringLiteral(
                 "ALTER TABLE lancamentos_investimentos "
                 "ADD COLUMN categoria_id INTEGER "
-                "REFERENCES categorias(id) ON DELETE SET NULL"));
+                "REFERENCES categorias(id) ON DELETE SET NULL"),
+                "ALTER lancamentos_investimentos ADD categoria_id");
     }
 
     // Migration #118: add fixo (classificacao fixo/variavel) a categorias.
@@ -574,16 +604,18 @@ void DatabaseManager::createSchema()
     // Idempotente via PRAGMA table_info (mesmo padrao de #48/#90).
     {
         QSqlQuery pq(m_db);
-        pq.exec(QStringLiteral("PRAGMA table_info(categorias)"));
+        execSchemaComAviso(pq, QStringLiteral("PRAGMA table_info(categorias)"),
+                           "PRAGMA table_info(categorias) [fixo]");
         bool hasFixo = false;
         while (pq.next()) {
             if (pq.value(1).toString() == QLatin1String("fixo"))
                 hasFixo = true;
         }
         if (!hasFixo)
-            q.exec(QStringLiteral(
+            execSchemaComAviso(q, QStringLiteral(
                 "ALTER TABLE categorias "
-                "ADD COLUMN fixo INTEGER NOT NULL DEFAULT 0"));
+                "ADD COLUMN fixo INTEGER NOT NULL DEFAULT 0"),
+                "ALTER categorias ADD fixo");
     }
 
     // Migration #90: add receipt BLOB to 4 tables (anexo do comprovante).
@@ -597,15 +629,17 @@ void DatabaseManager::createSchema()
     };
     for (const QString &table : receiptTables) {
         QSqlQuery pq(m_db);
-        pq.exec(QStringLiteral("PRAGMA table_info(%1)").arg(table));
+        execSchemaComAviso(pq, QStringLiteral("PRAGMA table_info(%1)").arg(table),
+                           qPrintable(QStringLiteral("PRAGMA table_info(%1) [receipt]").arg(table)));
         bool hasReceipt = false;
         while (pq.next()) {
             if (pq.value(1).toString() == QLatin1String("receipt"))
                 hasReceipt = true;
         }
         if (!hasReceipt)
-            q.exec(QStringLiteral("ALTER TABLE %1 ADD COLUMN receipt BLOB")
-                       .arg(table));
+            execSchemaComAviso(q, QStringLiteral("ALTER TABLE %1 ADD COLUMN receipt BLOB")
+                       .arg(table),
+                       qPrintable(QStringLiteral("ALTER %1 ADD receipt").arg(table)));
     }
 
     // Migration #48: ticker/quantidade/preco_unitario em lancamentos_investimentos
@@ -614,7 +648,8 @@ void DatabaseManager::createSchema()
     // (FII/cripto). preco_unitario em centavos como demais campos monetarios.
     {
         QSqlQuery pq(m_db);
-        pq.exec(QStringLiteral("PRAGMA table_info(lancamentos_investimentos)"));
+        execSchemaComAviso(pq, QStringLiteral("PRAGMA table_info(lancamentos_investimentos)"),
+                           "PRAGMA table_info(lancamentos_investimentos) [ticker/quantidade/preco_unitario]");
         bool hasTicker = false, hasQty = false, hasPU = false;
         while (pq.next()) {
             const QString col = pq.value(1).toString();
@@ -623,17 +658,20 @@ void DatabaseManager::createSchema()
             if (col == QLatin1String("preco_unitario"))  hasPU     = true;
         }
         if (!hasTicker)
-            q.exec(QStringLiteral(
+            execSchemaComAviso(q, QStringLiteral(
                 "ALTER TABLE lancamentos_investimentos "
-                "ADD COLUMN ticker TEXT NOT NULL DEFAULT ''"));
+                "ADD COLUMN ticker TEXT NOT NULL DEFAULT ''"),
+                "ALTER lancamentos_investimentos ADD ticker");
         if (!hasQty)
-            q.exec(QStringLiteral(
+            execSchemaComAviso(q, QStringLiteral(
                 "ALTER TABLE lancamentos_investimentos "
-                "ADD COLUMN quantidade REAL NOT NULL DEFAULT 0"));
+                "ADD COLUMN quantidade REAL NOT NULL DEFAULT 0"),
+                "ALTER lancamentos_investimentos ADD quantidade");
         if (!hasPU)
-            q.exec(QStringLiteral(
+            execSchemaComAviso(q, QStringLiteral(
                 "ALTER TABLE lancamentos_investimentos "
-                "ADD COLUMN preco_unitario INTEGER NOT NULL DEFAULT 0"));
+                "ADD COLUMN preco_unitario INTEGER NOT NULL DEFAULT 0"),
+                "ALTER lancamentos_investimentos ADD preco_unitario");
     }
 
     // (#200/ARQ-01) Tabelas Mid/Backend (proventos_recebidos #66,

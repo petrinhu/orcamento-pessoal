@@ -8,6 +8,7 @@
 #include <QFormLayout>
 #include <QLineEdit>
 #include <QPushButton>
+#include <QRegularExpressionValidator>
 #include <QVBoxLayout>
 
 AjusteCorporativoDialog::AjusteCorporativoDialog(
@@ -26,6 +27,9 @@ void AjusteCorporativoDialog::buildUi()
     m_edtTicker = new QLineEdit(this);
     m_edtTicker->setText(m_original.ticker);
     m_edtTicker->setPlaceholderText(QStringLiteral("ex: PETR4, MGLU3"));
+    // (#203a/SEC-03) ver comentário gêmeo em ProventoDialog::buildUi.
+    m_edtTicker->setValidator(new QRegularExpressionValidator(
+        QRegularExpression(QStringLiteral("[A-Za-z0-9]{1,12}")), m_edtTicker));
     form->addRow(tr("Ticker:"), m_edtTicker);
 
     m_cbTipo = new QComboBox(this);
