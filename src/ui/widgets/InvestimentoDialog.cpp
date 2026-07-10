@@ -241,7 +241,7 @@ void InvestimentoDialog::buildUi(const QList<Categoria> &categorias)
 
     // ── Data ───────────────────────────────────────────────────────────────
     m_dateEdit = new QDateEdit(this);
-    m_dateEdit->setDisplayFormat(QStringLiteral("dd/MM/yyyy"));
+    m_dateEdit->setDisplayFormat(uifmt::dataDisplayFormat());
     m_dateEdit->setCalendarPopup(true);
     const QDate defaultDate = (m_original.dia > 0)
         ? QDate(m_ano, m_mes, m_original.dia)

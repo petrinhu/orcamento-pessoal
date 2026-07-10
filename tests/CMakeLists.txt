@@ -448,6 +448,32 @@ set_tests_properties(test_sidebar_repro PROPERTIES
 # Puro Qt::Core + Qt::Test — sem UI, DB, crypto ou rede.
 peubud_add_test(test_locale_meses)
 
+# #197 (Onda U-4, I18N-01): UiFormatters::formatCentavosBRL concatenava
+# "R$"+vírgula fixos, ignorando AppSettings::language()/defaultCurrency()
+# (~24 call-sites). Fix em aritmética inteira (grouping via QLocale, símbolo
+# via ParcelaService::simboloMoeda, separador/posição por switch(language())).
+# QSettings::setPath() isola de ~/.config real (ver comentário no .cpp).
+peubud_add_test(test_locale_moeda
+    ${CMAKE_SOURCE_DIR}/src/ui/UiFormatters.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/settings/AppSettings.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp)
+target_link_libraries(test_locale_moeda PRIVATE ${LIBSECRET_LIBRARIES})
+target_include_directories(test_locale_moeda PRIVATE ${LIBSECRET_INCLUDE_DIRS})
+
+# #197 (Onda U-4, I18N-05): "dd/MM/yyyy" hardcoded em 29 pontos/22 arquivos de
+# UI -- ordem dia/mês é ambígua entre locales (pt-BR dd/MM x en-US MM/dd).
+# Fix: uifmt::dataDisplayFormat()+variantes por AppSettings::language().
+peubud_add_test(test_locale_datas
+    ${CMAKE_SOURCE_DIR}/src/ui/UiFormatters.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/settings/AppSettings.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp)
+target_link_libraries(test_locale_datas PRIVATE ${LIBSECRET_LIBRARIES})
+target_include_directories(test_locale_datas PRIVATE ${LIBSECRET_INCLUDE_DIRS})
+
 # Render offscreen fix #176: sombra dos botoes nao clipa na borda dos containers.
 # Verifica que Theme::aplicar() + ButtonShadowFilter nao quebram render offscreen
 # e gera /tmp/shadow_fix.png para inspecao visual.
@@ -578,6 +604,7 @@ set_tests_properties(test_cards_render PROPERTIES
 # QSS) + Glossario* (mecanismo sob teste).
 peubud_add_test(test_dashboard_glossario
     ${CMAKE_SOURCE_DIR}/src/ui/widgets/DashboardWidget.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/UiFormatters.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/Theme.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/FocusVisibleFilter.cpp
@@ -971,8 +998,18 @@ target_compile_definitions(test_package_source_gate PRIVATE
 
 # #199 (Onda U, QA-03): uifmt::parseCentavos("1.234") truncava p/ R$ 1,23
 # (ramo "so ponto" caia em toDouble literal). Fix: heuristica de milhar.
+# #197 (Onda U, I18N-01): formatCentavosBRL/dataDisplayFormat* passaram a
+# consultar AppSettings::language()/defaultCurrency() (+ ParcelaService::
+# simboloMoeda) -- arrasta AppSettings.cpp (+ libsecret via brapiToken()) e
+# ParcelaService.cpp (+ FinanceEngine.cpp) para o link.
 peubud_add_test(test_ui_formatters
-    ${CMAKE_SOURCE_DIR}/src/ui/UiFormatters.cpp)
+    ${CMAKE_SOURCE_DIR}/src/ui/UiFormatters.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/settings/AppSettings.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp)
+target_link_libraries(test_ui_formatters PRIVATE ${LIBSECRET_LIBRARIES})
+target_include_directories(test_ui_formatters PRIVATE ${LIBSECRET_INCLUDE_DIRS})
 
 # #199 (Onda U, QA-01): parser posicional B3 COTAHIST lia PREMED em vez de
 # PREULT em `fechamento` (dormente -- CotahistProvider.cpp/.h ficam FORA do

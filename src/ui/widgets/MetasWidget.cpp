@@ -4,6 +4,7 @@
 #include "repositories/MetaRepository.h"
 #include "core/commands/UndoCommands.h"
 #include "ui/Theme.h"
+#include "ui/UiFormatters.h"
 
 #include <QUndoStack>
 #include <memory>
@@ -29,20 +30,17 @@
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
+// #197 (I18N-01/05): delegava para "R$ "+vírgula e "dd/MM/yyyy" fixos.
 static QString fmtCentavos(qint64 c)
 {
-    const qint64 abs_c = c < 0 ? -c : c;
-    return QStringLiteral("R$ %1%2,%3")
-        .arg(c < 0 ? QStringLiteral("-") : QString())
-        .arg(abs_c / 100)
-        .arg(abs_c % 100, 2, 10, QLatin1Char('0'));
+    return uifmt::formatCentavosBRL(c);
 }
 
 static QString fmtData(const QString &iso)
 {
     if (iso.isEmpty()) return QStringLiteral("—");
     const QDate d = QDate::fromString(iso, Qt::ISODate);
-    return d.isValid() ? d.toString(QStringLiteral("dd/MM/yyyy")) : iso;
+    return d.isValid() ? d.toString(uifmt::dataDisplayFormat()) : iso;
 }
 
 static QTableWidgetItem *roItem(const QString &text,

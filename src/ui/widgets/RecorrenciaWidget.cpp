@@ -217,7 +217,7 @@ void RecorrenciaWidget::popularTabela()
                 proxima = QDate();
         }
         m_table->setItem(row, 4, roItem(proxima.isValid()
-                                        ? proxima.toString(QStringLiteral("dd/MM/yyyy"))
+                                        ? proxima.toString(uifmt::dataDisplayFormat())
                                         : tr("—")));
 
         // Col 5: Ativo

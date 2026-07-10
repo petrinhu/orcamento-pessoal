@@ -663,21 +663,23 @@ void ParcelasWidget::onCellChanged(int row, int col)
     if (parcelaIndex < 0) return;
 
     // Ask how to recalculate
+    // #197 (I18N-03): dialog inteiro estava fora de tr() (título + label +
+    // 4 radio buttons).
     QDialog dlg(this);
-    dlg.setWindowTitle(QStringLiteral("Atualizar parcelas"));
+    dlg.setWindowTitle(tr("Atualizar parcelas"));
     auto *layout = new QVBoxLayout(&dlg);
     layout->setContentsMargins(20, 20, 20, 20);
     layout->setSpacing(12);
     layout->addWidget(new QLabel(
-        QStringLiteral("Como deseja atualizar as demais parcelas?"), &dlg));
+        tr("Como deseja atualizar as demais parcelas?"), &dlg));
 
     auto *grp = new QGroupBox(&dlg);
     auto *vl  = new QVBoxLayout(grp);
-    auto *rSo      = new QRadioButton(QStringLiteral("Alterar só esta parcela"), &dlg);
-    auto *rRedist  = new QRadioButton(QStringLiteral("Redistribuir diferença nas demais"), &dlg);
+    auto *rSo      = new QRadioButton(tr("Alterar só esta parcela"), &dlg);
+    auto *rRedist  = new QRadioButton(tr("Redistribuir diferença nas demais"), &dlg);
     auto *rIgualar = new QRadioButton(
-        QStringLiteral("Igualar todas as parcelas a este valor (recalcula total)"), &dlg);
-    auto *rJuros   = new QRadioButton(QStringLiteral("Recalcular juros a partir daqui"), &dlg);
+        tr("Igualar todas as parcelas a este valor (recalcula total)"), &dlg);
+    auto *rJuros   = new QRadioButton(tr("Recalcular juros a partir daqui"), &dlg);
     rSo->setChecked(true);
     vl->addWidget(rSo);
     vl->addWidget(rRedist);

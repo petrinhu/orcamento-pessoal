@@ -1,5 +1,6 @@
 #include "AjustesCorporativosWidget.h"
 #include "AjusteCorporativoDialog.h"
+#include "ui/UiFormatters.h"
 
 #include "services/AjusteCorporativoService.h"
 
@@ -78,7 +79,7 @@ void AjustesCorporativosWidget::recarregar()
     for (int i = 0; i < lista.size(); ++i) {
         const auto &a = lista[i];
         auto *itD = new QTableWidgetItem(
-            a.dataEx.toString(QStringLiteral("dd/MM/yyyy")));
+            a.dataEx.toString(uifmt::dataDisplayFormat()));
         itD->setData(Qt::UserRole, QVariant::fromValue(a.id));
         m_tabela->setItem(i, 0, itD);
         m_tabela->setItem(i, 1, new QTableWidgetItem(a.ticker));

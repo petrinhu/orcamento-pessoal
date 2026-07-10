@@ -1,6 +1,10 @@
 #include "UiFormatters.h"
 
+#include "core/settings/AppSettings.h"
+#include "services/ParcelaService.h"
+
 #include <QLatin1Char>
+#include <QLocale>
 #include <QRegularExpression>
 #include <QStringLiteral>
 
@@ -45,11 +49,61 @@ QString formatCentavos(qint64 cents)
 
 QString formatCentavosBRL(qint64 cents)
 {
-    const qint64 abs_c = cents < 0 ? -cents : cents;
-    return QStringLiteral("R$ %1%2,%3")
-        .arg(cents < 0 ? QStringLiteral("-") : QString())
-        .arg(abs_c / 100)
-        .arg(abs_c % 100, 2, 10, QLatin1Char('0'));
+    // #197 (I18N-01): aritmética 100% inteira -- sem double. O agrupamento de
+    // milhar vem de QLocale::toString(qint64) (pt-BR: "1.234"; en-US: "1,234");
+    // separador decimal e posição do símbolo (colado en-US "$1,234.56" vs.
+    // com espaço pt-BR "R$ 1.234,56"; sinal antes do símbolo en-US "-$1,23"
+    // vs. depois pt-BR "R$ -1,23", convenção de cada locale) resolvidos por
+    // switch(language()) -- não por QLocale::toCurrencyString (exige double).
+    const bool en = AppSettings::instance().language() == AppSettings::Language::EnIntl;
+
+    const qint64 abs_c    = cents < 0 ? -cents : cents;
+    const qint64 inteiro  = abs_c / 100;
+    const qint64 fracao   = abs_c % 100;
+    const QString sinal   = cents < 0 ? QStringLiteral("-") : QString();
+    const QString simbolo = ParcelaService::simboloMoeda(AppSettings::instance().defaultCurrency());
+
+    const QLocale loc = en ? QLocale(QLocale::English, QLocale::UnitedStates)
+                            : QLocale(QLocale::Portuguese, QLocale::Brazil);
+    const QString inteiroFmt = loc.toString(inteiro); // agrupado: "1,234" / "1.234"
+    const QString fracaoFmt  = QStringLiteral("%1").arg(fracao, 2, 10, QLatin1Char('0'));
+
+    if (en)
+        return QStringLiteral("%1%2%3.%4").arg(sinal, simbolo, inteiroFmt, fracaoFmt);
+    return QStringLiteral("%1 %2%3,%4").arg(simbolo, sinal, inteiroFmt, fracaoFmt);
+}
+
+QString simboloMoedaAtiva()
+{
+    return ParcelaService::simboloMoeda(AppSettings::instance().defaultCurrency());
+}
+
+QString dataDisplayFormat()
+{
+    return AppSettings::instance().language() == AppSettings::Language::EnIntl
+        ? QStringLiteral("MM/dd/yyyy")
+        : QStringLiteral("dd/MM/yyyy");
+}
+
+QString dataDisplayFormatCurta()
+{
+    return AppSettings::instance().language() == AppSettings::Language::EnIntl
+        ? QStringLiteral("MM/dd")
+        : QStringLiteral("dd/MM");
+}
+
+QString dataDisplayFormatAnoCurto()
+{
+    return AppSettings::instance().language() == AppSettings::Language::EnIntl
+        ? QStringLiteral("MM/dd/yy")
+        : QStringLiteral("dd/MM/yy");
+}
+
+QString mesAnoDisplayFormat()
+{
+    // Ordem mês/ano não é ambígua entre locales (ao contrário de dia/mês) --
+    // centralizado mesmo assim para ter 1 único ponto de verdade.
+    return QStringLiteral("MM/yyyy");
 }
 
 } // namespace uifmt

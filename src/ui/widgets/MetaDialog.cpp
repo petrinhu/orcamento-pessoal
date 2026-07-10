@@ -58,7 +58,7 @@ void MetaDialog::buildUi(const Meta &m)
 
     m_dtInicio = new QDateEdit(this);
     m_dtInicio->setCalendarPopup(true);
-    m_dtInicio->setDisplayFormat(QStringLiteral("dd/MM/yyyy"));
+    m_dtInicio->setDisplayFormat(uifmt::dataDisplayFormat());
     m_dtInicio->setDate(m.dataInicio.isEmpty()
         ? QDate::currentDate()
         : QDate::fromString(m.dataInicio, Qt::ISODate));
@@ -66,7 +66,7 @@ void MetaDialog::buildUi(const Meta &m)
 
     m_dtPrazo = new QDateEdit(this);
     m_dtPrazo->setCalendarPopup(true);
-    m_dtPrazo->setDisplayFormat(QStringLiteral("dd/MM/yyyy"));
+    m_dtPrazo->setDisplayFormat(uifmt::dataDisplayFormat());
     m_dtPrazo->setSpecialValueText(tr("Sem prazo"));
     m_dtPrazo->setMinimumDate(QDate(2000, 1, 1));
     if (m.dataPrazo.isEmpty())

@@ -1,5 +1,6 @@
 #include "ReconciliacaoDialog.h"
 #include "core/database/DatabaseManager.h"
+#include "ui/UiFormatters.h"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -25,21 +26,17 @@
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
+// #197 (I18N-01/05): delegava para "R$ "+vírgula e "dd/MM/yyyy" fixos.
 static QString fmtCentavos(qint64 c)
 {
     if (c == 0) return QString();
-    const bool neg = c < 0;
-    const qint64 abs_c = neg ? -c : c;
-    return QStringLiteral("%1R$ %2,%3")
-        .arg(neg ? QStringLiteral("-") : QString())
-        .arg(abs_c / 100)
-        .arg(abs_c % 100, 2, 10, QLatin1Char('0'));
+    return uifmt::formatCentavosBRL(c);
 }
 
 static QString fmtData(const QString &iso)
 {
     const QDate d = QDate::fromString(iso, Qt::ISODate);
-    return d.isValid() ? d.toString(QStringLiteral("dd/MM/yyyy")) : iso;
+    return d.isValid() ? d.toString(uifmt::dataDisplayFormat()) : iso;
 }
 
 static QTableWidgetItem *roItem(const QString &text,

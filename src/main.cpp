@@ -8,6 +8,7 @@
 #include "core/settings/AppSettings.h"
 
 #include <QApplication>
+#include <QCoreApplication>
 #include <QDebug>
 #include <QIcon>
 #include <QMessageBox>
@@ -69,10 +70,14 @@ int main(int argc, char *argv[])
         if (DatabaseManager::instance().open(UserSession::instance().slug(), chave, chaveOld))
             break; // sucesso → segue para onboarding/MainWindow
 
+        // #197 (I18N-03): main() é função livre (sem classe/Q_OBJECT) -- tr()
+        // não resolve sem contexto; QCoreApplication::translate("main", ...)
+        // é o padrão Qt para strings traduzíveis fora de QObject.
         QMessageBox::warning(&login,
-            QStringLiteral("Senha incorreta"),
-            QStringLiteral("Não foi possível abrir o cofre com essa senha.\n"
-                           "Verifique a senha e tente novamente, ou clique em Cancelar para sair."));
+            QCoreApplication::translate("main", "Senha incorreta"),
+            QCoreApplication::translate("main",
+                "Não foi possível abrir o cofre com essa senha.\n"
+                "Verifique a senha e tente novamente, ou clique em Cancelar para sair."));
         login.limparSenha(); // mantém o nome, limpa a senha — volta ao topo do loop
     }
 

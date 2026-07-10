@@ -169,7 +169,7 @@ void RecorrenciaDialog::buildUi(const QList<FonteRenda> &fontes,
     // Data início
     m_dateInicio = new QDateEdit(QDate::currentDate(), this);
     m_dateInicio->setCalendarPopup(true);
-    m_dateInicio->setDisplayFormat(QStringLiteral("dd/MM/yyyy"));
+    m_dateInicio->setDisplayFormat(uifmt::dataDisplayFormat());
     form->addRow(tr("Início em:"), m_dateInicio);
 
     // Data fim
@@ -178,7 +178,7 @@ void RecorrenciaDialog::buildUi(const QList<FonteRenda> &fontes,
     m_chkSemFim->setChecked(true);
     m_dateFim    = new QDateEdit(QDate::currentDate().addYears(1), this);
     m_dateFim->setCalendarPopup(true);
-    m_dateFim->setDisplayFormat(QStringLiteral("dd/MM/yyyy"));
+    m_dateFim->setDisplayFormat(uifmt::dataDisplayFormat());
     m_dateFim->setEnabled(false);
     rowFim->addWidget(m_chkSemFim);
     rowFim->addWidget(m_dateFim);

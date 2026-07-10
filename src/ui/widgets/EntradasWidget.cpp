@@ -367,7 +367,7 @@ void EntradasWidget::populateTable()
 
                 // Col 3: Data
                 m_table->setItem(tableRow, baseCol + 3,
-                    readOnlyItem(d.toString(QStringLiteral("dd/MM/yy"))));
+                    readOnlyItem(d.toString(uifmt::dataDisplayFormatAnoCurto())));
 
                 // Col 4: Obs
                 auto *itObs = readOnlyItem(l.obs);

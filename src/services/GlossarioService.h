@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QCoreApplication>
 #include <QString>
 #include <QStringList>
 
@@ -13,8 +14,15 @@
 //
 // Stateless. Tabela compile-time linear (80+ entradas) - lookup O(n) ok
 // para uso esporadico em construcao de widgets.
+//
+// #197 (I18N-04): os 3 campos de cada Entrada (definicao/microcopy/coloquial)
+// passam por GlossarioService::tr() -- entram no pipeline de traducao (.ts/.qm)
+// em vez de ficarem hardcoded em pt-BR. Seguro porque troca de idioma ja exige
+// restart do app (a tabela e um `static const` local computado 1x na primeira
+// chamada -- nao reavalia tr() em runtime apos a troca).
 class GlossarioService
 {
+    Q_DECLARE_TR_FUNCTIONS(GlossarioService)
 public:
     // Definicao completa do termo. Ex.: "CET" -> "Custo Efetivo Total:
     // taxa anual que inclui juros + tarifas + IOF". Vazio se desconhecido.

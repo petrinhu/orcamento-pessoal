@@ -386,7 +386,7 @@ void GastosWidget::populateTable()
 
                 // Col 4: Data
                 m_table->setItem(tableRow, baseCol + 4,
-                    readOnlyItem(d.toString(QStringLiteral("dd/MM/yy"))));
+                    readOnlyItem(d.toString(uifmt::dataDisplayFormatAnoCurto())));
 
                 // Col 5: Obs
                 auto *itObs = readOnlyItem(g.obs);

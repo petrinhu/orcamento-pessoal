@@ -1,6 +1,7 @@
 #include "ProventoDialog.h"
 #include "CalculadoraEdit.h"
 #include "ui/GlossarioDecorator.h"
+#include "ui/UiFormatters.h"
 
 #include <QComboBox>
 #include <QDateEdit>
@@ -59,7 +60,7 @@ void ProventoDialog::buildUi()
     form->addRow(tr("Tipo:"), m_cbTipo);
 
     m_dateEvento = new QDateEdit(this);
-    m_dateEvento->setDisplayFormat(QStringLiteral("dd/MM/yyyy"));
+    m_dateEvento->setDisplayFormat(uifmt::dataDisplayFormat());
     m_dateEvento->setCalendarPopup(true);
     m_dateEvento->setDate(m_original.dataEvento.isValid()
         ? m_original.dataEvento : QDate::currentDate());

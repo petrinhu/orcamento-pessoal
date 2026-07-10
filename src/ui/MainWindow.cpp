@@ -28,6 +28,7 @@
 #include "ui/widgets/CurrencyPanelWidget.h"
 #include "ui/widgets/ProventosWidget.h"
 #include "core/settings/AppSettings.h"
+#include "ui/UiFormatters.h"
 #include "services/ImportService.h"
 #include "services/ExportService.h"
 #include "widgets/ExportDialog.h"
@@ -462,20 +463,21 @@ void MainWindow::buildUi()
         for (const Lembrete &l : ativos) {
             if (l.naoPago()) {
                 const QString txt = l.valor > 0
-                    ? tr("• %1 — R$ %2,%3")
-                        .arg(l.descricao)
-                        .arg(l.valor / 100)
-                        .arg(l.valor % 100, 2, 10, QLatin1Char('0'))
+                    // #197 (I18N-01): "R$"+vírgula fixos no PRÓPRIO template
+                    // traduzível (pior que hardcoded solto -- tradutor não
+                    // consegue corrigir moeda por locale). Fix: símbolo/
+                    // separador computados via formatCentavosBRL, fora do tr().
+                    ? tr("• %1 — %2").arg(l.descricao, uifmt::formatCentavosBRL(l.valor))
                     : tr("• ") + l.descricao;
                 debNaoFeitos << txt;
             } else if (l.vencido()) {
                 const QString txt = l.debitoAutomatico
                     ? tr("• %1 (déb. auto, vencido em %2)")
                         .arg(l.descricao, QDate::fromString(l.dataVenc, Qt::ISODate)
-                             .toString(QStringLiteral("dd/MM")))
+                             .toString(uifmt::dataDisplayFormatCurta()))
                     : tr("• %1 (vencido em %2)")
                         .arg(l.descricao, QDate::fromString(l.dataVenc, Qt::ISODate)
-                             .toString(QStringLiteral("dd/MM")));
+                             .toString(uifmt::dataDisplayFormatCurta()));
                 manuaisVencidos << txt;
             } else if (l.proximo() && l.debitoAutomatico) {
                 const int dias = l.diasParaVencer();

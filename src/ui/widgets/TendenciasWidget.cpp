@@ -8,6 +8,7 @@
 #include "services/ParcelaService.h"
 #include "services/ResumoService.h"
 #include "core/settings/AppSettings.h"
+#include "ui/UiFormatters.h"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -79,12 +80,12 @@ void TendenciasWidget::buildUi()
 
     auto *lblDe = new QLabel(tr("De:"), this);
     m_dtInicio = new QDateEdit(QDate::currentDate().addMonths(-11), this);
-    m_dtInicio->setDisplayFormat(QStringLiteral("MM/yyyy"));
+    m_dtInicio->setDisplayFormat(uifmt::mesAnoDisplayFormat());
     m_dtInicio->setCalendarPopup(true);
 
     auto *lblAte = new QLabel(tr("Até:"), this);
     m_dtFim = new QDateEdit(QDate::currentDate(), this);
-    m_dtFim->setDisplayFormat(QStringLiteral("MM/yyyy"));
+    m_dtFim->setDisplayFormat(uifmt::mesAnoDisplayFormat());
     m_dtFim->setCalendarPopup(true);
 
     auto *lblCat = new QLabel(tr("Categoria:"), this);
@@ -306,7 +307,7 @@ void TendenciasWidget::buildGraficoMensal()
 
     auto *axisY = new QValueAxis;
     axisY->setLabelFormat(QStringLiteral("%.2f"));
-    axisY->setTitleText(QStringLiteral("R$"));
+    axisY->setTitleText(uifmt::simboloMoedaAtiva()); // #197 I18N-01
     chart->addAxis(axisY, Qt::AlignLeft);
     series->attachAxis(axisY);
 

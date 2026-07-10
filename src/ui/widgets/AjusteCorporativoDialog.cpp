@@ -1,4 +1,5 @@
 #include "AjusteCorporativoDialog.h"
+#include "ui/UiFormatters.h"
 
 #include <QComboBox>
 #include <QDateEdit>
@@ -38,7 +39,7 @@ void AjusteCorporativoDialog::buildUi()
     form->addRow(tr("Tipo:"), m_cbTipo);
 
     m_dateEx = new QDateEdit(this);
-    m_dateEx->setDisplayFormat(QStringLiteral("dd/MM/yyyy"));
+    m_dateEx->setDisplayFormat(uifmt::dataDisplayFormat());
     m_dateEx->setCalendarPopup(true);
     m_dateEx->setDate(m_original.dataEx.isValid()
         ? m_original.dataEx : QDate::currentDate());

@@ -6,11 +6,31 @@
 # - warnings novos de clang-tidy nos arquivos C++ alterados
 # - erros de cppcheck nos arquivos C++ alterados
 # - secrets detectados via gitleaks (se instalado)
+# - numerusform VAZIO em peubud_en.ts (#197, I18N-02)
 
 set -euo pipefail
 
 ROOT="$(git rev-parse --show-toplevel)"
 cd "$ROOT"
+
+# ── i18n: numerusform vazio no .ts (#197, I18N-02) ──────────────────────────
+# GATE ESTREITO, não o "unfinished" genérico: o app tem ~600 strings
+# "unfinished" (traduções pendentes acumuladas, backlog normal/esperado de
+# tradução progressiva) -- um gate bloqueando QUALQUER unfinished travaria
+# todo commit até um passe de tradução profissional completo (glossário
+# financeiro com 92 termos, #197/I18N-04). O bug real e catastrófico é
+# numerusform VAZIO: o Qt runtime então mostra STRING EM BRANCO na UI (foi
+# exatamente o que sumiu com os contadores do Dashboard em EN, #197/I18N-02)
+# -- diferente de "unfinished" comum, que cai no fallback do texto-fonte
+# (pt-BR), não em branco. Gate cobre só esse caso específico.
+TS_FILE="resources/translations/peubud_en.ts"
+if git diff --cached --name-only --diff-filter=ACM | grep -qF "$TS_FILE"; then
+  if git show ":$TS_FILE" 2>/dev/null | grep -q '<numerusform></numerusform>'; then
+    echo "✗ $TS_FILE tem numerusform VAZIO (plural sem tradução -> string em branco na UI)"
+    echo "  Rode lupdate, preencha os numerusform e lrelease antes de commitar."
+    exit 1
+  fi
+fi
 
 # Arquivos C++ staged
 mapfile -t CPP_FILES < <(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(cpp|h|hpp)$' || true)

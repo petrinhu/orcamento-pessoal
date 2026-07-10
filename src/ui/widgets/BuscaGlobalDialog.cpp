@@ -1,5 +1,6 @@
 #include "BuscaGlobalDialog.h"
 #include "core/database/DatabaseManager.h"
+#include "ui/UiFormatters.h"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -44,7 +45,7 @@ static QString fmtCentavos(qint64 c)
 static QString fmtData(const QString &iso)
 {
     const QDate d = QDate::fromString(iso, Qt::ISODate);
-    return d.isValid() ? d.toString(QStringLiteral("dd/MM/yyyy")) : iso;
+    return d.isValid() ? d.toString(uifmt::dataDisplayFormat()) : iso;
 }
 
 static QString buildIsoDate(int day, int month, int year)

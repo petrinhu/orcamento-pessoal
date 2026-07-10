@@ -110,7 +110,7 @@ void DividaDialog::buildUi(const Divida &d)
 
     m_dtInicio = new QDateEdit(this);
     m_dtInicio->setCalendarPopup(true);
-    m_dtInicio->setDisplayFormat(QStringLiteral("dd/MM/yyyy"));
+    m_dtInicio->setDisplayFormat(uifmt::dataDisplayFormat());
     m_dtInicio->setDate(d.dataInicio.isEmpty()
         ? QDate::currentDate()
         : QDate::fromString(d.dataInicio, Qt::ISODate));
@@ -118,7 +118,7 @@ void DividaDialog::buildUi(const Divida &d)
 
     m_dtVenc = new QDateEdit(this);
     m_dtVenc->setCalendarPopup(true);
-    m_dtVenc->setDisplayFormat(QStringLiteral("dd/MM/yyyy"));
+    m_dtVenc->setDisplayFormat(uifmt::dataDisplayFormat());
     m_dtVenc->setSpecialValueText(tr("Sem vencimento"));
     m_dtVenc->setMinimumDate(QDate(2000, 1, 1));
     if (d.dataVenc.isEmpty()) {

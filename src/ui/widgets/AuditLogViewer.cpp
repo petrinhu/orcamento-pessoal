@@ -2,6 +2,7 @@
 
 #include "core/database/DatabaseManager.h"
 #include "services/AuditLogService.h"
+#include "ui/UiFormatters.h"
 
 #include <QComboBox>
 #include <QDateEdit>
@@ -47,11 +48,11 @@ void AuditLogViewer::buildUi()
     m_cbOp->addItem(QStringLiteral("DELETE"), QStringLiteral("DELETE"));
 
     m_dateDe = new QDateEdit(QDate::currentDate().addMonths(-1), this);
-    m_dateDe->setDisplayFormat(QStringLiteral("dd/MM/yyyy"));
+    m_dateDe->setDisplayFormat(uifmt::dataDisplayFormat());
     m_dateDe->setCalendarPopup(true);
 
     m_dateAte = new QDateEdit(QDate::currentDate(), this);
-    m_dateAte->setDisplayFormat(QStringLiteral("dd/MM/yyyy"));
+    m_dateAte->setDisplayFormat(uifmt::dataDisplayFormat());
     m_dateAte->setCalendarPopup(true);
 
     m_spnLimite = new QSpinBox(this);

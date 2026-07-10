@@ -1,6 +1,7 @@
 #include "ProventosWidget.h"
 #include "EmptyStateWidget.h"
 #include "ui/Theme.h"
+#include "ui/UiFormatters.h"
 #include "ProventoDialog.h"
 
 #include "repositories/ProventoRepository.h"
@@ -133,7 +134,7 @@ void ProventosWidget::recarregarTabela()
     for (int i = 0; i < lista.size(); ++i) {
         const auto &p = lista[i];
         auto *itD = new QTableWidgetItem(
-            p.dataEvento.toString(QStringLiteral("dd/MM/yyyy")));
+            p.dataEvento.toString(uifmt::dataDisplayFormat()));
         itD->setData(Qt::UserRole, QVariant::fromValue(p.id));
         m_tabela->setItem(i, 0, itD);
         m_tabela->setItem(i, 1, new QTableWidgetItem(p.ticker));

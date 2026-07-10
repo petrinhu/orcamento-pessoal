@@ -1,5 +1,6 @@
 #include "DashboardWidget.h"
 #include "ui/Theme.h"
+#include "ui/UiFormatters.h"
 #include "services/ResumoService.h"
 #include "services/GastoService.h"
 #include "services/FechamentoMensalService.h"
@@ -35,13 +36,12 @@
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
+// #197 (I18N-01): delegava para "R$ "+vírgula fixos (duplicata do padrão que
+// UiFormatters::formatCentavosBRL já corrigia) -- Dashboard é a 1ª tela que o
+// usuário vê, ficaria com moeda errada em EN mesmo com o resto do app corrigido.
 static QString fmtCentavos(qint64 c)
 {
-    const qint64 abs_c = c < 0 ? -c : c;
-    return QStringLiteral("R$ %1%2,%3")
-        .arg(c < 0 ? QStringLiteral("-") : QString())
-        .arg(abs_c / 100)
-        .arg(abs_c % 100, 2, 10, QLatin1Char('0'));
+    return uifmt::formatCentavosBRL(c);
 }
 
 static QString nomeMes(const QDate &d)
@@ -134,7 +134,7 @@ QWidget *DashboardWidget::makeCard(const QString &title,
         lay->addLayout(rowTitle);
     }
 
-    auto *lblValue = new QLabel(QStringLiteral("R$ 0,00"), frame);
+    auto *lblValue = new QLabel(uifmt::formatCentavosBRL(0), frame); // #197 I18N-01
     QFont fv = lblValue->font();
     fv.setPointSize(18);
     fv.setBold(true);
@@ -429,7 +429,7 @@ void DashboardWidget::atualizarGrafico()
     axisX->append(labels);
 
     auto *axisY = new QValueAxis;
-    axisY->setTitleText(QStringLiteral("R$"));
+    axisY->setTitleText(uifmt::simboloMoedaAtiva()); // #197 I18N-01
     axisY->setLabelFormat(QStringLiteral("%.0f"));
 
     // ── Chart ──────────────────────────────────────────────────────────────

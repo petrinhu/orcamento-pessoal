@@ -43,7 +43,7 @@ void LembreteDialog::buildUi(const Lembrete &l)
 
     m_dtVenc = new QDateEdit(this);
     m_dtVenc->setCalendarPopup(true);
-    m_dtVenc->setDisplayFormat(QStringLiteral("dd/MM/yyyy"));
+    m_dtVenc->setDisplayFormat(uifmt::dataDisplayFormat());
     m_dtVenc->setDate(l.dataVenc.isEmpty()
         ? QDate::currentDate()
         : QDate::fromString(l.dataVenc, Qt::ISODate));

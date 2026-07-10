@@ -145,7 +145,7 @@ void LancamentoEntradaDialog::buildUi(const QList<FonteRenda> &fontes,
 
     // ── Data ───────────────────────────────────────────────────────────────
     m_dateEdit = new QDateEdit(this);
-    m_dateEdit->setDisplayFormat(QStringLiteral("dd/MM/yyyy"));
+    m_dateEdit->setDisplayFormat(uifmt::dataDisplayFormat());
     m_dateEdit->setCalendarPopup(true);
     const QDate defaultDate = m_original.dia > 0
         ? QDate(m_ano, m_mes, m_original.dia)
@@ -177,7 +177,7 @@ void LancamentoEntradaDialog::buildUi(const QList<FonteRenda> &fontes,
     connect(m_edtInss, &QLineEdit::textChanged, this, &LancamentoEntradaDialog::onValoresChanged);
     layImp->addRow(tr("INSS retido:"), m_edtInss);
 
-    m_lblLiquido = new QLabel(QStringLiteral("R$ 0,00"), m_grpImpostos);
+    m_lblLiquido = new QLabel(uifmt::formatCentavosBRL(0), m_grpImpostos); // #197 I18N-01
     m_lblLiquido->setObjectName(QStringLiteral("title"));
     layImp->addRow(tr("Valor líquido:"), m_lblLiquido);
 
@@ -250,7 +250,7 @@ void LancamentoEntradaDialog::onValoresChanged()
     const qint64 irpf   = impAtivo ? uifmt::parseCentavos(m_edtIrpf->text()) : 0LL;
     const qint64 inss   = impAtivo ? uifmt::parseCentavos(m_edtInss->text()) : 0LL;
     const qint64 liq    = bruto - irpf - inss;
-    m_lblLiquido->setText(QStringLiteral("R$ %1").arg(uifmt::formatCentavos(liq)));
+    m_lblLiquido->setText(uifmt::formatCentavosBRL(liq)); // #197 I18N-01
 }
 
 void LancamentoEntradaDialog::onRecorrenciaToggled(bool recorrente)

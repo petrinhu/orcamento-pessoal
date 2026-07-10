@@ -6,6 +6,7 @@
 #include "models/Cartao.h"
 #include "ui/GlossarioDecorator.h"
 #include "ui/Theme.h"
+#include "ui/UiFormatters.h"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -64,7 +65,7 @@ void AddCompraDialog::buildUi()
     auto *dataRow = new QHBoxLayout;
     m_dataInicio = new QDateEdit(QDate::currentDate(), this);
     m_dataInicio->setCalendarPopup(true);
-    m_dataInicio->setDisplayFormat(QStringLiteral("MM/yyyy"));
+    m_dataInicio->setDisplayFormat(uifmt::mesAnoDisplayFormat());
     m_dataInicio->setToolTip(tr("Mês/ano desta parcela"));
 
     m_parcelaIni = new QSpinBox(this);

@@ -1,5 +1,6 @@
 #include "AmortizacaoDialog.h"
 #include "services/ParcelaService.h"
+#include "ui/UiFormatters.h"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -59,7 +60,7 @@ void AmortizacaoDialog::buildUi(const Compra &compra)
         const auto &row = rows[r];
 
         auto *itNum    = new QTableWidgetItem(QString::number(row.numero));
-        auto *itData   = new QTableWidgetItem(row.data.toString(QStringLiteral("dd/MM/yyyy")));
+        auto *itData   = new QTableWidgetItem(row.data.toString(uifmt::dataDisplayFormat()));
         auto *itSaldo  = new QTableWidgetItem(ParcelaService::formatarValor(row.saldoDevedor, moeda));
         auto *itJuros  = new QTableWidgetItem(ParcelaService::formatarValor(row.juros,        moeda));
         auto *itAmort  = new QTableWidgetItem(ParcelaService::formatarValor(row.amortizacao,  moeda));

@@ -26,10 +26,40 @@ namespace uifmt {
 qint64 parseCentavos(const QString &txt);
 
 // Formata centavos SEM prefixo de moeda: ex. 123456 → "1234,56", -50 → "-0,50".
-// (Não insere separador de milhar, preservando o visual histórico das telas.)
+// (Não insere separador de milhar, preservando o visual histórico das telas.
+// Usado nos campos EDITÁVEIS — o texto volta para parseCentavos ao salvar —
+// por isso fica fora do escopo do #197/I18N-01, que é sobre telas de DISPLAY.)
 QString formatCentavos(qint64 cents);
 
-// Formata centavos COM prefixo "R$ ": ex. 123456 → "R$ 1234,56".
+// Formata centavos como valor monetário de DISPLAY, com símbolo + separadores
+// locale-aware: pt-BR → "R$ 1.234,56"; en-US → "$1,234.56". Usa a moeda
+// padrão ativa (AppSettings::defaultCurrency(), via ParcelaService::simboloMoeda)
+// e o idioma ativo (AppSettings::language()) — NUNCA hardcoded.
+//
+// #197 (I18N-01, auditoria 2026-06-22 §3.8): antes concatenava "R$" + vírgula
+// fixos, ignorando idioma/moeda (~24 call-sites → todos corrigidos de uma vez
+// aqui, função central). Fix em aritmética INTEIRA (regra do projeto — sem
+// double): agrupamento de milhar via QLocale::toString(qint64), separador
+// decimal e posição do símbolo por switch(language()) (não QLocale::toCurrencyString,
+// que exige double).
+//
+// Nome mantido por compatibilidade com os call-sites existentes (não é mais
+// "sempre BRL" — formata a moeda ativa do app).
 QString formatCentavosBRL(qint64 cents);
+
+// Símbolo isolado da moeda ativa (ex.: título de eixo Y de gráfico, "R$"/"$").
+// Equivalente a ParcelaService::simboloMoeda(AppSettings::defaultCurrency()).
+QString simboloMoedaAtiva();
+
+// ── Datas (#197, I18N-05) ────────────────────────────────────────────────────
+// Formatos de exibição de data locale-aware — pt-BR usa dd/MM primeiro,
+// en-US usa MM/dd primeiro (ordem de dia/mês é ambígua entre locales;
+// dígitos sempre zero-padded, independente do QLocale::dateFormat() nativo,
+// para preservar largura fixa em tabelas). NÃO usar em ImportService/
+// ExportService (formato de arquivo/interop, corretamente fixo em dd/MM/yyyy).
+QString dataDisplayFormat();          // "dd/MM/yyyy" pt-BR / "MM/dd/yyyy" en-US
+QString dataDisplayFormatCurta();     // "dd/MM" pt-BR / "MM/dd" en-US (sem ano)
+QString dataDisplayFormatAnoCurto();  // "dd/MM/yy" pt-BR / "MM/dd/yy" en-US
+QString mesAnoDisplayFormat();        // "MM/yyyy" (ordem mês/ano não é ambígua)
 
 } // namespace uifmt

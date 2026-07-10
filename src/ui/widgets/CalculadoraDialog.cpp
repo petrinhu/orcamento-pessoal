@@ -2,6 +2,7 @@
 #include "GlossaryLabel.h"
 #include "ui/GlossarioDecorator.h"
 #include "ui/Theme.h"
+#include "ui/UiFormatters.h"
 #include "services/TvmService.h"
 #include "services/ParcelaService.h"
 #include "services/FinanceEngine.h"
@@ -461,7 +462,7 @@ void CalculadoraDialog::buildTabFinanceira(QWidget *tab)
         lbl->setMinimumWidth(46);
 
         m_tvmData = new QDateEdit(QDate::currentDate(), tab);
-        m_tvmData->setDisplayFormat(QStringLiteral("dd/MM/yyyy"));
+        m_tvmData->setDisplayFormat(uifmt::dataDisplayFormat());
         m_tvmData->setCalendarPopup(true);
 
         row->addWidget(lbl);
@@ -602,7 +603,7 @@ void CalculadoraDialog::atualizarTabelaAmort()
     for (int r = 0; r < rows.size(); ++r) {
         const auto &row = rows.at(r);
         auto *iNum  = new QTableWidgetItem(QString::number(row.numero));
-        auto *iData = new QTableWidgetItem(row.data.toString(QStringLiteral("dd/MM/yyyy")));
+        auto *iData = new QTableWidgetItem(row.data.toString(uifmt::dataDisplayFormat()));
         auto *iSaldo = new QTableWidgetItem(ParcelaService::formatarValor(row.saldoDevedor));
         auto *iJuros = new QTableWidgetItem(ParcelaService::formatarValor(row.juros));
         auto *iAmort = new QTableWidgetItem(ParcelaService::formatarValor(row.amortizacao));

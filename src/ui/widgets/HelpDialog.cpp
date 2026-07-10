@@ -41,7 +41,8 @@ QString montarAjudaPorAba()
 HelpDialog::HelpDialog(QWidget *parent)
     : QDialog(parent)
 {
-    setWindowTitle(QStringLiteral("Ajuda — PeuBud"));
+    // #197 (I18N-03): "Ajuda" traduzível; "PeuBud" é marca, fica fora do tr().
+    setWindowTitle(tr("Ajuda — %1").arg(QStringLiteral("PeuBud")));
     resize(720, 560);
 
     auto *layout = new QVBoxLayout(this);

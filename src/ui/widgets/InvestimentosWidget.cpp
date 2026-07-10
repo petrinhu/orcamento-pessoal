@@ -390,7 +390,7 @@ void InvestimentosWidget::populateTable()
 
                 // Col 5: Data
                 m_table->setItem(tableRow, baseCol + 5,
-                    readOnlyItem(d.toString(QStringLiteral("dd/MM/yy"))));
+                    readOnlyItem(d.toString(uifmt::dataDisplayFormatAnoCurto())));
 
                 // Col 6: Obs
                 auto *itObs = readOnlyItem(l.obs);
@@ -706,7 +706,7 @@ void InvestimentosWidget::atualizarGraficos()
     auto *axisX = new QBarCategoryAxis;
     axisX->append(labels);
     auto *axisY = new QValueAxis;
-    axisY->setTitleText(QStringLiteral("R$"));
+    axisY->setTitleText(uifmt::simboloMoedaAtiva()); // #197 I18N-01
     axisY->setLabelFormat(QStringLiteral("%.0f"));
 
     auto *chartBar = new QChart;
