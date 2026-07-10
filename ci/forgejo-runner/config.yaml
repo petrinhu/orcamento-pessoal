@@ -1,0 +1,64 @@
+# config.yaml — forgejo-runner self-hosted do PeuBud
+#
+# TEMPLATE versionado no repo (sem segredos). O `register.sh` COPIA este
+# arquivo para fora do repo, em `~/.config/forgejo-runner/peubud/config.yaml`,
+# que é onde o runner realmente roda e onde fica o `.runner` (token de sessão
+# pós-registro — esse sim é segredo, e por isso NUNCA entra no repo).
+#
+# Baseado em `forgejo-runner generate-config`, reduzido às chaves que
+# importam aqui + hardening de acordo com
+# ~/.claude/skills/forgejo/references/runner-security.md.
+---
+log:
+  level: info
+  job_level: info
+
+runner:
+  file: .runner
+  # 1 job por vez — notebook, não queremos 2 builds Fedora+ASan concorrentes
+  # disputando CPU/RAM/bateria.
+  capacity: 1
+  envs: {}
+  timeout: 3h
+  insecure: false
+  fetch_timeout: 30s
+  fetch_interval: 2s
+  report_interval: 1s
+  # Labels ficam vazias aqui de propósito: são passadas 1x no
+  # `forgejo-runner register --labels ...` e persistidas no `.runner`.
+  # Ver ci/forgejo-runner/register.sh.
+  labels: []
+
+cache:
+  # Cache interno do runner (actions/cache) — acelera builds repetidos
+  # (ex.: nada aqui ainda usa actions/cache, mas deixamos ligado pra quando
+  # precisar cachear FetchContent/ccache entre runs).
+  enabled: true
+  dir: ""
+
+container:
+  # "" = rede isolada por job (default seguro). NUNCA "host".
+  network: ""
+  enable_ipv6: false
+  # NUNCA true. Privileged quebra o isolamento do container de job.
+  privileged: false
+  # Rate-limit de recursos do notebook por job. Ajuste conforme a máquina
+  # (nproc/memória livre). Requer cgroup v2 delegado ao user session
+  # (Fedora com systemd moderno já vem assim). Se o job falhar reclamando
+  # de cgroup, comente esta linha.
+  options: "--memory=6g --cpus=3"
+  workdir_parent:
+  # Sem bind mounts custom — nada aqui precisa montar path do host dentro
+  # do job container.
+  valid_volumes: []
+  # "-" = NÃO monta socket docker dentro do container do job (sem DIND).
+  # Este projeto não builda imagens de container, não precisa.
+  docker_host: "-"
+  force_pull: false
+  force_rebuild: false
+
+host:
+  workdir_parent:
+
+server:
+# Preenchido pelo `forgejo-runner register` (grava em .runner, não aqui).
