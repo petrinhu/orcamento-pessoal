@@ -48,7 +48,9 @@ jobs:
 
   lint:
     name: Lint (cppcheck + clang-tidy)
-    runs-on: codeberg-small
+    # codeberg-medium (mesmo runner dos jobs build/ASan, que progridem) — o
+    # codeberg-small vinha derrubando este job rápido mesmo com o gate mínimo.
+    runs-on: codeberg-medium
     container:
       image: fedora:42
     steps:
