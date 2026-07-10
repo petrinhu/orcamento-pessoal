@@ -24,6 +24,16 @@ public:
 
     void limparSenha(); // limpa campo de senha e reposiciona foco (usado em retry)
 
+protected:
+#ifndef QT_DEBUG
+    // #198 (A11Y-03, WCAG 2.1.1): intercepta Espaço em m_btnOlho para ALTERNAR
+    // a visibilidade da senha (toggle), em vez do animateClick() padrão do
+    // QAbstractButton (que dispararia pressed()/released() automaticamente
+    // após ~100ms — um "flash" rápido demais para ler a senha, não o
+    // hold-to-reveal real do mouse). Ver LoginDialog.cpp.
+    bool eventFilter(QObject *watched, QEvent *event) override;
+#endif
+
 private slots:
     void onNomeChanged(const QString &text);
     void onSenhaChanged(const QString &text);

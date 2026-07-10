@@ -207,9 +207,10 @@ Quando um gráfico precisa de várias séries, a ordem harmônica é:
 | `@@BRD@@` / `border` | Borda, divisória | `#E4EAF2` | `#2A3340` |
 | `@@TXT@@` / `text` | Texto principal | `#15233B` | `#EAF0F8` |
 | `@@SUB@@` / `subtext` | Texto secundário, glifo em repouso | `#67768D` | `#8A97A8` |
-| `@@ACC@@` / `accent` | Acento / ação / foco / ativo | `#3B82F6` | `#3B82F6` |
+| `@@ACC@@` / `accent` | Acento / ação / foco / ativo (nunca como TEXTO em fundo claro/escuro de botão — ver `@@ACC_TEXT@@`) | `#3B82F6` | `#3B82F6` |
 | `@@ACC_HOVER@@` | Hover do botão primário | `#60A5FA` | `#60A5FA` |
 | `@@ACC_PRESSED@@` | Pressed do botão primário | `#2563EB` | `#2563EB` |
+| `@@ACC_TEXT@@` / `acentoTexto()` | Acento como **TEXTO** (hover de botão, header hover, glifo de icon-button) — AA-safe (#198, A11Y-04) | `#1D4ED8` | `#7FB0FF` |
 | `@@HOV@@` / hover bg | Fundo de hover (linha, icon-button) | `#DCE8FA` | `#222D3D` |
 | `@@ALT@@` / alt | Fundo pressed / linha alternada | `#F7FAFD` | `#171F2D` |
 | `@@NEG@@` / negativo | Gasto, saldo negativo, erro | `#EA3943` | `#EA3943` |
@@ -322,7 +323,7 @@ A `QTabWidget` no topo foi aposentada. No lugar, uma **sidebar navy fixa à esqu
 | **Repouso** | Texto `sidebarText` (`#D6DEEA`), Medium (500), fundo transparente, sem borda. |
 | **Hover** | Fundo `rgba(255,255,255,0.10)` (leve clareada), texto branco. |
 | **Ativo** | **Pill azul** (`@@ACC@@` sólido) + texto branco + SemiBold (600). |
-| **Foco (teclado)** | Sem outline retangular (`NoFocusStyle` suprime o dotted-rect do Fusion). |
+| **Foco (teclado)** | Fundo `rgba(255,255,255,0.14)` + borda 1px `@@ACC@@` (contraste accent/navy ≥3.93:1, WCAG 1.4.11). **Corrigido em #198 (A11Y-02)** — o fix #165 suprimia TODO indicador (`outline`+`border: none`), deixando o item focado via Tab visualmente idêntico ao repouso. `NoFocusStyle` ainda suprime o dotted-rect nativo do Fusion; a borda accent é o substituto intencional. |
 
 > **Regra de ouro da sidebar:** o item ativo é uma **pill azul sólida**, sem box-shadow
 > (QSS não suporta em widget), sem artefato retangular. O navy é sempre navy (não inverte).
@@ -362,7 +363,7 @@ Ação secundária. Contorno, não preenchido.
 | Estado | Aparência |
 |---|---|
 | Repouso | Fundo `@@SURF@@`, borda 1px `@@BRD@@`, raio 9px, texto `@@TXT@@`. |
-| Hover | Borda e texto viram `@@ACC@@` (acende azul). |
+| Hover | Borda `@@ACC@@` (acende azul); **texto `@@ACC_TEXT@@`** — `@@ACC@@` cru reprova AA como texto sobre `@@SURF@@` (3.68:1 light/4.26:1 dark, #198 A11Y-04). |
 | Pressed | Afunda + borda `@@ACC@@`. |
 | Disabled | Texto `@@SUB@@`, borda `@@BRD@@`. |
 
@@ -378,15 +379,25 @@ colapso (🔼/🔽), mostrar senha, browse de pasta (📁). Vale para `QPushButt
 | Estado | Background | Glifo (Light) | Glifo (Dark) |
 |---|---|---|---|
 | **Normal** | transparent (sem borda) | `#67768D` `@@SUB@@` | `#8A97A8` `@@SUB@@` |
-| **Hover** | `#DCE8FA` `@@HOV@@` | `#3B82F6` `@@ACC@@` | `#3B82F6` `@@ACC@@` |
-| **Pressed** | `#F7FAFD` `@@ALT@@` | `#3B82F6` | `#3B82F6` |
-| **Focus** (teclado) | `@@HOV@@` + borda 1px `@@ACC@@` | `#3B82F6` | `#3B82F6` |
+| **Hover** | `#DCE8FA` `@@HOV@@` | `#1D4ED8` `@@ACC_TEXT@@` | `#7FB0FF` `@@ACC_TEXT@@` |
+| **Pressed** | `#F7FAFD` `@@ALT@@` | `#1D4ED8` `@@ACC_TEXT@@` | `#7FB0FF` `@@ACC_TEXT@@` |
+| **Focus** (teclado) | `@@HOV@@` + borda 1px `@@ACC@@` | `#1D4ED8` `@@ACC_TEXT@@` | `#7FB0FF` `@@ACC_TEXT@@` |
 | **Disabled** | transparent | `#E4EAF2` `@@BRD@@` | `#2A3340` `@@BRD@@` |
 
 - **Tamanho:** `min-width/min-height: 32px`, padding 0 (o glifo centraliza). **Nunca** usar
   `setFixedWidth(32)` sozinho (o QSS controla; se travar, `setFixedSize(32,32)` quadrado).
 - **Emoji ignora `color`:** 🔒🖨️🔼🔽 permanecem coloridos; o que muda no hover é só o
-  **fundo** do botão (que é o necessário para remover a "caixa").
+  **fundo** do botão (que é o necessário para remover a "caixa"). O `color` só afeta glifos
+  monocromáticos tipográficos.
+- **Nome acessível obrigatório (#198, A11Y-01, WCAG 4.1.2):** todo `#iconButton` **sem texto
+  visível** precisa de `setAccessibleName(tr(...))` **além** do `setToolTip` — o tooltip não é
+  lido por Orca/NVDA/VoiceOver por padrão em todos os fluxos; o `accessibleName` é. Ver
+  `TabShell::montarBloco` (toggle 🔼/🔽) como referência canônica do padrão.
+- **Acessível por teclado (#198, A11Y-03, WCAG 2.1.1):** `#iconButton` que abre uma ação
+  (ex.: calculadora) usa `Qt::StrongFocus` — nunca `Qt::NoFocus` — e um equivalente de
+  Espaço/Enter. Exceção deliberada com mitigação: interações de **hold-to-reveal** (👁 mostrar
+  senha) não têm equivalente natural de "segurar" via teclado; usar `StrongFocus` +
+  `eventFilter` dedicado que TRANSFORMA Espaço em toggle (não hold) — ver `LoginDialog`.
 
 🚫 **Don't:** dar borda "da cor do fundo" ao icon-button (vaza quando reusado sobre card).
 Transparente é universal. Botão **com texto** mantém a caixa; `#iconButton` é exclusivo de
@@ -611,10 +622,18 @@ Pares já verificados (blocos de ajuda, #166):
 | Eyebrow (`#1D4ED8` light / `#7FB0FF` dark) | 5.91:1 ✅ | 7.06:1 ✅ |
 | Número na pílula (`#1D4ED8` / `#5B9BFF`) | 5.63:1 ✅ | 4.54:1 ✅ |
 | `#3B82F6` sobre tint azul-claro (light) | 3.24:1 ❌ **REJEITADO** | n/a |
+| `QPushButton:hover` texto: `@@ACC@@` sobre `@@SURF@@` (#198) | 3.68:1 ❌ **REJEITADO** | 4.26:1 ❌ **REJEITADO** |
+| `QPushButton:hover` texto: `@@ACC_TEXT@@` sobre `@@SURF@@` (#198, fix) | 6.70:1 ✅ | 7.12:1 ✅ |
+| `#iconButton:hover` texto: `@@ACC@@` sobre `@@HOV@@` (#198) | 2.97:1 ❌ **REJEITADO** | 3.78:1 ❌ **REJEITADO** |
+| `#iconButton:hover` texto: `@@ACC_TEXT@@` sobre `@@HOV@@` (#198, fix) | 5.41:1 ✅ | 6.33:1 ✅ |
+| `@@ACC@@` como borda de foco sobre navy sidebar (#198, A11Y-02, não-texto ≥3:1) | 3.93–4.27:1 ✅ | 3.93–4.27:1 ✅ |
 
 > **Regra de ouro do contraste:** **`#3B82F6` NÃO pode ser usado como texto sobre fundo
-> azul-claro no light** (reprova AA). Nestes casos use **blue-700 `#1D4ED8`**. Foi o fix
-> aplicado em eyebrow e número de passo (#166).
+> azul-claro no light** (reprova AA). Nestes casos use **blue-700 `#1D4ED8`** (light) /
+> **`#7FB0FF`** (dark) — token semântico `@@ACC_TEXT@@` (#198, A11Y-04). Foi o fix aplicado em
+> eyebrow e número de passo (#166) e propagado a `QPushButton:hover`, `#iconButton`
+> hover/pressed e `QHeaderView::section:hover` (#198) — mesma classe de bug, três locais
+> adicionais achados por varredura.
 
 ### Cor nunca sozinha
 
@@ -625,8 +644,14 @@ com palavra. Os emojis 🟢🔵🔴 da microcopy sempre acompanham a palavra.
 ### Foco e teclado
 
 - Foco sempre visível (anel/realce `@@ACC@@`), mas **sem** o dotted-rect do Fusion
-  (`NoFocusStyle` o suprime).
+  (`NoFocusStyle` o suprime). Inclui `#navItem` da sidebar — **corrigido em #198 (A11Y-02)**,
+  antes o item focado por Tab era visualmente indistinguível do repouso.
 - Navegação por teclado funcional (Tab, atalhos `Ctrl+←`/`Ctrl+→` para mês).
+- **`Qt::NoFocus` em botão interativo é proibido** (#198, A11Y-03, WCAG 2.1.1): todo botão que
+  executa uma ação (não é puramente decorativo) precisa ser alcançável por Tab. Se a interação
+  de mouse é "hold" (pressionar e segurar), o equivalente de teclado é um **toggle** explícito
+  via `eventFilter` — não o `animateClick()` padrão do Qt (que solta sozinho em ~100ms).
+- **Todo botão icon-only precisa de `accessibleName`** (#198, A11Y-01, WCAG 4.1.2) — ver §9.3.
 
 ---
 

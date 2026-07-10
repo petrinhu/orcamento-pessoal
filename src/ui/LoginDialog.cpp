@@ -16,6 +16,8 @@
 #include <QRegularExpression>
 #include <QMessageBox>
 #include <QPalette>
+#include <QEvent>
+#include <QKeyEvent>
 
 #include <sodium.h>  // sodium_memzero — apaga chaves derivadas no destrutor
 
@@ -51,6 +53,29 @@ LoginDialog::~LoginDialog()
 QString    LoginDialog::nome()     const { return m_nome->text().trimmed(); }
 QByteArray LoginDialog::chave()    const { return m_chave; }
 QByteArray LoginDialog::chaveOld() const { return m_chaveOld; }
+
+#ifndef QT_DEBUG
+// #198 (A11Y-03): equivalente de teclado do hold-to-reveal do mouse. O
+// QAbstractButton padrão trataria Espaço via animateClick() — pressed() +
+// released() automáticos ~100ms depois — tempo curto demais para ler a
+// senha e, pior, INCOERENTE com o hold real do mouse (que é sustentado
+// pelo usuário). Em vez disso, consumimos o KeyPress de Espaço aqui e
+// fazemos um TOGGLE explícito (Espaço 1: revela; Espaço 2: oculta de novo),
+// devolvendo true para impedir que o QToolButton processe o evento com seu
+// comportamento padrão.
+bool LoginDialog::eventFilter(QObject *watched, QEvent *event)
+{
+    if (watched == m_btnOlho && event->type() == QEvent::KeyPress) {
+        auto *ke = static_cast<QKeyEvent *>(event);
+        if (ke->key() == Qt::Key_Space && !ke->isAutoRepeat()) {
+            const bool estavaOculta = (m_senha->echoMode() == QLineEdit::Password);
+            m_senha->setEchoMode(estavaOculta ? QLineEdit::Normal : QLineEdit::Password);
+            return true; // consome — evita o animateClick() padrão do botão
+        }
+    }
+    return QDialog::eventFilter(watched, event);
+}
+#endif
 
 void LoginDialog::limparSenha()
 {
@@ -166,9 +191,14 @@ void LoginDialog::buildUi()
     m_btnOlho = new QToolButton(this);
     m_btnOlho->setObjectName(QStringLiteral("iconButton")); // sem borda (#165)
     m_btnOlho->setIcon(Theme::emojiIcon(QStringLiteral("👁"), 18));
-    m_btnOlho->setToolTip(tr("Segure para ver a senha"));
+    // #198 (A11Y-01/03, WCAG 4.1.2 / 2.1.1): antes NoFocus + só tooltip —
+    // mudo e inacessível por teclado. Agora StrongFocus + accessibleName +
+    // equivalente de teclado (Espaço alterna, via eventFilter abaixo).
+    m_btnOlho->setToolTip(tr("Ver senha (segure o mouse ou pressione Espaço para alternar)"));
+    m_btnOlho->setAccessibleName(tr("Mostrar ou ocultar senha"));
     m_btnOlho->setFixedSize(32, 32); // quadrado mantido (spec §5 item 7)
-    m_btnOlho->setFocusPolicy(Qt::NoFocus);  // não entra no Tab order de auth
+    m_btnOlho->setFocusPolicy(Qt::StrongFocus);
+    m_btnOlho->installEventFilter(this);
     rowSenha->addWidget(m_btnOlho);
 
     connect(m_btnOlho, &QToolButton::pressed,  this, [this]() {

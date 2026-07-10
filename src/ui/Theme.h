@@ -31,6 +31,10 @@ namespace Color {
     extern const QString TextLight;
     extern const QString SubtextLight;
     extern const QString AccentLight;
+    // #198 (A11Y-04, WCAG 1.4.3): texto sobre o accent cru (#3B82F6) reprova
+    // AA em vários fundos claros (3.68:1 no QPushButton:hover). Blue-700 —
+    // mesmo tom já usado no eyebrow/número dos blocos de ajuda (#166 §15).
+    extern const QString AccTextLight;
     extern const QString PositiveLight;
     extern const QString NegativeLight;
     extern const QString DouradoLight;    // novo (#164)
@@ -46,6 +50,7 @@ namespace Color {
     extern const QString TextDark;
     extern const QString SubtextDark;
     extern const QString AccentDark;
+    extern const QString AccTextDark; // #198 (A11Y-04): idem, tom claro sobre fundo escuro.
     extern const QString PositiveDark;
     extern const QString NegativeDark;
     extern const QString DouradoDark;     // novo (#164)
@@ -72,6 +77,10 @@ namespace Color {
 
 // Convenience getters — return the correct token for the active scheme
 QString acento();
+// #198 (A11Y-04): cor de TEXTO derivada do acento, AA-safe (>=4.5:1) nos
+// fundos onde o acento cru reprova (hover de botão, header hover). Usar em
+// vez de acento() sempre que o accent for pintado como TEXTO (não borda/bg).
+QString acentoTexto();
 QString negativo();
 QString positivo();
 QString background();

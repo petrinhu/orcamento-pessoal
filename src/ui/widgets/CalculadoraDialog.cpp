@@ -203,6 +203,7 @@ void CalculadoraDialog::buildTabComum(QWidget *tab)
         btnCopy->setIcon(Theme::emojiIcon(QStringLiteral("📋")));
         btnCopy->setToolButtonStyle(Qt::ToolButtonIconOnly);
         btnCopy->setToolTip(tr("Copiar para área de transferência"));
+        btnCopy->setAccessibleName(tr("Copiar resultado para área de transferência")); // #198 (A11Y-01)
         btnCopy->setFixedSize(32, 48);
         connect(btnCopy, &QToolButton::clicked, this, [this]() {
             QApplication::clipboard()->setText(m_display->text());

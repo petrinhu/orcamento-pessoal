@@ -9,6 +9,7 @@
 #include <QtTest/QtTest>
 #include <QApplication>
 #include <QColor>
+#include <cmath>
 
 #include "ui/Theme.h"
 
@@ -68,7 +69,56 @@ private slots:
     void glossarioUnderline_naoEhAccent_light();
     void glossarioUnderline_ehCinza_light();
     void glossarioUnderline_darkAware();
+
+    // ── #198 (Onda U-4, A11Y-04): @@ACC_TEXT@@ — texto AA-safe sobre o acento ──
+    // O acento cru (#3B82F6) reprova AA como TEXTO em vários fundos (hover de
+    // botão, header hover, glifo de icon-button): 3.68:1 light / 4.26:1 dark
+    // sobre @@SURF@@, abaixo do mínimo 4.5:1 (WCAG 1.4.3). Mesma classe de bug
+    // já corrigida no eyebrow/número dos blocos de ajuda (#166).
+    void acentoTexto_light();
+    void acentoTexto_dark();
+    void acentoCru_comoTexto_reprovaAA_regressao(); // ancora o "porquê" do fix
+    void acentoTexto_comoTexto_passaAA_light();
+    void acentoTexto_comoTexto_passaAA_dark();
+
+    void pushButtonHover_usaAccTextNaoAccCru();
+    void iconButtonHover_usaAccTextNaoAccCru();
+    void iconButtonPressed_usaAccTextNaoAccCru();
+    void headerSectionHover_usaAccTextNaoAccCru();
+
+    // ── #198 (Onda U-4, A11Y-02): foco de teclado visível na sidebar ──────────
+    // O fix #165 suprimia TODO indicador (outline+border:none) — item focado
+    // via Tab ficava idêntico ao repouso, invisível para quem navega sem mouse
+    // (WCAG 2.4.7). Fix: fundo sutil + borda 1px @@ACC@@ (não-texto, >=3:1).
+    void navItemFoco_temIndicadorVisivel();
+    void navItemFoco_contrasteBordaSobreNavy_AA();
 };
+
+// ── Helper de contraste WCAG (luminância relativa, mesma fórmula do spec) ──
+// Independente do Theme — reimplementado aqui de propósito (oráculo externo
+// ao código sob teste, evita "testar o próprio bug" caso Theme algum dia
+// exponha um helper de contraste com o mesmo erro).
+namespace {
+qreal luminanciaRelativa(const QColor &c)
+{
+    auto lin = [](qreal ch) {
+        return ch <= 0.03928 ? ch / 12.92 : std::pow((ch + 0.055) / 1.055, 2.4);
+    };
+    const qreal r = lin(c.redF());
+    const qreal g = lin(c.greenF());
+    const qreal b = lin(c.blueF());
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+qreal contraste(const QColor &a, const QColor &b)
+{
+    const qreal la = luminanciaRelativa(a);
+    const qreal lb = luminanciaRelativa(b);
+    const qreal maior = qMax(la, lb);
+    const qreal menor = qMin(la, lb);
+    return (maior + 0.05) / (menor + 0.05);
+}
+}
 
 void TestThemeTokens::initTestCase()
 {
@@ -373,6 +423,155 @@ void TestThemeTokens::glossarioUnderline_darkAware()
     // No dark, deve ser mais CLARA (luminância maior) para destacar sobre fundo escuro.
     QVERIFY2(dark.lightnessF() > light.lightnessF(),
         "no dark, o sublinhado deve ser mais claro que no light (contraste com fundo)");
+}
+
+// ── #198 (A11Y-04): @@ACC_TEXT@@ ──────────────────────────────────────────
+
+void TestThemeTokens::acentoTexto_light()
+{
+    Theme::setMode(Theme::ThemeMode::Light);
+    QCOMPARE(Theme::acentoTexto(), QStringLiteral("#1D4ED8"));
+}
+
+void TestThemeTokens::acentoTexto_dark()
+{
+    Theme::setMode(Theme::ThemeMode::Dark);
+    QCOMPARE(Theme::acentoTexto(), QStringLiteral("#7FB0FF"));
+    Theme::setMode(Theme::ThemeMode::Light); // restaura
+}
+
+// RED->GREEN anchor (#198): prova o "porquê" do fix — o acento cru, usado
+// como TEXTO sobre a superfície do botão, reprova AA nos dois temas. Se este
+// teste um dia passar a QVERIFY(...>= 4.5), a paleta mudou e o token
+// @@ACC_TEXT@@ pode ter deixado de ser necessário (revisar a decisão).
+void TestThemeTokens::acentoCru_comoTexto_reprovaAA_regressao()
+{
+    Theme::setMode(Theme::ThemeMode::Light);
+    const qreal cLight = contraste(QColor(Theme::acento()), QColor(Theme::surface()));
+    QVERIFY2(cLight < 4.5,
+        qPrintable(QStringLiteral("acento cru sobre surface (light) = %1:1 — esperava <4.5 (reprova AA)")
+            .arg(cLight, 0, 'f', 2)));
+
+    Theme::setMode(Theme::ThemeMode::Dark);
+    const qreal cDark = contraste(QColor(Theme::acento()), QColor(Theme::surface()));
+    Theme::setMode(Theme::ThemeMode::Light); // restaura
+    QVERIFY2(cDark < 4.5,
+        qPrintable(QStringLiteral("acento cru sobre surface (dark) = %1:1 — esperava <4.5 (reprova AA)")
+            .arg(cDark, 0, 'f', 2)));
+}
+
+void TestThemeTokens::acentoTexto_comoTexto_passaAA_light()
+{
+    Theme::setMode(Theme::ThemeMode::Light);
+    const qreal c = contraste(QColor(Theme::acentoTexto()), QColor(Theme::surface()));
+    QVERIFY2(c >= 4.5,
+        qPrintable(QStringLiteral("@@ACC_TEXT@@ sobre surface (light) = %1:1 — esperava >=4.5 (WCAG AA texto)")
+            .arg(c, 0, 'f', 2)));
+}
+
+void TestThemeTokens::acentoTexto_comoTexto_passaAA_dark()
+{
+    Theme::setMode(Theme::ThemeMode::Dark);
+    const qreal c = contraste(QColor(Theme::acentoTexto()), QColor(Theme::surface()));
+    Theme::setMode(Theme::ThemeMode::Light); // restaura
+    QVERIFY2(c >= 4.5,
+        qPrintable(QStringLiteral("@@ACC_TEXT@@ sobre surface (dark) = %1:1 — esperava >=4.5 (WCAG AA texto)")
+            .arg(c, 0, 'f', 2)));
+}
+
+// Helper local: extrai o bloco { … } da primeira ocorrência de `regra` no QSS.
+static QString blocoDoQss(const QString &qss, const QString &regra)
+{
+    const int posRegra = qss.indexOf(regra);
+    if (posRegra < 0) return QString();
+    const int posAbre = qss.indexOf('{', posRegra);
+    const int posFecha = qss.indexOf('}', posAbre);
+    if (posAbre < 0 || posFecha <= posAbre) return QString();
+    return qss.mid(posAbre, posFecha - posAbre);
+}
+
+void TestThemeTokens::pushButtonHover_usaAccTextNaoAccCru()
+{
+    const QString qss = Theme::qssParaTeste();
+    const QString bloco = blocoDoQss(qss, QStringLiteral("QPushButton:hover"));
+    QVERIFY2(!bloco.isEmpty(), "Regra QPushButton:hover ausente no QSS");
+
+    QVERIFY2(bloco.contains(QStringLiteral(" color: %1;").arg(Theme::acentoTexto())),
+        qPrintable(QStringLiteral("QPushButton:hover não usa @@ACC_TEXT@@ (%1) como color")
+            .arg(Theme::acentoTexto())));
+    QVERIFY2(!bloco.contains(QStringLiteral(" color: %1;").arg(Theme::acento())),
+        qPrintable(QStringLiteral("QPushButton:hover ainda usa @@ACC@@ cru (%1) como color — bug #198!")
+            .arg(Theme::acento())));
+    // border-color: @@ACC@@ continua correto (não-texto, 3:1 basta).
+    QVERIFY2(bloco.contains(QStringLiteral("border-color: %1;").arg(Theme::acento())),
+        "QPushButton:hover perdeu border-color: @@ACC@@ (regressão não-relacionada)");
+}
+
+void TestThemeTokens::iconButtonHover_usaAccTextNaoAccCru()
+{
+    const QString qss = Theme::qssParaTeste();
+    const QString bloco = blocoDoQss(qss, QStringLiteral("QPushButton#iconButton:hover"));
+    QVERIFY2(!bloco.isEmpty(), "Regra QPushButton#iconButton:hover ausente no QSS");
+
+    QVERIFY2(bloco.contains(QStringLiteral(" color: %1;").arg(Theme::acentoTexto())),
+        "iconButton:hover não usa @@ACC_TEXT@@ como color");
+    QVERIFY2(!bloco.contains(QStringLiteral(" color: %1;").arg(Theme::acento())),
+        "iconButton:hover ainda usa @@ACC@@ cru como color — bug #198!");
+}
+
+void TestThemeTokens::iconButtonPressed_usaAccTextNaoAccCru()
+{
+    const QString qss = Theme::qssParaTeste();
+    const QString bloco = blocoDoQss(qss, QStringLiteral("QPushButton#iconButton:pressed"));
+    QVERIFY2(!bloco.isEmpty(), "Regra QPushButton#iconButton:pressed ausente no QSS");
+
+    QVERIFY2(bloco.contains(QStringLiteral(" color: %1;").arg(Theme::acentoTexto())),
+        "iconButton:pressed não usa @@ACC_TEXT@@ como color");
+    QVERIFY2(!bloco.contains(QStringLiteral(" color: %1;").arg(Theme::acento())),
+        "iconButton:pressed ainda usa @@ACC@@ cru como color — bug #198!");
+}
+
+void TestThemeTokens::headerSectionHover_usaAccTextNaoAccCru()
+{
+    const QString qss = Theme::qssParaTeste();
+    const QString bloco = blocoDoQss(qss, QStringLiteral("QHeaderView::section:hover"));
+    QVERIFY2(!bloco.isEmpty(), "Regra QHeaderView::section:hover ausente no QSS");
+
+    QVERIFY2(bloco.contains(QStringLiteral(" color: %1;").arg(Theme::acentoTexto())),
+        "QHeaderView::section:hover não usa @@ACC_TEXT@@ como color");
+    QVERIFY2(!bloco.contains(QStringLiteral(" color: %1;").arg(Theme::acento())),
+        "QHeaderView::section:hover ainda usa @@ACC@@ cru como color — bug #198!");
+}
+
+// ── #198 (A11Y-02): foco visível na sidebar ─────────────────────────────────
+
+void TestThemeTokens::navItemFoco_temIndicadorVisivel()
+{
+    const QString qss = Theme::qssParaTeste();
+    const QString bloco = blocoDoQss(qss, QStringLiteral("QWidget#sidebarNav QPushButton#navItem:focus"));
+    QVERIFY2(!bloco.isEmpty(), "Regra #navItem:focus ausente no QSS");
+
+    QVERIFY2(!bloco.contains(QStringLiteral("outline: none")),
+        "#navItem:focus ainda suprime outline sem substituto — regressão do bug #198 (A11Y-02)");
+    QVERIFY2(bloco.contains(QStringLiteral("border: 1px solid %1;").arg(Theme::acento())),
+        qPrintable(QStringLiteral("#navItem:focus sem borda indicadora %1 — foco de teclado invisível (WCAG 2.4.7)")
+            .arg(Theme::acento())));
+    QVERIFY2(bloco.contains(QStringLiteral("background:")),
+        "#navItem:focus sem fundo diferenciado do repouso");
+}
+
+void TestThemeTokens::navItemFoco_contrasteBordaSobreNavy_AA()
+{
+    // Indicador NÃO-TEXTUAL (borda) — mínimo WCAG 1.4.11 é 3:1, não 4.5:1.
+    const QColor acc(Theme::acento());
+    const qreal c1 = contraste(acc, QColor(Theme::sidebar1()));
+    const qreal c2 = contraste(acc, QColor(Theme::sidebar2()));
+    QVERIFY2(c1 >= 3.0,
+        qPrintable(QStringLiteral("borda de foco (%1) sobre sidebar1 (%2) = %3:1 — abaixo do mínimo 3:1 não-texto")
+            .arg(Theme::acento(), Theme::sidebar1()).arg(c1, 0, 'f', 2)));
+    QVERIFY2(c2 >= 3.0,
+        qPrintable(QStringLiteral("borda de foco (%1) sobre sidebar2 (%2) = %3:1 — abaixo do mínimo 3:1 não-texto")
+            .arg(Theme::acento(), Theme::sidebar2()).arg(c2, 0, 'f', 2)));
 }
 
 QTEST_MAIN(TestThemeTokens)

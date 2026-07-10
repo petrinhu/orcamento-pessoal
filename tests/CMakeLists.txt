@@ -652,6 +652,85 @@ target_include_directories(test_dashboard_glossario PRIVATE
 set_tests_properties(test_dashboard_glossario PROPERTIES
     ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 
+# #198 (Onda U-4, A11Y-01/A11Y-03): botoes icon-only (◀️▶️🖨️🔒 Dashboard, 👁
+# LoginDialog, 🧮 CalculadoraEdit em 10 dialogos, 🗑️ ReceiptAttachmentWidget)
+# precisam de accessibleName (WCAG 4.1.2) + StrongFocus/equivalente de
+# teclado onde antes era Qt::NoFocus (WCAG 2.1.1). Instancia producao real —
+# cadeia de dependencia = uniao de test_dashboard_glossario (DashboardWidget)
+# + test_login_enter (LoginDialog, forcando QT_NO_DEBUG p/ exercitar o ramo
+# release onde o botao 👁 existe) + CalculadoraEdit->CalculadoraHub->
+# CalculadoraDialog (GlossaryLabel/GlossarioDecorator/TvmService/FiscalService/
+# WizardGuiadoDialog) + ReceiptAttachmentWidget (so Theme).
+peubud_add_test(test_a11y_botoes_icone
+    ${CMAKE_SOURCE_DIR}/src/ui/Theme.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/ButtonShadowFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/FocusVisibleFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/TableHoverFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/TableHoverDelegate.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/UiFormatters.cpp
+    # LoginDialog
+    ${CMAKE_SOURCE_DIR}/src/ui/LoginDialog.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/session/UserSession.cpp
+    # DashboardWidget
+    ${CMAKE_SOURCE_DIR}/src/ui/widgets/DashboardWidget.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/GastoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/CategoriaRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/ResumoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/EntradaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/CompraService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/GastoAvulsoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/LancamentoInvestimentoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/ProventoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/LancamentoEntradaRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/FonteRendaRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/CompraRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/ParcelaRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/CartaoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/database/DatabaseManager.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/AjusteCorporativoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FechamentoMensalService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/AuditLogService.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/settings/AppSettings.cpp
+    # ReceiptAttachmentWidget (so Theme, ja coberto acima)
+    ${CMAKE_SOURCE_DIR}/src/ui/widgets/ReceiptAttachmentWidget.cpp
+    # CalculadoraEdit -> CalculadoraHub -> CalculadoraDialog
+    ${CMAKE_SOURCE_DIR}/src/ui/widgets/CalculadoraEdit.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/CalculadoraHub.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/CalculadoraService.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/widgets/CalculadoraDialog.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/widgets/GlossaryLabel.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/GlossarioDecorator.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/GlossaryUnderlineFilter.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/widgets/GlossaryUnderline.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/GlossarioService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/TvmService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FiscalService.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/widgets/WizardGuiadoDialog.cpp
+    # Crypto (LoginDialog inclui os headers mesmo em QT_NO_DEBUG)
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/SodiumCryptoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/AesCryptoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/KeyDerivation.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp)
+# QT_NO_DEBUG (NAO QT_DEBUG): forca o ramo release do LoginDialog (#ifndef
+# QT_DEBUG) para que o botao 👁 (m_btnOlho) exista e possa ser testado. Sem
+# isso, Qt::qglobal.h auto-define QT_DEBUG em builds sem -DNDEBUG (a arvore
+# build/ deste projeto), excluindo o botao da compilacao.
+target_compile_definitions(test_a11y_botoes_icone PRIVATE QT_NO_DEBUG)
+target_link_libraries(test_a11y_botoes_icone PRIVATE
+    Qt6::Charts
+    Qt6::PrintSupport
+    OpenSSL::SSL
+    OpenSSL::Crypto
+    ${LIBSODIUM_LIBRARIES}
+    ${LIBSECRET_LIBRARIES})
+target_include_directories(test_a11y_botoes_icone PRIVATE
+    ${LIBSODIUM_INCLUDE_DIRS}
+    ${LIBSECRET_INCLUDE_DIRS})
+set_tests_properties(test_a11y_botoes_icone PROPERTIES
+    ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
 # Empty states guiados (#166 Peça 2): EmptyStateWidget com emoji+título+frase+CTA.
 # Verifica: labels corretos, copy exata das 12 telas, CTA presente/ausente conforme
 # tabela, QSS contém seletores #emptyStateTitle/#emptyStateFrase, sem tokens

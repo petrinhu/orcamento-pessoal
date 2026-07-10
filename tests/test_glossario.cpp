@@ -4,6 +4,8 @@
 #include <QFormLayout>
 #include <QLabel>
 #include <QLineEdit>
+#include <QSettings>
+#include <QTemporaryDir>
 #include <QWidget>
 #include "core/settings/AppSettings.h"
 #include "services/GlossarioService.h"
@@ -14,6 +16,8 @@ class TestGlossario : public QObject
 {
     Q_OBJECT
 private slots:
+    void initTestCase();
+
     void definicaoCetNaoVazia();
     void definicaoFireMencionaAposentadoria();
     void definicaoTermoDesconhecidoVazia();
@@ -69,7 +73,22 @@ private slots:
     void tooltipSetadoQuandoTermoEncontrado();
     // QSS gerado contem regra de QToolTip (tooltip escuro).
     void qssContemRegraQToolTip();
+
+private:
+    QTemporaryDir m_settingsDir;
 };
+
+// #198 (achado durante a varredura de A11Y-01/03): aplicarLabelsRespeitaModo-
+// Avancado() faz setModoIniciante(true/false/true) em QSettings("petrinhu",
+// "PeuBud") real — o restore final mitiga mas não isola (residual se o teste
+// falhar no meio). Fix: mesmo padrão de QSettings::setPath usado em
+// test_locale_moeda (#197).
+void TestGlossario::initTestCase()
+{
+    QVERIFY(m_settingsDir.isValid());
+    QSettings::setPath(QSettings::IniFormat,    QSettings::UserScope, m_settingsDir.path());
+    QSettings::setPath(QSettings::NativeFormat, QSettings::UserScope, m_settingsDir.path());
+}
 
 void TestGlossario::definicaoCetNaoVazia()
 {

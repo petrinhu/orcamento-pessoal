@@ -23,8 +23,10 @@
 #include <QHeaderView>
 #include <QMouseEvent>
 #include <QPixmap>
+#include <QSettings>
 #include <QTableWidget>
 #include <QTableWidgetItem>
+#include <QTemporaryDir>
 
 #include "core/settings/AppSettings.h"
 #include "ui/TableHoverDelegate.h"
@@ -115,10 +117,22 @@ private slots:
     // ── Render offscreen (smoke) ────────────────────────────────────────────
     void renderLight_naoNulo();
     void renderDark_naoNulo();
+
+private:
+    QTemporaryDir m_settingsDir;
 };
 
 void TestTableSkin::initTestCase()
 {
+    // #198 (achado durante a varredura de A11Y-01/03): appSettings_tabela-
+    // DensidadeCompacta_roundTrip() escreve em QSettings("petrinhu","PeuBud")
+    // real — o save/restore do valor original mitiga mas não isola (residual
+    // se o teste falhar entre o write e o restore). Fix: mesmo padrão de
+    // QSettings::setPath (Ini+Native) usado em test_locale_moeda (#197).
+    QVERIFY(m_settingsDir.isValid());
+    QSettings::setPath(QSettings::IniFormat,    QSettings::UserScope, m_settingsDir.path());
+    QSettings::setPath(QSettings::NativeFormat, QSettings::UserScope, m_settingsDir.path());
+
     Theme::setMode(Theme::ThemeMode::Light);
     Theme::aplicar();
 }

@@ -14,6 +14,8 @@
 #include <QPushButton>
 #include <QLineEdit>
 #include <QDialog>
+#include <QSettings>
+#include <QTemporaryDir>
 
 #include "ui/LoginDialog.h"
 
@@ -22,6 +24,8 @@ class TestLoginEnter : public QObject
     Q_OBJECT
 
 private slots:
+    void initTestCase();
+
     // #174-C1: Entrar deve ser o botão default (Enter o aciona).
     void entrar_ehDefault();
 
@@ -30,7 +34,24 @@ private slots:
 
     // #174-C3: returnPressed no campo nome invoca accept() quando form válido.
     void returnPressed_nome_aceita();
+
+private:
+    QTemporaryDir m_settingsDir;
 };
+
+// #198 (achado durante a varredura de A11Y-01/03): returnPressed_nome_aceita()
+// completa o fluxo onEntrar() → UserSession::login("TestUser", …) →
+// QSettings("OrcamentoPessoal","Session").setValue("lastUser","TestUser") —
+// SEM isolamento, sobrescrevendo o lastUser REAL do usuário em
+// ~/.config/OrcamentoPessoal/Session.conf. Fix: mesmo padrão de
+// QSettings::setPath (Ini+Native — enums diferentes, os dois cobrem qualquer
+// construtor) usado em test_locale_moeda/test_locale_datas (#197).
+void TestLoginEnter::initTestCase()
+{
+    QVERIFY(m_settingsDir.isValid());
+    QSettings::setPath(QSettings::IniFormat,    QSettings::UserScope, m_settingsDir.path());
+    QSettings::setPath(QSettings::NativeFormat, QSettings::UserScope, m_settingsDir.path());
+}
 
 // ── Helpers internos ─────────────────────────────────────────────────────────
 

@@ -642,6 +642,9 @@ void MainWindow::buildUtilBar()
         btn->setIcon(Theme::emojiIcon(glyph, 20));
         btn->setToolButtonStyle(Qt::ToolButtonIconOnly);
         btn->setToolTip(tip);
+        // #198 (A11Y-01, WCAG 4.1.2): fábrica única — cobre busca/calculadora/
+        // hoje de uma vez (botões icon-only, sem texto visível).
+        btn->setAccessibleName(tip);
         toolbar->addWidget(btn);
         return btn;
     };

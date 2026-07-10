@@ -47,6 +47,7 @@ ReceiptAttachmentWidget::ReceiptAttachmentWidget(QWidget *parent)
     m_btnRemove->setObjectName(QStringLiteral("iconButton")); // icon-only, sem borda (#165)
     m_btnRemove->setIcon(Theme::emojiIcon(QStringLiteral("🗑️")));
     m_btnRemove->setToolTip(tr("Remover comprovante anexado"));
+    m_btnRemove->setAccessibleName(tr("Remover comprovante anexado")); // #198 (A11Y-01)
     m_btnRemove->setVisible(false);
     connect(m_btnRemove, &QPushButton::clicked, this, &ReceiptAttachmentWidget::onRemove);
 

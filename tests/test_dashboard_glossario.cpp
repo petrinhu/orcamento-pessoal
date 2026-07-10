@@ -19,6 +19,8 @@
 #include <QtTest>
 #include <QApplication>
 #include <QLabel>
+#include <QSettings>
+#include <QTemporaryDir>
 #include <QWidget>
 
 #include "core/settings/AppSettings.h"
@@ -33,10 +35,21 @@ private slots:
     void initTestCase();
 
     void subLabelParcelasSobreviveAoGlossario();
+
+private:
+    QTemporaryDir m_settingsDir;
 };
 
 void TestDashboardGlossario::initTestCase()
 {
+    // #198 (achado durante a varredura de A11Y-01/03): setModoIniciante(true)
+    // é um WRITE em QSettings("petrinhu","PeuBud") real — SEM isolamento,
+    // gravava no ~/.config do usuário (mesmo padrão do incidente #197). Fix:
+    // QSettings::setPath (Ini+Native) ANTES do 1º AppSettings::instance().
+    QVERIFY(m_settingsDir.isValid());
+    QSettings::setPath(QSettings::IniFormat,    QSettings::UserScope, m_settingsDir.path());
+    QSettings::setPath(QSettings::NativeFormat, QSettings::UserScope, m_settingsDir.path());
+
     Theme::setMode(Theme::ThemeMode::Light);
     Theme::aplicar();
     // modoIniciante=true e o default do app — e o cenario que dispara

@@ -29,6 +29,9 @@ namespace Color {
     const QString TextLight       = QStringLiteral("#15233B");
     const QString SubtextLight    = QStringLiteral("#67768D");
     const QString AccentLight     = QStringLiteral("#3B82F6");
+    // #198 (A11Y-04): blue-700 — mesmo tom do HelpEyebrowLight/HelpNumFgLight
+    // (#166), AA-safe como texto onde o accent cru reprova.
+    const QString AccTextLight    = QStringLiteral("#1D4ED8");
     const QString PositiveLight   = QStringLiteral("#16C784");
     const QString NegativeLight   = QStringLiteral("#EA3943");
     const QString DouradoLight    = QStringLiteral("#E8A93B");
@@ -44,6 +47,9 @@ namespace Color {
     const QString TextDark        = QStringLiteral("#EAF0F8");
     const QString SubtextDark     = QStringLiteral("#8A97A8");
     const QString AccentDark      = QStringLiteral("#3B82F6");
+    // #198 (A11Y-04): mesmo tom do HelpEyebrowDark (#166) — AA-safe sobre os
+    // fundos escuros onde o accent cru reprova.
+    const QString AccTextDark     = QStringLiteral("#7FB0FF");
     const QString PositiveDark    = QStringLiteral("#16C784");
     const QString NegativeDark    = QStringLiteral("#EA3943");
     const QString DouradoDark     = QStringLiteral("#E8A93B");
@@ -139,6 +145,7 @@ ThemeMode currentMode() { return g_mode; }
 // ── Token getters ─────────────────────────────────────────────────────────────
 
 QString acento()     { return isDark() ? Color::AccentDark      : Color::AccentLight;      }
+QString acentoTexto(){ return isDark() ? Color::AccTextDark     : Color::AccTextLight;     } // #198 (A11Y-04)
 QString negativo()   { return isDark() ? Color::NegativeDark    : Color::NegativeLight;    }
 QString positivo()   { return isDark() ? Color::PositiveDark    : Color::PositiveLight;    }
 QString background() { return isDark() ? Color::BgDark          : Color::BgLight;          }
@@ -261,6 +268,8 @@ static QString gerarQss()
     const QString surf = dark ? Color::SurfaceDark  : Color::SurfaceLight;
     const QString brd  = dark ? Color::BorderDark   : Color::BorderLight;
     const QString acc  = dark ? Color::AccentDark   : Color::AccentLight;
+    // #198 (A11Y-04): texto sobre accent — AA-safe (ver acentoTexto()).
+    const QString accText = dark ? Color::AccTextDark : Color::AccTextLight;
     const QString txt  = dark ? Color::TextDark     : Color::TextLight;
     const QString sub  = dark ? Color::SubtextDark  : Color::SubtextLight;
     const QString neg  = dark ? Color::NegativeDark : Color::NegativeLight;
@@ -389,7 +398,10 @@ static QString gerarQss()
             padding: 5px 14px;
             color: @@TXT@@;
         }
-        QPushButton:hover   { border-color: @@ACC@@; color: @@ACC@@; }
+        /* #198 (A11Y-04): border fica @@ACC@@ (não-texto, 3:1 ok); o TEXTO usa
+           @@ACC_TEXT@@ (blue-700/blue-300 AA-safe) — @@ACC@@ cru reprova AA
+           como texto sobre @@SURF@@ (3.68:1 light / 4.26:1 dark, <4.5:1). */
+        QPushButton:hover   { border-color: @@ACC@@; color: @@ACC_TEXT@@; }
         QPushButton:pressed {
             background-color: @@HOV@@;
             border-color: @@ACC@@;
@@ -413,15 +425,19 @@ static QString gerarQss()
             color: @@SUB@@;
             font-size: 17px;
         }
+        /* #198 (A11Y-04): glifo em texto usa @@ACC_TEXT@@ (AA-safe) — @@ACC@@
+           cru sobre @@HOV@@/@@ALT@@ reprova AA como texto (2.97:1/3.51:1
+           light). O emoji colorido ignora `color` (nota §9.3 manual), então
+           isto só afeta ícones monocromáticos (glifo tipográfico). */
         QPushButton#iconButton:hover,
         QToolButton#iconButton:hover {
             background: @@HOV@@;
-            color: @@ACC@@;
+            color: @@ACC_TEXT@@;
         }
         QPushButton#iconButton:pressed,
         QToolButton#iconButton:pressed {
             background: @@ALT@@;
-            color: @@ACC@@;
+            color: @@ACC_TEXT@@;
         }
         QPushButton#iconButton:disabled,
         QToolButton#iconButton:disabled {
@@ -515,7 +531,9 @@ static QString gerarQss()
             letter-spacing: 0.06em;
             color: @@TXT@@;
         }
-        QHeaderView::section:hover { color: @@ACC@@; }
+        /* #198 (A11Y-04): texto em hover usa @@ACC_TEXT@@ (@@ACC@@ cru sobre
+           @@BG@@ é 3.30:1 no light, reprova AA). */
+        QHeaderView::section:hover { color: @@ACC_TEXT@@; }
         /* ── Labels ── */
         /* color explícito em QLabel garante que o Fusion/palette não sobrescreva
            com WindowText em widgets frameless (ex.: LoginDialog). */
@@ -710,12 +728,17 @@ static QString gerarQss()
             background: rgba(255,255,255,0.10);
             color: #ffffff;
         }
-        /* Foco: sem outline nem borda — NoFocusStyle ja suprime o dotted-rect
-           do Fusion, mas navItem pode receber foco de teclado; garantir ausencia
-           de qualquer indicador retangular sobre o navy (#165 fix Bug 1). */
+        /* Foco de teclado (#198, A11Y-02, WCAG 2.4.7): o fix #165 suprimia
+           TODO indicador (outline+border none) — item focado via Tab ficava
+           visualmente idêntico ao repouso, invisível para quem navega sem
+           mouse. Fix: fundo sutil (mais forte que o hover 0.10) + borda 1px
+           @@ACC@@ (contraste accent/navy >= 3.93:1 light e >= 4.27:1 dark —
+           acima do minimo 3:1 de indicador não-textual, WCAG 1.4.11).
+           NoFocusStyle ainda suprime o dotted-rect nativo do Fusion; este é o
+           substituto intencional, não um acidente do #165. */
         QWidget#sidebarNav QPushButton#navItem:focus {
-            outline: none;
-            border: none;
+            background: rgba(255,255,255,0.14);
+            border: 1px solid @@ACC@@;
         }
         /* Pill ativo: accent solido + cantos arredondados (radius 9 herdado do base).
            Sem box-shadow (QSS widget nao suporta); sem artefato retangular. */
@@ -851,6 +874,7 @@ static QString gerarQss()
     // (ex.: "@@ACC_H..." poderia casar com "@@ACC@@" se a ordem fosse inversa).
     qss.replace(QStringLiteral("@@ACC_HOVER@@"),    accHover);
     qss.replace(QStringLiteral("@@ACC_PRESSED@@"),  accPressed);
+    qss.replace(QStringLiteral("@@ACC_TEXT@@"),     accText); // #198 (A11Y-04) — antes de @@ACC@@ (mesma cautela do comentário acima)
     qss.replace(QStringLiteral("@@ACC@@"),          acc);
     qss.replace(QStringLiteral("@@SUB@@"),          sub);
     qss.replace(QStringLiteral("@@NEG@@"),          neg);

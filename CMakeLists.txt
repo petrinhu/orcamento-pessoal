@@ -386,6 +386,13 @@ set(CPACK_SOURCE_IGNORE_FILES
     "/\\\\.git/"
     "/\\\\.idea/"
     "/\\\\.superpowers/"
+    # #198 (achado durante o gate de ctest — adjacente a #96/DIST-01):
+    # .claude/worktrees (agent worktrees do Claude Code) e .cache/clangd
+    # (index do clangd, ja em .gitignore mas o CPack tem lista PROPRIA,
+    # independente de .gitignore) inflavam o tarball fonte para >5MB assim
+    # que essas pastas de ferramenta existiam no working tree local.
+    "/\\\\.claude/"
+    "/\\\\.cache/"
     "/data/"
     "\\\\.user$"
     "\\\\.qm$"

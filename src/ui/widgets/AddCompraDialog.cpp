@@ -206,6 +206,12 @@ void AddCompraDialog::buildTabJuros(QWidget *tab)
         lockBtn->setToolTip(locked
             ? tr("Campo editável. Clique para travá-lo e calculá-lo automaticamente.")
             : tr("Campo calculado automaticamente. Clique para editá-lo manualmente."));
+        // #198 (A11Y-01, WCAG 4.1.2): icon-only checkable, sem accessibleName.
+        // Estado dinâmico (locked muda em atualizarEstadoCamposJ) — mantido em
+        // sincronia lá, igual ao toolTip.
+        lockBtn->setAccessibleName(locked
+            ? tr("Campo editável. Clique para travá-lo e calculá-lo automaticamente.")
+            : tr("Campo calculado automaticamente. Clique para editá-lo manualmente."));
         h->addWidget(lockBtn);
         return w;
     };
@@ -263,6 +269,7 @@ void AddCompraDialog::buildTabJuros(QWidget *tab)
         m_lockTaxa->setChecked(true);
         m_lockTaxa->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
         m_lockTaxa->setToolTip(tr("Campo editável. Clique para travá-lo e calculá-lo automaticamente."));
+        m_lockTaxa->setAccessibleName(tr("Campo editável. Clique para travá-lo e calculá-lo automaticamente.")); // #198 (A11Y-01)
         taxaH->addWidget(m_lockTaxa);
         form->addRow(tr("Juros mensais / CET a.a."), taxaWidget);
     }
@@ -353,27 +360,35 @@ void AddCompraDialog::atualizarEstadoCamposJ()
     const QString ttEditable  = tr("Campo editável. Clique para travá-lo e calculá-lo automaticamente.");
     const QString ttCalculado = tr("Campo calculado automaticamente. Clique para editá-lo manualmente.");
 
+    // #198 (A11Y-01): accessibleName acompanha o toolTip dinâmico — o estado
+    // (editável/calculado) muda a cada clique de lock, e o nome acessível
+    // precisa refletir o estado ATUAL, não só o de criação.
     m_lockTotal->setChecked(!totalOut);
     m_lockTotal->setIcon(Theme::emojiIcon(totalOut ? QStringLiteral("🚫") : QStringLiteral("✏️")));
     m_lockTotal->setToolTip(totalOut ? ttCalculado : ttEditable);
+    m_lockTotal->setAccessibleName(totalOut ? ttCalculado : ttEditable);
 
     m_lockN->setChecked(!nOut);
     m_lockN->setIcon(Theme::emojiIcon(nOut ? QStringLiteral("🚫") : QStringLiteral("✏️")));
     m_lockN->setToolTip(nOut ? ttCalculado : ttEditable);
+    m_lockN->setAccessibleName(nOut ? ttCalculado : ttEditable);
 
     m_lockTaxa->setChecked(!taxaOut);
     m_lockTaxa->setIcon(Theme::emojiIcon(taxaOut ? QStringLiteral("🚫") : QStringLiteral("✏️")));
     m_lockTaxa->setToolTip(taxaOut ? ttCalculado : ttEditable);
+    m_lockTaxa->setAccessibleName(taxaOut ? ttCalculado : ttEditable);
 
     m_lockParcela->setChecked(!parcelaOut);
     m_lockParcela->setIcon(Theme::emojiIcon(parcelaOut ? QStringLiteral("🚫") : QStringLiteral("✏️")));
     m_lockParcela->setToolTip(parcelaOut ? ttCalculado : ttEditable);
+    m_lockParcela->setAccessibleName(parcelaOut ? ttCalculado : ttEditable);
 
     // TotalPago: independent lock (not part of SolveFor)
     m_valorTotalPago_j->setReadOnly(!m_totalPagoIsInput);
     m_lockTotalPago->setChecked(m_totalPagoIsInput);
     m_lockTotalPago->setIcon(Theme::emojiIcon(m_totalPagoIsInput ? QStringLiteral("✏️") : QStringLiteral("🚫")));
     m_lockTotalPago->setToolTip(m_totalPagoIsInput ? ttEditable : ttCalculado);
+    m_lockTotalPago->setAccessibleName(m_totalPagoIsInput ? ttEditable : ttCalculado);
 }
 
 void AddCompraDialog::buildPreview()

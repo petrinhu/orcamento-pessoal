@@ -17,8 +17,13 @@ CalculadoraEdit::CalculadoraEdit(QWidget *parent) : QWidget(parent)
 
     m_btn = new QToolButton(this);
     m_btn->setToolTip(tr("Abrir calculadora"));
+    // #198 (A11Y-01/03, WCAG 4.1.2 / 2.1.1): antes NoFocus + só tooltip —
+    // mudo e inacessível por teclado em 10 diálogos (todo campo monetário).
+    // StrongFocus habilita Tab; Espaço já abre via animateClick() padrão do
+    // QAbstractButton (dispara o clicked() abaixo — sem handler extra).
+    m_btn->setAccessibleName(tr("Abrir calculadora"));
     m_btn->setCursor(Qt::ArrowCursor);
-    m_btn->setFocusPolicy(Qt::NoFocus);
+    m_btn->setFocusPolicy(Qt::StrongFocus);
     m_btn->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
 
     // #183: TUDO COLORIDO — emojiIcon direto, sem fromTheme (que renderizaria Breeze mono)

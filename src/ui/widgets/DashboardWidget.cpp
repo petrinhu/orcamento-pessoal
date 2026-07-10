@@ -176,6 +176,12 @@ void DashboardWidget::buildUi()
     btnNext->setIcon(Theme::emojiIcon(QStringLiteral("▶️")));
     btnPrev->setObjectName(QStringLiteral("iconButton"));
     btnNext->setObjectName(QStringLiteral("iconButton"));
+    // #198 (A11Y-01, WCAG 4.1.2): botões icon-only mudos para Orca/NVDA sem
+    // nome acessível — só o glifo, sem texto visível.
+    btnPrev->setToolTip(tr("Mês anterior"));
+    btnPrev->setAccessibleName(tr("Mês anterior"));
+    btnNext->setToolTip(tr("Próximo mês"));
+    btnNext->setAccessibleName(tr("Próximo mês"));
 
     m_lblMes = new QLabel(this);
     QFont fmes = m_lblMes->font();
@@ -189,12 +195,14 @@ void DashboardWidget::buildUi()
     btnPrint->setIcon(Theme::emojiIcon(QStringLiteral("🖨️")));
     btnPrint->setObjectName(QStringLiteral("iconButton"));
     btnPrint->setToolTip(tr("Imprimir Dashboard (visualização prévia)"));
+    btnPrint->setAccessibleName(tr("Imprimir Dashboard")); // #198 (A11Y-01)
 
     // Botão Fechar mês (#88) — icon-only, sem borda (#165).
     auto *btnFechar = new QPushButton(this);
     btnFechar->setIcon(Theme::emojiIcon(QStringLiteral("🔒")));
     btnFechar->setObjectName(QStringLiteral("iconButton"));
     btnFechar->setToolTip(tr("Fechar mês contábil (snapshot imutável)"));
+    btnFechar->setAccessibleName(tr("Fechar mês contábil")); // #198 (A11Y-01)
 
     navBar->addWidget(btnPrev);
     navBar->addWidget(m_lblMes, 1);
