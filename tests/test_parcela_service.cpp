@@ -3,6 +3,10 @@
 // Funcoes que dependem de DB (recalcularAposEdicao) ficam para integracao.
 
 #include <QtTest/QtTest>
+#include <QSettings>
+#include <QTemporaryDir>
+
+#include "core/settings/AppSettings.h"
 #include "services/ParcelaService.h"
 #include "models/Compra.h"
 
@@ -10,12 +14,25 @@ class TestParcelaService : public QObject
 {
     Q_OBJECT
 private slots:
+    void initTestCase();
+
     void cetFromJurosMensaisCompose();
     void jurosMensaisFromCetInverso();
     void formatarValorBRL();
     void parsearValorBRComDecimal();
     void parsearValorSoPontoGrupoDeMilhar();
     void simboloMoedaConhecidas();
+
+    // ── #204 (Onda U, follow-up i18n do #197/I18N-01): formatarValor era
+    // gêmeo locale-naive de uifmt::formatCentavosBRL, mas com moeda EXPLÍCITA
+    // por chamador (Compra pode estar em moeda != moeda padrão do app) --
+    // fix segue a MESMA aritmética inteira/QLocale, só o separador/posição
+    // do sinal segue AppSettings::language() (não a moeda em si).
+    void formatarValorPtBrGoldenComAgrupamentoDeMilhar();
+    void formatarValorEnIntlUsdFormataComoDolar();
+    void formatarValorEnIntlNegativoSinalAntesDoSimbolo();
+    void formatarValorPtBrNegativoSinalDepoisDoSimbolo();
+    void formatarValorMoedaExplicitaIndependeDaMoedaAtivaDoApp();
 
     // ── Amortizacao Price (#114) ─────────────────────────────────────────────
     void amortSaldoFinalZera();
@@ -36,6 +53,9 @@ private slots:
     void dataParaParcelaViradaDeAno();
     void dataParaParcelaOffsetNegativo();
     void gerarDatasNGrandePrimeiraEUltima();
+
+private:
+    QTemporaryDir m_settingsDir;
 };
 
 // Helper: monta Compra para amortizacao. jurosMensais armazenado como % x 10000.
@@ -49,6 +69,19 @@ static Compra makeCompra(qint64 valorTotal, int numParcelas, double jurosMensais
     c.anoInicio      = 2025;
     c.jurosMensais   = static_cast<qint64>(std::llround(jurosMensaisPct * 10000.0));
     return c;
+}
+
+// Isola AppSettings (singleton sobre QSettings("petrinhu","PeuBud") -- MESMA
+// config real do app instalado) num QTemporaryDir ANTES da 1a chamada de
+// AppSettings::instance(). Registra os dois formatos (Ini/Native) porque
+// QSettings(org,app) resolve para NativeFormat, não IniFormat -- ver
+// comentário equivalente em test_locale_moeda.cpp (#197). Zero contato com
+// ~/.config real.
+void TestParcelaService::initTestCase()
+{
+    QVERIFY(m_settingsDir.isValid());
+    QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, m_settingsDir.path());
+    QSettings::setPath(QSettings::NativeFormat, QSettings::UserScope, m_settingsDir.path());
 }
 
 void TestParcelaService::cetFromJurosMensaisCompose()
@@ -69,12 +102,71 @@ void TestParcelaService::jurosMensaisFromCetInverso()
 
 void TestParcelaService::formatarValorBRL()
 {
-    // 123456 cents = R$ 1.234,56 (locale BR)
+    AppSettings::instance().setLanguage(AppSettings::Language::PtBr);
+    // 123456 cents = R$ 1.234,56 (locale BR, agrupamento de milhar)
     const QString s = ParcelaService::formatarValor(123456,
                                                      QStringLiteral("BRL"));
-    QVERIFY2(s.contains(QStringLiteral("1.234,56")) ||
-             s.contains(QStringLiteral("1234,56")),
-        qPrintable(QStringLiteral("formatado = %1").arg(s)));
+    QCOMPARE(s, QStringLiteral("R$ 1.234,56"));
+}
+
+// ESPEC GOLDEN pt-BR/BRL (#204): valor "antes" do fix já era "R$ 1234,56"
+// (vírgula decimal correta, símbolo correto) -- o comportamento VISÍVEL de
+// pt-BR não regride, só ganha o separador de milhar que faltava (mesma
+// convenção que #197 já estabeleceu em uifmt::formatCentavosBRL). Idioma/
+// moeda continuam pt-BR/BRL explicitamente para não depender de estado
+// default do singleton.
+void TestParcelaService::formatarValorPtBrGoldenComAgrupamentoDeMilhar()
+{
+    AppSettings::instance().setLanguage(AppSettings::Language::PtBr);
+
+    QCOMPARE(ParcelaService::formatarValor(123456789, QStringLiteral("BRL")),
+              QStringLiteral("R$ 1.234.567,89"));
+    QCOMPARE(ParcelaService::formatarValor(0, QStringLiteral("BRL")),
+              QStringLiteral("R$ 0,00"));
+}
+
+// ESPEC RED->GREEN (#204): antes do fix, formatarValor SEMPRE usava vírgula
+// decimal + símbolo-espaço-valor (padrão pt-BR hardcoded), mesmo com
+// AppSettings::language()==EnIntl. EN + USD deve virar "$1,234.56" (ponto
+// decimal, símbolo colado), igual ao gêmeo uifmt::formatCentavosBRL/#197.
+void TestParcelaService::formatarValorEnIntlUsdFormataComoDolar()
+{
+    AppSettings::instance().setLanguage(AppSettings::Language::EnIntl);
+
+    const QString out = ParcelaService::formatarValor(123456, QStringLiteral("USD"));
+    QCOMPARE(out, QStringLiteral("$1,234.56"));
+    QVERIFY2(!out.contains(QLatin1Char(',')) || out.indexOf(QLatin1Char(',')) < out.indexOf(QLatin1Char('.')),
+        "regressao: virgula decimal pt-BR vazando em locale EN");
+}
+
+void TestParcelaService::formatarValorEnIntlNegativoSinalAntesDoSimbolo()
+{
+    AppSettings::instance().setLanguage(AppSettings::Language::EnIntl);
+    QCOMPARE(ParcelaService::formatarValor(-50, QStringLiteral("USD")),
+              QStringLiteral("-$0.50"));
+}
+
+void TestParcelaService::formatarValorPtBrNegativoSinalDepoisDoSimbolo()
+{
+    AppSettings::instance().setLanguage(AppSettings::Language::PtBr);
+    QCOMPARE(ParcelaService::formatarValor(-50, QStringLiteral("BRL")),
+              QStringLiteral("R$ -0,50"));
+}
+
+// Diferença-chave vs. uifmt::formatCentavosBRL: a moeda de formatarValor é
+// EXPLÍCITA por chamador (Compra.moeda pode divergir da moeda padrão ativa
+// do app) -- só o idioma de exibição (separadores/posição do sinal) segue
+// AppSettings::language(). Prova que a moeda ATIVA do app não vaza aqui.
+void TestParcelaService::formatarValorMoedaExplicitaIndependeDaMoedaAtivaDoApp()
+{
+    AppSettings::instance().setLanguage(AppSettings::Language::PtBr);
+    AppSettings::instance().setDefaultCurrency(QStringLiteral("EUR"));
+
+    // Compra explicitamente em USD, mesmo com o app "ativo" em EUR.
+    const QString out = ParcelaService::formatarValor(123456, QStringLiteral("USD"));
+    QVERIFY2(out.startsWith(QStringLiteral("$")),
+        qPrintable(QStringLiteral("esperado simbolo USD (explicito), obtido '%1'").arg(out)));
+    QVERIFY(!out.contains(QStringLiteral("€")));
 }
 
 void TestParcelaService::parsearValorBRComDecimal()

@@ -108,22 +108,32 @@ target_include_directories(test_recorrencia PRIVATE
 
 # #133: ImportService parsers via API publica fromCsv/fromOfx. Cadeia:
 # ImportService + parsers PDF + match finder + ParcelaService/FinanceEngine.
+# (#204) ParcelaService::formatarValor agora locale-aware via AppSettings.
 peubud_add_test(test_import
     ${CMAKE_SOURCE_DIR}/src/services/ImportService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/import/BankPDFParsers.cpp
     ${CMAKE_SOURCE_DIR}/src/services/import/IMatchFinder.cpp
     ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp
-    ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp)
+    ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/settings/AppSettings.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp)
+target_link_libraries(test_import PRIVATE ${LIBSECRET_LIBRARIES})
+target_include_directories(test_import PRIVATE ${LIBSECRET_INCLUDE_DIRS})
 
 # #133: ExportService round-trip OFX + format machine-readable. Puxa
 # ParcelaService/FinanceEngine e a cadeia de import (para reimportar).
+# (#204) ParcelaService::formatarValor agora locale-aware via AppSettings.
 peubud_add_test(test_export
     ${CMAKE_SOURCE_DIR}/src/services/ExportService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/ImportService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/import/BankPDFParsers.cpp
     ${CMAKE_SOURCE_DIR}/src/services/import/IMatchFinder.cpp
     ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp
-    ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp)
+    ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/settings/AppSettings.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp)
+target_link_libraries(test_export PRIVATE ${LIBSECRET_LIBRARIES})
+target_include_directories(test_export PRIVATE ${LIBSECRET_INCLUDE_DIRS})
 peubud_add_test(test_match_finder ${CMAKE_SOURCE_DIR}/src/services/import/IMatchFinder.cpp)
 peubud_add_test(test_fiscal ${CMAKE_SOURCE_DIR}/src/services/FiscalService.cpp)
 peubud_add_test(test_backup ${CMAKE_SOURCE_DIR}/src/services/BackupService.cpp)
@@ -134,11 +144,23 @@ peubud_add_test(test_sqlite_migrations)
 peubud_add_test(test_parcela_service
     ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp
     # #123: ParcelaService usa FinanceEngine::pmt (formula Price centralizada).
-    ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp)
+    ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp
+    # (#204) formatarValor agora locale-aware via AppSettings::language()
+    # (gêmeo de uifmt::formatCentavosBRL/#197) -- arrasta AppSettings.cpp
+    # (+ SecretStoreService/libsecret via brapiToken()).
+    ${CMAKE_SOURCE_DIR}/src/core/settings/AppSettings.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp)
+target_link_libraries(test_parcela_service PRIVATE ${LIBSECRET_LIBRARIES})
+target_include_directories(test_parcela_service PRIVATE ${LIBSECRET_INCLUDE_DIRS})
 peubud_add_test(test_tvm
     ${CMAKE_SOURCE_DIR}/src/services/TvmService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp
-    ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp)
+    ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp
+    # (#204) idem test_parcela_service.
+    ${CMAKE_SOURCE_DIR}/src/core/settings/AppSettings.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp)
+target_link_libraries(test_tvm PRIVATE ${LIBSECRET_LIBRARIES})
+target_include_directories(test_tvm PRIVATE ${LIBSECRET_INCLUDE_DIRS})
 peubud_add_test(test_currency_service
     ${CMAKE_SOURCE_DIR}/src/services/CurrencyService.cpp
     ${CMAKE_SOURCE_DIR}/src/core/currency/FrankfurterProvider.cpp)
@@ -1116,8 +1138,12 @@ peubud_add_test(test_xlsx_roundtrip
     ${CMAKE_SOURCE_DIR}/src/services/import/BankPDFParsers.cpp
     ${CMAKE_SOURCE_DIR}/src/services/import/IMatchFinder.cpp
     ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp
-    ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp)
-target_link_libraries(test_xlsx_roundtrip PRIVATE QXlsx::QXlsx)
+    ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp
+    # (#204) idem test_export.
+    ${CMAKE_SOURCE_DIR}/src/core/settings/AppSettings.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp)
+target_link_libraries(test_xlsx_roundtrip PRIVATE QXlsx::QXlsx ${LIBSECRET_LIBRARIES})
+target_include_directories(test_xlsx_roundtrip PRIVATE ${LIBSECRET_INCLUDE_DIRS})
 target_compile_definitions(test_xlsx_roundtrip PRIVATE QXLSX_LIBRARY)
 
 # #199 (Onda U, QA-07): 4 dos 6 repos de dinheiro apontados pela auditoria

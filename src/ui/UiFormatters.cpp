@@ -4,7 +4,6 @@
 #include "services/ParcelaService.h"
 
 #include <QLatin1Char>
-#include <QLocale>
 #include <QRegularExpression>
 #include <QStringLiteral>
 
@@ -49,28 +48,14 @@ QString formatCentavos(qint64 cents)
 
 QString formatCentavosBRL(qint64 cents)
 {
-    // #197 (I18N-01): aritmética 100% inteira -- sem double. O agrupamento de
-    // milhar vem de QLocale::toString(qint64) (pt-BR: "1.234"; en-US: "1,234");
-    // separador decimal e posição do símbolo (colado en-US "$1,234.56" vs.
-    // com espaço pt-BR "R$ 1.234,56"; sinal antes do símbolo en-US "-$1,23"
-    // vs. depois pt-BR "R$ -1,23", convenção de cada locale) resolvidos por
-    // switch(language()) -- não por QLocale::toCurrencyString (exige double).
-    const bool en = AppSettings::instance().language() == AppSettings::Language::EnIntl;
-
-    const qint64 abs_c    = cents < 0 ? -cents : cents;
-    const qint64 inteiro  = abs_c / 100;
-    const qint64 fracao   = abs_c % 100;
-    const QString sinal   = cents < 0 ? QStringLiteral("-") : QString();
-    const QString simbolo = ParcelaService::simboloMoeda(AppSettings::instance().defaultCurrency());
-
-    const QLocale loc = en ? QLocale(QLocale::English, QLocale::UnitedStates)
-                            : QLocale(QLocale::Portuguese, QLocale::Brazil);
-    const QString inteiroFmt = loc.toString(inteiro); // agrupado: "1,234" / "1.234"
-    const QString fracaoFmt  = QStringLiteral("%1").arg(fracao, 2, 10, QLatin1Char('0'));
-
-    if (en)
-        return QStringLiteral("%1%2%3.%4").arg(sinal, simbolo, inteiroFmt, fracaoFmt);
-    return QStringLiteral("%1 %2%3,%4").arg(simbolo, sinal, inteiroFmt, fracaoFmt);
+    // #197 (I18N-01) originalmente tinha a lógica inteira/locale-aware
+    // duplicada aqui. #204 achou o mesmo padrão hardcoded 2ª vez em
+    // ParcelaService::formatarValor (que já precisa aceitar moeda EXPLÍCITA
+    // por chamador -- uma Compra pode estar em moeda != moeda padrão do
+    // app). Para não duplicar a aritmética/switch(language()) duas vezes,
+    // este vira um wrapper fino: a moeda ativa é só mais um caso particular
+    // de "moeda explícita" (a moeda padrão do app).
+    return ParcelaService::formatarValor(cents, AppSettings::instance().defaultCurrency());
 }
 
 QString simboloMoedaAtiva()
