@@ -40,7 +40,10 @@ Restricoes fixas (canonicas, NAO mudam): **nome "PeuBud" e o icone do app**. Sta
 
 ## 4. Navegacao: sidebar agrupada a esquerda -- #165
 
-Substitui o `QTabWidget` no topo. Sidebar navy fixa (largura ~236px), **colapsavel** (vira so icones):
+Substitui o `QTabWidget` no topo. Sidebar navy fixa (largura ~236px), **colapsavel** (vira so icones)
+na concepcao original deste doc de design — **nao entregue** na implementacao final; corte de
+escopo decidido pelo lider (#165/DIST-12, 2026-07-10). Ver `docs/manual_estilo.md` §8 para o
+comportamento real (sidebar sempre expandida, sem colapso):
 - Topo: icone do app (canonico) + wordmark "PeuBud".
 - Item "Dashboard" solto no topo.
 - Grupos com rotulo maiusculo pequeno:

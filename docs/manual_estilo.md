@@ -321,7 +321,8 @@ ou pintura (`ButtonShadowFilter`, já implementado). A linguagem de profundidade
 *A espinha dorsal da navegação. Substitui as 13 abas no topo.*
 
 A `QTabWidget` no topo foi aposentada. No lugar, uma **sidebar navy fixa à esquerda**
-(~236px), colapsável (vira só ícones).
+(~236px), **sempre expandida** — não tem modo colapsado/só-ícones nesta versão (corte de
+escopo decidido pelo líder em #165/DIST-12; ver nota do item no `TODO.md`).
 
 ### Anatomia (de cima para baixo)
 

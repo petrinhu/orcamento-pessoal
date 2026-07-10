@@ -100,7 +100,7 @@ git commit -m "feat(#164): paleta e tokens do redesign (azuis confiaveis) no The
 
 ## FASE 2 (resumo de tarefas; vira plano bite-sized ao iniciar): Shell + Sidebar (#165, #170)
 
-- **T1 SidebarNav (novo widget)** `src/ui/widgets/SidebarNav.{h,cpp}`: constroi Dashboard + grupos (Dia a dia/Planejar/Investir) a partir de um registro de chaves; emite `navegou(QString chave)`; item ativo destacado; colapsavel. Teste: cria N itens certos + emite a chave certa.
+- **T1 SidebarNav (novo widget)** `src/ui/widgets/SidebarNav.{h,cpp}`: constroi Dashboard + grupos (Dia a dia/Planejar/Investir) a partir de um registro de chaves; emite `navegou(QString chave)`; item ativo destacado; colapsavel *(planejado aqui, **nao entregue** — corte de escopo decidido pelo lider em #165/DIST-12, 2026-07-10; ver `docs/manual_estilo.md` §8)*. Teste: cria N itens certos + emite a chave certa.
 - **T2 Registro de abas** `src/ui/TabRegistry.{h,cpp}`: `chave -> {titulo, emoji, grupo}` (fonte unica; tambem alimenta o `TabHelp`).
 - **T3 MainWindow shell:** trocar `QTabWidget` por `QHBoxLayout(SidebarNav + QStackedWidget)`. Mover as 13 abas pro stacked; conectar `navegou(chave) -> setCurrentWidget`. **Navegacao por chave** (helper `navegarParaChave`), migrando os pontos que usavam indice (Dashboard cards, BuscaGlobal) -> **resolve #157**. Manter persistencia da ordem por chave.
 - **T4 Rodape da sidebar:** Preferencias, Ajuda, Tema, usuario.
