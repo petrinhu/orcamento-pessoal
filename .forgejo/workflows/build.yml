@@ -162,5 +162,9 @@ jobs:
           QT_QPA_PLATFORM: offscreen
           ASAN_OPTIONS: detect_leaks=1:halt_on_error=1:abort_on_error=1
           UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
-          LSAN_OPTIONS: suppressions=.lsan-suppress.txt
-        run: ctest --test-dir build-sanitize --output-on-failure --no-tests=error
+        # LSAN suppressions com caminho ABSOLUTO ($GITHUB_WORKSPACE): o ctest roda
+        # cada teste com CWD=build-sanitize/tests/, entao o path relativo
+        # '.lsan-suppress.txt' nao era encontrado -> os leaks conhecidos do Qt
+        # (fedora:42/Qt6.10) nao eram suprimidos e o job caia. Passava no host
+        # (Qt6.11 nao vazava esses) = falso verde. Absoluto resolve.
+        run: LSAN_OPTIONS="suppressions=$GITHUB_WORKSPACE/.lsan-suppress.txt" ctest --test-dir build-sanitize --output-on-failure --no-tests=error
