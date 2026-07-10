@@ -11,6 +11,7 @@
 #include "core/commands/UndoCommands.h"
 #include "ui/UiFormatters.h"
 #include "ui/Theme.h"
+#include "ui/AderenciaOrcamento.h"
 
 #include <QUndoStack>
 #include <memory>
@@ -297,36 +298,29 @@ void PlanejamentoWidget::recarregar()
         m_table->setItem(row, 2, roItemRight(uifmt::formatCentavosBRL(real)));
 
         // ── Cor de aderência (tolerância ±10%, comparação em inteiros) ────────
-        //   Despesa: real ≤ plan·0,90 → verde; ±10% → azul; real > plan·1,10 → vermelho.
-        //   Receita (invertido): real ≥ plan·1,10 → verde; ±10% → azul; < plan·0,90 → vermelho.
-        //   plan == 0 → sem cor (evita divisão por zero / item sem meta).
-        QColor aderencia;  // inválida = sem cor
-        if (plan > 0) {
-            const bool dentroBaixo = real * 100 <= plan * 90;   // real ≤ 90% do plan
-            const bool acimaAlto   = real * 100 >  plan * 110;  // real > 110% do plan
-            if (isDespesa) {
-                if (dentroBaixo)      aderencia = colGreen;  // gastou bem menos
-                else if (acimaAlto)   aderencia = colRed;    // estourou
-                else                  aderencia = colBlue;   // dentro de ±10%
-            } else {
-                const bool acimaMeta = real * 100 >= plan * 110;  // real ≥ 110% do plan
-                if (acimaMeta)        aderencia = colGreen;  // recebeu bem mais
-                else if (dentroBaixo) aderencia = colRed;    // recebeu bem menos
-                else                  aderencia = colBlue;   // dentro de ±10%
-            }
+        // Cálculo em aderencia::calcular (src/ui/AderenciaOrcamento.h) — puro,
+        // compartilhado com o sufixo textual abaixo (#203b/A11Y-07: WCAG 1.4.1,
+        // cor não pode ser o único veículo — sufixo " ✓"/" ⚠" redundante à cor).
+        const aderencia::Nivel nivelAderencia = aderencia::calcular(real, plan, isDespesa);
+        QColor corAderencia;  // inválida = sem cor
+        switch (nivelAderencia) {
+        case aderencia::Nivel::Bom:      corAderencia = colGreen; break;
+        case aderencia::Nivel::Moderado: corAderencia = colBlue;  break;
+        case aderencia::Nivel::Alerta:   corAderencia = colRed;   break;
+        case aderencia::Nivel::SemMeta:  break; // sem cor
         }
 
         auto *itDiff = roItemRight(uifmt::formatCentavosBRL(diff));
-        if (aderencia.isValid()) itDiff->setForeground(QBrush(aderencia));
+        if (corAderencia.isValid()) itDiff->setForeground(QBrush(corAderencia));
         m_table->setItem(row, 3, itDiff);
 
         QString pctStr = QStringLiteral("—");
         if (plan > 0) {
             const int pct = static_cast<int>(real * 100 / plan);
-            pctStr = QStringLiteral("%1%").arg(pct);
+            pctStr = QStringLiteral("%1%").arg(pct) + aderencia::sufixo(nivelAderencia);
         }
         auto *itPct = roItemRight(pctStr);
-        if (aderencia.isValid()) itPct->setForeground(QBrush(aderencia));
+        if (corAderencia.isValid()) itPct->setForeground(QBrush(corAderencia));
         m_table->setItem(row, 4, itPct);
 
         m_table->setRowHeight(row, 28);

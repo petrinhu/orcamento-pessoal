@@ -196,6 +196,7 @@ set(SOURCES
 
     # UI
     src/ui/UiFormatters.cpp
+    src/ui/AderenciaOrcamento.cpp
     src/ui/TabHelp.cpp
     src/ui/NavRegistry.cpp
     src/ui/Theme.cpp

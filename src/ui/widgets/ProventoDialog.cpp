@@ -46,7 +46,7 @@ void ProventoDialog::buildUi()
 
     m_edtTicker = new QLineEdit(this);
     m_edtTicker->setText(m_original.ticker);
-    m_edtTicker->setPlaceholderText(QStringLiteral("ex: PETR4, HGLG11"));
+    m_edtTicker->setPlaceholderText(tr("ex: PETR4, HGLG11"));
     // (#203a/SEC-03) ticker alfanumérico até 12 chars — mesmo texto que
     // acaba no path da URL do BrapiProvider/B3DirectQuoteProvider (via
     // consultas de cotação por ticker); barra na borda além do

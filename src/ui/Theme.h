@@ -90,7 +90,6 @@ QString borda();
 QString subtexto(); // alias de subtext para consumidores Qt
 
 // Getters novos (#164 redesign fase 1)
-QString bg2();          // Surface2: fundo de cartão secundário
 QString dourado();      // âmbar/dourado (avisos e destaques)
 QString sidebar1();     // fundo primário da sidebar
 QString sidebar2();     // fundo secundário/hover da sidebar

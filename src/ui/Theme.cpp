@@ -155,7 +155,6 @@ QString borda()      { return isDark() ? Color::BorderDark      : Color::BorderL
 QString subtexto()   { return isDark() ? Color::SubtextDark     : Color::SubtextLight;     }
 
 // Getters novos (#164)
-QString bg2()        { return isDark() ? Color::Surface2Dark    : Color::Surface2Light;    }
 QString dourado()    { return isDark() ? Color::DouradoDark     : Color::DouradoLight;     }
 QString sidebar1()   { return isDark() ? Color::Sidebar1Dark    : Color::Sidebar1Light;    }
 QString sidebar2()   { return isDark() ? Color::Sidebar2Dark    : Color::Sidebar2Light;    }

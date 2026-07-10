@@ -1303,3 +1303,8 @@ target_include_directories(test_tabshell_seguranca PRIVATE
     ${LIBSECRET_INCLUDE_DIRS})
 set_tests_properties(test_tabshell_seguranca PROPERTIES
     ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
+# #203b (Onda U, A11Y-07): sufixo textual redundante à cor na coluna "%" do
+# Planejamento — lógica pura, sem QApplication/DB.
+peubud_add_test(test_aderencia_orcamento
+    ${CMAKE_SOURCE_DIR}/src/ui/AderenciaOrcamento.cpp)

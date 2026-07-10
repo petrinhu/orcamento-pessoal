@@ -63,7 +63,7 @@ void DividaDialog::buildUi(const Divida &d)
 
     m_edtContraparte = new QLineEdit(d.contraparte, this);
     m_edtContraparte->setPlaceholderText(tr("Nome do credor / devedor"));
-    form->addRow(tr("Contraparte:"), m_edtContraparte);
+    form->addRow(tr("Credor / devedor:"), m_edtContraparte);
 
     m_edtDescricao = new QLineEdit(d.descricao, this);
     m_edtDescricao->setPlaceholderText(tr("Descrição opcional"));
