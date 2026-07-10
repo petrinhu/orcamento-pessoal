@@ -77,6 +77,14 @@ void TestTabShellSeguranca::cleanup()
 
 void TestTabShellSeguranca::loginDialog_senhaLimpaAposLoginValido()
 {
+    // onEntrar() toca o cofre real do sistema (libsecret -> Secret Service via
+    // D-Bus session). Em CI headless (fedora:42 container) nao ha D-Bus session
+    // nem KWallet/GNOME Keyring — secret_password_{store,lookup}_sync crasha o
+    // processo. Guard ANTES de qualquer interacao com o dialog (o keyClick
+    // dispara o mesmo caminho de producao que toca o cofre).
+    if (qEnvironmentVariableIsEmpty("DBUS_SESSION_BUS_ADDRESS"))
+        QSKIP("sem Secret Service/D-Bus (libsecret) — teste de cofre real nao roda em CI headless");
+
     LoginDialog dlg;
 
     // O campo de senha é o único QLineEdit com echoMode==Password (mesmo
