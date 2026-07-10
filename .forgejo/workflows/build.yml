@@ -47,7 +47,7 @@ jobs:
         run: ctest --test-dir build --output-on-failure --no-tests=error
 
   lint:
-    name: Lint (cppcheck)
+    name: Lint (cppcheck + clang-tidy)
     runs-on: codeberg-small
     container:
       image: fedora:42
@@ -64,13 +64,52 @@ jobs:
       - name: Configure (gera compile_commands.json)
         run: cmake -B build -DCMAKE_BUILD_TYPE=Debug \
                             -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
-      - name: cppcheck (services + repositories + models)
+
+      # GATE real (DIST-08): mesma categoria/config do pre-commit hook local
+      # (scripts/pre-commit) — --enable=warning (só bugs prováveis, sem
+      # style/performance/portability que viram ruído), .cppcheck-suppressions
+      # já cobre falsos-positivos Qt (Q_OBJECT, aggregate-init de POD, etc).
+      # error-exitcode=2 real: falha o job se achar bug de verdade — valida
+      # 0 achados nessa categoria em todo o /src antes deste commit.
+      - name: cppcheck (gate — categoria "warning", mesma do pre-commit hook)
+        run: |
+          cppcheck --enable=warning \
+                   --library=qt \
+                   --language=c++ --std=c++20 \
+                   --inline-suppr \
+                   --suppressions-list=.cppcheck-suppressions \
+                   --error-exitcode=2 \
+                   --quiet \
+                   src
+
+      # INFORMATIVO (não bloqueia): categorias mais ruidosas (style/
+      # performance/portability) ficam de backlog de triagem futura —
+      # DIST-08 mapeou ~1053 achados no repo completo (incl. 155
+      # ignoredReturnErrorCode a triar, classe do bug do #146). Reduzir a
+      # ruído e promover achados reais para o gate é trabalho de uma onda
+      # futura dedicada, não deste item.
+      - name: cppcheck (informativo — style/performance/portability, backlog futuro)
+        continue-on-error: true
         run: |
           cppcheck --enable=warning,style,performance,portability \
                    --quiet --std=c++20 --suppress=missingInclude \
                    --library=qt \
                    --error-exitcode=0 \
                    src/services src/repositories src/models
+
+      # INFORMATIVO (não bloqueia, DIST-07): o gate estava OFF por premissa
+      # desatualizada ("crasha no GCC16") — revalidado 0-crash com LLVM 22.
+      # Reativado como sinal visível no CI, mas ainda NÃO bloqueia build:
+      # backlog estimado ~2-3k avisos em todo o /src (nunca triado). Rodar
+      # primeiro sobre src/services (inclui FinanceEngine/TvmService — os
+      # bugprone-easily-swappable-parameters de parâmetros financeiros
+      # trocáveis, classe mais sensível) é o próximo passo de uma onda
+      # futura de triagem; aqui só medimos e reportamos.
+      - name: clang-tidy (informativo — não bloqueia, backlog de triagem futuro)
+        continue-on-error: true
+        run: |
+          clang-tidy -p build $(find src -name '*.cpp') 2>&1 | tee clang-tidy-report.txt
+          echo "── resumo: $(grep -c 'warning:' clang-tidy-report.txt || true) avisos, $(grep -c 'error:' clang-tidy-report.txt || true) erros"
 
   sanitizers:
     name: ASan + UBSan (Fedora)

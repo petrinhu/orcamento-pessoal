@@ -7,7 +7,54 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Core Gui GuiPrivate Widgets Charts Network Sql LinguistTools PrintSupport)
+# ── Hardening de binário (DIST-09) ─────────────────────────────────────────────
+# PIE em TODOS os build types (não só Release): o app mantém segredos/dados
+# financeiros descriptografados em memória — PIE (ASLR do executável) reduz a
+# superfície de ROP/exploit. Setado ANTES de find_package/FetchContent para
+# que TODO target subsequente (inclusive QXlsx, vendorizado via FetchContent
+# abaixo) herde -fPIE/-fPIC: um único objeto não-PIC linkado no binário final
+# derruba o PIE do executável inteiro (é por isso que "No PIE" aparecia mesmo
+# com o alvo principal compilado com -fPIE implícito do GCC).
+#
+# CMAKE_POSITION_INDEPENDENT_CODE sozinho só afeta a flag de COMPILAÇÃO
+# (-fPIE). A flag de LINK (-pie) só é emitida se a policy CMP0083 estiver
+# NEW, o que exige chamar check_pie_supported() explicitamente (módulo
+# CheckPIESupported, CMake >= 3.14) — sem isso o binário compila com -fPIE
+# mas linka sem -pie e checksec continua reportando "No PIE".
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+include(CheckPIESupported)
+check_pie_supported()
+
+# _FORTIFY_SOURCE=2 exige otimização (>=O1); mantido só em Release (Debug não
+# otimiza, de propósito, para depuração). Aplicado via add_compile_options
+# (diretiva de diretório, não target_compile_options) e ANTES do
+# FetchContent_MakeAvailable(QXlsx) abaixo, para propagar a TODAS as TUs do
+# binário — inclusive as do QXlsx. checksec conta "Fortified N/M" sobre o
+# binário linkado inteiro; se só o alvo principal ganhasse a flag, o QXlsx
+# ficaria de fora e o binário reportaria fortificação parcial/zero.
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+    add_compile_options(-O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2)
+    add_link_options(-Wl,-z,relro -Wl,-z,now)
+endif()
+
+# ── Suporte a XLSX opcional (DIST-04) ──────────────────────────────────────────
+# QXlsx usa API PRIVADA do Qt (QZipReader via <private/qzipreader_p.h>) e por
+# isso exige Qt6::GuiPrivate — cujo cmake-config só existe em Qt >= 6.9
+# (pacote qt6-qtbase-private-devel / qt6-base-private-dev). Em distros com Qt
+# mais antigo (Debian stable ~6.8) ou que promovem o aviso de "private
+# module" a erro (Arch), o build inteiro quebrava. PEUBUD_HAS_XLSX=OFF
+# compila sem QXlsx/GuiPrivate: ExportService::toXlsx/toMultiXlsx e
+# ImportService::fromXlsx já degradam graciosamente via `#ifdef
+# QXLSX_LIBRARY` (retornam erro orientativo em vez de crash/link error).
+option(PEUBUD_HAS_XLSX "Habilita suporte a XLSX via QXlsx (requer Qt6::GuiPrivate)" ON)
+
+if(PEUBUD_HAS_XLSX)
+    find_package(Qt6 REQUIRED COMPONENTS Core Gui GuiPrivate Widgets Charts Network Sql LinguistTools PrintSupport)
+else()
+    find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Charts Network Sql LinguistTools PrintSupport)
+    message(STATUS "PEUBUD_HAS_XLSX=OFF: export/import XLSX desabilitado (fallback orientativo em runtime, sem GuiPrivate)")
+endif()
+
 find_package(OpenSSL REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBSECRET REQUIRED libsecret-1)
@@ -23,27 +70,29 @@ else()
 endif()
 
 # ── QXlsx (MIT, pure Qt — XLSX read/write) ────────────────────────────────────
-include(FetchContent)
-FetchContent_Declare(
-    QXlsx
-    GIT_REPOSITORY https://github.com/QtExcel/QXlsx.git
-    GIT_TAG        v1.4.9
-    SOURCE_SUBDIR  QXlsx
-)
-FetchContent_MakeAvailable(QXlsx)
+if(PEUBUD_HAS_XLSX)
+    include(FetchContent)
+    FetchContent_Declare(
+        QXlsx
+        GIT_REPOSITORY https://github.com/QtExcel/QXlsx.git
+        GIT_TAG        v1.4.9
+        SOURCE_SUBDIR  QXlsx
+    )
+    FetchContent_MakeAvailable(QXlsx)
 
-# Qt6::GuiPrivate propagates strict Qt defines (QT_NO_CAST_FROM_ASCII, etc.)
-# that break QXlsx's own source code (which uses QString("literal") etc.)
-# Undefine them for the QXlsx target only.
-target_compile_options(QXlsx PRIVATE
-    -UQT_NO_CAST_FROM_ASCII
-    -UQT_NO_CAST_FROM_BYTEARRAY
-    -UQT_NO_CAST_TO_ASCII
-    -UQT_STRICT_ITERATORS
-    -UQT_NO_URL_CAST_FROM_STRING
-    -UQT_NO_KEYWORDS
-    -UQT_NO_SIGNALS_SLOTS_KEYWORDS
-)
+    # Qt6::GuiPrivate propagates strict Qt defines (QT_NO_CAST_FROM_ASCII, etc.)
+    # that break QXlsx's own source code (which uses QString("literal") etc.)
+    # Undefine them for the QXlsx target only.
+    target_compile_options(QXlsx PRIVATE
+        -UQT_NO_CAST_FROM_ASCII
+        -UQT_NO_CAST_FROM_BYTEARRAY
+        -UQT_NO_CAST_TO_ASCII
+        -UQT_STRICT_ITERATORS
+        -UQT_NO_URL_CAST_FROM_STRING
+        -UQT_NO_KEYWORDS
+        -UQT_NO_SIGNALS_SLOTS_KEYWORDS
+    )
+endif()
 
 set(SOURCES
     src/main.cpp
@@ -237,8 +286,13 @@ set(RESOURCES
 
 add_executable(orcamento-pessoal ${SOURCES} ${RESOURCES})
 
-# QXlsx exposes QXLSX_LIBRARY definition for conditional compilation
-target_compile_definitions(orcamento-pessoal PRIVATE QXLSX_LIBRARY)
+# QXlsx exposes QXLSX_LIBRARY definition for conditional compilation.
+# Só definido quando PEUBUD_HAS_XLSX=ON (DIST-04) — os call-sites
+# (ExportService::toXlsx/toMultiXlsx, ImportService::fromXlsx) já checam
+# `#ifdef QXLSX_LIBRARY` e degradam graciosamente sem essa macro.
+if(PEUBUD_HAS_XLSX)
+    target_compile_definitions(orcamento-pessoal PRIVATE QXLSX_LIBRARY)
+endif()
 
 # Habilita import PDF se poppler-qt6-devel disponivel (#93)
 if(POPPLER_QT6_FOUND)
@@ -263,8 +317,11 @@ target_link_libraries(orcamento-pessoal PRIVATE
     OpenSSL::Crypto
     ${LIBSECRET_LIBRARIES}
     ${LIBSODIUM_LIBRARIES}
-    QXlsx::QXlsx
 )
+
+if(PEUBUD_HAS_XLSX)
+    target_link_libraries(orcamento-pessoal PRIVATE QXlsx::QXlsx)
+endif()
 
 if(POPPLER_QT6_FOUND)
     target_link_libraries(orcamento-pessoal PRIVATE PkgConfig::POPPLER_QT6)
@@ -283,15 +340,10 @@ qt_add_resources(orcamento-pessoal "i18n"
     FILES   ${APP_QM_FILES}
 )
 
-# Hardening flags (release only)
-if(CMAKE_BUILD_TYPE STREQUAL "Release")
-    target_compile_options(orcamento-pessoal PRIVATE
-        -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2
-    )
-    target_link_options(orcamento-pessoal PRIVATE
-        -Wl,-z,relro -Wl,-z,now
-    )
-endif()
+# Hardening flags (release only) — aplicados globalmente via add_compile_options/
+# add_link_options no topo do arquivo (DIST-09), para propagar também às TUs do
+# QXlsx. Bloco antigo per-target removido daqui (duplicava a flag só no alvo
+# principal, deixando o QXlsx de fora do FORTIFY).
 
 # Warnings
 target_compile_options(orcamento-pessoal PRIVATE
@@ -344,6 +396,17 @@ endforeach()
 
 install(FILES resources/desktop/peubud.1
     DESTINATION ${CMAKE_INSTALL_MANDIR}/man1)
+
+# Licenças de fontes de terceiros embutidas no binário (DIST-05). A OFL 1.1
+# (Inter, Noto Color Emoji) exige que o texto da licença acompanhe toda
+# redistribuição — instalar em /usr/share/licenses/peubud/ (convenção RPM;
+# funciona também para DEB/TGZ, que não exigem local fixo). QXlsx (MIT) e
+# libsodium (ISC) são citados no AboutDialog (seção "Terceiros"), mas não têm
+# arquivo de licença embarcado no repo — texto completo disponível upstream.
+install(FILES
+    resources/fonts/LICENSE-Inter.txt
+    resources/fonts/LICENSE-NotoColorEmoji.txt
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/licenses/peubud)
 
 # Renomeia binário instalado para "peubud" (Exec= no .desktop)
 set_target_properties(orcamento-pessoal PROPERTIES OUTPUT_NAME peubud)

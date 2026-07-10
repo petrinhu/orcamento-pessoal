@@ -77,6 +77,27 @@ AboutDialog::AboutDialog(QWidget *parent)
     lblLic->setAlignment(Qt::AlignCenter);
     layout->addWidget(lblLic);
 
+    layout->addSpacing(14);
+
+    // ── Third-party licenses (DIST-05) ──────────────────────────────────────
+    auto *sep2 = new QFrame(this);
+    sep2->setFrameShape(QFrame::HLine);
+    sep2->setFrameShadow(QFrame::Sunken);
+    layout->addWidget(sep2);
+
+    layout->addSpacing(14);
+
+    auto *lblTerceiros = new QLabel(
+        tr("<b>Bibliotecas e recursos de terceiros</b><br>"
+           "Fonte Inter — SIL Open Font License 1.1<br>"
+           "Ícones Noto Color Emoji — SIL Open Font License 1.1<br>"
+           "QXlsx — Licença MIT<br>"
+           "libsodium — Licença ISC"), this);
+    lblTerceiros->setObjectName(QStringLiteral("subtitle"));
+    lblTerceiros->setWordWrap(true);
+    lblTerceiros->setAlignment(Qt::AlignCenter);
+    layout->addWidget(lblTerceiros);
+
     layout->addSpacing(20);
 
     // ── Close button ──────────────────────────────────────────────────────
