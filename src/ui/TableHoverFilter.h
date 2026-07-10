@@ -5,6 +5,7 @@
 #include <QPointer>
 
 class QTableWidget;
+class QWidget;
 
 // App-wide event filter (#167 T1, §11 manual de estilo — "skin compartilhado
 // das tabelas") que dá a TODA QTableWidget da aplicação:
@@ -53,5 +54,14 @@ private:
 
     // viewport -> tabela dona (mapeamento reverso: MouseMove/Leave chegam com
     // obj == viewport, não a QTableWidget).
-    QHash<QObject *, QPointer<QTableWidget>> m_viewportTable;
+    //
+    // Valor é QPointer<QWidget> (não QPointer<QTableWidget>) de propósito: a
+    // conversão de QPointer<T> para T* é um downcast ESTÁTICO de QObject*.
+    // Se um evento chegar no viewport durante o meio de ~QTableWidget() (vptr
+    // já rebaixado, mas o QPointer ainda não é null), esse downcast estático
+    // é UB (achado por UBSan). Guardando QWidget* (upcast, sempre seguro) e
+    // usando qobject_cast<QTableWidget*> no ponto de uso — dinâmico, baseado
+    // no metaobject, retorna nullptr com segurança nesse cenário — elimina o
+    // UB sem mascarar o sanitizer.
+    QHash<QObject *, QPointer<QWidget>> m_viewportTable;
 };

@@ -46,7 +46,14 @@ bool TableHoverFilter::eventFilter(QObject *obj, QEvent *ev)
     if (it == m_viewportTable.constEnd() || it.value().isNull())
         return QObject::eventFilter(obj, ev);
 
-    QTableWidget *table = it.value();
+    // qobject_cast (dinâmico, via metaobject) em vez do downcast estático
+    // implícito de QPointer<QTableWidget> — evento pode chegar aqui com a
+    // tabela em meio a ~QTableWidget() (vptr já rebaixado, QPointer ainda não
+    // null); qobject_cast devolve nullptr com segurança nesse caso (UB
+    // achado por UBSan, ver comentário de m_viewportTable no .h).
+    QTableWidget *table = qobject_cast<QTableWidget *>(it.value());
+    if (!table)
+        return QObject::eventFilter(obj, ev);
 
     switch (ev->type()) {
     case QEvent::MouseMove: {
@@ -76,7 +83,7 @@ void TableHoverFilter::armar(QTableWidget *table)
     vp->installEventFilter(this);
 
     m_hoverRow.insert(table, -1);
-    m_viewportTable.insert(vp, QPointer<QTableWidget>(table));
+    m_viewportTable.insert(vp, QPointer<QWidget>(table));
 
     // Um único delegate compartilhado por tabela; não pisa em delegate
     // customizado que algum widget já tenha instalado (nenhum faz isso hoje,
