@@ -1,5 +1,6 @@
 #pragma once
 
+#include "LazyPageRouter.h"
 #include "Theme.h"
 #include <QMainWindow>
 #include <QMap>
@@ -41,6 +42,24 @@ private:
     void applyThemeMode(Theme::ThemeMode mode);
     void resetAutosaveTimer();
     void onAutosave();
+
+    // Lazy-init por aba (#208, PERF-02): registra as 13 fábricas em
+    // m_router. Cada fábrica só roda na 1ª navegação para a chave — constrói
+    // conteúdo+TabShell, faz o wiring cross-widget daquela aba e insere no
+    // QStackedWidget. Ver AUDITORIA_2026-06-22.md §3.5.
+    void registrarFabricasAbas();
+    class TabShell *criarShell(const QString &objName, const QString &tabKey,
+                                QWidget *conteudo);
+    // Glossário escopado à aba recém-construída (reduz o N do PERF-01) — em
+    // vez de rodar 1x sobre a MainWindow inteira (13 abas), roda 1x por aba
+    // no momento em que ela é materializada.
+    void aplicarGlossarioNaAba(QWidget *shell);
+
+    // Refresh cross-widget "se a aba-alvo estiver visível" (#208): extraídos
+    // p/ métodos porque múltiplas fábricas de aba conectam ao mesmo slot.
+    void refreshDashboardSeAtivo();
+    void refreshPlanejamentoSeAtivo();
+    void refreshTendenciasSeAtivo();
 
     // (#178) Garante que `dir` existe antes de gravar. Se não existe, exibe
     // QMessageBox com [Cancelar] / [Criar pasta]. Retorna true se a pasta
@@ -113,7 +132,7 @@ private:
     BuscaGlobalDialog    *m_buscaGlobal    = nullptr;
     QStackedWidget *m_stack      = nullptr;
     SidebarNav     *m_sidebar    = nullptr;
-    QMap<QString, QWidget *> m_paginas;
+    LazyPageRouter  m_router; // (#208) substitui o antigo QMap<chave, QWidget*> m_paginas
     QLabel         *m_statusTotal = nullptr;
 
     bool         m_dirty              = false;

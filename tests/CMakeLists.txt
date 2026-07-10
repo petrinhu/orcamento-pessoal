@@ -1333,3 +1333,15 @@ set_tests_properties(test_tabshell_seguranca PROPERTIES
 # Planejamento — lógica pura, sem QApplication/DB.
 peubud_add_test(test_aderencia_orcamento
     ${CMAKE_SOURCE_DIR}/src/ui/AderenciaOrcamento.cpp)
+
+# #208 (Onda U-5, PERF-02): budget de startup das abas da MainWindow.
+# LazyPageRouter extraído p/ ser testável sem arrastar a árvore inteira de
+# widgets financeiros do app (MainWindow.cpp puxaria ~150 fontes p/ linkar —
+# custo de build proibitivo na máquina de dev, cap -j2 por RAM). Prova o
+# mecanismo de que MainWindow::navegarParaChave depende: fábrica só roda na
+# 1a navegação da chave; abas não visitadas nunca são instanciadas.
+# Só Qt::Core/Widgets — sem DB/cripto/rede.
+peubud_add_test(test_lazy_page_router
+    ${CMAKE_SOURCE_DIR}/src/ui/LazyPageRouter.cpp)
+set_tests_properties(test_lazy_page_router PROPERTIES
+    ENVIRONMENT "QT_QPA_PLATFORM=offscreen")

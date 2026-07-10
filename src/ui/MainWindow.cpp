@@ -141,68 +141,9 @@ void MainWindow::buildUi()
                                        new BrapiProvider(m_marketService));
     m_marketService->setActiveProvider(
         AppSettings::instance().marketDefaultProvider());
-    m_bolsa         = new BolsaWidget(m_marketService, this);
-    m_proventos     = new ProventosWidget(this);
-    m_dashboard   = new DashboardWidget(this);
-    m_tendencias  = new TendenciasWidget(this);
-
-    m_parcelas      = new ParcelasWidget(this);
-    m_entradas      = new EntradasWidget(this);
-    m_gastos        = new GastosWidget(this);
-    m_investimentos = new InvestimentosWidget(this);
-    m_planejamento  = new PlanejamentoWidget(this);
-    m_recorrencias  = new RecorrenciaWidget(this);
-    m_dividas       = new DividasWidget(this);
-    m_metas         = new MetasWidget(this);
-    m_lembretes     = new LembretesWidget(this);
-    // ── TabShell em todas as páginas (#158/#165): cada página ganha um invólucro
-    // com título + descrição + instruções p/ iniciante (texto do registro central
-    // tabHelp, DRY com o HelpDialog). O shell é o widget efetivamente inserido
-    // no QStackedWidget; o widget de conteúdo segue intacto (lógica/conexões
-    // inalteradas).
-    auto montarShell = [this](TabShell *&shell, const QString &objName,
-                              const QString &tabKey, QWidget *conteudo) {
-        shell = new TabShell(QString(), this);
-        shell->setObjectName(objName);
-        shell->setTabKey(tabKey);
-        shell->applyHelp();
-        shell->setContent(conteudo);
-    };
-
-    // objectName do shell de Cartões é "tab_parcelas" por compat. histórica
-    // (dados gravados antes do redesign usavam essa string). A chave de
-    // navegação e ajuda é "tab_cartoes" — as duas strings são independentes.
-    montarShell(m_shellDashboard,     QStringLiteral("tab_dashboard"),     QStringLiteral("tab_dashboard"),     m_dashboard);
-    montarShell(m_shellEntradas,      QStringLiteral("tab_entradas"),      QStringLiteral("tab_entradas"),      m_entradas);
-    montarShell(m_shellGastos,        QStringLiteral("tab_gastos"),        QStringLiteral("tab_gastos"),        m_gastos);
-    montarShell(m_shellCartoes,       QStringLiteral("tab_parcelas"),      QStringLiteral("tab_cartoes"),       m_parcelas);
-    montarShell(m_shellRecorrencias,  QStringLiteral("tab_recorrencias"),  QStringLiteral("tab_recorrencias"),  m_recorrencias);
-    montarShell(m_shellDividas,       QStringLiteral("tab_dividas"),       QStringLiteral("tab_dividas"),       m_dividas);
-    montarShell(m_shellMetas,         QStringLiteral("tab_metas"),         QStringLiteral("tab_metas"),         m_metas);
-    montarShell(m_shellPlanejamento,  QStringLiteral("tab_planejamento"),  QStringLiteral("tab_planejamento"),  m_planejamento);
-    montarShell(m_shellTendencias,    QStringLiteral("tab_tendencias"),    QStringLiteral("tab_tendencias"),    m_tendencias);
-    montarShell(m_shellInvestimentos, QStringLiteral("tab_investimentos"), QStringLiteral("tab_investimentos"), m_investimentos);
-    montarShell(m_shellProventos,     QStringLiteral("tab_proventos"),     QStringLiteral("tab_proventos"),     m_proventos);
-    montarShell(m_shellBolsa,         QStringLiteral("tab_bolsa"),         QStringLiteral("tab_bolsa"),         m_bolsa);
-    montarShell(m_shellLembretes,     QStringLiteral("tab_lembretes"),     QStringLiteral("tab_lembretes"),     m_lembretes);
-
-    // ── Mapa chave → shell (ordem fixa: sem reorder) ─────────────────────────
-    // Nota: m_shellCartoes usa objectName "tab_parcelas" para compat. com dados
-    // gravados antes do redesign, mas a chave de navegação é "tab_cartoes".
-    QMap<QString, QWidget *> shellMap;
-    shellMap[QStringLiteral("tab_dashboard")]    = m_shellDashboard;
-    shellMap[QStringLiteral("tab_entradas")]     = m_shellEntradas;
-    shellMap[QStringLiteral("tab_gastos")]       = m_shellGastos;
-    shellMap[QStringLiteral("tab_cartoes")]      = m_shellCartoes;
-    shellMap[QStringLiteral("tab_recorrencias")] = m_shellRecorrencias;
-    shellMap[QStringLiteral("tab_lembretes")]    = m_shellLembretes;
-    shellMap[QStringLiteral("tab_planejamento")] = m_shellPlanejamento;
-    shellMap[QStringLiteral("tab_metas")]        = m_shellMetas;
-    shellMap[QStringLiteral("tab_dividas")]      = m_shellDividas;
-    shellMap[QStringLiteral("tab_tendencias")]   = m_shellTendencias;
-    shellMap[QStringLiteral("tab_investimentos")]= m_shellInvestimentos;
-    shellMap[QStringLiteral("tab_proventos")]    = m_shellProventos;
-    shellMap[QStringLiteral("tab_bolsa")]        = m_shellBolsa;
+    // Nota: m_marketService é leve (registra providers, sem construir UI) —
+    // fica eager. Só o BolsaWidget (UI pesada) vira lazy, na fábrica de
+    // "tab_bolsa" abaixo.
 
     // ── SidebarNav (#165): agrupa itens em ordem fixa de navItens() ──────────
     m_sidebar = new SidebarNav(this);
@@ -221,14 +162,8 @@ void MainWindow::buildUi()
     m_sidebar->addFooterItem(QStringLiteral("act_tema"),  QStringLiteral("🌗"), tr("Tema"));
     m_sidebar->setUsuario(UserSession::instance().name());
 
-    // ── QStackedWidget: páginas na ordem de navItens() ───────────────────────
+    // ── QStackedWidget: vazio — páginas entram sob demanda (#208, PERF-02) ──
     m_stack = new QStackedWidget(this);
-    for (const NavItem &item : navItens()) {
-        QWidget *shell = shellMap.value(item.chave, nullptr);
-        if (!shell) continue;
-        m_stack->addWidget(shell);
-        m_paginas[item.chave] = shell;
-    }
 
     // ── Layout central: sidebar | stack ──────────────────────────────────────
     auto *central = new QWidget(this);
@@ -241,40 +176,46 @@ void MainWindow::buildUi()
 
     connect(m_sidebar, &SidebarNav::navegou, this, &MainWindow::navegarParaChave);
 
+    // ── Lazy-load: recarrega widget de conteúdo ao trocar de página (#165) ──
+    // Cada branch só é alcançável se a respectiva aba já foi construída
+    // (m_shellX só deixa de ser nullptr dentro da fábrica de X em
+    // registrarFabricasAbas(), que roda antes de m_shellX poder ser
+    // currentWidget()) — nula-segurança preservada mesmo com abas lazy.
+    connect(m_stack, &QStackedWidget::currentChanged, this, [this](int) {
+        if      (m_stack->currentWidget() == m_shellDashboard)     m_dashboard->recarregar();
+        else if (m_stack->currentWidget() == m_shellEntradas)      m_entradas->recarregar();
+        else if (m_stack->currentWidget() == m_shellGastos)        m_gastos->recarregar();
+        else if (m_stack->currentWidget() == m_shellTendencias)    m_tendencias->recarregar();
+        else if (m_stack->currentWidget() == m_shellInvestimentos) m_investimentos->recarregar();
+        else if (m_stack->currentWidget() == m_shellPlanejamento)  m_planejamento->recarregar();
+        else if (m_stack->currentWidget() == m_shellRecorrencias)  m_recorrencias->recarregar();
+        else if (m_stack->currentWidget() == m_shellDividas)       m_dividas->recarregar();
+        else if (m_stack->currentWidget() == m_shellMetas)         m_metas->recarregar();
+        else if (m_stack->currentWidget() == m_shellLembretes)     m_lembretes->recarregar();
+        else if (m_stack->currentWidget() == m_shellCartoes)       m_parcelas->recarregar();
+    });
+
+    // ── Fábricas lazy das 13 abas (#208, PERF-02) ────────────────────────────
+    registrarFabricasAbas();
+
     // ── Aba inicial: lê chave estável (migra legado int → chave se necessário)
+    // navegarParaChave() dispara garantir() na chave inicial — só ELA é
+    // construída no boot; as outras 12 só quando o usuário navegar até lá.
     {
         const QString chaveInicial = AppSettings::instance().initialTabKey();
-        navegarParaChave(m_paginas.contains(chaveInicial)
+        navegarParaChave(m_router.registrada(chaveInicial)
                          ? chaveInicial
                          : QStringLiteral("tab_dashboard"));
     }
 
-    // #103 Glossario: aplica tooltips automaticos em labels/buttons com siglas
-    // financeiras conhecidas (CET, FIRE, DY, IRPF, etc). Hover mostra
-    // definicao em pt-BR sem o usuario precisar saber a sigla.
+    // #103/#104/#105 Glossario (chrome): sidebar já existe; a aba inicial
+    // também (navegarParaChave acima já a construiu) — cobertura idêntica à
+    // de antes do #208 para essa aba+chrome. As demais abas recebem o mesmo
+    // tratamento, escopado, dentro de aplicarGlossarioNaAba() na sua própria
+    // fábrica (reduz o N do PERF-01: nunca mais varre a MainWindow inteira).
     GlossarioDecorator::aplicarTooltips(this);
-
-    // #104 Modo Iniciante: se ativo (default), renomeia labels/botoes/grupos
-    // para versao coloquial cadastrada em GlossarioService::labelColoquial.
-    // Ex.: "FIRE" -> "Aposentadoria Antecipada (FIRE)". No-op em modo Avancado.
     GlossarioDecorator::aplicarLabelsColoquiais(this);
-
-    // #105 Microcopy: para cada QFormLayout descendente cujo label tem sigla
-    // cadastrada, insere abaixo do campo uma linha cinza pequena explicando
-    // em pt-BR plain (ex.: "CET" -> "= juros total ao ano (com IOF e tarifas)").
-    // Idempotente. Roda apos labels coloquiais para nao quebrar lookup do termo.
     GlossarioDecorator::aplicarMicrocopies(this);
-
-    // Pass undo stack to data widgets
-    m_parcelas->setUndoStack(m_undoStack);
-    m_entradas->setUndoStack(m_undoStack);
-    m_gastos->setUndoStack(m_undoStack);
-    m_investimentos->setUndoStack(m_undoStack);
-    m_planejamento->setUndoStack(m_undoStack);
-    m_recorrencias->setUndoStack(m_undoStack);
-    m_dividas->setUndoStack(m_undoStack);
-    m_metas->setUndoStack(m_undoStack);
-    m_lembretes->setUndoStack(m_undoStack);
 
     buildMenuBar();   // QMenuBar aposentada; reconfigura atalhos via addAction()
     buildUtilBar();   // cluster utilidades topo-direito
@@ -300,156 +241,16 @@ void MainWindow::buildUi()
     connect(&CalculadoraHub::instance(), &CalculadoraHub::tvmParaCartoes,
             this, &MainWindow::onTvmParaCartoes);
 
-    // ── Dirty flag ─────────────────────────────────────────────────────────
-    // ── Dirty flag + status bar ────────────────────────────────────────────
-    connect(m_dashboard, &DashboardWidget::statusAtualizado,
-            this, [this](const QString &msg) {
-                if (m_stack->currentWidget() == m_shellDashboard)
-                    m_statusTotal->setText(msg + QStringLiteral("  "));
-            });
-
-    connect(m_parcelas, &ParcelasWidget::dadosAlterados,
-            m_parcelas, &ParcelasWidget::recarregar);
-    connect(m_parcelas, &ParcelasWidget::dadosAlterados,
-            this, [this]() { m_dirty = true; });
-    connect(m_entradas, &EntradasWidget::dadosAlterados,
-            m_entradas, &EntradasWidget::recarregar);
-    connect(m_entradas, &EntradasWidget::dadosAlterados,
-            this, [this]() { m_dirty = true; });
-    connect(m_gastos, &GastosWidget::dadosAlterados,
-            m_gastos, &GastosWidget::recarregar);
-    connect(m_gastos, &GastosWidget::dadosAlterados,
-            this, [this]() { m_dirty = true; });
-    connect(m_investimentos, &InvestimentosWidget::dadosAlterados,
-            m_investimentos, &InvestimentosWidget::recarregar);
-    connect(m_investimentos, &InvestimentosWidget::dadosAlterados,
-            this, [this]() { m_dirty = true; });
-    connect(m_planejamento, &PlanejamentoWidget::dadosAlterados,
-            m_planejamento, &PlanejamentoWidget::recarregar);
-    connect(m_planejamento, &PlanejamentoWidget::dadosAlterados,
-            this, [this]() { m_dirty = true; });
-    connect(m_recorrencias, &RecorrenciaWidget::dadosAlterados,
-            m_recorrencias, &RecorrenciaWidget::recarregar);
-    connect(m_recorrencias, &RecorrenciaWidget::dadosAlterados,
-            this, [this]() { m_dirty = true; });
-    connect(m_dividas, &DividasWidget::dadosAlterados,
-            m_dividas, &DividasWidget::recarregar);
-    connect(m_dividas, &DividasWidget::dadosAlterados,
-            this, [this]() { m_dirty = true; });
-    connect(m_metas, &MetasWidget::dadosAlterados,
-            m_metas, &MetasWidget::recarregar);
-    connect(m_metas, &MetasWidget::dadosAlterados,
-            this, [this]() { m_dirty = true; });
-    connect(m_lembretes, &LembretesWidget::dadosAlterados,
-            m_lembretes, &LembretesWidget::recarregar);
-    connect(m_lembretes, &LembretesWidget::dadosAlterados,
-            this, [this]() { m_dirty = true; });
-
-    // Tendências se atualiza quando Gastos muda dados (lazy: só se visível)
-    connect(m_gastos, &GastosWidget::dadosAlterados, this, [this]() {
-        if (m_stack->currentWidget() == m_shellTendencias)
-            m_tendencias->recarregar();
-    });
-
-    // Dashboard se atualiza quando qualquer aba muda dados
-    auto refreshDash = [this]() {
-        if (m_stack->currentWidget() == m_shellDashboard)
-            m_dashboard->recarregar();
-    };
-    connect(m_entradas,      &EntradasWidget::dadosAlterados,      this, refreshDash);
-    connect(m_gastos,        &GastosWidget::dadosAlterados,        this, refreshDash);
-    connect(m_parcelas,      &ParcelasWidget::dadosAlterados,      this, refreshDash);
-    connect(m_investimentos, &InvestimentosWidget::dadosAlterados, this, refreshDash);
-    connect(m_recorrencias,  &RecorrenciaWidget::dadosAlterados,   this, refreshDash);
-
-    // Planejamento se atualiza quando Gastos, Entradas ou Cartões mudam
-    auto refreshPlanning = [this]() {
-        if (m_stack->currentWidget() == m_shellPlanejamento)
-            m_planejamento->recarregar();
-    };
-    connect(m_gastos,    &GastosWidget::dadosAlterados,   this, refreshPlanning);
-    connect(m_entradas,  &EntradasWidget::dadosAlterados,  this, refreshPlanning);
-    connect(m_parcelas,  &ParcelasWidget::dadosAlterados,  this, refreshPlanning);
-
-    // Dashboard cards clicáveis → navegar para a página correspondente (#157)
-    // tabIndex legacy do DashboardWidget mapeado para chave estável:
-    // 1=tab_entradas, 2=tab_gastos, 3=tab_cartoes, 9=tab_investimentos, 10=tab_proventos
-    connect(m_dashboard, &DashboardWidget::navegarParaAba,
-            this, [this](int tabIndex) {
-                static const QMap<int, QString> kTabParaChave = {
-                    { 1,  QStringLiteral("tab_entradas")     },
-                    { 2,  QStringLiteral("tab_gastos")       },
-                    { 3,  QStringLiteral("tab_cartoes")      },
-                    { 9,  QStringLiteral("tab_investimentos")},
-                    { 10, QStringLiteral("tab_proventos")    },
-                };
-                const QString chave = kTabParaChave.value(tabIndex);
-                if (!chave.isEmpty()) navegarParaChave(chave);
-            });
-
-    // Status bar totals
-    connect(m_parcelas, &ParcelasWidget::statusAtualizado,
-            this, [this](const QString &msg) {
-                if (m_stack->currentWidget() == m_shellCartoes)
-                    m_statusTotal->setText(msg + QStringLiteral("  "));
-            });
-    connect(m_entradas, &EntradasWidget::statusAtualizado,
-            this, [this](const QString &msg) {
-                if (m_stack->currentWidget() == m_shellEntradas)
-                    m_statusTotal->setText(msg + QStringLiteral("  "));
-            });
-    connect(m_gastos, &GastosWidget::statusAtualizado,
-            this, [this](const QString &msg) {
-                if (m_stack->currentWidget() == m_shellGastos)
-                    m_statusTotal->setText(msg + QStringLiteral("  "));
-            });
-    connect(m_investimentos, &InvestimentosWidget::statusAtualizado,
-            this, [this](const QString &msg) {
-                if (m_stack->currentWidget() == m_shellInvestimentos)
-                    m_statusTotal->setText(msg + QStringLiteral("  "));
-            });
-    connect(m_planejamento, &PlanejamentoWidget::statusAtualizado,
-            this, [this](const QString &msg) {
-                if (m_stack->currentWidget() == m_shellPlanejamento)
-                    m_statusTotal->setText(msg + QStringLiteral("  "));
-            });
-    connect(m_dividas, &DividasWidget::statusAtualizado,
-            this, [this](const QString &msg) {
-                if (m_stack->currentWidget() == m_shellDividas)
-                    m_statusTotal->setText(msg + QStringLiteral("  "));
-            });
-    connect(m_metas, &MetasWidget::statusAtualizado,
-            this, [this](const QString &msg) {
-                if (m_stack->currentWidget() == m_shellMetas)
-                    m_statusTotal->setText(msg + QStringLiteral("  "));
-            });
-    connect(m_lembretes, &LembretesWidget::statusAtualizado,
-            this, [this](const QString &msg) {
-                if (m_stack->currentWidget() == m_shellLembretes)
-                    m_statusTotal->setText(msg + QStringLiteral("  "));
-            });
-    // Lazy-load: recarrega widget de conteúdo ao trocar de página (#165)
-    connect(m_stack, &QStackedWidget::currentChanged, this, [this](int) {
-        if      (m_stack->currentWidget() == m_shellDashboard)     m_dashboard->recarregar();
-        else if (m_stack->currentWidget() == m_shellEntradas)      m_entradas->recarregar();
-        else if (m_stack->currentWidget() == m_shellGastos)        m_gastos->recarregar();
-        else if (m_stack->currentWidget() == m_shellTendencias)    m_tendencias->recarregar();
-        else if (m_stack->currentWidget() == m_shellInvestimentos) m_investimentos->recarregar();
-        else if (m_stack->currentWidget() == m_shellPlanejamento)  m_planejamento->recarregar();
-        else if (m_stack->currentWidget() == m_shellRecorrencias)  m_recorrencias->recarregar();
-        else if (m_stack->currentWidget() == m_shellDividas)       m_dividas->recarregar();
-        else if (m_stack->currentWidget() == m_shellMetas)         m_metas->recarregar();
-        else if (m_stack->currentWidget() == m_shellLembretes)     m_lembretes->recarregar();
-        else if (m_stack->currentWidget() == m_shellCartoes)       m_parcelas->recarregar();
-    });
-
     // ── Gerar recorrências pendentes ao abrir o app ─────────────────────────
+    // (#208) guardas de nulo: se a aba correspondente ainda não foi
+    // construída, não há nada pra recarregar — ela vai ler o estado já
+    // atualizado (recorrências geradas acima) na 1ª vez que for construída.
     const int geradas = RecorrenciaService().gerarPendentes(QDate::currentDate());
     if (geradas > 0) {
-        m_entradas->recarregar();
-        m_gastos->recarregar();
-        m_recorrencias->recarregar();
-        m_planejamento->recarregar();
+        if (m_entradas)     m_entradas->recarregar();
+        if (m_gastos)       m_gastos->recarregar();
+        if (m_recorrencias) m_recorrencias->recarregar();
+        if (m_planejamento) m_planejamento->recarregar();
         QTimer::singleShot(800, this, [this, geradas]() {
             m_statusTotal->setText(
                 tr("%1 recorrência(s) gerada(s) automaticamente  ").arg(geradas));
@@ -548,6 +349,345 @@ void MainWindow::buildUi()
         BackupService::runBackup(cfg, slug, [](const QString &dest) {
             return DatabaseManager::instance().exportToFile(dest);
         });
+    });
+}
+
+// ── Lazy-init por aba (#208, PERF-02) ────────────────────────────────────────
+// TabShell em todas as páginas (#158/#165): cada página ganha um invólucro
+// com título + descrição + instruções p/ iniciante (texto do registro central
+// tabHelp, DRY com o HelpDialog). O shell é o widget efetivamente inserido
+// no QStackedWidget; o widget de conteúdo segue intacto (lógica/conexões
+// inalteradas).
+TabShell *MainWindow::criarShell(const QString &objName, const QString &tabKey,
+                                  QWidget *conteudo)
+{
+    auto *shell = new TabShell(QString(), this);
+    shell->setObjectName(objName);
+    shell->setTabKey(tabKey);
+    shell->applyHelp();
+    shell->setContent(conteudo);
+    return shell;
+}
+
+// Glossário (#103/#104/#105) escopado à aba recém-construída — reduz o N do
+// PERF-01 (antes varria a MainWindow inteira, 13 abas, toda vez).
+void MainWindow::aplicarGlossarioNaAba(QWidget *shell)
+{
+    GlossarioDecorator::aplicarTooltips(shell);
+    GlossarioDecorator::aplicarLabelsColoquiais(shell);
+    GlossarioDecorator::aplicarMicrocopies(shell);
+}
+
+void MainWindow::refreshDashboardSeAtivo()
+{
+    if (m_stack->currentWidget() == m_shellDashboard)
+        m_dashboard->recarregar();
+}
+
+void MainWindow::refreshPlanejamentoSeAtivo()
+{
+    if (m_stack->currentWidget() == m_shellPlanejamento)
+        m_planejamento->recarregar();
+}
+
+void MainWindow::refreshTendenciasSeAtivo()
+{
+    if (m_stack->currentWidget() == m_shellTendencias)
+        m_tendencias->recarregar();
+}
+
+// Registra as 13 fábricas em m_router (só o mapa chave→callback; nada é
+// construído aqui). Cada fábrica roda no máximo 1 vez, na 1ª navegação para
+// a chave (ver LazyPageRouter::garantir). Dentro da fábrica: constrói
+// conteúdo+shell, faz TODO o wiring cross-widget que a aba original tinha em
+// buildUi (dadosAlterados→recarregar/dirty/refresh-se-visível,
+// statusAtualizado→statusbar, setUndoStack), aplica glossário escopado e
+// insere no QStackedWidget.
+void MainWindow::registrarFabricasAbas()
+{
+    // ── Dashboard ─────────────────────────────────────────────────────────
+    m_router.registrarFabrica(QStringLiteral("tab_dashboard"), [this]() -> QWidget * {
+        m_dashboard = new DashboardWidget(this);
+        m_shellDashboard = criarShell(QStringLiteral("tab_dashboard"),
+                                       QStringLiteral("tab_dashboard"), m_dashboard);
+        aplicarGlossarioNaAba(m_shellDashboard);
+
+        connect(m_dashboard, &DashboardWidget::statusAtualizado,
+                this, [this](const QString &msg) {
+                    if (m_stack->currentWidget() == m_shellDashboard)
+                        m_statusTotal->setText(msg + QStringLiteral("  "));
+                });
+        // Dashboard cards clicáveis → navegar para a página correspondente
+        // (#157). tabIndex legacy mapeado para chave estável.
+        connect(m_dashboard, &DashboardWidget::navegarParaAba,
+                this, [this](int tabIndex) {
+                    static const QMap<int, QString> kTabParaChave = {
+                        { 1,  QStringLiteral("tab_entradas")     },
+                        { 2,  QStringLiteral("tab_gastos")       },
+                        { 3,  QStringLiteral("tab_cartoes")      },
+                        { 9,  QStringLiteral("tab_investimentos")},
+                        { 10, QStringLiteral("tab_proventos")    },
+                    };
+                    const QString chave = kTabParaChave.value(tabIndex);
+                    if (!chave.isEmpty()) navegarParaChave(chave);
+                });
+
+        m_stack->addWidget(m_shellDashboard);
+        return m_shellDashboard;
+    });
+
+    // ── Entradas ──────────────────────────────────────────────────────────
+    m_router.registrarFabrica(QStringLiteral("tab_entradas"), [this]() -> QWidget * {
+        m_entradas = new EntradasWidget(this);
+        m_shellEntradas = criarShell(QStringLiteral("tab_entradas"),
+                                      QStringLiteral("tab_entradas"), m_entradas);
+        aplicarGlossarioNaAba(m_shellEntradas);
+        m_entradas->setUndoStack(m_undoStack);
+
+        connect(m_entradas, &EntradasWidget::dadosAlterados,
+                m_entradas, &EntradasWidget::recarregar);
+        connect(m_entradas, &EntradasWidget::dadosAlterados,
+                this, [this]() { m_dirty = true; });
+        connect(m_entradas, &EntradasWidget::dadosAlterados,
+                this, &MainWindow::refreshDashboardSeAtivo);
+        connect(m_entradas, &EntradasWidget::dadosAlterados,
+                this, &MainWindow::refreshPlanejamentoSeAtivo);
+        connect(m_entradas, &EntradasWidget::statusAtualizado,
+                this, [this](const QString &msg) {
+                    if (m_stack->currentWidget() == m_shellEntradas)
+                        m_statusTotal->setText(msg + QStringLiteral("  "));
+                });
+
+        m_stack->addWidget(m_shellEntradas);
+        return m_shellEntradas;
+    });
+
+    // ── Gastos ────────────────────────────────────────────────────────────
+    m_router.registrarFabrica(QStringLiteral("tab_gastos"), [this]() -> QWidget * {
+        m_gastos = new GastosWidget(this);
+        m_shellGastos = criarShell(QStringLiteral("tab_gastos"),
+                                    QStringLiteral("tab_gastos"), m_gastos);
+        aplicarGlossarioNaAba(m_shellGastos);
+        m_gastos->setUndoStack(m_undoStack);
+
+        connect(m_gastos, &GastosWidget::dadosAlterados,
+                m_gastos, &GastosWidget::recarregar);
+        connect(m_gastos, &GastosWidget::dadosAlterados,
+                this, [this]() { m_dirty = true; });
+        connect(m_gastos, &GastosWidget::dadosAlterados,
+                this, &MainWindow::refreshDashboardSeAtivo);
+        connect(m_gastos, &GastosWidget::dadosAlterados,
+                this, &MainWindow::refreshPlanejamentoSeAtivo);
+        // Tendências se atualiza quando Gastos muda dados (lazy: só se visível)
+        connect(m_gastos, &GastosWidget::dadosAlterados,
+                this, &MainWindow::refreshTendenciasSeAtivo);
+        connect(m_gastos, &GastosWidget::statusAtualizado,
+                this, [this](const QString &msg) {
+                    if (m_stack->currentWidget() == m_shellGastos)
+                        m_statusTotal->setText(msg + QStringLiteral("  "));
+                });
+
+        m_stack->addWidget(m_shellGastos);
+        return m_shellGastos;
+    });
+
+    // ── Cartões (Parcelas) ───────────────────────────────────────────────
+    // objectName do shell é "tab_parcelas" por compat. histórica (dados
+    // gravados antes do redesign usavam essa string). A chave de navegação
+    // e ajuda é "tab_cartoes" — as duas strings são independentes.
+    m_router.registrarFabrica(QStringLiteral("tab_cartoes"), [this]() -> QWidget * {
+        m_parcelas = new ParcelasWidget(this);
+        m_shellCartoes = criarShell(QStringLiteral("tab_parcelas"),
+                                     QStringLiteral("tab_cartoes"), m_parcelas);
+        aplicarGlossarioNaAba(m_shellCartoes);
+        m_parcelas->setUndoStack(m_undoStack);
+
+        connect(m_parcelas, &ParcelasWidget::dadosAlterados,
+                m_parcelas, &ParcelasWidget::recarregar);
+        connect(m_parcelas, &ParcelasWidget::dadosAlterados,
+                this, [this]() { m_dirty = true; });
+        connect(m_parcelas, &ParcelasWidget::dadosAlterados,
+                this, &MainWindow::refreshDashboardSeAtivo);
+        connect(m_parcelas, &ParcelasWidget::dadosAlterados,
+                this, &MainWindow::refreshPlanejamentoSeAtivo);
+        connect(m_parcelas, &ParcelasWidget::statusAtualizado,
+                this, [this](const QString &msg) {
+                    if (m_stack->currentWidget() == m_shellCartoes)
+                        m_statusTotal->setText(msg + QStringLiteral("  "));
+                });
+
+        m_stack->addWidget(m_shellCartoes);
+        return m_shellCartoes;
+    });
+
+    // ── Recorrências ──────────────────────────────────────────────────────
+    m_router.registrarFabrica(QStringLiteral("tab_recorrencias"), [this]() -> QWidget * {
+        m_recorrencias = new RecorrenciaWidget(this);
+        m_shellRecorrencias = criarShell(QStringLiteral("tab_recorrencias"),
+                                          QStringLiteral("tab_recorrencias"), m_recorrencias);
+        aplicarGlossarioNaAba(m_shellRecorrencias);
+        m_recorrencias->setUndoStack(m_undoStack);
+
+        connect(m_recorrencias, &RecorrenciaWidget::dadosAlterados,
+                m_recorrencias, &RecorrenciaWidget::recarregar);
+        connect(m_recorrencias, &RecorrenciaWidget::dadosAlterados,
+                this, [this]() { m_dirty = true; });
+        connect(m_recorrencias, &RecorrenciaWidget::dadosAlterados,
+                this, &MainWindow::refreshDashboardSeAtivo);
+
+        m_stack->addWidget(m_shellRecorrencias);
+        return m_shellRecorrencias;
+    });
+
+    // ── Dívidas ───────────────────────────────────────────────────────────
+    m_router.registrarFabrica(QStringLiteral("tab_dividas"), [this]() -> QWidget * {
+        m_dividas = new DividasWidget(this);
+        m_shellDividas = criarShell(QStringLiteral("tab_dividas"),
+                                     QStringLiteral("tab_dividas"), m_dividas);
+        aplicarGlossarioNaAba(m_shellDividas);
+        m_dividas->setUndoStack(m_undoStack);
+
+        connect(m_dividas, &DividasWidget::dadosAlterados,
+                m_dividas, &DividasWidget::recarregar);
+        connect(m_dividas, &DividasWidget::dadosAlterados,
+                this, [this]() { m_dirty = true; });
+        connect(m_dividas, &DividasWidget::statusAtualizado,
+                this, [this](const QString &msg) {
+                    if (m_stack->currentWidget() == m_shellDividas)
+                        m_statusTotal->setText(msg + QStringLiteral("  "));
+                });
+
+        m_stack->addWidget(m_shellDividas);
+        return m_shellDividas;
+    });
+
+    // ── Metas ─────────────────────────────────────────────────────────────
+    m_router.registrarFabrica(QStringLiteral("tab_metas"), [this]() -> QWidget * {
+        m_metas = new MetasWidget(this);
+        m_shellMetas = criarShell(QStringLiteral("tab_metas"),
+                                   QStringLiteral("tab_metas"), m_metas);
+        aplicarGlossarioNaAba(m_shellMetas);
+        m_metas->setUndoStack(m_undoStack);
+
+        connect(m_metas, &MetasWidget::dadosAlterados,
+                m_metas, &MetasWidget::recarregar);
+        connect(m_metas, &MetasWidget::dadosAlterados,
+                this, [this]() { m_dirty = true; });
+        connect(m_metas, &MetasWidget::statusAtualizado,
+                this, [this](const QString &msg) {
+                    if (m_stack->currentWidget() == m_shellMetas)
+                        m_statusTotal->setText(msg + QStringLiteral("  "));
+                });
+
+        m_stack->addWidget(m_shellMetas);
+        return m_shellMetas;
+    });
+
+    // ── Planejamento ──────────────────────────────────────────────────────
+    m_router.registrarFabrica(QStringLiteral("tab_planejamento"), [this]() -> QWidget * {
+        m_planejamento = new PlanejamentoWidget(this);
+        m_shellPlanejamento = criarShell(QStringLiteral("tab_planejamento"),
+                                          QStringLiteral("tab_planejamento"), m_planejamento);
+        aplicarGlossarioNaAba(m_shellPlanejamento);
+        m_planejamento->setUndoStack(m_undoStack);
+
+        connect(m_planejamento, &PlanejamentoWidget::dadosAlterados,
+                m_planejamento, &PlanejamentoWidget::recarregar);
+        connect(m_planejamento, &PlanejamentoWidget::dadosAlterados,
+                this, [this]() { m_dirty = true; });
+        connect(m_planejamento, &PlanejamentoWidget::statusAtualizado,
+                this, [this](const QString &msg) {
+                    if (m_stack->currentWidget() == m_shellPlanejamento)
+                        m_statusTotal->setText(msg + QStringLiteral("  "));
+                });
+
+        m_stack->addWidget(m_shellPlanejamento);
+        return m_shellPlanejamento;
+    });
+
+    // ── Tendências ────────────────────────────────────────────────────────
+    // Sem dadosAlterados/statusAtualizado/undo próprios — é atualizada
+    // reativamente quando Gastos muda (wired na fábrica de Gastos acima) e
+    // ao trocar de aba (currentChanged, em buildUi).
+    m_router.registrarFabrica(QStringLiteral("tab_tendencias"), [this]() -> QWidget * {
+        m_tendencias = new TendenciasWidget(this);
+        m_shellTendencias = criarShell(QStringLiteral("tab_tendencias"),
+                                        QStringLiteral("tab_tendencias"), m_tendencias);
+        aplicarGlossarioNaAba(m_shellTendencias);
+
+        m_stack->addWidget(m_shellTendencias);
+        return m_shellTendencias;
+    });
+
+    // ── Investimentos ─────────────────────────────────────────────────────
+    m_router.registrarFabrica(QStringLiteral("tab_investimentos"), [this]() -> QWidget * {
+        m_investimentos = new InvestimentosWidget(this);
+        m_shellInvestimentos = criarShell(QStringLiteral("tab_investimentos"),
+                                           QStringLiteral("tab_investimentos"), m_investimentos);
+        aplicarGlossarioNaAba(m_shellInvestimentos);
+        m_investimentos->setUndoStack(m_undoStack);
+
+        connect(m_investimentos, &InvestimentosWidget::dadosAlterados,
+                m_investimentos, &InvestimentosWidget::recarregar);
+        connect(m_investimentos, &InvestimentosWidget::dadosAlterados,
+                this, [this]() { m_dirty = true; });
+        connect(m_investimentos, &InvestimentosWidget::dadosAlterados,
+                this, &MainWindow::refreshDashboardSeAtivo);
+        connect(m_investimentos, &InvestimentosWidget::statusAtualizado,
+                this, [this](const QString &msg) {
+                    if (m_stack->currentWidget() == m_shellInvestimentos)
+                        m_statusTotal->setText(msg + QStringLiteral("  "));
+                });
+
+        m_stack->addWidget(m_shellInvestimentos);
+        return m_shellInvestimentos;
+    });
+
+    // ── Proventos ─────────────────────────────────────────────────────────
+    // Sem dadosAlterados/statusAtualizado/undo próprios (idem hoje).
+    m_router.registrarFabrica(QStringLiteral("tab_proventos"), [this]() -> QWidget * {
+        m_proventos = new ProventosWidget(this);
+        m_shellProventos = criarShell(QStringLiteral("tab_proventos"),
+                                       QStringLiteral("tab_proventos"), m_proventos);
+        aplicarGlossarioNaAba(m_shellProventos);
+
+        m_stack->addWidget(m_shellProventos);
+        return m_shellProventos;
+    });
+
+    // ── Bolsa ─────────────────────────────────────────────────────────────
+    // Sem dadosAlterados/statusAtualizado/undo próprios (idem hoje).
+    // m_marketService continua eager (leve, sem UI) — só a UI é lazy aqui.
+    m_router.registrarFabrica(QStringLiteral("tab_bolsa"), [this]() -> QWidget * {
+        m_bolsa = new BolsaWidget(m_marketService, this);
+        m_shellBolsa = criarShell(QStringLiteral("tab_bolsa"),
+                                   QStringLiteral("tab_bolsa"), m_bolsa);
+        aplicarGlossarioNaAba(m_shellBolsa);
+
+        m_stack->addWidget(m_shellBolsa);
+        return m_shellBolsa;
+    });
+
+    // ── Lembretes ─────────────────────────────────────────────────────────
+    m_router.registrarFabrica(QStringLiteral("tab_lembretes"), [this]() -> QWidget * {
+        m_lembretes = new LembretesWidget(this);
+        m_shellLembretes = criarShell(QStringLiteral("tab_lembretes"),
+                                       QStringLiteral("tab_lembretes"), m_lembretes);
+        aplicarGlossarioNaAba(m_shellLembretes);
+        m_lembretes->setUndoStack(m_undoStack);
+
+        connect(m_lembretes, &LembretesWidget::dadosAlterados,
+                m_lembretes, &LembretesWidget::recarregar);
+        connect(m_lembretes, &LembretesWidget::dadosAlterados,
+                this, [this]() { m_dirty = true; });
+        connect(m_lembretes, &LembretesWidget::statusAtualizado,
+                this, [this](const QString &msg) {
+                    if (m_stack->currentWidget() == m_shellLembretes)
+                        m_statusTotal->setText(msg + QStringLiteral("  "));
+                });
+
+        m_stack->addWidget(m_shellLembretes);
+        return m_shellLembretes;
     });
 }
 
@@ -791,7 +931,7 @@ void MainWindow::applyThemeMode(Theme::ThemeMode mode)
 
 // ── Navegação por chave estável (#165 / #170) ────────────────────────────────
 // Chaves "act_*" são ações de utilidade (rodapé da sidebar), não páginas.
-// Roteadas aqui antes de consultar m_paginas.
+// Roteadas aqui antes de consultar m_router.
 
 void MainWindow::navegarParaChave(const QString &chave)
 {
@@ -814,9 +954,11 @@ void MainWindow::navegarParaChave(const QString &chave)
         return; // ações de rodapé não alteram o stack nem o item ativo
     }
 
-    auto it = m_paginas.constFind(chave);
-    if (it == m_paginas.constEnd()) return;
-    m_stack->setCurrentWidget(it.value());
+    // (#208) garantir() constrói a aba na 1ª navegação (idempotente nas
+    // seguintes) — é aqui que o "lazy" acontece de fato.
+    QWidget *shell = m_router.garantir(chave);
+    if (!shell) return;
+    m_stack->setCurrentWidget(shell);
     m_sidebar->setAtivo(chave);
 }
 
@@ -948,8 +1090,11 @@ void MainWindow::onAbrir()
         return;
     }
     m_dirty = false;
-    m_parcelas->recarregar();
-    m_entradas->recarregar();
+    // (#208) guarda de nulo: aba ainda não construída não tem nada pra
+    // recarregar — ela vai ler o arquivo recém-aberto na 1ª vez que for
+    // construída (mesmo efeito observável do recarregar() eager de hoje).
+    if (m_parcelas) m_parcelas->recarregar();
+    if (m_entradas) m_entradas->recarregar();
 }
 
 void MainWindow::onSalvar()
@@ -1090,7 +1235,7 @@ void MainWindow::onImportar(const QString &format)
     }
 
     m_dirty = true;
-    m_parcelas->recarregar();
+    if (m_parcelas) m_parcelas->recarregar(); // (#208) guarda de nulo
     QMessageBox::information(this, tr("Importar"),
         tr("%1 compra(s) importada(s).%2")
             .arg(imported)
@@ -1259,10 +1404,13 @@ void MainWindow::onConfiguracoes()
     connect(btnFechar, &QPushButton::clicked, &dlg, &QDialog::accept);
     btnRow->addWidget(btnFechar);
     lay->addLayout(btnRow);
-    connect(prefs, &PrefsWidget::cartoesAlterados, m_parcelas, &ParcelasWidget::recarregar);
-    connect(prefs, &PrefsWidget::moedaAlterada,    m_parcelas, &ParcelasWidget::recarregar);
-    connect(prefs, &PrefsWidget::moedaAlterada,    m_entradas, &EntradasWidget::recarregar);
-    connect(prefs, &PrefsWidget::fontesAlteradas,  m_entradas, &EntradasWidget::recarregar);
+    // (#208) guardas de nulo: aba ainda não construída não tem widget pra
+    // conectar — quando for construída (lazy), lê o estado já atualizado
+    // por essas mudanças de Preferências (mesmo efeito observável).
+    if (m_parcelas) connect(prefs, &PrefsWidget::cartoesAlterados, m_parcelas, &ParcelasWidget::recarregar);
+    if (m_parcelas) connect(prefs, &PrefsWidget::moedaAlterada,    m_parcelas, &ParcelasWidget::recarregar);
+    if (m_entradas) connect(prefs, &PrefsWidget::moedaAlterada,    m_entradas, &EntradasWidget::recarregar);
+    if (m_entradas) connect(prefs, &PrefsWidget::fontesAlteradas,  m_entradas, &EntradasWidget::recarregar);
     dlg.exec();
 }
 
@@ -1270,22 +1418,29 @@ void MainWindow::onConfiguracoes()
 
 void MainWindow::onCopiar()
 {
+    // (#208) fallback "else" era m_parcelas->copiar() incondicional — seguro
+    // no modelo eager (m_parcelas sempre existia) mas não no lazy (aba
+    // Cartões pode nunca ter sido construída). Guarda de nulo: se nenhuma
+    // aba com copiar() explícito está ativa E Cartões nunca foi visitada,
+    // não há o que copiar (mesmo efeito prático do copiar() num widget fora
+    // de foco/sem seleção).
     if      (m_stack->currentWidget() == m_shellEntradas)      m_entradas->copiar();
     else if (m_stack->currentWidget() == m_shellGastos)        m_gastos->copiar();
     else if (m_stack->currentWidget() == m_shellInvestimentos) m_investimentos->copiar();
     else if (m_stack->currentWidget() == m_shellMetas)         m_metas->copiar();
     else if (m_stack->currentWidget() == m_shellLembretes)     m_lembretes->copiar();
-    else                                                       m_parcelas->copiar();
+    else if (m_parcelas)                                       m_parcelas->copiar();
 }
 void MainWindow::onColar()         { /* sem suporte — paste requer contexto da célula */ }
 void MainWindow::onSelecionarTudo()
 {
+    // (#208) idem onCopiar(): guarda de nulo no fallback.
     if      (m_stack->currentWidget() == m_shellEntradas)      m_entradas->selecionarTudo();
     else if (m_stack->currentWidget() == m_shellGastos)        m_gastos->selecionarTudo();
     else if (m_stack->currentWidget() == m_shellInvestimentos) m_investimentos->selecionarTudo();
     else if (m_stack->currentWidget() == m_shellMetas)         m_metas->selecionarTudo();
     else if (m_stack->currentWidget() == m_shellLembretes)     m_lembretes->selecionarTudo();
-    else                                                       m_parcelas->selecionarTudo();
+    else if (m_parcelas)                                       m_parcelas->selecionarTudo();
 }
 
 void MainWindow::onReconciliar()
@@ -1345,6 +1500,8 @@ void MainWindow::onSobre()
 void MainWindow::onTvmParaCartoes(double pv, int n, double iMensal, double pmt)
 {
     // Navega para Cartões e abre AddCompraDialog pre-preenchido (#165).
+    // (#208) navegarParaChave() já chama m_router.garantir() de forma
+    // síncrona — m_parcelas está garantidamente construído neste ponto.
     navegarParaChave(QStringLiteral("tab_cartoes"));
     m_parcelas->novaCompraDeCalculadora(pv, n, iMensal, pmt);
 }
