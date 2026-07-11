@@ -1306,17 +1306,16 @@ target_include_directories(test_repos_sem_cobertura PRIVATE
     ${LIBSODIUM_INCLUDE_DIRS}
     ${LIBSECRET_INCLUDE_DIRS})
 
-# #199 (Onda U, QA-05): providers de mercado (BrapiProvider/OAuthDeviceFlow)
-# sem suite -- gate de processo (nao fechar #45/#58 sem teste de contrato).
-# fetchQuote/fetchOHLCV/onPollReply tinham a conversao JSON->struct inline
-# nas lambdas de QNetworkReply::finished (sem rede real, intestavel). Extraidos
-# em metodos static puros (BrapiProvider::parseQuoteJson/parseOhlcvJson,
-# OAuthDeviceFlow::classifyPollResponse) -- refactor comportamento-preservado,
-# testados aqui com fixture JSON (resposta real brapi.dev / RFC 8628 sec 3.5).
+# #199 (Onda U, QA-05): providers de mercado (BrapiProvider) sem suite --
+# gate de processo (nao fechar #45/#58 sem teste de contrato).
+# fetchQuote/fetchOHLCV tinha a conversao JSON->struct inline nas lambdas de
+# QNetworkReply::finished (sem rede real, intestavel). Extraida em metodo
+# static puro (BrapiProvider::parseQuoteJson/parseOhlcvJson) -- refactor
+# comportamento-preservado, testado aqui com fixture JSON (resposta real
+# brapi.dev). OAuthDeviceFlow removido em #137 (dead module, 0 consumidor).
 peubud_add_test(test_market_providers_contract
     ${CMAKE_SOURCE_DIR}/src/services/BrapiProvider.cpp
     ${CMAKE_SOURCE_DIR}/src/services/IMarketDataProvider.cpp
-    ${CMAKE_SOURCE_DIR}/src/services/OAuthDeviceFlow.cpp
     ${CMAKE_SOURCE_DIR}/src/core/settings/AppSettings.cpp
     ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp

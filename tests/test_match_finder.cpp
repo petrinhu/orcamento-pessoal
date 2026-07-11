@@ -11,7 +11,6 @@
 
 #include <QtTest/QtTest>
 #include "services/import/ExistingTransactionMatchFinder.h"
-#include "services/import/ScheduledTransactionMatchFinder.h"
 #include "services/import/MatchData.h"
 
 class TestMatchFinder : public QObject
@@ -30,11 +29,6 @@ private slots:
     void existingValorAproximadoImprecise();
     void existingForaDaJanelaNotFound();
     void existingContaDiferenteImprecise();
-
-    // ScheduledTransactionMatchFinder
-    void scheduledExatoPrecise();
-    void scheduledPayeeDiferenteImprecise();
-    void scheduledForaJanelaNotFound();
 };
 
 static MatchData makeCandidate(const QString &bankId, qint64 amount,
@@ -139,45 +133,6 @@ void TestMatchFinder::existingContaDiferenteImprecise()
                                           QDate(2026, 5, 11),
                                           QStringLiteral("ACC2"));
     QCOMPARE(f.find(input), MatchResult::Imprecise);
-}
-
-void TestMatchFinder::scheduledExatoPrecise()
-{
-    QList<MatchData> sched = {
-        makeCandidate(QString(), 50000, QStringLiteral("Aluguel"),
-                      QDate(2026, 5, 5))
-    };
-    ScheduledTransactionMatchFinder f(sched);
-    const MatchData input = makeCandidate(QString(), 50000,
-                                          QStringLiteral("Aluguel"),
-                                          QDate(2026, 5, 6));
-    QCOMPARE(f.find(input), MatchResult::Precise);
-}
-
-void TestMatchFinder::scheduledPayeeDiferenteImprecise()
-{
-    QList<MatchData> sched = {
-        makeCandidate(QString(), 50000, QStringLiteral("Aluguel"),
-                      QDate(2026, 5, 5))
-    };
-    ScheduledTransactionMatchFinder f(sched);
-    const MatchData input = makeCandidate(QString(), 50000,
-                                          QStringLiteral("Imobiliaria"),
-                                          QDate(2026, 5, 5));
-    QCOMPARE(f.find(input), MatchResult::Imprecise);
-}
-
-void TestMatchFinder::scheduledForaJanelaNotFound()
-{
-    QList<MatchData> sched = {
-        makeCandidate(QString(), 50000, QStringLiteral("Aluguel"),
-                      QDate(2026, 5, 1))
-    };
-    ScheduledTransactionMatchFinder f(sched);
-    const MatchData input = makeCandidate(QString(), 50000,
-                                          QStringLiteral("Aluguel"),
-                                          QDate(2026, 6, 1));
-    QCOMPARE(f.find(input), MatchResult::NotFound);
 }
 
 QTEST_GUILESS_MAIN(TestMatchFinder)

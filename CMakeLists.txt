@@ -112,12 +112,6 @@ set(SOURCES
     src/services/BackupService.cpp
     src/services/AjusteCorporativoService.cpp
 
-    # Services — OAuth Device Flow RFC 8628 (#83)
-    src/services/OAuthDeviceFlow.cpp
-
-    # Services — FileObfuscator (#91)
-    src/services/FileObfuscator.cpp
-
     # Services — Audit log triggers (#92)
     src/services/AuditLogService.cpp
 
@@ -293,9 +287,6 @@ set(SOURCES
 
     # Reconciliação bancária (#27)
     src/ui/widgets/ReconciliacaoDialog.cpp
-
-    # Base wizard reutilizavel (#87)
-    src/ui/widgets/BaseWizardDialog.cpp
 
     # Wizards guiados pergunta-a-pergunta (#108)
     src/ui/widgets/WizardGuiadoDialog.cpp
