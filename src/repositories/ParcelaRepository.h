@@ -1,16 +1,17 @@
 #pragma once
 
-#include "core/interfaces/IRepository.h"
 #include "models/Parcela.h"
+#include <QList>
 #include <QSqlQuery>
+#include <optional>
 
-class ParcelaRepository final : public IRepository<Parcela> {
+class ParcelaRepository final {
 public:
-    bool insert(Parcela &parcela) override;
-    bool update(const Parcela &parcela) override;
-    bool remove(int id) override;
-    std::optional<Parcela> findById(int id) override;
-    QList<Parcela> findAll() override;
+    bool insert(Parcela &parcela);
+    bool update(const Parcela &parcela);
+    bool remove(int id);
+    std::optional<Parcela> findById(int id);
+    QList<Parcela> findAll();
 
     // All parcelas of a given compra, ordered by numero
     QList<Parcela> findByCompra(int compraId);

@@ -157,7 +157,7 @@ Arquivo canônico de pendências, auditoria técnica e conformidade com o contra
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | 7 | #139 | AUDIT | CRÍTICO arquitetura: extrair SQL cru de `BuscaGlobalDialog.cpp` (6 tabelas) → `BuscaService`; **plugar** `ReconciliacaoAutomatica` (#85) no `ReconciliacaoDialog` (em vez de deletar) | Alta | #85 | Alta | ⏳ Pendente | — |
 | 7 | #137 | AUDIT | **Deletar** dead modules sem consumidor: `DripSimulator`, `IndicadoresTecnicos`, `SuporteResistencia`, `FileObfuscator`, `OAuthDeviceFlow`, `BaseWizardDialog`, `ScheduledTransactionMatchFinder` (remover do build) | Média | — | Média | ⏳ Pendente | — |
-| 7 | #138 | AUDIT | `IRepository<T>` órfã (2/19 repos): remover (recomendado CTO, anti-OE) | Baixa | — | Média | ⏳ Pendente | — |
+| 7 | #138 | AUDIT | `IRepository<T>` órfã (2/19 repos): remover (recomendado CTO, anti-OE) | Baixa | — | Média | 🔍 Pendente verificação | — |
 
 ### Onda 8 — Distribuição & docs (fim de tabela)
 

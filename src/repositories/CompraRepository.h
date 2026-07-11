@@ -1,16 +1,17 @@
 #pragma once
 
-#include "core/interfaces/IRepository.h"
 #include "models/Compra.h"
+#include <QList>
 #include <QSqlQuery>
+#include <optional>
 
-class CompraRepository final : public IRepository<Compra> {
+class CompraRepository final {
 public:
-    bool insert(Compra &compra) override;
-    bool update(const Compra &compra) override;
-    bool remove(int id) override;
-    std::optional<Compra> findById(int id) override;
-    QList<Compra> findAll() override;
+    bool insert(Compra &compra);
+    bool update(const Compra &compra);
+    bool remove(int id);
+    std::optional<Compra> findById(int id);
+    QList<Compra> findAll();
 
     // Find all with optional cartao filter (0 = all)
     QList<Compra> findByCartao(int cartaoId);
