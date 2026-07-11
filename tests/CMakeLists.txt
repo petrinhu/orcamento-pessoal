@@ -1485,3 +1485,14 @@ target_link_libraries(test_user_account_service PRIVATE
 target_include_directories(test_user_account_service PRIVATE
     ${LIBSODIUM_INCLUDE_DIRS}
     ${LIBSECRET_INCLUDE_DIRS})
+
+# ADR-001 #212 (Fatia 3 — Foundation): VaultFile — framing PURO do .pbd v2
+# auto-contido (§5.2). Componente isolado, sem estado, sem I/O — NÃO toca
+# DatabaseManager/UserAccountService/UI. Só depende de SodiumCryptoService
+# (delega isNewFormat() para detect() v1, e os testes usam wrapKey/
+# randomBytes p/ montar headers de amostra realistas) — sem DB/UI/rede.
+peubud_add_test(test_vault_file
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/VaultFile.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/SodiumCryptoService.cpp)
+target_link_libraries(test_vault_file PRIVATE ${LIBSODIUM_LIBRARIES})
+target_include_directories(test_vault_file PRIVATE ${LIBSODIUM_INCLUDE_DIRS})
