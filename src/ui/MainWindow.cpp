@@ -195,6 +195,17 @@ void MainWindow::buildUi()
         else if (m_stack->currentWidget() == m_shellCartoes)       m_parcelas->recarregar();
     });
 
+    // #208 fix (crash de re-entrância no display real): a statusbar
+    // (m_statusTotal) precisa existir ANTES da navegação inicial abaixo — o
+    // factory da aba dispara DashboardWidget::statusAtualizado →
+    // m_statusTotal->setText já durante a construção (currentChanged reentrante
+    // via QStackedWidget::insertWidget). Sem o label → segfault em
+    // QLabel::setText (o ctest offscreen não exercita essa navegação).
+    statusBar()->setSizeGripEnabled(false);
+    m_statusTotal = new QLabel(this);
+    m_statusTotal->setObjectName(QStringLiteral("subtitle"));
+    statusBar()->addPermanentWidget(m_statusTotal);
+
     // ── Fábricas lazy das 13 abas (#208, PERF-02) ────────────────────────────
     registrarFabricasAbas();
 
@@ -226,10 +237,10 @@ void MainWindow::buildUi()
     // QSizeGrip desabilitado (#176): o handle nativo não herda o QSS navy e
     // aparece como quadrado branco no canto inferior-direito ao redimensionar.
     // A janela continua redimensionável pelas bordas — apenas o grip visual some.
-    statusBar()->setSizeGripEnabled(false);
-    m_statusTotal = new QLabel(this);
-    m_statusTotal->setObjectName(QStringLiteral("subtitle"));
-    statusBar()->addPermanentWidget(m_statusTotal);
+    // setSizeGripEnabled + m_statusTotal foram MOVIDOS pra antes de
+    // registrarFabricasAbas() (#208 fix do crash de re-entrância: a navegação
+    // inicial dispara statusAtualizado→m_statusTotal->setText durante a
+    // construção da 1ª aba, antes deste ponto).
 
     // #47: painel câmbio LED na statusbar (slots USD-BRL + EUR-BRL ou
     // configuracao em Prefs/Mercado). Sem rede ainda — recarrega quando
