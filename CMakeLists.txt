@@ -101,6 +101,10 @@ set(SOURCES
     src/core/crypto/AesCryptoService.cpp
     src/core/crypto/KeyDerivation.cpp
     src/core/crypto/SodiumCryptoService.cpp
+    # ADR-001 #212 (Fatia 3/4) — framing puro do .pbd v2 auto-contido;
+    # DatabaseManager (Foundation, abaixo) chama VaultFile:: incondicional-
+    # mente desde a Fatia 4 (open()/encryptAndSave() com autodetect v1/v2).
+    src/core/crypto/VaultFile.cpp
 
     # Services — TVM
     src/services/TvmService.cpp

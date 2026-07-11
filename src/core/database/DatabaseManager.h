@@ -1,5 +1,7 @@
 #pragma once
 
+#include "core/crypto/VaultFile.h"
+
 #include <QSqlDatabase>
 #include <QString>
 #include <QByteArray>
@@ -65,6 +67,35 @@ public:
     using SchemaProvider = std::function<void(QSqlDatabase &)>;
     static void registerSchemaProvider(SchemaProvider provider);
 
+    // (ADR-001 §8 passo 6/D4, Fatia 4) Injeta o header `.pbd` v2 que a
+    // PRÓXIMA save()/close() vai gravar (usado no bootstrap de um cofre
+    // NOVO — chamar ANTES do open() correspondente, ver
+    // UserAccountService::bootstrapVault). `header.username` vazio força v1
+    // (reservado à migração de cofres legados — Fatia 5, não usado ainda,
+    // só documentado aqui).
+    //
+    // Ordering em open() (documentado aqui por ser sutil — ver
+    // decryptAndLoad()): (1) `.pbd` detectado como V2 → open() RESTAURA
+    // m_vaultHeader/m_vaultIsV2 a partir do PRÓPRIO ARQUIVO, sobrescrevendo
+    // o que este setter tiver injetado; (2) V1/legado → open() RESETA os
+    // dois pra vazio/false (singleton reusado entre logins — sem isso, um
+    // header v2 de uma sessão anterior vazaria); (3) arquivo NÃO EXISTE
+    // (bootstrap de cofre novo) → open() NÃO TOCA em m_vaultHeader/
+    // m_vaultIsV2, preservando exatamente o que este setter injetou — o
+    // 1º close()/save() subsequente materializa o header no `.pbd` novo via
+    // encryptAndSave()/VaultFile::frameV2().
+    void setVaultHeader(const VaultHeaderData &header);
+    [[nodiscard]] VaultHeaderData vaultHeader() const { return m_vaultHeader; }
+    [[nodiscard]] bool vaultIsV2() const { return m_vaultIsV2; }
+
+    // (ADR-001 §8 passos 6-7, Fatia 5 — FORA DE ESCOPO da Fatia 4) Troca a
+    // chave `K` do PRÓXIMO save()/close() sem re-derivar do zero — usada
+    // pela migração de cofres legados (LegacyVaultMigrationService, ainda
+    // não implementado). Não confundir com resetPasswordViaRecovery/
+    // completeFirstLogin (Back/UserAccountService): nenhum dos dois muda
+    // `K`, só re-embrulham `K` sob uma senha/params novos — não precisam de
+    // rekey().
+
 private:
     DatabaseManager() = default;
     ~DatabaseManager();
@@ -81,6 +112,12 @@ private:
     QByteArray   m_key;        // Argon2id key (new format)
     QByteArray   m_keyLegacy;  // PBKDF2 key (legacy format — cleared after migration)
     bool         m_needsReencrypt = false; // true when a legacy file was opened
+
+    // (ADR-001 §8 passo 6/D4, Fatia 4) Header `.pbd` v2 da sessão ATUAL —
+    // vazio/false por padrão (v1 puro). Ver setVaultHeader()/open()/
+    // decryptAndLoad()/close() para o ciclo de vida completo.
+    VaultHeaderData m_vaultHeader;
+    bool            m_vaultIsV2 = false;
 
     static std::vector<SchemaProvider> &schemaProviders();
 };

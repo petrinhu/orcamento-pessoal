@@ -14,9 +14,16 @@ enum class Role {
     User,
 };
 
-// Registro completo de um usuário — inclui os campos de envelope cripto
-// (wraps de K por senha/recovery). NUNCA expor este struct para a UI/telas
+// Registro completo de um usuário. NUNCA expor este struct para a UI/telas
 // que só precisam listar usuários — usar UserPublicInfo abaixo (ISP).
+//
+// (ADR-001 §8 passo 6/D1/D7, Fatia 4) Os wraps de K por senha/recovery
+// (saltPw, saltRk, kdfOps, kdfMem, wrappedKeyByPass, wrappedKeyByRecovery)
+// MIGRARAM daqui para `VaultHeaderData` (core/crypto/VaultFile.h) — o `.pbd`
+// v2 de CADA cofre (admin ou usuário comum) é agora a ÚNICA fonte de
+// verdade desses 6 campos. Mutação de senha/recovery de usuário comum passa
+// a tocar só o `.pbd` dele (sem admin, sem assinatura) — ver
+// UserAccountService::resetPasswordViaRecovery.
 //
 // Campos deliberadamente OMITIDOS pelo ADR-001 (convergência dos dois
 // especialistas, §2):
@@ -29,13 +36,20 @@ enum class Role {
 struct UserAccountRecord {
     QString    username;
     Role       role = Role::User;
-    QByteArray saltPw;                  // 16B — salt do Argon2id sobre a senha
-    QByteArray saltRk;                  // 16B — salt do Argon2id sobre a recovery key
-    int        kdfOps = 0;              // crypto_pwhash_OPSLIMIT_* gravado (permite auto-rehash futuro)
-    size_t     kdfMem = 0;              // crypto_pwhash_MEMLIMIT_* gravado
-    QByteArray wrappedKeyByPass;        // 72B: nonce(24)+secretbox(K)+MAC. Ausente até o 1º login (fluxo invite key)
-    QByteArray wrappedKeyByRecovery;    // 72B — idem, via recovery key
     bool       invitePending = false;   // true = ainda no fluxo de invite key (sem senha própria definida)
+
+    // (ADR-001 §8 passo 6/D3, Fatia 4 — decisão do líder 2026-07-11) Canal
+    // de convite: a invite key embrulha um MARCADOR ALEATÓRIO descartável
+    // de 32B — NUNCA o K real (que só nasce em
+    // UserAccountService::completeFirstLogin, gerado pelo PRÓPRIO usuário).
+    // Só relevantes enquanto invitePending==true; ficam vestigiais (não
+    // apagados) depois — o marcador desembrulhado nunca vira dado de fato,
+    // então não há risco em deixá-los no arquivo (ver prova de segurança do
+    // T6 no relatório da tarefa).
+    QByteArray saltInvite;               // 16B — salt do Argon2id sobre a invite key
+    int        kdfOpsInvite = 0;         // crypto_pwhash_OPSLIMIT_* gravado
+    size_t     kdfMemInvite = 0;         // crypto_pwhash_MEMLIMIT_* gravado
+    QByteArray wrappedMarkerByInvite;    // 72B: nonce(24)+secretbox(marcador)+MAC
 
     // (ADR-001 #212 §4/§5.1, Fatia 2) Signing secret key Ed25519 (64B) DO
     // ADMIN, embrulhada como K (por senha e por recovery key do admin) —

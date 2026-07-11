@@ -82,6 +82,7 @@ peubud_add_test(test_recorrencia
     ${CMAKE_SOURCE_DIR}/src/repositories/LancamentoEntradaRepository.cpp
     ${CMAKE_SOURCE_DIR}/src/repositories/FonteRendaRepository.cpp
     ${CMAKE_SOURCE_DIR}/src/core/database/DatabaseManager.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/VaultFile.cpp
     ${CMAKE_SOURCE_DIR}/src/services/AjusteCorporativoService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/AuditLogService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/FechamentoMensalService.cpp
@@ -231,6 +232,7 @@ peubud_add_test(test_busca_service
     ${CMAKE_SOURCE_DIR}/src/repositories/DividaRepository.cpp
     ${CMAKE_SOURCE_DIR}/src/repositories/ProventoRepository.cpp
     ${CMAKE_SOURCE_DIR}/src/core/database/DatabaseManager.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/VaultFile.cpp
     ${CMAKE_SOURCE_DIR}/src/core/AppBootstrap.cpp
     ${CMAKE_SOURCE_DIR}/src/services/AjusteCorporativoService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/FechamentoMensalService.cpp
@@ -308,6 +310,7 @@ peubud_add_test(test_resumo
     ${CMAKE_SOURCE_DIR}/src/repositories/ParcelaRepository.cpp
     ${CMAKE_SOURCE_DIR}/src/repositories/CartaoRepository.cpp
     ${CMAKE_SOURCE_DIR}/src/core/database/DatabaseManager.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/VaultFile.cpp
     ${CMAKE_SOURCE_DIR}/src/core/AppBootstrap.cpp
     ${CMAKE_SOURCE_DIR}/src/services/AjusteCorporativoService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/FechamentoMensalService.cpp
@@ -349,6 +352,7 @@ peubud_add_test(test_fechamento
     ${CMAKE_SOURCE_DIR}/src/repositories/ParcelaRepository.cpp
     ${CMAKE_SOURCE_DIR}/src/repositories/CartaoRepository.cpp
     ${CMAKE_SOURCE_DIR}/src/core/database/DatabaseManager.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/VaultFile.cpp
     ${CMAKE_SOURCE_DIR}/src/core/AppBootstrap.cpp
     ${CMAKE_SOURCE_DIR}/src/services/AjusteCorporativoService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/AuditLogService.cpp
@@ -373,6 +377,7 @@ target_include_directories(test_fechamento PRIVATE
 # DatabaseManager + AuditLogService + crypto.
 peubud_add_test(test_audit_triggers
     ${CMAKE_SOURCE_DIR}/src/core/database/DatabaseManager.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/VaultFile.cpp
     ${CMAKE_SOURCE_DIR}/src/core/AppBootstrap.cpp
     ${CMAKE_SOURCE_DIR}/src/services/AuditLogService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/AjusteCorporativoService.cpp
@@ -413,6 +418,7 @@ target_include_directories(test_audit_triggers PRIVATE
 # Cadeia identica a test_audit_triggers (mesma dependencia de createSchema).
 peubud_add_test(test_schema_smoke
     ${CMAKE_SOURCE_DIR}/src/core/database/DatabaseManager.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/VaultFile.cpp
     ${CMAKE_SOURCE_DIR}/src/core/AppBootstrap.cpp
     ${CMAKE_SOURCE_DIR}/src/services/AuditLogService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/AjusteCorporativoService.cpp
@@ -449,6 +455,7 @@ target_include_directories(test_schema_smoke PRIVATE
 # schema real (createSchema) e triggers de auditoria ativos.
 peubud_add_test(test_categoria
     ${CMAKE_SOURCE_DIR}/src/core/database/DatabaseManager.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/VaultFile.cpp
     ${CMAKE_SOURCE_DIR}/src/core/AppBootstrap.cpp
     ${CMAKE_SOURCE_DIR}/src/repositories/CategoriaRepository.cpp
     ${CMAKE_SOURCE_DIR}/src/services/AuditLogService.cpp
@@ -503,6 +510,7 @@ peubud_add_test(test_gasto_service
     ${CMAKE_SOURCE_DIR}/src/repositories/CategoriaRepository.cpp
     ${CMAKE_SOURCE_DIR}/src/repositories/GastoAvulsoRepository.cpp
     ${CMAKE_SOURCE_DIR}/src/core/database/DatabaseManager.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/VaultFile.cpp
     ${CMAKE_SOURCE_DIR}/src/core/AppBootstrap.cpp
     ${CMAKE_SOURCE_DIR}/src/services/AuditLogService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/AjusteCorporativoService.cpp
@@ -700,7 +708,13 @@ peubud_add_test(test_login_enter
     ${CMAKE_SOURCE_DIR}/src/core/crypto/SodiumCryptoService.cpp
     ${CMAKE_SOURCE_DIR}/src/core/crypto/AesCryptoService.cpp
     ${CMAKE_SOURCE_DIR}/src/core/crypto/KeyDerivation.cpp
-    ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp)
+    ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp
+    # (ADR-001 §6/D6, Fatia 4) UserSession::slug() agora delega a
+    # AppSettings::slugify() -- arrasta AppSettings.cpp (+ ParcelaService/
+    # FinanceEngine, dependência transitiva de AppSettings::currencySymbol).
+    ${CMAKE_SOURCE_DIR}/src/core/settings/AppSettings.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp)
 # QT_DEBUG: LoginDialog pula o bloco de cripto/libsecret em runtime.
 target_compile_definitions(test_login_enter PRIVATE QT_DEBUG)
 target_link_libraries(test_login_enter PRIVATE
@@ -779,6 +793,7 @@ peubud_add_test(test_dashboard_glossario
     ${CMAKE_SOURCE_DIR}/src/repositories/ParcelaRepository.cpp
     ${CMAKE_SOURCE_DIR}/src/repositories/CartaoRepository.cpp
     ${CMAKE_SOURCE_DIR}/src/core/database/DatabaseManager.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/VaultFile.cpp
     ${CMAKE_SOURCE_DIR}/src/services/AjusteCorporativoService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/FechamentoMensalService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/AuditLogService.cpp
@@ -837,6 +852,7 @@ peubud_add_test(test_a11y_botoes_icone
     ${CMAKE_SOURCE_DIR}/src/repositories/ParcelaRepository.cpp
     ${CMAKE_SOURCE_DIR}/src/repositories/CartaoRepository.cpp
     ${CMAKE_SOURCE_DIR}/src/core/database/DatabaseManager.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/VaultFile.cpp
     ${CMAKE_SOURCE_DIR}/src/services/AjusteCorporativoService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/FechamentoMensalService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/AuditLogService.cpp
@@ -943,6 +959,12 @@ peubud_add_test(test_login_header_render
     ${CMAKE_SOURCE_DIR}/src/core/crypto/AesCryptoService.cpp
     ${CMAKE_SOURCE_DIR}/src/core/crypto/KeyDerivation.cpp
     ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp
+    # (ADR-001 §6/D6, Fatia 4) UserSession::slug() agora delega a
+    # AppSettings::slugify() -- arrasta AppSettings.cpp (+ ParcelaService/
+    # FinanceEngine, dependência transitiva de AppSettings::currencySymbol).
+    ${CMAKE_SOURCE_DIR}/src/core/settings/AppSettings.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp
     ${CMAKE_SOURCE_DIR}/resources/resources.qrc)
 # QT_DEBUG: pula o bloco de cripto/libsecret em runtime (LoginDialog).
 target_compile_definitions(test_login_header_render PRIVATE QT_DEBUG)
@@ -1056,6 +1078,7 @@ set_tests_properties(test_glossary_coverage PROPERTIES
 peubud_add_test(test_meta_repository
     ${CMAKE_SOURCE_DIR}/src/repositories/MetaRepository.cpp
     ${CMAKE_SOURCE_DIR}/src/core/database/DatabaseManager.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/VaultFile.cpp
     ${CMAKE_SOURCE_DIR}/src/core/AppBootstrap.cpp
     ${CMAKE_SOURCE_DIR}/src/services/AuditLogService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/AjusteCorporativoService.cpp
@@ -1092,6 +1115,7 @@ target_include_directories(test_meta_repository PRIVATE
 peubud_add_test(test_divida_repository
     ${CMAKE_SOURCE_DIR}/src/repositories/DividaRepository.cpp
     ${CMAKE_SOURCE_DIR}/src/core/database/DatabaseManager.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/VaultFile.cpp
     ${CMAKE_SOURCE_DIR}/src/core/AppBootstrap.cpp
     ${CMAKE_SOURCE_DIR}/src/services/AuditLogService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/AjusteCorporativoService.cpp
@@ -1130,6 +1154,7 @@ target_include_directories(test_divida_repository PRIVATE
 peubud_add_test(test_repository_naonulo_domino
     ${CMAKE_SOURCE_DIR}/src/repositories/TransacaoRecorrenteRepository.cpp
     ${CMAKE_SOURCE_DIR}/src/core/database/DatabaseManager.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/VaultFile.cpp
     ${CMAKE_SOURCE_DIR}/src/core/AppBootstrap.cpp
     ${CMAKE_SOURCE_DIR}/src/services/AuditLogService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/AjusteCorporativoService.cpp
@@ -1178,6 +1203,7 @@ target_include_directories(test_repository_naonulo_domino PRIVATE
 # de integrity_check, mesmo dentro do `build/` (Debug) padrao do ctest.
 peubud_add_test(test_db_durabilidade
     ${CMAKE_SOURCE_DIR}/src/core/database/DatabaseManager.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/VaultFile.cpp
     ${CMAKE_SOURCE_DIR}/src/core/AppBootstrap.cpp
     ${CMAKE_SOURCE_DIR}/src/services/AuditLogService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/AjusteCorporativoService.cpp
@@ -1316,6 +1342,7 @@ peubud_add_test(test_repos_sem_cobertura
     ${CMAKE_SOURCE_DIR}/src/repositories/LembreteRepository.cpp
     ${CMAKE_SOURCE_DIR}/src/repositories/PagadorRepository.cpp
     ${CMAKE_SOURCE_DIR}/src/core/database/DatabaseManager.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/VaultFile.cpp
     ${CMAKE_SOURCE_DIR}/src/core/AppBootstrap.cpp
     ${CMAKE_SOURCE_DIR}/src/services/AuditLogService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/AjusteCorporativoService.cpp
@@ -1461,25 +1488,36 @@ peubud_add_test(test_user_account_repository
 target_link_libraries(test_user_account_repository PRIVATE ${LIBSODIUM_LIBRARIES})
 target_include_directories(test_user_account_repository PRIVATE ${LIBSODIUM_INCLUDE_DIRS})
 
-# ADR-001 #212 (Fatia 2 — regra de negócio): UserAccountService. Envelope
-# completo (createAdmin/createUser/completeFirstLogin/verifyLogin/
+# ADR-001 #212 (Fatia 2 + Fatia 4 — regra de negócio): UserAccountService.
+# Envelope completo (createAdmin/createUser/completeFirstLogin/verifyLogin/
 # removeUser/resetPasswordViaRecovery) + âncora anti-pubkey-swap via
-# SecretStoreService real (libsecret) -- por isso arrasta AppSettings
-# (savePathFixo/listUsers) + ParcelaService/FinanceEngine (dependência
-# transitiva de AppSettings, mesmo padrão de test_glossario/test_import).
-# A maioria dos testes chama createAdmin() -> SecretStoreService::store();
-# em CI headless sem D-Bus/Secret Service isso pode crashar o processo
-# (mesmo achado documentado em test_tabshell_seguranca) -- por isso o guard
-# fica em init() (roda antes de CADA teste, não só de um).
+# SecretStoreService real (libsecret) + integração `.pbd` v2 (Fatia 4:
+# createAdmin/completeFirstLogin agora abrem/fecham DatabaseManager pra
+# bootstrapar o cofre — arrasta a cadeia inteira de crypto/AppSettings/
+# UserSession, mesmo padrão de test_resumo/test_busca_service). A maioria
+# dos testes chama createAdmin() -> SecretStoreService::store(); em CI
+# headless sem D-Bus/Secret Service isso pode crashar o processo (mesmo
+# achado documentado em test_tabshell_seguranca) -- por isso o guard fica em
+# init() (roda antes de CADA teste, não só de um). T0 (Fatia 4): isola
+# HOME/XDG_DATA_HOME em QTemporaryDir (mesmo padrão de
+# test_working_db_path.cpp) -- sem isso, createAdmin/completeFirstLogin
+# escreveriam `.pbd`/users.json no ambiente REAL de quem roda o ctest.
 peubud_add_test(test_user_account_service
     ${CMAKE_SOURCE_DIR}/src/services/UserAccountService.cpp
     ${CMAKE_SOURCE_DIR}/src/repositories/UserAccountRepository.cpp
     ${CMAKE_SOURCE_DIR}/src/core/crypto/SodiumCryptoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/VaultFile.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/AesCryptoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/KeyDerivation.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/database/DatabaseManager.cpp
     ${CMAKE_SOURCE_DIR}/src/core/settings/AppSettings.cpp
     ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/session/UserSession.cpp
     ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp)
 target_link_libraries(test_user_account_service PRIVATE
+    OpenSSL::SSL
+    OpenSSL::Crypto
     ${LIBSODIUM_LIBRARIES}
     ${LIBSECRET_LIBRARIES})
 target_include_directories(test_user_account_service PRIVATE
@@ -1496,3 +1534,31 @@ peubud_add_test(test_vault_file
     ${CMAKE_SOURCE_DIR}/src/core/crypto/SodiumCryptoService.cpp)
 target_link_libraries(test_vault_file PRIVATE ${LIBSODIUM_LIBRARIES})
 target_include_directories(test_vault_file PRIVATE ${LIBSODIUM_INCLUDE_DIRS})
+
+# ADR-001 #212 (Fatia 4 — Foundation): DatabaseManager v2 — setVaultHeader/
+# vaultHeader/vaultIsV2 + open() com autodetect (V2/V1/legado AES-CBC) +
+# encryptAndSave() envelopando em `.pbd` v2 + close() resetando o header
+# (singleton reusado entre logins). Provas T3(a-d): bootstrap de cofre novo
+# grava magic PBD\x02 com header recuperável; reabertura com o mesmo K
+# preserva dado E header; `.pbd` v1 e legado AES-CBC continuam abrindo SEM
+# REGRESSÃO (bloqueante — app em produção com dado real). Isola HOME/
+# XDG_DATA_HOME em QTemporaryDir por teste (mesmo padrão de
+# test_working_db_path.cpp) + close() defensivo no singleton entre testes.
+peubud_add_test(test_database_manager_vault_v2
+    ${CMAKE_SOURCE_DIR}/src/core/database/DatabaseManager.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/VaultFile.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/SodiumCryptoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/AesCryptoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/KeyDerivation.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/settings/AppSettings.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp)
+target_link_libraries(test_database_manager_vault_v2 PRIVATE
+    OpenSSL::SSL
+    OpenSSL::Crypto
+    ${LIBSODIUM_LIBRARIES}
+    ${LIBSECRET_LIBRARIES})
+target_include_directories(test_database_manager_vault_v2 PRIVATE
+    ${LIBSODIUM_INCLUDE_DIRS}
+    ${LIBSECRET_INCLUDE_DIRS})

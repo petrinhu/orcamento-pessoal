@@ -30,18 +30,21 @@ private:
     static UserAccountRecord criarUsuario(const QString &nome, Role role);
 };
 
+// (ADR-001 §8 passo 6/D7, Fatia 4) saltPw/saltRk/kdfOps/kdfMem/
+// wrappedKeyByPass/wrappedKeyByRecovery saíram do registro (migraram pro
+// VaultHeaderData do .pbd v2, D1) — o fixture agora popula o canal de
+// convite (saltInvite/kdfOpsInvite/kdfMemInvite/wrappedMarkerByInvite) no
+// lugar deles.
 UserAccountRecord TestUserAccountRepository::criarUsuario(const QString &nome, Role role)
 {
     UserAccountRecord u;
-    u.username             = nome;
-    u.role                 = role;
-    u.saltPw               = QByteArray(16, 'A');
-    u.saltRk               = QByteArray(16, 'B');
-    u.kdfOps                = 3;
-    u.kdfMem                = 268435456; // 256 MB — MODERATE
-    u.wrappedKeyByPass       = QByteArray(72, 'C');
-    u.wrappedKeyByRecovery   = QByteArray(72, 'D');
+    u.username              = nome;
+    u.role                  = role;
     u.invitePending          = false;
+    u.saltInvite             = QByteArray(16, 'A');
+    u.kdfOpsInvite           = 3;
+    u.kdfMemInvite           = 268435456; // 256 MB — MODERATE
+    u.wrappedMarkerByInvite  = QByteArray(72, 'C');
     return u;
 }
 
@@ -70,12 +73,10 @@ void TestUserAccountRepository::roundTripPreservaRegistros()
 
     QCOMPARE(result.users[0].username, QStringLiteral("admin"));
     QVERIFY(result.users[0].role == Role::Admin);
-    QCOMPARE(result.users[0].saltPw, users[0].saltPw);
-    QCOMPARE(result.users[0].saltRk, users[0].saltRk);
-    QCOMPARE(result.users[0].kdfOps, users[0].kdfOps);
-    QCOMPARE(static_cast<qint64>(result.users[0].kdfMem), static_cast<qint64>(users[0].kdfMem));
-    QCOMPARE(result.users[0].wrappedKeyByPass, users[0].wrappedKeyByPass);
-    QCOMPARE(result.users[0].wrappedKeyByRecovery, users[0].wrappedKeyByRecovery);
+    QCOMPARE(result.users[0].saltInvite, users[0].saltInvite);
+    QCOMPARE(result.users[0].kdfOpsInvite, users[0].kdfOpsInvite);
+    QCOMPARE(static_cast<qint64>(result.users[0].kdfMemInvite), static_cast<qint64>(users[0].kdfMemInvite));
+    QCOMPARE(result.users[0].wrappedMarkerByInvite, users[0].wrappedMarkerByInvite);
     QCOMPARE(result.users[0].invitePending, users[0].invitePending);
 
     QCOMPARE(result.users[1].username, QStringLiteral("maria"));

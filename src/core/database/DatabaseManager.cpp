@@ -63,6 +63,16 @@ void ensureSaveDirSecure(const QString &pbdPath)
 // e renomeia o antigo para <antigo>.bak — nunca deleta o original.
 // Retorna true se o cofre novo foi criado por migração (ou já existia).
 // Retorna false se nenhum cofre existe em nenhum lugar (novo usuário).
+//
+// TODO (ADR-001 §8 passos 6-7/D6, Fatia 5 — fora de escopo da Fatia 4):
+// cofres single-user PRÉ-ADR-001 com username acentuado estão sob o slug
+// ANTIGO (bug "João"->"joo" de UserSession::slug(), corrigido na Fatia 4 —
+// ver AppSettings::slugify). `pbdPathLegado` aqui só cobre o path RELATIVO
+// pré-#181 (`data/<slug>.pbd`); falta um 3º fallback checando o slug antigo
+// (pré-decomposição NFD) no caminho FIXO (`savePathFixo`) para usernames
+// com char fora de `[a-z0-9_ ]`. Depende de `LegacyVaultMigrationService`
+// (ainda não implementado) para decidir QUAL dos dois slugs é a fonte de
+// verdade quando ambos existem — não implementado aqui.
 bool migrarCofreSeNecessario(const QString &pbdPathNovo, const QString &pbdPathLegado)
 {
     if (QFile::exists(pbdPathNovo))
@@ -195,7 +205,15 @@ bool DatabaseManager::save()
 
 bool DatabaseManager::close()
 {
-    if (!m_db.isOpen()) return true; // nada a fechar — não é falha
+    if (!m_db.isOpen()) {
+        // (ADR-001 §8 passo 6/D4, Fatia 4) Nada a fechar, mas ainda reseta
+        // o header — defensivo: evita vazamento entre sessões/testes se
+        // setVaultHeader() foi chamado sem um open() bem-sucedido depois
+        // (ex.: close() defensivo de cleanup() de teste no singleton).
+        m_vaultHeader = VaultHeaderData{};
+        m_vaultIsV2   = false;
+        return true; // nada a fechar — não é falha
+    }
 
     const QString dbPath = m_db.databaseName();
     m_db.close();
@@ -230,6 +248,12 @@ bool DatabaseManager::close()
         sodium_memzero(m_keyLegacy.data(), static_cast<size_t>(m_keyLegacy.size()));
     m_key.clear();
     m_keyLegacy.clear();
+
+    // (ADR-001 §8 passo 6/D4, Fatia 4) Reseta o header v2 — cada sessão de
+    // login é independente; sem isso, o header de UM usuário vazaria pro
+    // open() do PRÓXIMO usuário na mesma execução do processo (singleton).
+    m_vaultHeader = VaultHeaderData{};
+    m_vaultIsV2   = false;
 
     return ok;
 }
@@ -699,6 +723,14 @@ void DatabaseManager::registerSchemaProvider(SchemaProvider provider)
     schemaProviders().push_back(std::move(provider));
 }
 
+// (ADR-001 §8 passo 6/D4, Fatia 4) Ver ordering completo no .h. username
+// vazio força v1 — reservado à migração de cofres legados (Fatia 5).
+void DatabaseManager::setVaultHeader(const VaultHeaderData &header)
+{
+    m_vaultHeader = header;
+    m_vaultIsV2   = !header.username.isEmpty();
+}
+
 // (#191/FIN-02) Verifica a integridade de um arquivo SQLite via
 // `PRAGMA integrity_check`, usando uma conexão QSQLITE própria e
 // somente-leitura — não depende de m_db estar aberto (funciona chamado
@@ -772,7 +804,16 @@ bool DatabaseManager::encryptAndSave(const QString &srcDbPath,
 
     // Always write with the new format (AES-GCM / XChaCha20 + Argon2id key).
     SodiumCryptoService crypto;
-    const QByteArray cipher = crypto.encrypt(plain, key);
+    QByteArray cipher = crypto.encrypt(plain, key);
+
+    // (ADR-001 §8 passo 6/D4, Fatia 4) Envelopa em `.pbd` v2 quando há um
+    // header primed nesta sessão (setVaultHeader() foi chamado — bootstrap
+    // de cofre novo, ou o header já veio restaurado de um open() v2
+    // anterior). D1: o `.pbd` v2 é a ÚNICA fonte de verdade dos wraps de K
+    // de QUALQUER conta (admin e comum) — save()/close()/exportToFile()
+    // herdam o envelope de graça por passarem todos por aqui.
+    if (m_vaultIsV2)
+        cipher = VaultFile::frameV2(m_vaultHeader, cipher);
 
     const QString tmpPath = destPath + QStringLiteral(".new");
     QFile out(tmpPath);
@@ -791,8 +832,33 @@ bool DatabaseManager::decryptAndLoad(const QString &encPath,
 {
     QFile f(encPath);
     if (!f.open(QIODevice::ReadOnly)) return false;
-    const QByteArray cipher = f.readAll();
+    const QByteArray fileBytes = f.readAll();
     f.close();
+
+    // (ADR-001 §8 passo 6/D4, Fatia 4) Separa o header v2 (se houver) do
+    // innerBlob v1 verbatim ANTES de decidir novo-vs-legado — o caminho de
+    // decrypt abaixo (SodiumCryptoService::isNewFormat/decrypt +
+    // AesCryptoService legado) NÃO MUDA, só passa a operar sobre `cipher`
+    // (que é o arquivo inteiro no v1/legado, ou só o innerBlob no v2).
+    QByteArray cipher = fileBytes;
+    if (VaultFile::isV2(fileBytes)) {
+        const VaultFile::ParseResult parsed = VaultFile::parseV2(fileBytes);
+        if (!parsed.ok) {
+            qWarning() << "DatabaseManager::decryptAndLoad: .pbd v2 malformado/corrompido"
+                          " (magic ok, parse falhou) —" << encPath;
+            return false; // fail-closed (D4) — nunca tenta decifrar lixo
+        }
+        m_vaultHeader = parsed.header;
+        m_vaultIsV2   = true;
+        cipher        = parsed.innerBlob;
+    } else {
+        // V1 pós-migração OU legado AES-CBC: reseta o header — o
+        // DatabaseManager é singleton reusado entre logins na mesma
+        // execução do processo; sem este reset, o header de uma sessão v2
+        // anterior vazaria para este login v1/legado.
+        m_vaultHeader = VaultHeaderData{};
+        m_vaultIsV2   = false;
+    }
 
     QByteArray plain;
     try {

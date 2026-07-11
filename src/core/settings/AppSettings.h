@@ -72,6 +72,15 @@ public:
     // workingDbDir() (mesmo diretório-base 0700, mkpath já garantido ali).
     static QString userRegistryPath();
 
+    // (ADR-001 §6/D6, Fatia 4) Fonte ÚNICA de verdade do slug — usada tanto
+    // para derivar o path do cofre (savePathFixo/workingDbPath) quanto por
+    // UserSession::slug() e UserAccountService::slugify() (ambos delegam
+    // aqui). NFD decompõe "ã" em 'a' + combining tilde; removemos as marcas
+    // de combinação (Mark_NonSpacing) ANTES do filtro [a-z0-9_] — "João" ->
+    // "joao" (não "joo", o bug de UserSession::slug() pré-Fatia 4, que só
+    // removia caracteres fora de a-z0-9_ sem decompor Unicode primeiro).
+    static QString slugify(const QString &username);
+
     // Deprecated (#181): callers legados (BackupService usa diretorioPadrao próprio).
     // Mantidos para não quebrar callers externos; internamente não usados mais.
     QString savesFolder() const;

@@ -1,11 +1,12 @@
 #include "UserAccountService.h"
 
+#include "core/database/DatabaseManager.h"
 #include "core/settings/AppSettings.h"
 
 #include <QFile>
-#include <QRegularExpression>
 
 #include <sodium.h>
+#include <unistd.h>   // fsync — rewriteVaultHeader() (D5, escrita atômica)
 
 namespace {
 
@@ -155,22 +156,11 @@ std::optional<QByteArray> UserAccountService::decodeRecoveryKey(const QString &f
 
 QString UserAccountService::slugify(const QString &username)
 {
-    // NFD decompõe "ã" em 'a' + combining tilde; removemos as marcas de
-    // combinação (categoria Mark_NonSpacing) ANTES do filtro [a-z0-9_], daí
-    // "João" -> "joao" (não "joo", que seria o resultado de só remover
-    // tudo fora de a-z0-9_ sem decompor — comportamento atual de
-    // UserSession::slug(), que este método deliberadamente NÃO reusa por
-    // não ser uma função livre e por essa fatia não tocar UserSession.*).
-    const QString decomposed = username.normalized(QString::NormalizationForm_D);
-    QString semAcento;
-    semAcento.reserve(decomposed.size());
-    for (const QChar &c : decomposed) {
-        if (c.category() != QChar::Mark_NonSpacing)
-            semAcento += c;
-    }
-    return semAcento.toLower()
-                     .replace(QLatin1Char(' '), QLatin1Char('_'))
-                     .remove(QRegularExpression(QStringLiteral("[^a-z0-9_]")));
+    // (ADR-001 §6/D6, Fatia 4) Delega à fonte única de verdade —
+    // AppSettings::slugify (compartilhada com UserSession::slug() e com o
+    // path do cofre, savePathFixo). Algoritmo (NFD + remove
+    // Mark_NonSpacing + lowercase + [^a-z0-9_]) documentado lá.
+    return AppSettings::slugify(username);
 }
 
 // ── Consultas ────────────────────────────────────────────────────────────
@@ -223,6 +213,24 @@ bool UserAccountService::pubKeyMatchesAnchor(const QByteArray &filePubKey) const
     return !anchor.isEmpty() && anchor == filePubKey;
 }
 
+// ── Bootstrap de cofre `.pbd` v2 (D3, Fatia 4) ──────────────────────────────
+// Usado por createAdmin() e completeFirstLogin() — setVaultHeader() ANTES
+// do open() (bootstrap: o arquivo ainda não existe, então open() preserva o
+// header primed — ver DatabaseManager::setVaultHeader()); close() em
+// seguida materializa o `.pbd` v2 real no disco (1º save). Qualquer falha
+// aborta sem deixar o singleton aberto — o caller nunca persiste
+// `users.json` apontando pra um cofre que não foi materializado.
+bool UserAccountService::bootstrapVault(const QString &slug, const VaultHeaderData &header,
+                                        const QByteArray &K)
+{
+    DatabaseManager::instance().setVaultHeader(header);
+    if (!DatabaseManager::instance().open(slug, K)) {
+        DatabaseManager::instance().close(); // defensivo — reseta o header primed em caso de falha parcial
+        return false;
+    }
+    return DatabaseManager::instance().close();
+}
+
 // ── Bootstrap do admin (1º run) ─────────────────────────────────────────────
 
 UserAccountService::CreateAdminResult UserAccountService::createAdmin(const QString &username,
@@ -242,45 +250,65 @@ UserAccountService::CreateAdminResult UserAccountService::createAdmin(const QStr
         res.error = QStringLiteral("senha deve ter ao menos %1 caracteres").arg(kMinPasswordLen);
         return res;
     }
+    // Defensivo — bootstrapVault() abre/fecha o singleton DatabaseManager;
+    // se esta instância de processo já tem outro cofre aberto, recusa em
+    // vez de fazer clobbering (mesmo guard de completeFirstLogin, D3).
+    if (DatabaseManager::instance().isOpen()) {
+        res.error = QStringLiteral("operação exige nenhuma sessão de cofre aberta nesta instância");
+        return res;
+    }
 
-    UserAccountRecord admin;
-    admin.username = username;
-    admin.role     = Role::Admin;
-    admin.saltPw   = m_crypto.randomBytes(crypto_pwhash_SALTBYTES);
-    admin.saltRk   = m_crypto.randomBytes(crypto_pwhash_SALTBYTES);
-    admin.kdfOps   = static_cast<int>(kModerateOps);
-    admin.kdfMem   = kModerateMem;
-    admin.invitePending = false;
+    // (ADR-001 §8 passo 6/D1, Fatia 4) Os wraps de K por senha/recovery
+    // moram no header `.pbd` v2 — não mais no UserAccountRecord.
+    VaultHeaderData header;
+    header.username = username;
+    header.saltPw    = m_crypto.randomBytes(crypto_pwhash_SALTBYTES);
+    header.saltRk    = m_crypto.randomBytes(crypto_pwhash_SALTBYTES);
+    header.kdfOps    = static_cast<int>(kModerateOps);
+    header.kdfMem    = kModerateMem;
 
     QByteArray K = m_crypto.randomBytes(kKeyBytes);
     ScopedWipe wipeK(K);
 
     QByteArray passBytes = password.toUtf8();
     ScopedWipe wipePassBytes(passBytes);
-    QByteArray kdfPass = m_crypto.deriveKey(passBytes, admin.saltPw, kModerateOps, kModerateMem);
+    QByteArray kdfPass = m_crypto.deriveKey(passBytes, header.saltPw, kModerateOps, kModerateMem);
     ScopedWipe wipeKdfPass(kdfPass);
 
     const QByteArray recoveryKey = m_crypto.randomBytes(kRecoveryKeyBytes); // vai pro caller — não wipar aqui
-    QByteArray kdfRecovery = m_crypto.deriveKey(recoveryKey, admin.saltRk, kModerateOps, kModerateMem);
+    QByteArray kdfRecovery = m_crypto.deriveKey(recoveryKey, header.saltRk, kModerateOps, kModerateMem);
     ScopedWipe wipeKdfRecovery(kdfRecovery);
 
-    admin.wrappedKeyByPass     = m_crypto.wrapKey(K, kdfPass);
-    admin.wrappedKeyByRecovery = m_crypto.wrapKey(K, kdfRecovery);
+    header.wrappedKeyByPass     = m_crypto.wrapKey(K, kdfPass);
+    header.wrappedKeyByRecovery = m_crypto.wrapKey(K, kdfRecovery);
 
     SodiumCryptoService::SignKeypair signKp = m_crypto.generateSignKeypair();
     ScopedWipe wipeSignSecret(signKp.secretKey);
 
+    UserAccountRecord admin;
+    admin.username     = username;
+    admin.role         = Role::Admin;
+    admin.invitePending = false;
     admin.wrappedSignKeyByPass     = m_crypto.wrapKey(signKp.secretKey, kdfPass);
     admin.wrappedSignKeyByRecovery = m_crypto.wrapKey(signKp.secretKey, kdfRecovery);
 
-    // (item E) grava a âncora ANTES do saveAll: se o processo morrer entre
-    // os dois passos, o pior caso é users.json inexistente + âncora órfã no
+    // (item E) grava a âncora ANTES do cofre/registro: se o processo morrer
+    // no meio, o pior caso é users.json/.pbd ausentes + âncora órfã no
     // keychain (isFirstRun() continua true, próxima tentativa de
     // createAdmin sobrescreve a âncora — sem risco de segurança, só
-    // resíduo). O inverso (users.json com admin mas sem âncora) seria pior
-    // — abriria a janela de pubkey-swap que este item existe pra fechar.
+    // resíduo). O inverso (registro com admin mas sem âncora) seria pior —
+    // abriria a janela de pubkey-swap que este item existe pra fechar.
     if (!m_secrets.store(QString::fromLatin1(kAdminPubKeyAnchorKey), signKp.publicKey)) {
         res.error = QStringLiteral("falha ao gravar a âncora do admin no keychain do sistema");
+        return res;
+    }
+
+    // (D3) Bootstrapa o .pbd v2 do admin ANTES de gravar users.json —
+    // falha aqui aborta sem tocar o registro central (estado limpo,
+    // retentável; a próxima tentativa de createAdmin reescreve tudo).
+    const QString slug = slugify(username);
+    if (!bootstrapVault(slug, header, K)) {
+        res.error = QStringLiteral("falha ao inicializar o cofre do admin (.pbd v2)");
         return res;
     }
 
@@ -325,25 +353,26 @@ UserAccountService::CreateUserResult UserAccountService::createUser(const QStrin
     }
 
     UserAccountRecord novo;
-    novo.username = username;
-    novo.role     = role;
-    novo.kdfOps   = static_cast<int>(kModerateOps);
-    novo.kdfMem   = kModerateMem;
-    // saltPw/wrappedKeyByPass ficam vazios — só existem após completeFirstLogin.
-    novo.saltRk   = m_crypto.randomBytes(crypto_pwhash_SALTBYTES); // salt do invite key (reaproveita o slot "_rk")
+    novo.username     = username;
+    novo.role         = role;
     novo.invitePending = true;
+    novo.saltInvite    = m_crypto.randomBytes(crypto_pwhash_SALTBYTES);
+    novo.kdfOpsInvite  = static_cast<int>(kModerateOps);
+    novo.kdfMemInvite  = kModerateMem;
 
-    QByteArray K = m_crypto.randomBytes(kKeyBytes);
-    ScopedWipe wipeK(K);
+    // (D3, decisão do líder 2026-07-11) A invite key embrulha um MARCADOR
+    // ALEATÓRIO descartável de 32B — NUNCA o K real. O K real só nasce em
+    // completeFirstLogin(), gerado pelo PRÓPRIO usuário; o admin nunca gera
+    // nem processa K de ninguém, nem indiretamente (o marcador desembrulhado
+    // é jogado fora, nunca vira dado de fato — prova de segurança T6).
+    QByteArray marker = m_crypto.randomBytes(kKeyBytes);
+    ScopedWipe wipeMarker(marker);
 
     const QByteArray inviteKey = m_crypto.randomBytes(kRecoveryKeyBytes); // vai pro caller — não wipar
-    QByteArray kdfInvite = m_crypto.deriveKey(inviteKey, novo.saltRk, kModerateOps, kModerateMem);
+    QByteArray kdfInvite = m_crypto.deriveKey(inviteKey, novo.saltInvite, kModerateOps, kModerateMem);
     ScopedWipe wipeKdfInvite(kdfInvite);
 
-    // (ADR-001 §3.5) K embrulhada SÓ por KDF(invite_key) neste momento —
-    // reaproveita o slot wrappedKeyByRecovery até completeFirstLogin trocar
-    // por um wrap de recovery key definitivo.
-    novo.wrappedKeyByRecovery = m_crypto.wrapKey(K, kdfInvite);
+    novo.wrappedMarkerByInvite = m_crypto.wrapKey(marker, kdfInvite);
 
     QVector<UserAccountRecord> users = loaded.users;
     users.append(novo);
@@ -358,6 +387,9 @@ UserAccountService::CreateUserResult UserAccountService::createUser(const QStrin
 }
 
 // ── 1º login do usuário convidado (define a própria senha) ─────────────────
+// (ADR-001 §8 passo 6/D3, Fatia 4) 100% self-service — NÃO toca
+// users.json, então não depende de m_adminSignKey. O admin pode estar
+// offline/deslogado o tempo todo.
 
 UserAccountService::FirstLoginResult UserAccountService::completeFirstLogin(
     const QString &username, const QByteArray &inviteKey, const QString &newPassword)
@@ -366,6 +398,14 @@ UserAccountService::FirstLoginResult UserAccountService::completeFirstLogin(
 
     if (newPassword.size() < kMinPasswordLen) {
         res.error = QStringLiteral("senha deve ter ao menos %1 caracteres").arg(kMinPasswordLen);
+        return res;
+    }
+    // Defensivo — bootstrapVault() abre/fecha o singleton DatabaseManager;
+    // se esta instância de processo já tem outro cofre aberto (ex.: sessão
+    // do admin logado com o próprio cofre financeiro aberto), recusa em
+    // vez de fazer clobbering.
+    if (DatabaseManager::instance().isOpen()) {
+        res.error = QStringLiteral("operação exige nenhuma sessão de cofre aberta nesta instância");
         return res;
     }
 
@@ -379,70 +419,76 @@ UserAccountService::FirstLoginResult UserAccountService::completeFirstLogin(
         return res;
     }
 
-    // Ver nota de design no topo de UserAccountService.h: persistir exige
-    // resignar o registro central, e só a signing key do admin produz uma
-    // assinatura válida. Limitação temporária desta fatia — NÃO expõe a
-    // senha do novo usuário ao admin (ela nunca passa pelo código dele),
-    // só a assinatura de metadados depende de m_adminSignKey estar
-    // disponível nesta instância do Service.
-    if (m_adminSignKey.isEmpty()) {
-        res.error = QStringLiteral(
-            "não foi possível concluir: persistência exige uma sessão com "
-            "assinatura disponível nesta instância (ADR-001 §8 passo 6 — "
-            ".pbd v2 auto-contido — fecha essa dependência numa fatia futura)");
-        return res;
-    }
-
     const int idx = findUserIndex(loaded.users, username);
     if (idx < 0) {
         res.error = QStringLiteral("usuário não encontrado");
         return res;
     }
 
-    UserAccountRecord u = loaded.users[idx];
+    const UserAccountRecord &u = loaded.users[idx];
     if (!u.invitePending) {
         res.error = QStringLiteral("usuário não está com convite pendente");
         return res;
     }
 
-    QByteArray kdfInvite = m_crypto.deriveKey(inviteKey, u.saltRk,
-                                              static_cast<unsigned long long>(u.kdfOps), u.kdfMem);
+    const QString slug      = slugify(username);
+    const QString vaultPath = AppSettings::savePathFixo(slug);
+    if (QFile::exists(vaultPath)) {
+        // (D3 passo 2 — idempotência) já existe .pbd para este slug: ou o
+        // 1º login já foi concluído antes (invitePending stale, D3 passo
+        // 10) ou houve colisão de slug — recusa em vez de sobrescrever um
+        // cofre real.
+        res.error = QStringLiteral("já existe um cofre para este usuário — 1º login já concluído?");
+        return res;
+    }
+
+    QByteArray kdfInvite = m_crypto.deriveKey(inviteKey, u.saltInvite,
+                                              static_cast<unsigned long long>(u.kdfOpsInvite), u.kdfMemInvite);
     ScopedWipe wipeKdfInvite(kdfInvite);
 
-    const auto unwrapped = m_crypto.unwrapKey(u.wrappedKeyByRecovery, kdfInvite);
-    if (!unwrapped) {
+    // Unwrap só prova posse da invite key — o valor desembrulhado é um
+    // MARCADOR descartável (D3), NUNCA o K real. Descartado aqui mesmo,
+    // nunca vira res.dataKey (ver prova de segurança T6 no relatório).
+    const auto unwrappedMarker = m_crypto.unwrapKey(u.wrappedMarkerByInvite, kdfInvite);
+    if (!unwrappedMarker) {
         res.error = QStringLiteral("invite key inválida");
         return res;
     }
-    const QByteArray K = *unwrapped; // vai para res.dataKey — não wipar
 
-    QByteArray newSaltPw = m_crypto.randomBytes(crypto_pwhash_SALTBYTES);
+    // (D3 passo 5) K NOVO nasce aqui — gerado pelo PRÓPRIO usuário, sem
+    // vínculo criptográfico com o marcador descartado acima.
+    const QByteArray K = m_crypto.randomBytes(kKeyBytes); // vai para res.dataKey — não wipar
+
+    VaultHeaderData header;
+    header.username = username;
+    header.saltPw    = m_crypto.randomBytes(crypto_pwhash_SALTBYTES);
+    header.saltRk    = m_crypto.randomBytes(crypto_pwhash_SALTBYTES);
+    header.kdfOps    = static_cast<int>(kModerateOps);
+    header.kdfMem    = kModerateMem;
+
     QByteArray passBytes = newPassword.toUtf8();
     ScopedWipe wipePassBytes(passBytes);
-    QByteArray kdfPass = m_crypto.deriveKey(passBytes, newSaltPw, kModerateOps, kModerateMem);
+    QByteArray kdfPass = m_crypto.deriveKey(passBytes, header.saltPw, kModerateOps, kModerateMem);
     ScopedWipe wipeKdfPass(kdfPass);
 
     // (ADR-001 §3.5) recovery key NOVA e definitiva — não reusa o invite key.
     const QByteArray newRecoveryKey = m_crypto.randomBytes(kRecoveryKeyBytes); // vai pro caller
-    QByteArray newSaltRk = m_crypto.randomBytes(crypto_pwhash_SALTBYTES);
-    QByteArray kdfRecovery = m_crypto.deriveKey(newRecoveryKey, newSaltRk, kModerateOps, kModerateMem);
+    QByteArray kdfRecovery = m_crypto.deriveKey(newRecoveryKey, header.saltRk, kModerateOps, kModerateMem);
     ScopedWipe wipeKdfRecovery(kdfRecovery);
 
-    u.wrappedKeyByPass     = m_crypto.wrapKey(K, kdfPass);
-    u.saltPw               = newSaltPw;
-    u.wrappedKeyByRecovery = m_crypto.wrapKey(K, kdfRecovery);
-    u.saltRk               = newSaltRk;
-    u.kdfOps                = static_cast<int>(kModerateOps);
-    u.kdfMem                = kModerateMem;
-    u.invitePending          = false;
+    header.wrappedKeyByPass     = m_crypto.wrapKey(K, kdfPass);
+    header.wrappedKeyByRecovery = m_crypto.wrapKey(K, kdfRecovery);
 
-    QVector<UserAccountRecord> users = loaded.users;
-    users[idx] = u;
-    if (!m_repo.saveAll(users, loaded.adminPubKey, m_adminSignKey)) {
-        res.error = QStringLiteral("falha ao gravar users.json");
+    if (!bootstrapVault(slug, header, K)) {
+        res.error = QStringLiteral("falha ao inicializar o cofre do usuário (.pbd v2)");
         return res;
     }
 
+    // (D3 passo 10) users.json NÃO é gravado aqui de propósito — mutação de
+    // senha/recovery de usuário comum toca só o .pbd dele (D1). invitePending
+    // fica true, VESTIGIAL: o gate real de login (verifyLogin, D5) é por
+    // EXISTÊNCIA DO ARQUIVO .pbd, não pela flag. É isso que fecha "1º login
+    // sem admin/assinatura online" (prova T6).
     res.ok = true;
     res.dataKey = K;
     res.recoveryKeyPlaintext = newRecoveryKey;
@@ -483,18 +529,42 @@ UserAccountService::LoginResult UserAccountService::verifyLogin(const QString &u
     }
 
     const UserAccountRecord &u = loaded.users[idx];
-    if (u.invitePending) {
-        res.status = LoginResult::InvitePending;
+    const QString slug      = slugify(username);
+    const QString vaultPath = AppSettings::savePathFixo(slug);
+
+    // (ADR-001 §8 passo 6/D5, Fatia 4) Gate por EXISTÊNCIA DO ARQUIVO —
+    // autoritativo. invitePending só desempata o caso anômalo (registro diz
+    // completo mas sem cofre no disco → fail-secure, NUNCA "senha errada").
+    if (!QFile::exists(vaultPath)) {
+        res.status = u.invitePending ? LoginResult::InvitePending : LoginResult::IntegrityError;
+        return res;
+    }
+
+    QFile f(vaultPath);
+    if (!f.open(QIODevice::ReadOnly)) {
+        res.status = LoginResult::IntegrityError;
+        return res;
+    }
+    const QByteArray fileBytes = f.readAll();
+    f.close();
+
+    const auto parsed = VaultFile::parseV2(fileBytes);
+    if (!parsed.ok) {
+        // Cofre pré-ADR-001 (v1 puro, sem header v2 — conta em migração,
+        // Fatia 5, fora de escopo) OU corrompido; ambos caem em
+        // IntegrityError aqui (fail-secure).
+        res.status = LoginResult::IntegrityError;
         return res;
     }
 
     QByteArray passBytes = password.toUtf8();
     ScopedWipe wipePassBytes(passBytes);
-    QByteArray kdfPass = m_crypto.deriveKey(passBytes, u.saltPw,
-                                            static_cast<unsigned long long>(u.kdfOps), u.kdfMem);
+    QByteArray kdfPass = m_crypto.deriveKey(passBytes, parsed.header.saltPw,
+                                            static_cast<unsigned long long>(parsed.header.kdfOps),
+                                            parsed.header.kdfMem);
     ScopedWipe wipeKdfPass(kdfPass);
 
-    const auto unwrapped = m_crypto.unwrapKey(u.wrappedKeyByPass, kdfPass);
+    const auto unwrapped = m_crypto.unwrapKey(parsed.header.wrappedKeyByPass, kdfPass);
     if (!unwrapped) {
         res.status = LoginResult::WrongPassword;
         return res;
@@ -552,6 +622,10 @@ bool UserAccountService::removeUser(const QString &username)
 }
 
 // ── Reset de senha via recovery key ─────────────────────────────────────
+// (ADR-001 §8 passo 6/D5, Fatia 4) Operação de ARQUIVO PURA sobre o .pbd
+// v2 do usuário — sem DatabaseManager (o innerBlob nunca é re-cifrado, só
+// copiado verbatim), sem tocar users.json quando o alvo é usuário comum
+// (logo, sem depender de m_adminSignKey nesse caso).
 
 UserAccountService::RecoveryResult UserAccountService::resetPasswordViaRecovery(
     const QString &username, const QByteArray &recoveryKey, const QString &newPassword)
@@ -578,51 +652,47 @@ UserAccountService::RecoveryResult UserAccountService::resetPasswordViaRecovery(
         res.error = QStringLiteral("usuário não encontrado");
         return res;
     }
+    const UserAccountRecord u = loaded.users[idx];
 
-    UserAccountRecord u = loaded.users[idx];
-    if (u.invitePending) {
-        res.error = QStringLiteral("usuário ainda não completou o 1º login (convite pendente)");
+    // (D5, Fatia 4) Gate por EXISTÊNCIA DO ARQUIVO — mesma lógica de
+    // verifyLogin (D5). NÃO checar `u.invitePending` aqui: desde D3 passo
+    // 10, essa flag fica VESTIGIAL (true) para sempre depois do 1º login
+    // bem-sucedido — checá-la recusaria reset de senha de todo usuário
+    // comum que já tem cofre. O arquivo é a fonte de verdade.
+    const QString slug      = slugify(username);
+    const QString vaultPath = AppSettings::savePathFixo(slug);
+    if (!QFile::exists(vaultPath)) {
+        res.error = QStringLiteral("cofre do usuário não encontrado — convite ainda pendente?");
         return res;
     }
 
-    QByteArray kdfRecovery = m_crypto.deriveKey(recoveryKey, u.saltRk,
-                                                static_cast<unsigned long long>(u.kdfOps), u.kdfMem);
+    QFile f(vaultPath);
+    if (!f.open(QIODevice::ReadOnly)) {
+        res.error = QStringLiteral("falha ao abrir o cofre do usuário");
+        return res;
+    }
+    const QByteArray fileBytes = f.readAll();
+    f.close();
+
+    const auto parsed = VaultFile::parseV2(fileBytes);
+    if (!parsed.ok) {
+        res.error = QStringLiteral(
+            "cofre em formato antigo (pré-ADR-001) — reset via recovery exige "
+            "migração para o .pbd v2 primeiro (ADR-001 §8 passos 6-7, Fatia 5)");
+        return res;
+    }
+
+    QByteArray kdfRecovery = m_crypto.deriveKey(recoveryKey, parsed.header.saltRk,
+                                                static_cast<unsigned long long>(parsed.header.kdfOps),
+                                                parsed.header.kdfMem);
     ScopedWipe wipeKdfRecovery(kdfRecovery);
 
-    const auto unwrapped = m_crypto.unwrapKey(u.wrappedKeyByRecovery, kdfRecovery);
+    const auto unwrapped = m_crypto.unwrapKey(parsed.header.wrappedKeyByRecovery, kdfRecovery);
     if (!unwrapped) {
         res.error = QStringLiteral("recovery key inválida");
         return res;
     }
-    const QByteArray K = *unwrapped; // K nunca muda (D-D/§2) — não wipar, só reusada pros re-wraps abaixo
-
-    // Quem assina a regravação do registro central (ver nota de design no
-    // .h): se o alvo É o admin, a própria recovery key dele já desembrulha
-    // a signing key — auto-suficiente, sem depender de sessão alguma
-    // (cobre o cenário real: admin esqueceu a senha e está deslogado).
-    // Se o alvo é um usuário comum, precisa de uma sessão de admin já
-    // autenticada nesta instância (mesma limitação temporária de
-    // completeFirstLogin — ver ADR-001 §8 passo 6).
-    QByteArray signSecretForSaving;
-    ScopedWipe wipeSignSecretForSaving(signSecretForSaving);
-
-    if (u.role == Role::Admin) {
-        const auto unwrappedSign = m_crypto.unwrapKey(u.wrappedSignKeyByRecovery, kdfRecovery);
-        if (!unwrappedSign) {
-            res.error = QStringLiteral("falha ao recuperar a signing key do admin via recovery key — registro corrompido?");
-            return res;
-        }
-        signSecretForSaving = *unwrappedSign;
-    } else {
-        if (m_adminSignKey.isEmpty()) {
-            res.error = QStringLiteral(
-                "não foi possível concluir: reset de usuário comum exige uma "
-                "sessão de admin disponível nesta instância (mesma limitação "
-                "temporária de completeFirstLogin — ver ADR-001 §8 passo 6)");
-            return res;
-        }
-        signSecretForSaving = m_adminSignKey; // cópia COW — wipe local não afeta o membro (ver ScopedWipe)
-    }
+    const QByteArray K = *unwrapped; // K nunca muda (D-D/§2) — não wipar, reusada só pro re-wrap abaixo
 
     QByteArray newSaltPw = m_crypto.randomBytes(crypto_pwhash_SALTBYTES);
     QByteArray passBytes = newPassword.toUtf8();
@@ -630,26 +700,79 @@ UserAccountService::RecoveryResult UserAccountService::resetPasswordViaRecovery(
     QByteArray kdfPass = m_crypto.deriveKey(passBytes, newSaltPw, kModerateOps, kModerateMem);
     ScopedWipe wipeKdfPass(kdfPass);
 
-    u.wrappedKeyByPass = m_crypto.wrapKey(K, kdfPass);
-    u.saltPw           = newSaltPw;
-    u.kdfOps             = static_cast<int>(kModerateOps);
-    u.kdfMem             = kModerateMem;
-    // wrappedKeyByRecovery/saltRk permanecem intactos — recovery não rotaciona.
+    VaultHeaderData newHeader = parsed.header;
+    newHeader.saltPw           = newSaltPw;
+    newHeader.wrappedKeyByPass = m_crypto.wrapKey(K, kdfPass);
+    // wrappedKeyByRecovery/saltRk permanecem intactos — recovery não rotaciona (D-D/§2).
 
-    if (u.role == Role::Admin) {
-        // Signing key em si não muda — só o wrap POR SENHA dela precisa
-        // ser regravado (o wrap por recovery já estava correto, é o que
-        // acabamos de usar pra abrir tudo).
-        u.wrappedSignKeyByPass = m_crypto.wrapKey(signSecretForSaving, kdfPass);
-    }
-
-    QVector<UserAccountRecord> updated = loaded.users;
-    updated[idx] = u;
-    if (!m_repo.saveAll(updated, loaded.adminPubKey, signSecretForSaving)) {
-        res.error = QStringLiteral("falha ao gravar users.json");
+    // (D5 passo 7) Escrita atômica: temp + fsync + rename. innerBlob
+    // preservado VERBATIM por rewriteVaultHeader() — K nunca muda, o .pbd
+    // NÃO é re-cifrado, só o header é regravado.
+    if (!rewriteVaultHeader(vaultPath, newHeader)) {
+        res.error = QStringLiteral("falha ao regravar o cofre com a nova senha");
         return res;
     }
 
+    if (u.role == Role::Admin) {
+        // (D5 passo 5) Admin recuperando a PRÓPRIA senha: a própria
+        // recovery key já desembrulha a signing key dele (mesmo
+        // kdfRecovery) — auto-suficiente, sem depender de m_adminSignKey
+        // nem de sessão alguma (cobre o cenário real: admin esqueceu a
+        // senha e está deslogado).
+        const auto unwrappedSign = m_crypto.unwrapKey(u.wrappedSignKeyByRecovery, kdfRecovery);
+        if (!unwrappedSign) {
+            res.error = QStringLiteral(
+                "falha ao recuperar a signing key do admin via recovery key — registro corrompido?");
+            return res;
+        }
+        QByteArray signSecret = *unwrappedSign;
+        ScopedWipe wipeSignSecret(signSecret);
+
+        UserAccountRecord updated = u;
+        updated.wrappedSignKeyByPass = m_crypto.wrapKey(signSecret, kdfPass);
+
+        QVector<UserAccountRecord> users = loaded.users;
+        users[idx] = updated;
+        if (!m_repo.saveAll(users, loaded.adminPubKey, signSecret)) {
+            res.error = QStringLiteral("falha ao gravar users.json (wrap de senha da signing key)");
+            return res;
+        }
+    }
+    // Usuário comum: nenhum toque em users.json (D5 passo 6).
+
     res.ok = true;
     return res;
+}
+
+// ── Regrava só o header do .pbd v2, innerBlob verbatim (D5) ────────────────
+
+bool UserAccountService::rewriteVaultHeader(const QString &vaultPath, const VaultHeaderData &newHeader)
+{
+    QFile in(vaultPath);
+    if (!in.open(QIODevice::ReadOnly))
+        return false;
+    const QByteArray fileBytes = in.readAll();
+    in.close();
+
+    const auto parsed = VaultFile::parseV2(fileBytes);
+    if (!parsed.ok)
+        return false; // não deveria acontecer — já validado pelo caller antes de chegar aqui
+
+    const QByteArray framed = VaultFile::frameV2(newHeader, parsed.innerBlob);
+
+    const QString tmpPath = vaultPath + QStringLiteral(".new");
+    QFile out(tmpPath);
+    if (!out.open(QIODevice::WriteOnly))
+        return false;
+    if (out.write(framed) != framed.size()) {
+        out.close();
+        QFile::remove(tmpPath);
+        return false;
+    }
+    out.flush();
+    ::fsync(out.handle()); // durabilidade — sobrevive a crash antes do rename atômico
+    out.close();
+
+    QFile::remove(vaultPath);
+    return QFile::rename(tmpPath, vaultPath);
 }

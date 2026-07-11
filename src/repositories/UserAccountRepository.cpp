@@ -27,23 +27,27 @@ std::optional<Role> roleFromString(const QString &s)
     return std::nullopt;
 }
 
+// (ADR-001 §8 passo 6/D7, Fatia 4) users.json v2 — os 6 campos de wrap de K
+// por senha/recovery MIGRARAM para VaultHeaderData (.pbd v2 de cada cofre,
+// D1). Aqui sobra só o canal de convite (saltInvite/kdfOpsInvite/
+// kdfMemInvite/wrappedMarkerByInvite — vestigial após completeFirstLogin,
+// nunca apagado) + os campos slim (username/role/invitePending) + a signing
+// key do admin (inalterada desde a Fatia 2).
 QJsonObject userToJson(const UserAccountRecord &u)
 {
-    QJsonObject kdf;
-    kdf[QStringLiteral("salt_pw")] = QString::fromLatin1(u.saltPw.toBase64());
-    kdf[QStringLiteral("salt_rk")] = QString::fromLatin1(u.saltRk.toBase64());
-    kdf[QStringLiteral("ops")]     = static_cast<qint64>(u.kdfOps);
-    kdf[QStringLiteral("mem")]     = static_cast<qint64>(u.kdfMem);
+    QJsonObject invite;
+    invite[QStringLiteral("salt")]           = QString::fromLatin1(u.saltInvite.toBase64());
+    invite[QStringLiteral("ops")]            = static_cast<qint64>(u.kdfOpsInvite);
+    invite[QStringLiteral("mem")]            = static_cast<qint64>(u.kdfMemInvite);
+    invite[QStringLiteral("wrapped_marker")] = QString::fromLatin1(u.wrappedMarkerByInvite.toBase64());
 
     QJsonObject o;
-    o[QStringLiteral("username")]                = u.username;
-    o[QStringLiteral("role")]                    = roleToString(u.role);
-    o[QStringLiteral("kdf_params")]               = kdf;
-    o[QStringLiteral("wrapped_key_by_pass")]      = QString::fromLatin1(u.wrappedKeyByPass.toBase64());
-    o[QStringLiteral("wrapped_key_by_recovery")]  = QString::fromLatin1(u.wrappedKeyByRecovery.toBase64());
-    o[QStringLiteral("invite_pending")]           = u.invitePending;
+    o[QStringLiteral("username")]       = u.username;
+    o[QStringLiteral("role")]           = roleToString(u.role);
+    o[QStringLiteral("invite_pending")] = u.invitePending;
+    o[QStringLiteral("invite")]         = invite;
     // (Fatia 2) admin-only — QByteArray() vazio vira "" em base64, round-trip
-    // idêntico ao padrão já usado acima para os wraps de K.
+    // idêntico ao padrão já usado acima para os wraps de convite.
     o[QStringLiteral("wrapped_signkey_by_pass")]     = QString::fromLatin1(u.wrappedSignKeyByPass.toBase64());
     o[QStringLiteral("wrapped_signkey_by_recovery")] = QString::fromLatin1(u.wrappedSignKeyByRecovery.toBase64());
     return o;
@@ -62,24 +66,20 @@ std::optional<UserAccountRecord> userFromJson(const QJsonValue &v)
     const auto roleOpt = roleFromString(o.value(QStringLiteral("role")).toString());
     if (!roleOpt) return std::nullopt;
 
-    if (!o.value(QStringLiteral("kdf_params")).isObject())
+    if (!o.value(QStringLiteral("invite")).isObject())
         return std::nullopt;
-    const QJsonObject kdf = o.value(QStringLiteral("kdf_params")).toObject();
+    const QJsonObject invite = o.value(QStringLiteral("invite")).toObject();
 
     UserAccountRecord u;
-    u.username             = o.value(QStringLiteral("username")).toString();
-    u.role                 = *roleOpt;
-    u.saltPw               = QByteArray::fromBase64(kdf.value(QStringLiteral("salt_pw")).toString().toLatin1());
-    u.saltRk                = QByteArray::fromBase64(kdf.value(QStringLiteral("salt_rk")).toString().toLatin1());
-    u.kdfOps                = kdf.value(QStringLiteral("ops")).toInt();
-    u.kdfMem                = static_cast<size_t>(kdf.value(QStringLiteral("mem")).toDouble());
-    u.wrappedKeyByPass       = QByteArray::fromBase64(o.value(QStringLiteral("wrapped_key_by_pass")).toString().toLatin1());
-    u.wrappedKeyByRecovery   = QByteArray::fromBase64(o.value(QStringLiteral("wrapped_key_by_recovery")).toString().toLatin1());
+    u.username               = o.value(QStringLiteral("username")).toString();
+    u.role                   = *roleOpt;
     u.invitePending          = o.value(QStringLiteral("invite_pending")).toBool();
-    // (Fatia 2) campo ausente (registro de usuário comum, ou users.json
-    // gravado pela Fatia 1 antes destes 2 campos existirem) -> toString()
-    // vazio -> fromBase64 vazio -> QByteArray() — mesma convenção acima,
-    // sem quebrar compatibilidade com registros antigos.
+    u.saltInvite             = QByteArray::fromBase64(invite.value(QStringLiteral("salt")).toString().toLatin1());
+    u.kdfOpsInvite           = invite.value(QStringLiteral("ops")).toInt();
+    u.kdfMemInvite           = static_cast<size_t>(invite.value(QStringLiteral("mem")).toDouble());
+    u.wrappedMarkerByInvite  = QByteArray::fromBase64(invite.value(QStringLiteral("wrapped_marker")).toString().toLatin1());
+    // (Fatia 2) campo ausente (registro de usuário comum) -> toString()
+    // vazio -> fromBase64 vazio -> QByteArray() — mesma convenção acima.
     u.wrappedSignKeyByPass     = QByteArray::fromBase64(o.value(QStringLiteral("wrapped_signkey_by_pass")).toString().toLatin1());
     u.wrappedSignKeyByRecovery = QByteArray::fromBase64(o.value(QStringLiteral("wrapped_signkey_by_recovery")).toString().toLatin1());
     return u;
@@ -199,7 +199,14 @@ bool UserAccountRepository::saveAll(const QVector<UserAccountRecord> &users,
                                     const QByteArray &adminPubKey,
                                     const QByteArray &adminSignSecretKey)
 {
-    constexpr int kVersion = 1;
+    // (ADR-001 §8 passo 6/D7, Fatia 4) bump 1->2: schema de registro mudou
+    // (wraps de K saíram, canal de convite entrou — ver userToJson/
+    // userFromJson). loadAll() é agnóstico à versão (lê o inteiro gravado e
+    // usa no canonicalContent para checar a assinatura), então versões 1 e
+    // 2 verificam corretamente; não há suporte a LER conteúdo v1 antigo com
+    // o schema novo (nenhum arquivo v1 real existe em produção ainda — ADR
+    // aprovado em 2026-07-11, nenhuma release pública usou a Fatia 1/2).
+    constexpr int kVersion = 2;
 
     if (adminPubKey.size() != crypto_sign_PUBLICKEYBYTES
         || adminSignSecretKey.size() != crypto_sign_SECRETKEYBYTES) {

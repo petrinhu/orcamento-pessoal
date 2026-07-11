@@ -1,7 +1,8 @@
 #include "UserSession.h"
 
+#include "core/settings/AppSettings.h"
+
 #include <QSettings>
-#include <QRegularExpression>
 
 #include <sodium.h>   // sodium_memzero — apaga a chave em memória no logout
 
@@ -46,9 +47,10 @@ bool UserSession::isLoggedIn() const
 
 QString UserSession::slug() const
 {
-    return m_name.toLower()
-                 .replace(QLatin1Char(' '), QLatin1Char('_'))
-                 .remove(QRegularExpression(QStringLiteral("[^a-z0-9_]")));
+    // (ADR-001 §6/D6, Fatia 4) Delega à fonte única de verdade — corrige o
+    // bug pré-existente "João" -> "joo" (esta implementação não decompunha
+    // Unicode antes do filtro [a-z0-9_]; AppSettings::slugify decompõe).
+    return AppSettings::slugify(m_name);
 }
 
 void UserSession::saveLastName(const QString &name)

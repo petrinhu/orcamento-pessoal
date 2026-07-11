@@ -3,6 +3,7 @@
 #include "models/UserAccountRecord.h"
 #include "repositories/UserAccountRepository.h"
 #include "core/crypto/SodiumCryptoService.h"
+#include "core/crypto/VaultFile.h"
 #include "core/secret/SecretStoreService.h"
 
 #include <QByteArray>
@@ -11,13 +12,13 @@
 
 #include <optional>
 
-// (ADR-001 #212 §3/§4/§6/§8, Fatia 2) Regra de negócio de gestão de
-// usuários: envelope encryption (wrap/unwrap de K), fluxo invite-key
-// (D-A/CWE-522), recovery key (Crockford Base32 + checksum local), sessão
-// de assinatura do admin (signing key Ed25519 em memória, só enquanto
-// logado) e verificação cruzada do admin_pubkey do arquivo contra a âncora
-// gravada no SecretStoreService (defesa em profundidade anti pubkey-swap —
-// achado do spot-check da Fatia 1, item E do brief desta tarefa).
+// (ADR-001 #212 §3/§4/§6/§8, Fatia 2 + Fatia 4) Regra de negócio de gestão
+// de usuários: envelope encryption (wrap/unwrap de K), fluxo invite-key
+// (D-A/CWE-522, com marcador descartável — D3), recovery key (Crockford
+// Base32 + checksum local), sessão de assinatura do admin (signing key
+// Ed25519 em memória, só enquanto logado) e verificação cruzada do
+// admin_pubkey do arquivo contra a âncora gravada no SecretStoreService
+// (defesa em profundidade anti pubkey-swap — item E do brief da Fatia 1).
 //
 // Sem exceção como controle de fluxo (CONTRACT §6.4/§413): toda operação
 // pública devolve um struct de resultado ou um enum de status; nenhuma
@@ -27,33 +28,17 @@
 // alimenta esses métodos com tamanhos inválidos (os gera/deriva ele mesmo),
 // então essas exceções nunca deveriam disparar em uso normal.
 //
-// DECISÃO DE DESIGN MAIS DELICADA (documentada aqui + no relatório da
-// tarefa): UserAccountRepository::saveAll() SEMPRE exige a signing secret
-// key Ed25519 do admin para gravar o registro central (users.json) —
-// garantia deliberada da Fatia 1 contra CWE-269 (auto-promoção a admin).
-// completeFirstLogin() e resetPasswordViaRecovery() (usuário comum) MUTAM
-// esse registro (gravam o wrap por senha pela 1ª vez / trocam o wrap por
-// senha), mas o usuário comum NUNCA tem uma signing key própria (só o
-// admin tem, por design do ADR-001 §4). A solução "correta" e completa do
-// ADR (§5.2/§8 passo 6: gravar esses wraps no header auto-contido do
-// próprio .pbd v2 do usuário, que não exige assinatura do admin) depende
-// de DatabaseManager — Foundation, FORA DO ESCOPO desta fatia (Back/regra
-// de negócio). Resolução adotada para esta fatia:
-//   • completeFirstLogin(): exige m_adminSignKey preenchida (mesma sessão
-//     de assinatura de createUser/removeUser) para poder resignar o
-//     registro. Isso NÃO viola CWE-522/D-A — a senha do novo usuário nunca
-//     passa pelo código do admin, só a ASSINATURA de metadados (JSON sem a
-//     senha em claro) precisa da chave do admin. É, porém, uma limitação
-//     temporária: em produção, o fluxo 100% "admin nunca online durante o
-//     1º login do usuário" só fecha quando o passo 6 (.pbd v2 +
-//     DatabaseManager::rekey) for implementado numa fatia futura.
-//   • resetPasswordViaRecovery(): quando o ALVO é o próprio admin, a
-//     recovery key do admin já desembrulha a signing key dele mesmo (via
-//     wrappedSignKeyByRecovery) — a operação se AUTO-assina, sem depender
-//     de m_adminSignKey. Isso cobre 100% o cenário real de recovery (admin
-//     esqueceu a senha, faz login via recovery, sem ninguém mais
-//     envolvido). Quando o alvo é um usuário comum, a mesma limitação de
-//     completeFirstLogin() se aplica (exige m_adminSignKey na sessão).
+// (Resolvido na Fatia 4 — ver ADR-001 §8 passo 6/D1-D5) Os wraps de K por
+// senha/recovery de QUALQUER conta (admin ou usuário comum) moram
+// EXCLUSIVAMENTE no `.pbd` v2 (VaultHeaderData) do próprio cofre — o
+// `users.json` central deixou de guardá-los. Isso elimina a limitação
+// temporária da Fatia 2 (completeFirstLogin/resetPasswordViaRecovery de
+// usuário comum exigiam uma sessão de assinatura do admin só pra resignar
+// o registro): agora essas duas operações tocam SÓ o `.pbd` do próprio
+// usuário — nenhuma delas grava/assina `users.json`, então nenhuma delas
+// depende de `m_adminSignKey`. O admin fica 100% offline durante o 1º
+// login de um usuário convidado e durante um reset de senha via recovery
+// (provas T6/T8 no relatório da tarefa).
 class UserAccountService {
 public:
     UserAccountService(UserAccountRepository &repo, SodiumCryptoService &crypto,
@@ -81,13 +66,12 @@ public:
     [[nodiscard]] static QString encodeRecoveryKey(const QByteArray &raw);
     [[nodiscard]] static std::optional<QByteArray> decodeRecoveryKey(const QString &formatted);
 
-    // (ADR-001 §2) minúsculo, sem acento, sem espaço — usado para detectar
-    // colisão "João" vs "joao" em usernameExists() e para derivar
-    // vault_path via AppSettings::savePathFixo(slugify(username)).
-    // Superset ligeiramente mais correto que UserSession::slug() (que só
-    // remove caracteres fora de [a-z0-9_] SEM decompor Unicode — não
-    // reusável aqui de qualquer forma, pois é método de instância sobre
-    // UserSession::m_name, não uma função livre; ver relatório da tarefa).
+    // (ADR-001 §6/D6, Fatia 4) Wrapper fino de AppSettings::slugify — fonte
+    // ÚNICA de verdade do slug (compartilhada com UserSession::slug() e
+    // com o path do cofre, AppSettings::savePathFixo). Mantido aqui com
+    // esta assinatura porque é testado direto (usernameExists() e
+    // verifyLogin() usam este método, não a versão de AppSettings, pra
+    // deixar o call-site expressivo dentro deste Service).
     [[nodiscard]] static QString slugify(const QString &username);
 
     [[nodiscard]] bool isFirstRun() const;
@@ -118,6 +102,13 @@ public:
         QByteArray recoveryKeyPlaintext; // recovery key NOVA (não reusa o invite key)
         QByteArray dataKey;              // K — pronta pra abrir o .pbd do usuário
     };
+    // (ADR-001 §8 passo 6/D3, Fatia 4) 100% self-service: NÃO exige
+    // nenhuma sessão de admin nesta instância (nem m_adminSignKey) — só
+    // toca o `.pbd` v2 NOVO do próprio usuário. `inviteKey` só prova posse
+    // do convite (desembrulha um MARCADOR descartável, nunca o K real); `K`
+    // nasce aqui, gerado pelo PRÓPRIO usuário. `users.json` NÃO é gravado
+    // (D3 passo 10) — o gate de login passa a ser por existência do `.pbd`
+    // (ver verifyLogin/D5).
     [[nodiscard]] FirstLoginResult completeFirstLogin(const QString &username,
                                                        const QByteArray &inviteKey,
                                                        const QString &newPassword);
@@ -142,7 +133,15 @@ public:
         QString error;
     };
     // K e wrappedKeyByRecovery permanecem intactos (D-D/§2 — recovery não
-    // rotaciona); só wrappedKeyByPass (+ saltPw) é regravado.
+    // rotaciona); só wrappedKeyByPass (+ saltPw) é regravado, direto no
+    // header do `.pbd` v2 do usuário (D5) — operação de ARQUIVO PURA, sem
+    // DatabaseManager (o innerBlob nunca é re-cifrado, só copiado
+    // verbatim). Quando o alvo é usuário comum: NÃO toca `users.json`, não
+    // exige sessão nenhuma (self-service completo). Quando o alvo é o
+    // admin: também re-embrulha a signing key dele (wrappedSignKeyByPass) e
+    // AUTO-assina a regravação de `users.json` com a própria signing key
+    // recém-recuperada via recovery — continua sem depender de
+    // m_adminSignKey.
     [[nodiscard]] RecoveryResult resetPasswordViaRecovery(const QString &username,
                                                            const QByteArray &recoveryKey,
                                                            const QString &newPassword);
@@ -156,9 +155,11 @@ private:
 
     // 64B (crypto_sign_SECRETKEYBYTES) — só preenchida enquanto um admin
     // está logado NESTA instância do Service; sodium_memzero em
-    // clearSession()/destrutor. Usada para assinar createUser/removeUser/
-    // completeFirstLogin (usuário comum)/resetPasswordViaRecovery (usuário
-    // comum) — ver nota de design no topo do arquivo.
+    // clearSession()/destrutor. Usada para assinar mutações de
+    // `users.json`: createUser()/removeUser() (só o admin pode). Desde a
+    // Fatia 4, completeFirstLogin() e resetPasswordViaRecovery() (usuário
+    // comum) NÃO tocam `users.json` — não dependem mais deste campo (ver
+    // nota de design no topo do arquivo).
     QByteArray m_adminSignKey;
 
     // (item E do brief) Chave reservada no SecretStoreService para a cópia
@@ -176,4 +177,27 @@ private:
     // users.json feita SEM também adulterar o keychain (ex.: restaurar um
     // users.json trocado de outra máquina/backup).
     [[nodiscard]] bool pubKeyMatchesAnchor(const QByteArray &filePubKey) const;
+
+    // (ADR-001 §8 passo 6/D3, Fatia 4) Bootstrapa o `.pbd` v2 de UM cofre
+    // novo (admin no createAdmin(), usuário comum no completeFirstLogin()):
+    // setVaultHeader(header) → open(slug, K) → close(). Falha em qualquer
+    // etapa aborta SEM tocar `users.json` — estado limpo e retentável (o
+    // caller nunca chega a persistir um registro apontando pra um cofre
+    // que não foi materializado). Não usa membros de instância (nem
+    // m_crypto/m_secrets) — só o singleton DatabaseManager — por isso é
+    // static.
+    [[nodiscard]] static bool bootstrapVault(const QString &slug, const VaultHeaderData &header,
+                                              const QByteArray &K);
+
+    // (ADR-001 §8 passo 6/D5, Fatia 4) Regrava SÓ o header do `.pbd` v2 em
+    // `vaultPath` com `newHeader`, preservando o innerBlob (payload cifrado
+    // real) VERBATIM — usado por resetPasswordViaRecovery() pra trocar
+    // wrappedKeyByPass/saltPw SEM re-cifrar o cofre (K nunca muda). Lê o
+    // arquivo, valida com VaultFile::parseV2, re-monta com
+    // VaultFile::frameV2(newHeader, innerBlob-lido) e escreve atômico
+    // (temp + fsync + rename — mesmo idioma de UserAccountRepository::
+    // saveAll()). false se o arquivo não existir/não for v2/falhar a
+    // escrita — nunca lança.
+    [[nodiscard]] static bool rewriteVaultHeader(const QString &vaultPath,
+                                                  const VaultHeaderData &newHeader);
 };

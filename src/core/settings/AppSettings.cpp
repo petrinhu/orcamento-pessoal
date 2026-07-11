@@ -4,6 +4,7 @@
 
 #include <QDir>
 #include <QFile>
+#include <QRegularExpression>
 #include <QStandardPaths>
 
 #include <sys/stat.h>   // chmod — restringe o diretório de dados a 0700 (#192)
@@ -123,6 +124,23 @@ QString AppSettings::workingDbPath(const QString &slug)
 QString AppSettings::userRegistryPath()
 {
     return workingDbDir() + QStringLiteral("/users.json");
+}
+
+// (ADR-001 §6/D6, Fatia 4) Ver justificativa completa no .h — NFD decompõe
+// acentos ANTES do filtro [a-z0-9_], corrigindo o bug "João" -> "joo" da
+// implementação antiga de UserSession::slug() (que não decompunha Unicode).
+QString AppSettings::slugify(const QString &username)
+{
+    const QString decomposed = username.normalized(QString::NormalizationForm_D);
+    QString semAcento;
+    semAcento.reserve(decomposed.size());
+    for (const QChar &c : decomposed) {
+        if (c.category() != QChar::Mark_NonSpacing)
+            semAcento += c;
+    }
+    return semAcento.toLower()
+                     .replace(QLatin1Char(' '), QLatin1Char('_'))
+                     .remove(QRegularExpression(QStringLiteral("[^a-z0-9_]")));
 }
 
 bool AppSettings::autosaveEnabled() const
