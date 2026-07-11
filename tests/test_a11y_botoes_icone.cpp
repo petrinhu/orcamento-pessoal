@@ -181,15 +181,14 @@ void TestA11yBotoesIcone::loginDialog_espacoAlternaSenha_A11Y03()
 
     QCOMPARE(senha->echoMode(), QLineEdit::Password); // estado inicial: oculta
 
-    // Espaço 1: TOGGLE revela (não hold — diferente do mouse). Contrato do
-    // eventFilter do LoginDialog: consome o KeyPress de Espaço, não deixa o
-    // animateClick() padrão (que soltaria sozinho ~100ms depois) agir.
-    QTest::keyClick(btnOlho, Qt::Key_Space);
-    QCOMPARE(senha->echoMode(), QLineEdit::Normal);
+    // #209: Espaço é HOLD-to-reveal, igual ao mouse. Contrato do eventFilter
+    // do LoginDialog: KeyPress de Espaço revela (Normal); KeyRelease oculta
+    // (Password). Ambos consumidos (return true), sem o animateClick() padrão.
+    QTest::keyPress(btnOlho, Qt::Key_Space);
+    QCOMPARE(senha->echoMode(), QLineEdit::Normal);   // segurando: revelada
 
-    // Espaço 2: alterna de volta (oculta).
-    QTest::keyClick(btnOlho, Qt::Key_Space);
-    QCOMPARE(senha->echoMode(), QLineEdit::Password);
+    QTest::keyRelease(btnOlho, Qt::Key_Space);
+    QCOMPARE(senha->echoMode(), QLineEdit::Password); // soltou: oculta de novo
 }
 
 QTEST_MAIN(TestA11yBotoesIcone)

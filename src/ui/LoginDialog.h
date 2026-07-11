@@ -43,6 +43,9 @@ private:
     void buildUi();
     void updateChecklist();
     bool senhaValida() const;
+#ifndef QT_DEBUG
+    void atualizarIconeOlho();  // 🔒 = senha oculta, 👁 = senha visível
+#endif
 
     QLineEdit   *m_nome        = nullptr;
     QLineEdit   *m_senha       = nullptr;

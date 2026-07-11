@@ -55,25 +55,39 @@ QByteArray LoginDialog::chave()    const { return m_chave; }
 QByteArray LoginDialog::chaveOld() const { return m_chaveOld; }
 
 #ifndef QT_DEBUG
-// #198 (A11Y-03): equivalente de teclado do hold-to-reveal do mouse. O
-// QAbstractButton padrão trataria Espaço via animateClick() — pressed() +
-// released() automáticos ~100ms depois — tempo curto demais para ler a
-// senha e, pior, INCOERENTE com o hold real do mouse (que é sustentado
-// pelo usuário). Em vez disso, consumimos o KeyPress de Espaço aqui e
-// fazemos um TOGGLE explícito (Espaço 1: revela; Espaço 2: oculta de novo),
-// devolvendo true para impedir que o QToolButton processe o evento com seu
-// comportamento padrão.
+// #198 (A11Y-03) / #209: equivalente de teclado do hold-to-reveal do mouse.
+// Segurar Espaço com o botão focado = segurar o mouse: KeyPress revela (👁),
+// KeyRelease oculta (🔒). Consumimos ambos (return true) e dirigimos o
+// echoMode direto pelo estado real da tecla — o animateClick() padrão do
+// QAbstractButton nunca chega a rodar.
+//
+// O guard !isAutoRepeat() é essencial: durante o hold, X11/Wayland geram
+// pares KeyRelease/KeyPress de auto-repeat (isAutoRepeat()==true). Ignorá-los
+// garante que só o KeyPress inicial revela e só o KeyRelease final real oculta.
 bool LoginDialog::eventFilter(QObject *watched, QEvent *event)
 {
-    if (watched == m_btnOlho && event->type() == QEvent::KeyPress) {
+    if (watched == m_btnOlho
+        && (event->type() == QEvent::KeyPress || event->type() == QEvent::KeyRelease)) {
         auto *ke = static_cast<QKeyEvent *>(event);
         if (ke->key() == Qt::Key_Space && !ke->isAutoRepeat()) {
-            const bool estavaOculta = (m_senha->echoMode() == QLineEdit::Password);
-            m_senha->setEchoMode(estavaOculta ? QLineEdit::Normal : QLineEdit::Password);
+            const bool revelar = (event->type() == QEvent::KeyPress);
+            m_senha->setEchoMode(revelar ? QLineEdit::Normal : QLineEdit::Password);
+            atualizarIconeOlho();
             return true; // consome — evita o animateClick() padrão do botão
         }
     }
     return QDialog::eventFilter(watched, event);
+}
+
+// #209 (feedback do líder): o ícone reflete o estado da senha —
+// cadeado (🔒) quando OCULTA (echoMode==Password); olho aberto (👁) quando
+// VISÍVEL (echoMode==Normal). Chamado pelo hold-to-reveal do mouse
+// (pressed/released) e pelo toggle do teclado (Espaço) — um único ponto de
+// verdade para o desenho do ícone.
+void LoginDialog::atualizarIconeOlho()
+{
+    const bool oculta = (m_senha->echoMode() == QLineEdit::Password);
+    m_btnOlho->setIcon(Theme::emojiIcon(oculta ? QStringLiteral("🔒") : QStringLiteral("👁"), 18));
 }
 #endif
 
@@ -185,16 +199,15 @@ void LoginDialog::buildUi()
     connect(m_senha, &QLineEdit::textChanged, this, &LoginDialog::onSenhaChanged);
 
     // Botão olho hold-to-reveal: revela a senha APENAS enquanto o botão está
-    // pressionado (pressed → Normal; released → Password). O toolTip instrui o
-    // usuário. Usa emojiIcon para renderizar o glifo colorido via Noto Emoji —
-    // consistent com a política do projeto (emoji nunca em texto de botão).
+    // pressionado (pressed → Normal; released → Password). O ícone reflete o
+    // estado (#209): 🔒 = oculta, 👁 = visível — ver atualizarIconeOlho().
+    // Usa emojiIcon para renderizar o glifo colorido via Noto Emoji —
+    // consistente com a política do projeto (emoji nunca em texto de botão).
     m_btnOlho = new QToolButton(this);
     m_btnOlho->setObjectName(QStringLiteral("iconButton")); // sem borda (#165)
-    m_btnOlho->setIcon(Theme::emojiIcon(QStringLiteral("👁"), 18));
-    // #198 (A11Y-01/03, WCAG 4.1.2 / 2.1.1): antes NoFocus + só tooltip —
-    // mudo e inacessível por teclado. Agora StrongFocus + accessibleName +
+    // #198 (A11Y-01/03, WCAG 4.1.2 / 2.1.1): StrongFocus + accessibleName +
     // equivalente de teclado (Espaço alterna, via eventFilter abaixo).
-    m_btnOlho->setToolTip(tr("Ver senha (segure o mouse ou pressione Espaço para alternar)"));
+    m_btnOlho->setToolTip(tr("Segure o mouse (ou Espaço) para ver a senha"));
     m_btnOlho->setAccessibleName(tr("Mostrar ou ocultar senha"));
     m_btnOlho->setFixedSize(32, 32); // quadrado mantido (spec §5 item 7)
     m_btnOlho->setFocusPolicy(Qt::StrongFocus);
@@ -203,12 +216,15 @@ void LoginDialog::buildUi()
 
     connect(m_btnOlho, &QToolButton::pressed,  this, [this]() {
         m_senha->setEchoMode(QLineEdit::Normal);
+        atualizarIconeOlho(); // 👁 enquanto segura
     });
     connect(m_btnOlho, &QToolButton::released, this, [this]() {
         m_senha->setEchoMode(QLineEdit::Password);
+        atualizarIconeOlho(); // volta a 🔒 ao soltar
     });
 
     root->addLayout(rowSenha);
+    atualizarIconeOlho(); // estado inicial: senha oculta → 🔒
 
     // Checklist
     auto *checkFrame = new QFrame(this);
