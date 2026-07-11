@@ -1515,6 +1515,15 @@ peubud_add_test(test_user_account_service
     ${CMAKE_SOURCE_DIR}/src/core/session/UserSession.cpp
     ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp)
+# QT_NO_DEBUG (não QT_DEBUG, achado desta fatia — pré-existente na Fatia 2/4,
+# corrigido aqui): createAdmin()/completeFirstLogin()/verifyLogin() só
+# exercitam o `.pbd` v2 real no ramo `#ifndef QT_DEBUG` de
+# DatabaseManager::open()/close() — sem esta definição, o `build/`
+# (CMAKE_BUILD_TYPE=Debug) padrão do ctest auto-define QT_DEBUG (mesmo
+# achado/mesmo comentário completo em test_db_durabilidade acima) e o teste
+# nunca materializa `.pbd` nenhum. Mesmo padrão de test_db_durabilidade/
+# test_tabshell_seguranca.
+target_compile_definitions(test_user_account_service PRIVATE QT_NO_DEBUG)
 target_link_libraries(test_user_account_service PRIVATE
     OpenSSL::SSL
     OpenSSL::Crypto
@@ -1554,11 +1563,61 @@ peubud_add_test(test_database_manager_vault_v2
     ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp
     ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp)
+# QT_NO_DEBUG (achado desta fatia — pré-existente na Fatia 4, corrigido
+# aqui): mesmo motivo de test_db_durabilidade/test_user_account_service —
+# as 4 provas T3(a-d) só exercitam o ramo `#ifndef QT_DEBUG` de open()/
+# encryptAndSave() (setVaultHeader/vaultIsV2/framing v2); sem esta
+# definição o `build/` (CMAKE_BUILD_TYPE=Debug) padrão do ctest auto-define
+# QT_DEBUG e as 4 provas nunca materializam `.pbd` nenhum.
+target_compile_definitions(test_database_manager_vault_v2 PRIVATE QT_NO_DEBUG)
 target_link_libraries(test_database_manager_vault_v2 PRIVATE
     OpenSSL::SSL
     OpenSSL::Crypto
     ${LIBSODIUM_LIBRARIES}
     ${LIBSECRET_LIBRARIES})
 target_include_directories(test_database_manager_vault_v2 PRIVATE
+    ${LIBSODIUM_INCLUDE_DIRS}
+    ${LIBSECRET_INCLUDE_DIRS})
+
+# ADR-001 #212 (Fatia 5): LegacyVaultMigrationService — migração de cofres
+# single-user PRÉ-ADR-001 (`.pbd` v1-novo Argon2id OU legado AES-CBC/
+# PBKDF2) para o modelo admin+envelope (`.pbd` v2), via
+# DatabaseManager::rekey() (novo — troca só a chave do PRÓXIMO save()/
+# close(), sem reler o `.db` de trabalho já decifrado). Arrasta a mesma
+# cadeia de dependências de test_user_account_service (UserAccountService
+# abre/fecha DatabaseManager) + AesCryptoService/KeyDerivation (fabricar as
+# duas fixtures legadas). Provas: dado sobrevive nos dois formatos legados;
+# senha errada não toca o `.pbd` original; fallback de slug antigo (D6,
+# username acentuado) acha e migra, preservando o cofre antigo como `.bak`.
+# Mesmo guard de D-Bus/libsecret + isolamento HOME/XDG_DATA_HOME de
+# test_user_account_service (createAdmin/migrarParaAdmin tocam o keychain
+# real).
+peubud_add_test(test_legacy_vault_migration
+    ${CMAKE_SOURCE_DIR}/src/services/LegacyVaultMigrationService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/UserAccountService.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/UserAccountRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/SodiumCryptoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/VaultFile.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/AesCryptoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/KeyDerivation.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/database/DatabaseManager.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/settings/AppSettings.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/session/UserSession.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp)
+# QT_NO_DEBUG — mesmo achado/motivo de test_database_manager_vault_v2/
+# test_user_account_service acima: migrarParaAdmin() só exercita o ramo
+# `#ifndef QT_DEBUG` de DatabaseManager::open()/close() (onde o `.pbd`
+# real é lido/gravado); sem esta definição o `build/` (CMAKE_BUILD_TYPE=
+# Debug) padrão do ctest auto-define QT_DEBUG e a migração nunca
+# materializa `.pbd` nenhum.
+target_compile_definitions(test_legacy_vault_migration PRIVATE QT_NO_DEBUG)
+target_link_libraries(test_legacy_vault_migration PRIVATE
+    OpenSSL::SSL
+    OpenSSL::Crypto
+    ${LIBSODIUM_LIBRARIES}
+    ${LIBSECRET_LIBRARIES})
+target_include_directories(test_legacy_vault_migration PRIVATE
     ${LIBSODIUM_INCLUDE_DIRS}
     ${LIBSECRET_INCLUDE_DIRS})

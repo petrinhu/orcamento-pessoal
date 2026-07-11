@@ -621,6 +621,21 @@ bool UserAccountService::removeUser(const QString &username)
     return m_repo.saveAll(updated, loaded.adminPubKey, m_adminSignKey);
 }
 
+// ── Registro do dono de um cofre migrado como admin (ADR-001 §7, Fatia 5) ──
+
+bool UserAccountService::registerMigratedAdmin(const UserAccountRecord &admin,
+                                                const QByteArray &adminPubKey,
+                                                const QByteArray &adminSignSecretKey)
+{
+    if (!isFirstRun())
+        return false; // já existe registro — não é (mais) um 1º run/migração
+    if (admin.role != Role::Admin)
+        return false; // migração sempre promove o dono do cofre a admin
+
+    QVector<UserAccountRecord> users{admin};
+    return m_repo.saveAll(users, adminPubKey, adminSignSecretKey);
+}
+
 // ── Reset de senha via recovery key ─────────────────────────────────────
 // (ADR-001 §8 passo 6/D5, Fatia 4) Operação de ARQUIVO PURA sobre o .pbd
 // v2 do usuário — sem DatabaseManager (o innerBlob nunca é re-cifrado, só

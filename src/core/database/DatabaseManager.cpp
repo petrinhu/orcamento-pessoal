@@ -731,6 +731,27 @@ void DatabaseManager::setVaultHeader(const VaultHeaderData &header)
     m_vaultIsV2   = !header.username.isEmpty();
 }
 
+// (ADR-001 §8 passos 6-7, Fatia 5) Ver justificativa completa no .h. Exige
+// DB aberto — chamar DEPOIS de um open() bem-sucedido (a migração de cofre
+// legado abre com a chave ANTIGA para decifrar, depois troca só a chave de
+// saída via rekey() — nunca relê nem re-deriva o payload).
+bool DatabaseManager::rekey(const QByteArray &newKey)
+{
+    if (!m_db.isOpen())
+        return false;
+
+    if (!m_key.isEmpty())
+        sodium_memzero(m_key.data(), static_cast<size_t>(m_key.size()));
+    m_key = newKey;
+
+    if (!m_keyLegacy.isEmpty())
+        sodium_memzero(m_keyLegacy.data(), static_cast<size_t>(m_keyLegacy.size()));
+    m_keyLegacy.clear();
+
+    m_needsReencrypt = false;
+    return true;
+}
+
 // (#191/FIN-02) Verifica a integridade de um arquivo SQLite via
 // `PRAGMA integrity_check`, usando uma conexão QSQLITE própria e
 // somente-leitura — não depende de m_db estar aberto (funciona chamado

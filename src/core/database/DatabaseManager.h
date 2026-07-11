@@ -88,13 +88,27 @@ public:
     [[nodiscard]] VaultHeaderData vaultHeader() const { return m_vaultHeader; }
     [[nodiscard]] bool vaultIsV2() const { return m_vaultIsV2; }
 
-    // (ADR-001 §8 passos 6-7, Fatia 5 — FORA DE ESCOPO da Fatia 4) Troca a
-    // chave `K` do PRÓXIMO save()/close() sem re-derivar do zero — usada
-    // pela migração de cofres legados (LegacyVaultMigrationService, ainda
-    // não implementado). Não confundir com resetPasswordViaRecovery/
-    // completeFirstLogin (Back/UserAccountService): nenhum dos dois muda
-    // `K`, só re-embrulham `K` sob uma senha/params novos — não precisam de
-    // rekey().
+    // (ADR-001 §8 passos 6-7, Fatia 5) Troca a chave `K` do PRÓXIMO
+    // save()/close() SEM reabrir o arquivo — usada exclusivamente pela
+    // migração de cofres legados (LegacyVaultMigrationService): o `.db` de
+    // trabalho já está aberto/decifrado com a chave ANTIGA (derivada pelo
+    // caller, mesmo caminho de LoginDialog::onEntrar, e passada ao open()
+    // que antecede este rekey()); rekey() só troca a chave que o PRÓXIMO
+    // save()/close() vai usar para CIFRAR — o payload plaintext do `.db` de
+    // trabalho nunca é relido nem re-derivado, só a chave de saída muda.
+    // Combinado com setVaultHeader(header) (chamar ANTES do PRÓXIMO
+    // save()/close()), materializa o `.pbd` v2 com o `K` novo sem qualquer
+    // perda de dado.
+    //
+    // Exige DB aberto (isOpen()) — retorna false e não faz nada se não
+    // houver sessão (a chamada é sempre logicamente posterior a um open()
+    // bem-sucedido). Zera (sodium_memzero) a chave antiga antes de
+    // substituí-la — mesma disciplina de close(). Não confundir com
+    // resetPasswordViaRecovery/completeFirstLogin (Back/UserAccountService):
+    // nenhum dos dois muda `K` (só re-embrulham `K` sob uma senha/params
+    // novos) — rekey() é o ÚNICO caminho que troca `K` sem reabrir o
+    // arquivo.
+    [[nodiscard]] bool rekey(const QByteArray &newKey);
 
 private:
     DatabaseManager() = default;

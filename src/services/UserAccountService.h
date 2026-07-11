@@ -53,6 +53,14 @@ public:
     static constexpr int kKeyBytes         = 32; // K — chave de dados (AEAD do .pbd)
     static constexpr int kRecoveryKeyBytes = 20; // recovery key / invite key — 160 bits
 
+    // (item E do brief da Fatia 1) Chave reservada no SecretStoreService
+    // para a cópia âncora do admin_pubkey — nunca colide com chaves de app
+    // existentes (brapiToken, salt de login legado etc.) por causa do
+    // padrão "__x__". Público (não é segredo, só o NOME de uma entrada do
+    // keychain) porque LegacyVaultMigrationService (Fatia 5) também grava a
+    // âncora — mesma ordem/chave que createAdmin(), sem duplicar o literal.
+    static constexpr const char *kAdminPubKeyAnchorKey = "__admin_pubkey__";
+
     // ── Encoding de recovery/invite key — Crockford Base32 + checksum ──────
     // 20 bytes -> 32 símbolos de dado (160/5, exato, sem padding) + 1
     // símbolo de checksum, formatados em 8 grupos de 4 + "-checksum":
@@ -128,6 +136,22 @@ public:
     // Exige admin logado (mesma sessão de assinatura).
     [[nodiscard]] bool removeUser(const QString &username);
 
+    // (ADR-001 §7, Fatia 5) Registra o dono de um cofre MIGRADO (modelo
+    // single-user pré-ADR-001) como admin no registro central — usado
+    // EXCLUSIVAMENTE por LegacyVaultMigrationService::migrarParaAdmin(),
+    // DEPOIS que o `.pbd` v2 já foi materializado com sucesso (rekey() +
+    // close()). Ao contrário de createAdmin(), NÃO bootstrapa cofre nenhum
+    // (o cofre migrado já existe — foi re-cifrado in-place pelo chamador,
+    // que tem acesso ao `.db` de trabalho decifrado); só grava
+    // `users.json`. O chamador já embrulhou wrappedSignKeyByPass/
+    // wrappedSignKeyByRecovery em `admin` com o MESMO kdfPass/kdfRecovery
+    // usados no header do `.pbd` (coerência de qual senha/recovery abre o
+    // quê é responsabilidade do chamador). Falha (false) se já existir
+    // registro (não é mais um 1º run) ou se `admin.role != Role::Admin`.
+    [[nodiscard]] bool registerMigratedAdmin(const UserAccountRecord &admin,
+                                              const QByteArray &adminPubKey,
+                                              const QByteArray &adminSignSecretKey);
+
     struct RecoveryResult {
         bool    ok = false;
         QString error;
@@ -161,11 +185,6 @@ private:
     // comum) NÃO tocam `users.json` — não dependem mais deste campo (ver
     // nota de design no topo do arquivo).
     QByteArray m_adminSignKey;
-
-    // (item E do brief) Chave reservada no SecretStoreService para a cópia
-    // âncora do admin_pubkey — nunca colide com chaves de app existentes
-    // (brapiToken, salt de login legado etc.) por causa do padrão "__x__".
-    static constexpr const char *kAdminPubKeyAnchorKey = "__admin_pubkey__";
 
     // Cruza o admin_pubkey do ARQUIVO com a cópia âncora do keychain.
     // false = mismatch OU âncora ausente (tratado como divergência,
