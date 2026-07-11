@@ -54,9 +54,10 @@ jobs:
 
   lint:
     name: Lint (cppcheck + clang-tidy)
-    # codeberg-medium (mesmo runner dos jobs build/ASan, que progridem) — o
-    # codeberg-small vinha derrubando este job rápido mesmo com o gate mínimo.
-    runs-on: codeberg-medium
+    # runner self-hosted 'claudio' (docker) — como o build/ASan. O codeberg-medium
+    # compartilhado ficou ~5h sem servir este job (fair-use entupido, 2026-07-11);
+    # com todos os 3 no claudio, o CI não depende mais do runner voluntário do Codeberg.
+    runs-on: docker
     container:
       image: fedora:42
     steps:
