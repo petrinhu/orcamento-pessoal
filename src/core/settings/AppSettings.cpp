@@ -118,6 +118,13 @@ QString AppSettings::workingDbPath(const QString &slug)
     return workingDbDir() + QStringLiteral("/.") + slug + QStringLiteral(".db");
 }
 
+// (ADR-001 #212 §5.1) users.json vive ao lado dos .db de trabalho —
+// workingDbDir() já garante mkpath + chmod 0700 do diretório-base.
+QString AppSettings::userRegistryPath()
+{
+    return workingDbDir() + QStringLiteral("/users.json");
+}
+
 bool AppSettings::autosaveEnabled() const
 {
     return m_s.value(QStringLiteral("autosave_enabled"), true).toBool();

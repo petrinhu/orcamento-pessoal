@@ -1442,3 +1442,21 @@ peubud_add_test(test_lazy_page_router
     ${CMAKE_SOURCE_DIR}/src/ui/LazyPageRouter.cpp)
 set_tests_properties(test_lazy_page_router PROPERTIES
     ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
+# ADR-001 #212 (gestão de usuários, Fatia 1 — Foundation): primitivas NOVAS
+# de SodiumCryptoService (wrapKey/unwrapKey via crypto_secretbox, deriveKey
+# de 4 args com ops/mem explícitos, Ed25519 sign/verify). Só depende de
+# libsodium — sem DB/UI/rede.
+peubud_add_test(test_crypto_envelope
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/SodiumCryptoService.cpp)
+target_link_libraries(test_crypto_envelope PRIVATE ${LIBSODIUM_LIBRARIES})
+target_include_directories(test_crypto_envelope PRIVATE ${LIBSODIUM_INCLUDE_DIRS})
+
+# ADR-001 #212 (Fatia 1): UserAccountRepository — I/O burro de users.json +
+# verificação de assinatura Ed25519 (detecção de adulteração, CWE-269).
+# Path injetável via QTemporaryDir — não toca no users.json real da máquina.
+peubud_add_test(test_user_account_repository
+    ${CMAKE_SOURCE_DIR}/src/repositories/UserAccountRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/SodiumCryptoService.cpp)
+target_link_libraries(test_user_account_repository PRIVATE ${LIBSODIUM_LIBRARIES})
+target_include_directories(test_user_account_repository PRIVATE ${LIBSODIUM_INCLUDE_DIRS})

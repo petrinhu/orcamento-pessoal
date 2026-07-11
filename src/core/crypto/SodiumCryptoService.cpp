@@ -161,26 +161,37 @@ QByteArray SodiumCryptoService::decrypt(const QByteArray &data, const QByteArray
 
 QByteArray SodiumCryptoService::deriveKey(const QString &password, const QByteArray &salt)
 {
-    if (salt.size() != static_cast<int>(crypto_pwhash_SALTBYTES))
-        throw std::runtime_error("Salt must be crypto_pwhash_SALTBYTES (16) bytes");
-
     // Cópia mutável da senha em bytes, para podermos zerá-la após derivar.
-    // QByteParray::data() força o detach (cópia única, COW), garantindo que o
+    // QByteArray::data() força o detach (cópia única, COW), garantindo que o
     // sodium_memzero abaixo apague ESTE buffer e não um compartilhado.
     QByteArray passBytes = password.toUtf8();
-    QByteArray key(32, '\0');
 
-    const int ret = crypto_pwhash(
-        reinterpret_cast<unsigned char *>(key.data()), 32,
-        passBytes.constData(), static_cast<unsigned long long>(passBytes.size()),
-        reinterpret_cast<const unsigned char *>(salt.constData()),
-        ARGON2ID_OPS, ARGON2ID_MEM,
-        crypto_pwhash_ALG_ARGON2ID13);
+    // Conveniência sobre o overload de 4 args — defaults MODERATE (mesmos de
+    // sempre). (ADR-001 §3.3): os wraps de K usam o overload de 4 args
+    // diretamente, com os ops/mem gravados no registro por-usuário.
+    const QByteArray key = deriveKey(passBytes, salt, ARGON2ID_OPS, ARGON2ID_MEM);
 
     // (#128) Zera a senha em claro assim que não é mais necessária (após a
     // derivação), independentemente de sucesso/falha. Reduz a janela em que a
     // senha do usuário fica residente em memória.
     sodium_memzero(passBytes.data(), static_cast<size_t>(passBytes.size()));
+
+    return key;
+}
+
+QByteArray SodiumCryptoService::deriveKey(const QByteArray &password, const QByteArray &salt,
+                                          unsigned long long opsLimit, size_t memLimit) const
+{
+    if (salt.size() != static_cast<int>(crypto_pwhash_SALTBYTES))
+        throw std::runtime_error("Salt must be crypto_pwhash_SALTBYTES (16) bytes");
+
+    QByteArray key(32, '\0');
+    const int ret = crypto_pwhash(
+        reinterpret_cast<unsigned char *>(key.data()), 32,
+        password.constData(), static_cast<unsigned long long>(password.size()),
+        reinterpret_cast<const unsigned char *>(salt.constData()),
+        opsLimit, memLimit,
+        crypto_pwhash_ALG_ARGON2ID13);
 
     if (ret != 0)
         throw std::runtime_error("Argon2id key derivation failed — out of memory?");
@@ -192,7 +203,108 @@ QByteArray SodiumCryptoService::generateSalt()
 {
     // crypto_pwhash_SALTBYTES == 16, same as the legacy KeyDerivation::SALT_SIZE.
     // Existing salts stored in the keychain are compatible.
-    QByteArray salt(static_cast<int>(crypto_pwhash_SALTBYTES), '\0');
-    randombytes_buf(salt.data(), crypto_pwhash_SALTBYTES);
-    return salt;
+    return randomBytes(crypto_pwhash_SALTBYTES);
+}
+
+QByteArray SodiumCryptoService::randomBytes(size_t n) const
+{
+    QByteArray b(static_cast<int>(n), '\0');
+    randombytes_buf(b.data(), n);
+    return b;
+}
+
+QByteArray SodiumCryptoService::wrapKey(const QByteArray &secret32, const QByteArray &wrapKey32) const
+{
+    // Invariante de tamanho de chave é erro de PROGRAMAÇÃO (o chamador
+    // sempre deriva wrapKey32 via deriveKey, 32B fixos) — não confundir com
+    // unwrapKey, onde o payload vem de disco/rede (pode ser adversarial) e
+    // portanto retorna nullopt em vez de lançar.
+    if (wrapKey32.size() != crypto_secretbox_KEYBYTES)
+        throw std::runtime_error("wrapKey: wrapKey32 must be crypto_secretbox_KEYBYTES (32) bytes");
+
+    const QByteArray nonce = randomBytes(crypto_secretbox_NONCEBYTES);
+    QByteArray cipher(secret32.size() + crypto_secretbox_MACBYTES, '\0');
+
+    crypto_secretbox_easy(
+        reinterpret_cast<unsigned char *>(cipher.data()),
+        reinterpret_cast<const unsigned char *>(secret32.constData()),
+        static_cast<unsigned long long>(secret32.size()),
+        reinterpret_cast<const unsigned char *>(nonce.constData()),
+        reinterpret_cast<const unsigned char *>(wrapKey32.constData()));
+
+    QByteArray result;
+    result.reserve(nonce.size() + cipher.size());
+    result.append(nonce);
+    result.append(cipher);
+    return result;
+}
+
+std::optional<QByteArray> SodiumCryptoService::unwrapKey(const QByteArray &wrapped,
+                                                          const QByteArray &wrapKey32) const
+{
+    if (wrapKey32.size() != crypto_secretbox_KEYBYTES)
+        return std::nullopt;
+    if (wrapped.size() < crypto_secretbox_NONCEBYTES + crypto_secretbox_MACBYTES)
+        return std::nullopt;
+
+    const QByteArray nonce  = wrapped.left(crypto_secretbox_NONCEBYTES);
+    const QByteArray cipher = wrapped.mid(crypto_secretbox_NONCEBYTES);
+    QByteArray plain(cipher.size() - crypto_secretbox_MACBYTES, '\0');
+
+    const int ret = crypto_secretbox_open_easy(
+        reinterpret_cast<unsigned char *>(plain.data()),
+        reinterpret_cast<const unsigned char *>(cipher.constData()),
+        static_cast<unsigned long long>(cipher.size()),
+        reinterpret_cast<const unsigned char *>(nonce.constData()),
+        reinterpret_cast<const unsigned char *>(wrapKey32.constData()));
+
+    // Tag inválida = senha/recovery key errada. Erro ESPERADO (não é bug do
+    // programa) — nullopt, sem exceção.
+    if (ret != 0)
+        return std::nullopt;
+
+    return plain;
+}
+
+SodiumCryptoService::SignKeypair SodiumCryptoService::generateSignKeypair() const
+{
+    SignKeypair kp;
+    kp.publicKey.resize(crypto_sign_PUBLICKEYBYTES);
+    kp.secretKey.resize(crypto_sign_SECRETKEYBYTES);
+    crypto_sign_keypair(
+        reinterpret_cast<unsigned char *>(kp.publicKey.data()),
+        reinterpret_cast<unsigned char *>(kp.secretKey.data()));
+    return kp;
+}
+
+QByteArray SodiumCryptoService::sign(const QByteArray &message, const QByteArray &secretKey64) const
+{
+    if (secretKey64.size() != crypto_sign_SECRETKEYBYTES)
+        throw std::runtime_error("sign: secretKey64 must be crypto_sign_SECRETKEYBYTES (64) bytes");
+
+    QByteArray signature(crypto_sign_BYTES, '\0');
+    unsigned long long sigLen = 0;
+    crypto_sign_detached(
+        reinterpret_cast<unsigned char *>(signature.data()), &sigLen,
+        reinterpret_cast<const unsigned char *>(message.constData()),
+        static_cast<unsigned long long>(message.size()),
+        reinterpret_cast<const unsigned char *>(secretKey64.constData()));
+    signature.resize(static_cast<int>(sigLen));
+    return signature;
+}
+
+bool SodiumCryptoService::verify(const QByteArray &message, const QByteArray &signature64,
+                                 const QByteArray &publicKey32) const
+{
+    // Tamanho errado = adulteração/registro malformado — falha, não crash.
+    if (signature64.size() != crypto_sign_BYTES || publicKey32.size() != crypto_sign_PUBLICKEYBYTES)
+        return false;
+
+    // crypto_sign_verify_detached já compara em tempo constante internamente
+    // (Ed25519 do libsodium) — não precisa de sodium_memcmp adicional aqui.
+    return crypto_sign_verify_detached(
+        reinterpret_cast<const unsigned char *>(signature64.constData()),
+        reinterpret_cast<const unsigned char *>(message.constData()),
+        static_cast<unsigned long long>(message.size()),
+        reinterpret_cast<const unsigned char *>(publicKey32.constData())) == 0;
 }

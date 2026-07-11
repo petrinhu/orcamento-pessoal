@@ -11,10 +11,11 @@ UserSession &UserSession::instance()
     return inst;
 }
 
-void UserSession::login(const QString &name, const QByteArray &key)
+void UserSession::login(const QString &name, const QByteArray &key, Role role)
 {
     m_name = name.trimmed();
     m_key  = key;
+    m_role = role;
     saveLastName(m_name);
 }
 
@@ -32,6 +33,10 @@ void UserSession::logout()
     if (!m_key.isEmpty())
         sodium_memzero(m_key.data(), static_cast<size_t>(m_key.size()));
     m_key.clear();
+
+    // (ADR-001 #212) Nunca deixa privilégio residual pós-logout — a próxima
+    // sessão (ex.: outro usuário na mesma máquina) parte sempre de User.
+    m_role = Role::User;
 }
 
 bool UserSession::isLoggedIn() const

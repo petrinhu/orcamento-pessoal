@@ -66,6 +66,12 @@ public:
     // antes, só o diretório-base deixou de ser relativo ao CWD.
     static QString workingDbPath(const QString &slug);
 
+    // (ADR-001 #212 §5.1) Registro de usuários da INSTALAÇÃO inteira — ao
+    // contrário de savePathFixo/workingDbPath (que são por-usuário/slug),
+    // este é um único arquivo para todos os usuários da máquina. Reusa
+    // workingDbDir() (mesmo diretório-base 0700, mkpath já garantido ali).
+    static QString userRegistryPath();
+
     // Deprecated (#181): callers legados (BackupService usa diretorioPadrao próprio).
     // Mantidos para não quebrar callers externos; internamente não usados mais.
     QString savesFolder() const;
