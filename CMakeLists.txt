@@ -282,10 +282,11 @@ set(SOURCES
     # Exportação multi-seção (#11)
     src/ui/widgets/ExportDialog.cpp
 
-    # Busca global (#32)
+    # Busca global (#32; #139 extrai SQL cru p/ camada Mid)
+    src/services/BuscaService.cpp
     src/ui/widgets/BuscaGlobalDialog.cpp
 
-    # Reconciliação bancária (#27)
+    # Reconciliação bancária (#27; #139 pluga ReconciliacaoAutomatica/#85)
     src/ui/widgets/ReconciliacaoDialog.cpp
 
     # Wizards guiados pergunta-a-pergunta (#108)

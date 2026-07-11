@@ -209,6 +209,47 @@ set_tests_properties(test_frankfurter_provider PROPERTIES TIMEOUT 30)
 
 peubud_add_test(test_reconciliacao
     ${CMAKE_SOURCE_DIR}/src/services/ReconciliacaoAutomatica.cpp)
+
+# BuscaService (#139, Onda 7 — arquitetura): SQL extraido de BuscaGlobalDialog.
+# Cadeia de dependencia espelha test_resumo (DatabaseManager puxa crypto +
+# AppBootstrap puxa os schema providers de Proventos/AjusteCorporativo/
+# FechamentoMensal/AuditLog).
+peubud_add_test(test_busca_service
+    ${CMAKE_SOURCE_DIR}/src/services/BuscaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/EntradaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/CompraService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/ResumoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/GastoAvulsoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/LancamentoInvestimentoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/LancamentoEntradaRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/FonteRendaRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/CompraRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/ParcelaRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/CartaoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/DividaRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/ProventoRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/database/DatabaseManager.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/AppBootstrap.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/AjusteCorporativoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FechamentoMensalService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/AuditLogService.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/SodiumCryptoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/AesCryptoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/KeyDerivation.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/settings/AppSettings.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp)
+target_link_libraries(test_busca_service PRIVATE
+    OpenSSL::SSL
+    OpenSSL::Crypto
+    ${LIBSODIUM_LIBRARIES}
+    ${LIBSECRET_LIBRARIES}
+    ${SQLITE3_LIBRARIES})
+target_include_directories(test_busca_service PRIVATE
+    ${LIBSODIUM_INCLUDE_DIRS}
+    ${LIBSECRET_INCLUDE_DIRS}
+    ${SQLITE3_INCLUDE_DIRS})
 peubud_add_test(test_indicadores
     ${CMAKE_SOURCE_DIR}/src/services/IndicadoresTecnicos.cpp)
 peubud_add_test(test_suporte_resistencia

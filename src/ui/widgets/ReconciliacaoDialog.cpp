@@ -1,5 +1,6 @@
 #include "ReconciliacaoDialog.h"
 #include "core/database/DatabaseManager.h"
+#include "services/ReconciliacaoAutomatica.h"
 #include "ui/UiFormatters.h"
 
 #include <QVBoxLayout>
@@ -236,10 +237,24 @@ void ReconciliacaoDialog::carregarAppEntries(int mes, int ano)
 
 // ── Matching automático ───────────────────────────────────────────────────────
 
+// (#139/#85) Matching automático via ReconciliacaoAutomatica::resolver
+// (subset-sum/knapsack, já testado em tests/test_reconciliacao.cpp). Para
+// cada linha do extrato, monta os candidatos = itens do app ainda não usados,
+// mesmo sinal (débito casa só com débito) e dentro de ±3 dias da data do
+// extrato; resolve o subconjunto cuja soma bate exatamente com |valor do
+// extrato| — permite conciliar 1 linha do extrato contra N lançamentos do
+// app (ex.: um PIX dividido em duas parcelas no app), o que o match
+// item-a-item anterior não fazia.
+//
+// Invariante de timeout (#85): resolver() tem timeout default de 2s por
+// chamada (uma chamada por linha do extrato). Se o timeout dispara para uma
+// linha, NÃO travamos a UI tentando de novo — a linha cai no fallback
+// manual (status "Só extrato"/"Divergência"), e o usuário resolve via botão
+// "Marcar conciliado" (m_btnManual).
 void ReconciliacaoDialog::executarMatching()
 {
     // Constrói conjunto de todos os itens únicos (extrato + app)
-    // Matching: data ± 3 dias + valor exato → conciliado
+    // Matching: subset-sum (data ± 3 dias, mesmo sinal) → conciliado
     //           só no extrato: amarelo; só no app: azul
 
     struct LinhaTabela {
@@ -262,29 +277,50 @@ void ReconciliacaoDialog::executarMatching()
         linha.valorExtCents = ext.valor;
 
         const QDate dExt = QDate::fromString(ext.data, Qt::ISODate);
-        int matchIdx = -1;
 
-        // Busca correspondência no app
+        // Candidatos: itens do app não usados, mesmo sinal do lançamento do
+        // extrato, dentro da janela de ±3 dias.
+        QList<ReconciliacaoAutomatica::Lancamento> candidatos;
+        QList<int> origemDoCandidato; // id sequencial do candidato -> índice em m_appItems
         for (int i = 0; i < m_appItems.size(); ++i) {
             if (usadoApp[i]) continue;
-            const QDate dApp = QDate::fromString(m_appItems[i].data, Qt::ISODate);
-            const bool dataOk = dExt.isValid() && dApp.isValid()
-                                && qAbs(dExt.daysTo(dApp)) <= 3;
-            const bool valorOk = m_appItems[i].valor == ext.valor;
-            if (dataOk && valorOk) {
-                matchIdx = i;
-                break;
+            const ItemExtrato &app = m_appItems[i];
+            if ((app.valor > 0) != (ext.valor > 0)) continue; // sinais diferentes
+            const QDate dApp = QDate::fromString(app.data, Qt::ISODate);
+            if (!(dExt.isValid() && dApp.isValid() && qAbs(dExt.daysTo(dApp)) <= 3))
+                continue;
+            candidatos.append({static_cast<qint64>(origemDoCandidato.size()),
+                                qAbs(app.valor), app.descricao});
+            origemDoCandidato.append(i);
+        }
+
+        bool matched = false;
+        if (ext.valor != 0 && !candidatos.isEmpty()) {
+            const auto resultado = ReconciliacaoAutomatica::resolver(
+                candidatos, qAbs(ext.valor));
+            if (resultado.encontrado && !resultado.timeoutAtingido
+                && !resultado.ids.isEmpty())
+            {
+                matched = true;
+                QStringList descs;
+                qint64 somaApp = 0;
+                for (qint64 candId : resultado.ids) {
+                    const int origIdx = origemDoCandidato[static_cast<int>(candId)];
+                    usadoApp[origIdx] = true;
+                    descs << m_appItems[origIdx].descricao;
+                    somaApp += m_appItems[origIdx].valor;
+                }
+                linha.statusIdx     = 1; // conciliado
+                linha.descApp       = descs.join(QStringLiteral(" + "));
+                linha.valApp        = fmtCentavos(somaApp);
+                linha.valorAppCents = somaApp;
             }
         }
 
-        if (matchIdx >= 0) {
-            usadoApp[matchIdx] = true;
-            linha.statusIdx   = 1; // conciliado
-            linha.descApp     = m_appItems[matchIdx].descricao;
-            linha.valApp      = fmtCentavos(m_appItems[matchIdx].valor);
-            linha.valorAppCents = m_appItems[matchIdx].valor;
-        } else {
-            // Verifica se existe na app com valor diferente (divergência)
+        if (!matched) {
+            // Fallback manual: mesmo comportamento anterior à #139 — sinaliza
+            // divergência com o item mais próximo por data (só data, sem
+            // exigir valor), senão marca "só no extrato".
             for (int i = 0; i < m_appItems.size(); ++i) {
                 if (usadoApp[i]) continue;
                 const QDate dApp = QDate::fromString(m_appItems[i].data, Qt::ISODate);
