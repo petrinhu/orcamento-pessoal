@@ -19,6 +19,7 @@ class TestUserAccountRepository : public QObject
 
 private slots:
     void roundTripPreservaRegistros();
+    void roundTripPreservaCamposDeSigningKeyDoAdmin();
     void detectaAdulteracaoDeCampoDeUsuario();
     void detectaAdulteracaoDaAssinatura();
     void isEmptyEExistsComArquivoAusente();
@@ -79,6 +80,43 @@ void TestUserAccountRepository::roundTripPreservaRegistros()
 
     QCOMPARE(result.users[1].username, QStringLiteral("maria"));
     QVERIFY(result.users[1].role == Role::User);
+}
+
+// (Fatia 2, ADR-001 #212 item A) wrappedSignKeyByPass/Recovery são novos
+// desde a Fatia 1 — prova que entram no round-trip (e portanto na
+// assinatura, via canonicalContent) sem quebrar o formato. Usuário comum
+// (criarUsuario) deixa os 2 campos vazios; este teste cobre o caso admin
+// com a signing key preenchida.
+void TestUserAccountRepository::roundTripPreservaCamposDeSigningKeyDoAdmin()
+{
+    QTemporaryDir tmp;
+    QVERIFY(tmp.isValid());
+    const QString path = tmp.filePath(QStringLiteral("users.json"));
+
+    SodiumCryptoService crypto;
+    UserAccountRepository repo(crypto, path);
+    const auto kp = crypto.generateSignKeypair();
+
+    UserAccountRecord admin = criarUsuario(QStringLiteral("admin"), Role::Admin);
+    admin.wrappedSignKeyByPass     = QByteArray(104, 'E'); // 64B secretkey + 24B nonce + 16B MAC
+    admin.wrappedSignKeyByRecovery = QByteArray(104, 'F');
+
+    QVector<UserAccountRecord> users;
+    users.append(admin);
+    users.append(criarUsuario(QStringLiteral("maria"), Role::User)); // campos ficam vazios (default)
+
+    QVERIFY(repo.saveAll(users, kp.publicKey, kp.secretKey));
+
+    const auto result = repo.loadAll();
+    QVERIFY(result.ok);
+    QVERIFY(!result.tampered);
+    QCOMPARE(result.users.size(), 2);
+    QCOMPARE(result.users[0].wrappedSignKeyByPass, admin.wrappedSignKeyByPass);
+    QCOMPARE(result.users[0].wrappedSignKeyByRecovery, admin.wrappedSignKeyByRecovery);
+    QVERIFY2(result.users[1].wrappedSignKeyByPass.isEmpty(),
+        "usuário comum deveria manter wrappedSignKeyByPass vazio no round-trip");
+    QVERIFY2(result.users[1].wrappedSignKeyByRecovery.isEmpty(),
+        "usuário comum deveria manter wrappedSignKeyByRecovery vazio no round-trip");
 }
 
 void TestUserAccountRepository::detectaAdulteracaoDeCampoDeUsuario()

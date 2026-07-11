@@ -1460,3 +1460,28 @@ peubud_add_test(test_user_account_repository
     ${CMAKE_SOURCE_DIR}/src/core/crypto/SodiumCryptoService.cpp)
 target_link_libraries(test_user_account_repository PRIVATE ${LIBSODIUM_LIBRARIES})
 target_include_directories(test_user_account_repository PRIVATE ${LIBSODIUM_INCLUDE_DIRS})
+
+# ADR-001 #212 (Fatia 2 — regra de negócio): UserAccountService. Envelope
+# completo (createAdmin/createUser/completeFirstLogin/verifyLogin/
+# removeUser/resetPasswordViaRecovery) + âncora anti-pubkey-swap via
+# SecretStoreService real (libsecret) -- por isso arrasta AppSettings
+# (savePathFixo/listUsers) + ParcelaService/FinanceEngine (dependência
+# transitiva de AppSettings, mesmo padrão de test_glossario/test_import).
+# A maioria dos testes chama createAdmin() -> SecretStoreService::store();
+# em CI headless sem D-Bus/Secret Service isso pode crashar o processo
+# (mesmo achado documentado em test_tabshell_seguranca) -- por isso o guard
+# fica em init() (roda antes de CADA teste, não só de um).
+peubud_add_test(test_user_account_service
+    ${CMAKE_SOURCE_DIR}/src/services/UserAccountService.cpp
+    ${CMAKE_SOURCE_DIR}/src/repositories/UserAccountRepository.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/crypto/SodiumCryptoService.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/settings/AppSettings.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/secret/SecretStoreService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/ParcelaService.cpp
+    ${CMAKE_SOURCE_DIR}/src/services/FinanceEngine.cpp)
+target_link_libraries(test_user_account_service PRIVATE
+    ${LIBSODIUM_LIBRARIES}
+    ${LIBSECRET_LIBRARIES})
+target_include_directories(test_user_account_service PRIVATE
+    ${LIBSODIUM_INCLUDE_DIRS}
+    ${LIBSECRET_INCLUDE_DIRS})

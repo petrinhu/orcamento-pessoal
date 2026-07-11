@@ -36,6 +36,14 @@ struct UserAccountRecord {
     QByteArray wrappedKeyByPass;        // 72B: nonce(24)+secretbox(K)+MAC. Ausente até o 1º login (fluxo invite key)
     QByteArray wrappedKeyByRecovery;    // 72B — idem, via recovery key
     bool       invitePending = false;   // true = ainda no fluxo de invite key (sem senha própria definida)
+
+    // (ADR-001 #212 §4/§5.1, Fatia 2) Signing secret key Ed25519 (64B) DO
+    // ADMIN, embrulhada como K (por senha e por recovery key do admin) —
+    // permite ao admin logado assinar mutações futuras do registro sem
+    // gravar a secret key em claro em lugar nenhum. Vazios (QByteArray())
+    // para usuários comuns — só o(s) registro(s) com role==Admin usam.
+    QByteArray wrappedSignKeyByPass;
+    QByteArray wrappedSignKeyByRecovery;
 };
 
 // DTO sem NENHUM campo cripto (ISP — ADR-001 §6). Único formato seguro pra

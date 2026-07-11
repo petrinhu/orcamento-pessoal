@@ -42,6 +42,10 @@ QJsonObject userToJson(const UserAccountRecord &u)
     o[QStringLiteral("wrapped_key_by_pass")]      = QString::fromLatin1(u.wrappedKeyByPass.toBase64());
     o[QStringLiteral("wrapped_key_by_recovery")]  = QString::fromLatin1(u.wrappedKeyByRecovery.toBase64());
     o[QStringLiteral("invite_pending")]           = u.invitePending;
+    // (Fatia 2) admin-only — QByteArray() vazio vira "" em base64, round-trip
+    // idêntico ao padrão já usado acima para os wraps de K.
+    o[QStringLiteral("wrapped_signkey_by_pass")]     = QString::fromLatin1(u.wrappedSignKeyByPass.toBase64());
+    o[QStringLiteral("wrapped_signkey_by_recovery")] = QString::fromLatin1(u.wrappedSignKeyByRecovery.toBase64());
     return o;
 }
 
@@ -72,6 +76,12 @@ std::optional<UserAccountRecord> userFromJson(const QJsonValue &v)
     u.wrappedKeyByPass       = QByteArray::fromBase64(o.value(QStringLiteral("wrapped_key_by_pass")).toString().toLatin1());
     u.wrappedKeyByRecovery   = QByteArray::fromBase64(o.value(QStringLiteral("wrapped_key_by_recovery")).toString().toLatin1());
     u.invitePending          = o.value(QStringLiteral("invite_pending")).toBool();
+    // (Fatia 2) campo ausente (registro de usuário comum, ou users.json
+    // gravado pela Fatia 1 antes destes 2 campos existirem) -> toString()
+    // vazio -> fromBase64 vazio -> QByteArray() — mesma convenção acima,
+    // sem quebrar compatibilidade com registros antigos.
+    u.wrappedSignKeyByPass     = QByteArray::fromBase64(o.value(QStringLiteral("wrapped_signkey_by_pass")).toString().toLatin1());
+    u.wrappedSignKeyByRecovery = QByteArray::fromBase64(o.value(QStringLiteral("wrapped_signkey_by_recovery")).toString().toLatin1());
     return u;
 }
 
