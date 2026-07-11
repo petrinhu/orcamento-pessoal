@@ -48,3 +48,7 @@ data/
 # Logs do pipeline pré-release (#203a, DIST-10) — runtime, não versionar
 reports/
 
+
+# credenciais de teste locais (nunca versionar)
+*claude-test*
+*test-creds*
