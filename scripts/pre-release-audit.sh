@@ -17,7 +17,7 @@
 #
 # Filosofia: DEGRADA, NÃO ABORTA. Se uma ferramenta não está instalada, o
 # script avisa e segue para a próxima — isto NÃO é o gate de CI (esse já
-# existe em .forgejo/workflows/build.yml para cppcheck/clang-tidy/
+# existe em .github/workflows/build.yml para cppcheck/clang-tidy/
 # sanitizers/ctest, que SÃO bloqueantes lá). Aqui o objetivo é dar ao dev
 # uma visão completa antes de cortar uma release, com log persistido em
 # reports/ — mesmo rodando parcial (nem toda máquina de dev tem as 6 tools

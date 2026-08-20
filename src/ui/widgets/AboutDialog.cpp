@@ -56,7 +56,7 @@ AboutDialog::AboutDialog(QWidget *parent)
     layout->addSpacing(8);
 
     auto *lblRepo = new QLabel(
-        tr("Repositório: codeberg.org/petrinhu/orcamento_pessoal"), this);
+        tr("Repositório: github.com/petrinhu/orcamento-pessoal"), this);
     lblRepo->setObjectName(QStringLiteral("subtitle"));
     lblRepo->setAlignment(Qt::AlignCenter);
     layout->addWidget(lblRepo);

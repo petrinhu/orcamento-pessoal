@@ -6,7 +6,7 @@ App de finanças pessoais em C++20/Qt6, construído em módulos incrementais.
 **Módulo 1:** controle de parcelas do cartão de crédito.
 **Módulo 2 (atual):** aba de Entradas — lançamentos de receitas por fonte de renda.
 
-**Repositório Codeberg:** ssh://git@codeberg.org/petrinhu/orcamento_pessoal.git
+**Repositório GitHub:** git@github.com:petrinhu/orcamento-pessoal.git
 
 ## Papel e contexto
 

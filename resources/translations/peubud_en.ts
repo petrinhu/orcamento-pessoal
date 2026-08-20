@@ -25,8 +25,8 @@
     </message>
     <message>
         <location filename="../../src/ui/widgets/AboutDialog.cpp" line="59"/>
-        <source>Repositório: codeberg.org/petrinhu/orcamento_pessoal</source>
-        <translation>Repository: codeberg.org/petrinhu/orcamento_pessoal</translation>
+        <source>Repositório: github.com/petrinhu/orcamento-pessoal</source>
+        <translation>Repository: github.com/petrinhu/orcamento-pessoal</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/AboutDialog.cpp" line="76"/>
@@ -3961,7 +3961,7 @@ Income (credit), Expenses (debit), Cards (debit).</translation>
     </message>
     <message>
         <location filename="../../src/ui/widgets/GlossarioDialog.cpp" line="47"/>
-        <source>&lt;i&gt;Sugerir termo faltante: abra issue em codeberg.org/petrinhu/orcamento_pessoal&lt;/i&gt;</source>
+        <source>&lt;i&gt;Sugerir termo faltante: abra issue em github.com/petrinhu/orcamento-pessoal&lt;/i&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

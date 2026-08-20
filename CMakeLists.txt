@@ -439,7 +439,7 @@ set(CPACK_PACKAGE_VERSION         "${PROJECT_VERSION}")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY
     "Aplicativo de orçamento pessoal em C++20/Qt6 com banco cifrado")
 set(CPACK_PACKAGE_HOMEPAGE_URL
-    "https://codeberg.org/petrinhu/orcamento_pessoal")
+    "https://github.com/petrinhu/orcamento-pessoal")
 set(CPACK_PACKAGE_INSTALL_DIRECTORY "PeuBud")
 set(CPACK_RESOURCE_FILE_LICENSE   "${CMAKE_SOURCE_DIR}/LICENSE")
 set(CPACK_RESOURCE_FILE_README    "${CMAKE_SOURCE_DIR}/README.md")

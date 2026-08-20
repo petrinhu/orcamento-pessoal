@@ -44,7 +44,7 @@ void GlossarioDialog::buildUi()
 
     auto *footer = new QHBoxLayout;
     auto *lblFonte = new QLabel(
-        tr("<i>Sugerir termo faltante: abra issue em codeberg.org/petrinhu/orcamento_pessoal</i>"), this);
+        tr("<i>Sugerir termo faltante: abra issue em github.com/petrinhu/orcamento-pessoal</i>"), this);
     lblFonte->setOpenExternalLinks(true);
     footer->addWidget(lblFonte, 1);
     auto *btnClose = new QPushButton(tr("Fechar"), this);

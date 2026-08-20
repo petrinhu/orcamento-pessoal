@@ -2,7 +2,7 @@
 
 **[English](#english) · [Português](#português)**
 
-[![Build](https://codeberg.org/petrinhu/orcamento_pessoal/actions/workflows/build.yml/badge.svg)](https://codeberg.org/petrinhu/orcamento_pessoal/actions)
+[![Build](https://github.com/petrinhu/orcamento-pessoal/actions/workflows/build.yml/badge.svg)](https://github.com/petrinhu/orcamento-pessoal/actions/workflows/build.yml)
 ![C++20](https://img.shields.io/badge/C%2B%2B-20-blue?logo=cplusplus)
 ![Qt6](https://img.shields.io/badge/Qt-6-41CD52?logo=qt)
 ![SQLite](https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite)
