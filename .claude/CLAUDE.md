@@ -1,4 +1,4 @@
-# CLAUDE.md — Orçamento Pessoal
+# CLAUDE.md: Orçamento Pessoal
 
 ## Visão geral do projeto
 
@@ -13,157 +13,24 @@ App de finanças pessoais em C++20/Qt6, construído em módulos incrementais.
 Engenheiro sênior C++20/Qt6, foco em Linux (Fedora/KDE Plasma primário,
 Debian e Arch como alvos secundários de distribuição).
 
-## Stack
+## Docs
 
-- **Linguagem:** C++20
-- **UI:** Qt6 (Widgets, Charts)
-- **Banco de dados:** SQLite via QSQLITE (built-in no Qt6)
-- **Criptografia:** libsodium — AEAD AES-256-GCM (com AES-NI) ou XChaCha20-Poly1305 (fallback), chave derivada por Argon2id (MODERATE: ops=3, mem=256 MB). Formato `.pbd` v1 (magic `PBD\x01`). Legado AES-256-CBC + PBKDF2-SHA256 (600k iter, OpenSSL) só para **leitura** de arquivos antigos — migrado de forma transparente para o formato novo no próximo save/close.
-- **Segredos do sistema:** libsecret (Secret Service API → KWallet/GNOME Keyring)
-- **Build:** CMake 3.16+
-- **Plataforma:** Fedora 43 / KDE Plasma (primário)
-- **Fonte:** Inter (Regular, Medium, SemiBold) — embutida via .qrc
-- **Tema:** Forest Neutral, light/dark automático via QStyleHints (Qt6)
+- [`docs/claude/stack_e_dependencias.md`](../docs/claude/stack_e_dependencias.md): stack (C++20, Qt6, SQLite, libsodium, libsecret, CMake, fonte Inter, tema Forest Neutral) e comandos de instalação das dependências em Fedora, Debian/Ubuntu e Arch.
+- [`docs/claude/estrutura.md`](../docs/claude/estrutura.md): árvore de `src/`, `resources/` e `data/`. Consultar para localizar classe ou camada.
+- [`docs/claude/paleta.md`](../docs/claude/paleta.md): paleta de cores KDE Breeze, light e dark. Ler antes de mexer em cor ou tema.
 
-## Dependências
+## Leis do projeto
 
-```bash
-# Fedora (dnf)
-sudo dnf install \
-  qt6-qtbase-devel qt6-qtcharts-devel \
-  openssl-devel libsecret-devel \
-  gcc-c++ cmake make -y
+Leia [`GODS_LAWS.md`](../GODS_LAWS.md), na raiz do repo, antes de agir. `L-NN` sem prefixo é lei global.
 
-# Debian/Ubuntu (apt)
-sudo apt install \
-  qt6-base-dev libqt6charts6-dev \
-  libssl-dev libsecret-1-dev \
-  g++ cmake make -y
-
-# Arch (pacman)
-sudo pacman -S qt6-base qt6-charts \
-  openssl libsecret \
-  gcc cmake make
-```
-
-## Estrutura modular
-
-```
-src/
-  main.cpp
-  core/
-    interfaces/
-      ICryptoService.h       # SRP: só criptografia
-      ISecretStore.h         # SRP: só armazenamento de segredos
-      IRepository.h          # Repositório genérico (template)
-    crypto/
-      SodiumCryptoService.h/cpp # ATIVO: AEAD AES-GCM/XChaCha20 + Argon2id (debug: sem crypto)
-      AesCryptoService.h/cpp # LEGACY (só leitura): AES-256-CBC
-      KeyDerivation.h/cpp    # LEGACY (só leitura): PBKDF2-SHA256, 600k iter
-    secret/
-      SecretStoreService.h/cpp # libsecret → KWallet/GNOME Keyring
-    database/
-      DatabaseManager.h/cpp  # SQLite lifecycle, pragma setup
-    session/
-      UserSession.h/cpp      # Nome logado, último nome (QSettings)
-    currency/
-      ICurrencyProvider.h    # Interface para cotação
-      FrankfurterProvider.h/cpp # frankfurter.app (ECB, sem API key)
-  models/
-    Compra.h                 # struct POD
-    Parcela.h                # struct POD
-    FonteRenda.h             # struct POD — fonte de renda (id, nome)
-    LancamentoEntrada.h      # struct POD — recebimento mensal
-  repositories/
-    CompraRepository.h/cpp
-    ParcelaRepository.h/cpp
-    FonteRendaRepository.h/cpp          # CRUD + findOrCreate
-    LancamentoEntradaRepository.h/cpp   # CRUD + findAll + findByMesAno
-  services/
-    ParcelaService.h/cpp     # CET, juros, Newton-Raphson, datas retroativas
-    CurrencyService.h/cpp    # Conversão + cache de cotação
-    ImportService.h/cpp      # Importação CSV/OFX/QIF/XLSX/JSON/…
-    ExportService.h/cpp      # Exportação CSV/OFX/QIF/XLSX/JSON/…
-  ui/
-    Theme.h/cpp
-    LoginDialog.h/cpp
-    MainWindow.h/cpp         # QTabWidget: abas Parcelas + Entradas
-    IconGenerator.h/cpp
-    widgets/
-      ParcelasWidget.h/cpp            # Tabela editável de parcelas
-      AddCompraDialog.h/cpp           # Diálogo de entrada (modos 2.1–2.5)
-      ConfigWidget.h/cpp              # CRUD cartões
-      EntradasWidget.h/cpp            # Tabela de entradas (4 sub-cols/mês)
-      LancamentoEntradaDialog.h/cpp   # Dialog: fonte, valor, impostos, recorrência
-      ConfigFontesWidget.h/cpp        # CRUD fontes de renda (nas Preferências)
-      PrefsWidget.h/cpp               # Painel de preferências completo
-      AboutDialog.h/cpp
-      HelpDialog.h/cpp
-resources/
-  fonts/Inter-*.ttf
-  resources.qrc
-data/                        # runtime — NÃO versionar
-  <slug>.enc                 # banco criptografado
-  .<slug>.db                 # temporário (debug: sem crypto)
-```
-
-## Princípios de código (SOLID)
-
-- **SRP:** cada classe tem responsabilidade única — nada monolítico
-- **OCP:** extensível para novos módulos sem modificar os existentes
-- **LSP:** implementações substituem interfaces sem quebrar comportamento
-- **ISP:** interfaces pequenas e específicas (ICryptoService, ISecretStore, IRepository)
-- **DIP:** depender de abstrações, não de implementações concretas
-
-## Convenções
-
-- Valores monetários sempre em **centavos (qint64)** — nunca float/double
-- Juros armazenados como inteiro: `% × 10000` (ex: 1,5% = 15000)
-- Datas: `QDate` internamente; `dd/MM/yyyy` na UI
-- Formatação: `centavosParaTexto()` → "R$ 0,00" (símbolo varia por moeda)
-- IDs: 0 = não persistido, -1 = linha TOTAL nas tabelas
-- Queries SQL: sempre com `bindValue` (sem concatenação de strings)
-- `PRAGMA foreign_keys = ON` + `ON DELETE CASCADE/SET NULL` nas FKs
-- `PRAGMA journal_mode = MEMORY` — sem journal files em disco
-- Commits sempre em português
-- **Não criar código C++ sem perguntar ao usuário antes**
-
-## Login / sessão
-
-- `#ifdef QT_DEBUG`: só nome, sem senha, último nome salvo via QSettings
-- Release: nome + senha + checklist (≥8 chars, maiúscula, número)
-- Chave AES armazenada via libsecret (KWallet/GNOME Keyring)
-
-## Paleta de cores (KDE Breeze)
-
-| Token      | Light   | Dark    |
-|------------|---------|---------|
-| Background | #EFF0F1 | #31363B |
-| Surface    | #FFFFFF | #1B1E20 |
-| Border     | #BDC3C7 | #575B5F |
-| Text       | #232629 | #EFF0F1 |
-| Subtext    | #7F8C8D | #7F8C8D |
-| Acento     | #3DAEE9 | #3DAEE9 |
-| Positivo   | #27AE60 | #27AE60 |
-| Negativo   | #DA4453 | #DA4453 |
-
-## Ferramentas permitidas
-
-- **APENAS** ferramentas gratuitas, open-source, disponíveis via dnf/apt/pacman
-NÃO sugerir: PVS-Studio, Coverity, SonarCloud pago, Squish, ou qualquer tool com login/chave paga
-- Ao recomendar tools, sempre fornecer equivalentes para as 3 distros (dnf/apt/pacman)
-
-Metodologia pré-distribuição
-
-Antes de qualquer release, checklist cobrindo:
-1. Análise estática: `clang-tidy`, `cppcheck`
-2. Sanitizers: ASan, UBSan + `valgrind`
-3. Segurança/CVE/hardening: `checksec`, `grype` ou `trivy`
-4. QA funcional: `ctest`
-5. UX/UI: GammaRay, revisão manual
-
-Para cada item: comando exato + justificativa de por que é crítico.
-
-## Prioridade
-
-**Precisão financeira > Robustez > Segurança > UX**
+| Lei | Gatilho: dispara quando você vai... |
+|---|---|
+| [OP-01](../GODS_LAWS.md#op-01) | escolher entre precisão, robustez, segurança e UX |
+| [OP-02](../GODS_LAWS.md#op-02) | criar código C++ |
+| [OP-03](../GODS_LAWS.md#op-03) | criar classe, interface ou módulo |
+| [OP-04](../GODS_LAWS.md#op-04) | tocar valor monetário, juros, data, formatação de moeda ou ID |
+| [OP-05](../GODS_LAWS.md#op-05) | escrever SQL ou mexer na configuração do banco |
+| [OP-06](../GODS_LAWS.md#op-06) | mexer em login, senha, sessão ou chave |
+| [OP-07](../GODS_LAWS.md#op-07) | sugerir ou instalar ferramenta |
+| [OP-08](../GODS_LAWS.md#op-08) | preparar release ou distribuição |
+| [OP-09](../GODS_LAWS.md#op-09) | escrever mensagem de commit |
