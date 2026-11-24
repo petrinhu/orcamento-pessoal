@@ -16,8 +16,8 @@ Debian e Arch como alvos secundários de distribuição).
 ## Docs
 
 - [`docs/claude/stack_e_dependencias.md`](../docs/claude/stack_e_dependencias.md): stack (C++20, Qt6, SQLite, libsodium, libsecret, CMake, fonte Inter, tema Forest Neutral) e comandos de instalação das dependências em Fedora, Debian/Ubuntu e Arch.
-- [`docs/claude/estrutura.md`](../docs/claude/estrutura.md): árvore de `src/`, `resources/` e `data/`. Consultar para localizar classe ou camada.
-- [`docs/claude/paleta.md`](../docs/claude/paleta.md): paleta de cores KDE Breeze, light e dark. Ler antes de mexer em cor ou tema.
+- [`docs/claude/estrutura.md`](../docs/claude/estrutura.md): árvore de `src/`, `resources/` e `data/`.
+- [`docs/claude/paleta.md`](../docs/claude/paleta.md): paleta de cores KDE Breeze, light e dark.
 
 ## Leis do projeto
 
